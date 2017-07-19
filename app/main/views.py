@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import random
 from flask import g, render_template, redirect, url_for, current_app,\
                   request, session, flash, make_response, abort

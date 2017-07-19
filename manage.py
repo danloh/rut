@@ -1,4 +1,4 @@
-#! /Users/oo/Project/flasking/venv python
+# -*- coding: utf-8 -*-
 
 import os
 from flask_script import Manager, Shell
