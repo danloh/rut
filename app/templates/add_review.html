@@ -1,0 +1,31 @@
+{% extends "layout0.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block head %}
+{{super()}}
+<script src="{{url_for('static', filename='ck/ckeditor0/ckeditor.js')}}"></script>
+{% endblock head %}
+
+{% block title %} Post a Review {% endblock title %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <h4>Post Your Review</h4>
+    <p>
+        On item &nbsp; 
+        <a href={{url_for('main.item',id=item.id)}}>{{item.title|truncate(45)}}</a>
+        
+    </p>
+    <div>
+        <form class="form" method="POST">
+        {{form.hidden_tag()}}
+        {{wtf.form_field(form.heading)}}
+        {{wtf.form_field(form.body, class="ckeditor")}}
+        {{wtf.form_field(form.submit)}}
+        </form>
+    </div>
+    <hr>
+</div>
+
+{% endblock content %}

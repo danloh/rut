@@ -1,0 +1,24 @@
+<!--include post list in-->
+<div class="media">
+    <div class="media-left media-top">
+        <img src="{{review.creator.avatar}}" class="media-object" \
+        style="width:40px; height:40px" alt="avatar">   
+    </div>
+    <div class="media-body">
+        <h3 class="media-heading">
+            <a href={{url_for('main.review', id=review.id)}}>{{review.heading}}</a>
+        </h3>
+        <p style="background-color:whitesmoke">
+            By <a href={{url_for('auth.profile', id=review.creator.id)}}>
+                {{review.creator.nickname or review.creator.name}}
+            </a>
+            &nbsp;|&nbsp;{{moment(review.timestamp).format("MMM Do YYYY")}} 
+        </p> 
+        <p>{{review.body|safe|truncate(250,False,'',10)}}
+            <span>
+                <a href={{url_for('main.review', id=review.id)}}>...more</a>
+            </span>   
+        </p>
+    </div>
+    <hr>
+</div>

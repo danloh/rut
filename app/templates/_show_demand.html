@@ -1,0 +1,24 @@
+<!--include demand info in request-->
+
+<div class="text-left">
+    Requested by 
+    <a href={{url_for('auth.profile', id=demand.requestor.id)}}>
+        {{demand.requestor.nickname or demand.requestor.name}}
+    </a>   
+</div>
+
+<div>
+    <h4 style="color:green">{{demand.body}}</h4>
+</div>
+<div class="text-right">
+    <span>{{demand.comments.count()}}&nbsp;
+        <a href={{url_for('main.demand',id=demand.id)}} target="_blank"><b>Discuss</b></a>
+    </span>
+    &nbsp;|&nbsp;&nbsp;
+    <span><a href={{url_for('main.create')}}><b>Create New to Response</b></a></span>
+    &nbsp;|&nbsp;&nbsp;
+    <span>{{demand.vote}}&nbsp;
+        <a href={{url_for('main.alsoreq',id=demand.id)}}>Also Request</a>
+    </span>
+</div>
+<hr>

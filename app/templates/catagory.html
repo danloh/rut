@@ -1,0 +1,28 @@
+{% extends "layout1.html" %}
+{% import "_macros.html" as macros %}
+
+{% block title %} Catagory {% endblock title %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <h4>See More Catagories</h4>
+    <ul class="list-group">
+        {% for tag in tags %}
+        <li class="list-group-item">
+            <span class="badge">{{tag.posts.count()}}</span>
+            <h3 class="list-group-item-heading" style="color:lightseagreen">{{tag.tag}}</h3><br>
+            <a class="list-group-item-text" href="{{url_for('main.tagcollect', id=tag.id)}}">
+                {{tag.descript or 'No More information, help add some description?'}}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% if pagination %}
+<div class="text-center">
+    {{ macros.pagination_widget(pagination, '.catagory') }}
+</div>
+{% endif %}
+
+{% endblock content %}

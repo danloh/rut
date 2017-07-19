@@ -1,0 +1,38 @@
+{% extends 'layout0.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block head %}
+{{super()}}
+<script src="{{url_for('static', filename='ck/ckeditor0/ckeditor.js')}}"></script>
+{% endblock head %}
+
+{% block title %} Create Article {% endblock title %}
+
+{% block content %}
+<div>
+    <h4>Create New Article</h4>
+</div>
+<hr>
+<div>
+    <form class="form" method="POST">
+        {{form.hidden_tag()}}
+        {{wtf.form_field(form.title)}}
+        {{wtf.form_field(form.intro, class="ckeditor")}}
+        {{wtf.form_field(form.tag)}}
+        {{wtf.form_field(form.rating, class="inline")}}
+        {{wtf.form_field(form.credential)}}
+        {{wtf.form_field(form.submit)}}
+    </form>
+</div>
+{% endblock content %}
+
+{% block rightside %}
+<h5>Tips</h5>
+<hr>
+<p>A post is an items list, including intrduction as preface, items and tips for each item, 
+    such as reading tips, recommmend reasons, and the connection with items.<br>
+    First, give a title, preface, set tags to create post<br>
+    Then add items and tips into post
+</p>
+
+{% endblock rightside %}

@@ -1,0 +1,59 @@
+{% extends "layout0.html" %}
+
+{% block title %} Home - Readup.Tips {% endblock title %}
+
+{% block leftside %}
+{% include '_tag_side.html' %}
+
+{% endblock leftside %}
+
+{% block content %}
+
+<div>
+    <h3>The Tips to Read up on any Subjects</h3>
+    <p>Share, Discuss, Challenge</p> 
+    <p>Start to <a href ="{{url_for('main.create')}}"><b>Create an Article</b></a>
+    on any subject you prefer</p>
+    <hr>
+</div>
+
+<!--Show some digest -->
+<ul class="nav nav-tabs">
+    <li class="active"><a data-toggle="tab" href="#latest">Latest</a></li>
+    <li><a data-toggle="tab" href="#popular">Most Popular</a></li>
+    <li><a data-toggle="tab" href="#random">Random</a></li>
+</ul>
+
+<div class="tab-content">
+
+    <div id="latest" class="tab-pane fade in active">
+        <hr>
+        {% for post in posts_latest %}
+        {% include '_post_list.html' %}
+        
+        {% endfor %}
+    </div>
+
+    <div id="popular" class="tab-pane fade">
+        <hr>
+        {% for post in posts_popular %}           
+        {% include '_post_list.html' %}
+
+        {% endfor %}
+    </div>
+
+    <div id="random" class="tab-pane fade">
+        <hr>
+        {% for post in posts_random %}
+        {% include '_post_list.html' %}
+
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block rightside %}
+{% include '_connect_side.html' %}
+
+{% endblock rightside %}

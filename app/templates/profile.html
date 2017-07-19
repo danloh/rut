@@ -1,0 +1,258 @@
+{% extends "layout0.html" %}
+
+{% block title %} {{user.nickname or user.name}} 's Profile {% endblock title %}
+
+{% block leftside %}
+<div>
+    <div>
+        <img src={{user.avatar}} style="width:75px" alt="avatar">
+    </div>
+    <hr>
+    <div>
+        <p><mark>About Me</mark><br>
+           {{user.about_me or ' no bio'}}
+        </p>
+        <hr>
+        <p>
+            <mark>From</mark><br>
+            {{user.location or 'not add location yet' }}<br>
+            {% if user.links %}
+            <mark>More</mark><br>
+            <a href={{user.links}} target="_blank">link to me</a>
+            {% elif current_user == user %}
+            <hr>
+            <a href={{url_for('auth.edit_profile')}}>Edit Profile</a>
+            {% endif %}
+        </p>
+    </div>
+</div>
+{% endblock leftside %}
+
+{% block content %}
+<div>
+    <h3>{{user.nickname or user.name}}</h3>
+    <div class="text-right">
+        <a href={{url_for('main.following',id=user.id)}} target="_blank">
+            {{user.followed.count()}}
+        </a> &nbsp;Following&nbsp;
+        <a id="foN" href={{url_for('main.follower',id=user.id)}} target="_blank">
+            {{user.followers.count()}}
+        </a> &nbsp;Followers&nbsp;
+        {% if user != current_user %}
+        <a id="fo" class="btn"> 
+        {% if current_user.is_following(user) %} 
+            Unfollow 
+        {% else %} 
+            Follow 
+        {% endif %} 
+        </a> 
+        {% endif %}
+        <!--script start-->
+        <p id="foUrl" style="display:none">{{url_for('main.countfollow', id=user.id)}}</p>
+        <script>
+        $(document).ready(function(){
+            $("a#fo").click(function(){
+                $.get($("p#foUrl").text(), function(data){
+                var old = $("#fo").text();
+                    $("a#fo").text(function(){
+                        if (old == "Unfollow"){
+                            return "Follow" ;
+                        } else {
+                            return "Unfollow"; 
+                        }
+                    });
+                    $("a#foN").text(data);
+                });
+            });
+        });   
+        </script>
+        <!--script end-->
+    </div>
+</div>
+<hr>
+<!--Show post -->
+<div class="row">
+    <h4>-- Created --&nbsp;&nbsp;<b>({{post_count}})</b></h4>
+    <hr>
+    {% for post in posts %}
+        {% include '_post_list.html' %}
+    {% else %}
+        <p>Have not created any Article.&nbsp;
+            {% if current_user == user %}
+            Start to <a href="{{url_for('main.create')}}">Create Now</a>
+            {% endif %}
+        </p>
+    {% endfor %}
+
+    <div class="text-right">
+        {% if post_count > m %}
+        <a href={{url_for('main.morepost',id=user.id)}} target="_blank">More</a>
+        {% endif %}
+    </div>
+    <br>
+</div>
+
+<!--Show track-->
+<ul class="nav nav-tabs">
+    <li><a data-toggle="tab" href="#star">
+        Staring &nbsp;<b>({{star_count}})</b></a>
+    </li>
+    <li class="active"><a data-toggle="tab" href="#ing">
+        Working On &nbsp;<b>({{count_2}})</b></a>
+    </li>
+    <li><a data-toggle="tab" href="#todo">
+        Scheduled &nbsp;<b>({{count_1}})</b></a>
+    </li>
+    <li><a data-toggle="tab" href="#done">
+        Have Done &nbsp;<b>({{count_3}})</b></a>
+    </li>
+</ul>
+
+<div class="tab-content">
+
+    <div id="star" class="tab-pane fade">
+        <hr>
+        {% for post in star_posts %}
+        {% include '_post_list.html' %}
+        {% endfor %}
+
+        <div class="text-right">
+            {% if star_count > m %}
+            <a href={{url_for('main.morestar',id=user.id)}} target="_blank">More</a>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div id="ing" class="tab-pane fade in active">
+        <hr>
+        {% for item in doings %}
+        {% include '_show_item.html' %}
+        <hr>
+        {% endfor %}
+
+        <div class="text-right">
+            {% if count_2 > m %}
+            <a href={{url_for('main.moredoing',id=user.id)}} target="_blank">More</a>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div id="todo" class="tab-pane fade">
+        <hr>
+        {% for item in todos %}
+        {% include '_show_item.html' %}
+        <hr>
+        {% endfor %}
+
+        <div class="text-right">
+            {% if count_1 > m %}
+            <a href={{url_for('main.moreschedule',id=user.id)}} target="_blank">More</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div id="done" class="tab-pane fade">
+        <hr>
+        {% for item in dones %}
+        {% include '_show_item.html' %}
+        <hr>
+        {% endfor %}
+
+        <div class="text-right">
+            {% if count_3 > m %}
+            <a href={{url_for('main.moredone',id=user.id)}} target="_blank">More</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!--Show reviews-->
+<div>
+    <br>
+    <h4>-- Reviews --</h4>
+    <hr>
+    {% for review in myreviews %}
+    {% include '_review_list.html' %}
+    {% endfor %}
+
+    <div class="text-right">
+        {% if review_count > m %}
+        <a href={{url_for('main.morereview_u',id=user.id)}} target="_blank">More</a>
+        {% endif %}
+    </div>
+</div>
+
+<!--Show comments-->
+<div>
+    <br>
+    <h4>-- Comments --</h4>
+    <hr>
+    {% for commt in mycomments %}
+    <div style="background-color:seashell">
+        --On
+        {% if commt.post %}
+        post
+        <a href={{url_for('main.post', id=commt.post.id)}}>
+            {{commt.post.title|truncate(40,True)}}
+        </a>
+        {% endif %}
+        {% if commt.item %}
+        item
+        <a href={{url_for('main.item', id=commt.item.id)}}>
+            {{commt.item.title|truncate(40,True)}}
+        </a>
+        {% endif %}
+        {% if commt.demand %}
+        request
+        <a href={{url_for('main.demand', id=commt.demand.id)}}>
+            {{commt.demand.body|truncate(30,True)}}
+        </a>
+        {% endif %}
+        &nbsp;|&nbsp;{{moment(commt.timestamp).format("MMM Do YYYY")}}
+        <br>
+    </div>
+    <p style="font-size:large">{{commt.body|safe}}</p>
+    <br>
+
+    <div class="text-center">
+        {% if user == current_user %}
+        <span><a data-toggle="modal" href="#del{{commt.id}}">delete</a></span>
+
+        <!-- Modal for delete comment confirm -->
+        <div class="modal fade" id="del{{commt.id}}" role="dialog">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Confirm Delete The Comment?</h4>
+                    </div>
+                    <div class="modal-body">
+                        <a href={{url_for('main.del_comment', id=commt.id)}}>
+                           Yes Delete
+                        </a>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">No, Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end Modal for delete comment confirm -->
+        <hr>
+        {% endif %}
+    </div>  
+    {% endfor %}
+
+    <div class="text-right">
+        {% if commt_count > m %}
+        <a href={{url_for('main.morecomment_u',id=user.id)}} target="_blank">More</a>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block rightside %}
+{% endblock rightside %}

@@ -1,0 +1,53 @@
+<!--include item info in Ajax for flag, using in item page-->
+{% extends '_show_item.html' %}
+
+{% block titlelink %}
+href="https://www.google.com/search?q={{item.title}}" target="_blank"
+{% endblock %}
+
+{% block uidlink %}
+href="https://www.google.com/search?q={{item.uid}}" target="_blank"
+{% endblock %}
+
+{% block toflag %}
+<div class="dropdown">
+    <a class="btn dropdown-toggle" type="button" data-toggle="dropdown">
+        <mark id="f">{{current_user.flaging(item)}}</mark>
+        <span class="caret"></span>
+    </a>
+    
+    <ul class="dropdown-menu">
+        <li><a id="s">Schedule</a></li>
+        <p id="s_url" style="display:none">{{url_for('main.flag_1',id=item.id)}}</p> 
+
+        <li><a id="w">Working On</a></li>              
+        <p id="w_url" style="display:none">{{url_for('main.flag_2',id=item.id)}}</p>
+                             
+        <li><a id="d">Have Done</a></li>          
+        <p id="d_url" style="display:none">{{url_for('main.flag_3',id=item.id)}}</p>
+                    
+        <!--script start-->
+        <script>
+        $(document).ready(function(){
+            $("#s").click(function(){
+                $.get($("#s_url").text(),function(data){
+                    $("#f").text("Scheduled");
+                });
+            });
+            $("#w").click(function(){
+                $.get($("#w_url").text(),function(data){
+                    $("#f").text("Working on");
+                });
+            });
+            $("#d").click(function(){
+                $.get($("#d_url").text(),function(data){
+                    $("#f").text("Have done");
+                });
+            });
+        });
+        </script>
+        <!--script end-->
+    </ul>
+                
+</div>
+{% endblock toflag %}

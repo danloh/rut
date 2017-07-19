@@ -1,0 +1,51 @@
+{% extends "layout1.html" %}
+{% import "_macros.html" as macros %}
+
+{% block title %} Request - Readup.Tips {% endblock title %}
+
+{% block content %}
+<div>
+    <h3 style="color:green">  Would you like Response these Requests?</h3>
+    <p>   Share your experience, Help others </p>
+    
+</div>
+
+<div class="container-fluid">
+    <ul class="nav nav-tabs">
+        <li class="active"><a data-toggle="tab" href="#latest">Latest</a></li>
+        <li><a data-toggle="tab" href="#most">Most</a></li>
+        <li><a data-toggle="tab" href="#random">Random</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div id="latest" class="tab-pane fade in active">
+            <hr>
+            {% for demand in demands_latest %}
+            {% include '_show_demand.html' %}
+            {% endfor %}
+
+            {% if pagination_latest %}
+            <div class="text-center">
+               {{ macros.pagination_widget(pagination_latest, '.demands') }}
+            </div>
+            {% endif %}
+        </div>
+
+        <div id="most" class="tab-pane fade">
+            <hr>
+            {% for demand in demands_most %}           
+            {% include '_show_demand.html' %}
+            {% endfor %}
+        </div>
+
+        <div id="random" class="tab-pane fade">
+            <hr>
+            {% for demand in demands_random %}
+            {% include '_show_demand.html' %}
+
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

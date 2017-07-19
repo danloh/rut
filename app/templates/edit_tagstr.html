@@ -1,0 +1,18 @@
+{% extends 'layout0.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+
+{% block title %} Edit Article Tag {% endblock title %}
+
+{% block content %}
+<div>
+    <p>Edit Tag of {{post.title}}</p>
+</div>
+<div>
+    <form class="form" method="POST">
+        {{form.hidden_tag()}}
+        {{wtf.form_field(form.tag)}}
+        {{wtf.form_field(form.submit)}}
+    </form>
+</div>
+{% endblock content %}

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+	
+<head>
+	{% block head %}
+	<title>{% block title %}{% endblock title %}</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	
+	<script type="text/javascript">
+	$(document).ready(function(){
+		$(function(){
+			var current_page_URL = location.href;
+			$('a').each(function(){
+				if ($(this).attr('href')!=='#'){
+					var target_URL = $(this).prop('href');
+					if (target_URL == current_page_URL){
+						$('.nav a').parents('li, ul').removeClass('active');
+						$(this).parent('li').addClass('active');
+
+						return false;
+					}
+				}
+			});
+		});
+	});
+	</script>
+	
+	{{ moment.include_moment() }}
+	{% endblock head %}
+</head>
+
+<body{% block body_attribs %}{% endblock body_attribs %}>
+{% block body %}
+
+{% block navbar %}
+<nav class="navbar navbar-default" style="background-color:#f5fffa">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+				<span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>                        
+            </button>
+			<a class="navbar-brand" href="{{url_for('main.index')}}"><b>Readup.Tips</b></a>
+		</div>
+		<div class="collapse navbar-collapse" id="myNavbar">
+			<ul class="nav navbar-nav">
+				
+				<li><a href="{{url_for('main.collection')}}"><b>Collection</b></a></li>
+				<li><a href="{{url_for('main.challenge')}}"><b>Challenge</b></a></li>
+				<li><a href="{{url_for('main.demands')}}"><b>Request</b></a></li>
+				
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					{% if current_user.is_authenticated %}	
+					<div class="btn-group">
+						<button type="button" class="btn btn-info navbar-btn">
+							<a href="{{url_for('main.create')}}">Create Now</a>
+						</button>
+						<button type="button" class="btn btn-link navbar-btn">
+							<a href={{url_for('auth.profile', id=current_user.id)}}>
+								{{current_user.nickname or current_user.name}}
+							</a>
+						</button>
+						<button type="button" class="btn navbar-btn dropdown-toggle" data-toggle="dropdown">
+							<span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu" role="menu">
+							<li><a href={{url_for('auth.edit_profile')}}>Edit Profile</a></li>
+							<li class="divider"></li>
+							<li><a href={{url_for('auth.logout')}}>Logout</a></li>
+						</ul>
+					</div>
+					{% else %}
+					<div class="btn-group">
+						<button type="button" class="btn btn-success navbar-btn dropdown-toggle" data-toggle="dropdown">
+							Connect With <span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu" role="menu">
+							<li><a href={{url_for('auth.login', server_name='Google')}}>Google</a></li>
+							<li><a href={{url_for('auth.login', server_name='Facebook')}}>Facebook</a></li>
+						</ul>
+					</div>
+					{% endif %}
+				</li>
+			</ul>
+		</div>
+	</div>
+</nav>
+{% endblock navbar %}
+
+{% block message %}
+<div class="container">
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-warning">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endblock message %}
+
+{% block mainbody %}{% endblock mainbody %}
+
+{% block foot %}
+<footer class="container-fluid text-center">
+	<hr>
+	<div class="row">
+		<div class="col-md-4 col-md-offset-1">
+			<div class="text-left">
+				<a href={{url_for('main.about')}}>About</a> &nbsp;|&nbsp;
+				<a href={{url_for('main.about')}}></a> &nbsp;
+	        </div>
+		</div>
+		<div class="col-md-2">
+			<div class="text-center">
+				© 2017 	Readup.Tips
+	        </div>
+		</div>
+		<div class="col-md-4">
+			<div class="text-right">
+				<a href="#"></a>&nbsp;|&nbsp;
+                <a href="#">Blog</a>
+	        </div>
+		</div>
+	</div>
+	<br>
+</footer>
+{% endblock foot %}
+
+{% endblock body %}
+</body>
+
+</html>
+

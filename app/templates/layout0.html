@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+
+ 
+{% block mainbody %}
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-10">
+			{% block top %}{% endblock top %}
+		</div>
+	<hr>
+	</div>
+	<div class="row">
+		<div class="col-md-2 col-md-offset-1">
+			{% block leftside %}{% endblock leftside %}
+		</div>
+		<div class="col-md-6">
+			{% block content %}{% endblock content %}
+		</div>
+		<div class="col-md-2">
+			{% block rightside %}{% endblock rightside %}
+		</div>
+	</div>
+</div>
+{% endblock mainbody %}

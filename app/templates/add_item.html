@@ -1,0 +1,56 @@
+{% extends 'layout0.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block head %}
+{{super()}}
+<script src="{{url_for('static', filename='ck/ckeditor/ckeditor.js')}}"></script>
+{% endblock head %}
+
+{% block title %} Add Item {% endblock title %}
+
+{% block content %}
+<div>
+    <h4>Add Item</h4>
+    <p>for post&nbsp;&nbsp;
+        <a href={{url_for('main.post', id=post.id)}}>{{post.title|truncate(50)}}</a>
+    </p>
+</div>
+<hr>
+<div>
+    <form class="form" method="POST">
+        {{form.hidden_tag()}}
+        {{wtf.form_field(form.cate, class="inline")}}
+        {{wtf.form_field(form.title)}}
+        {{wtf.form_field(form.uid,id="ruid")}} 
+        {{wtf.form_field(form.res_url)}}  
+        {{wtf.form_field(form.author)}}
+        {{wtf.form_field(form.cover)}}    
+        {{wtf.form_field(form.tips, class="ckeditor")}}
+        {{wtf.form_field(form.submit)}}
+    </form>
+</div>
+{% endblock content %}
+
+{% block rightside %}
+
+<h4>Tips</h4>
+<br>
+<p>If adding the item without UID such as the ISBN or other, like online-course,
+    Please make sure a Resource Url is added and generate UID by hitting the below button.
+</p>
+<br>
+<button id="guid">Generate Random UID</button>
+<p id="url" style="display:none">{{url_for('main.random_uid')}}</p>
+<script>
+$(document).ready(function(){
+    $("#guid").click(function(){
+        $.get($("#url").text(), function(data){
+            $("#ruid").attr({
+            "value" : data,      
+            });
+        });
+    });
+});
+</script>
+
+{% endblock rightside %}

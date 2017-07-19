@@ -1,0 +1,199 @@
+{% extends 'layout1.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block head %}
+{{super()}}
+<script src="{{url_for('static', filename='ck/ckeditor/ckeditor.js')}}"></script>
+{% endblock head %}
+
+{% block title %} {{post.title}} {% endblock title %}
+
+{% block content %}
+<!--post header-->
+<div>
+    <div class="text-left">
+        {% for tag in post.tags %}
+        <span>
+            <a class="text-success" href={{url_for('main.tagcollect',id=tag.id)}}>
+                {{tag.tag}} 
+            </a> &nbsp; 
+        </span>
+        {% endfor %}
+        <span>&nbsp;&nbsp;<a href={{url_for('main.edit_tag_str',id=post.id)}}>edit</a></span>
+    </div>
+    <h3>{{post.title}}</h3>
+    <p> Created by <a href={{url_for('auth.profile', id=post.creator.id)}}>
+        {{post.creator.nickname or post.creator.name}}</a> 
+        &nbsp;|&nbsp;
+        {{moment(post.timestamp).format("MMM Do YYYY")}}&nbsp;|&nbsp;
+        including&nbsp; {{post.items.count()}}&nbsp; items
+    </p>
+    <hr>
+</div>
+<div>
+    {{post.intro|safe}}
+</div>
+<br>
+<!--post toolbar widget-->
+<div class="text-right">
+    {% if display %}
+    <span><a data-toggle="modal" href="#delpost">Delete</a></span>
+    &nbsp;&nbsp;||&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+    <span><a href={{url_for('main.edit_post',id=post.id)}}>Edit Intro</a></span>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    <span><a href={{url_for('main.add_item',id=post.id)}}>Add Item</a></span>
+    &nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {% endif %}
+    <span id="actstar">
+        <a id="count">{{post.starers.count()}}</a>&nbsp;
+        <a id="star" class="btn btn-default"> 
+            {% if current_user.staring(post) %} 
+            Staring 
+            {% else %} 
+            Star 
+            {% endif %} 
+        </a>      
+    </span>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    <span id="chall">
+        <a id="num" href={{url_for('main.morecomment_p',id=post.id)}}>
+            {{post.challengers.count()}}
+        </a>&nbsp;
+        <a id="challenge" class="btn btn-default"> 
+            {% if current_user.challenging(post) %} 
+            Challenging 
+            {% else %} 
+            Challenge 
+            {% endif %} 
+        </a>      
+    </span>
+
+    <!--script start-->
+    <p id="starUrl" style="display:none">{{url_for('main.countstar', id=post.id)}}</p>
+    <p id="chalUrl" style="display:none">{{url_for('main.countchallenge', id=post.id)}}</p>
+    <script>
+    $(document).ready(function(){
+        // for star
+        $("a#star").click(function(){
+            $.get($("#starUrl").text(), function(data){                
+                var old = $("#star").text();
+                $("#star").text(function(){
+                    if (old == "Staring"){
+                        return "Star" ;
+                    } else {
+                        return "Staring"; 
+                    }
+                });
+                $("#count").text(data);
+            });
+        });
+        // for challenge
+        $("a#challenge").click(function(){
+            $.get($("#chalUrl").text(), function(data){
+                var pre = $("#challenge").text();                
+                $("#challenge").text(function(){
+                    if (pre == "Challenging"){
+                        return "Challenge";
+                    } else {
+                        return "Challenging";
+                    } 
+                });
+                $("#num").text(data);
+            });
+        });
+    });
+    </script>
+    <!--script end-->
+
+</div>
+<hr>
+<!--items included in post-->
+<div class="panel-group">
+    {% for item in items %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            {% include '_show_item_1.html' %}
+        </div>
+        <div class="panel-body">
+            <!--tips_c is collects, by item.id get tip-collect-object then get tip content--> 
+            {% set tip_c = tips_c[item.id] %}           
+            <p>{{tip_c.tips|safe}}</p>  <!--now, tip_c is collect obj, and tips is attr-->
+
+            <div class="text-right">   
+                <!--then get tip_c.id, ie collect.id-->
+                {% if display %}
+                <span>
+                    <a href={{url_for('main.edit_tips',id=tip_c.id)}}>Edit Tips</a>  
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        <br>
+        <div class="panel-foote text-right">
+            <!-- <p>How to buy? -- </p> -->
+        </div>   
+    </div>
+    {% endfor %}
+</div>
+<!--show comments -->
+<div>
+    {% set comments = post.comments %}
+    <a href={{url_for('main.add_post_comment',id=post.id)}}>Post your comment</a>
+    {% for commt in comments.limit(20) %}
+    {% include '_show_comment.html' %}
+    {% endfor %}
+    <div class="text-center">
+        {% if comments.all()|count > 20 %}
+        <a href={{url_for('main.morecomment_p',id=post.id)}} target="_blank">More</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal for delete post confirm -->
+<div class="modal fade" id="delpost" role="dialog">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Confirm Delete The Post?</h4>
+            </div>
+            <div class="modal-body">
+                <a href={{url_for('main.del_post',id=post.id)}}>
+                   Yes Delete
+                </a>
+                <p>NOTE: Cannot be delteted,if The Post has being stared or challenged by any user</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">No, Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- end Modal for delete post confirm -->
+
+<!--reserved-->
+<div>
+</div>
+{% endblock content %}
+
+{% block rightside %}
+<div class="panel panel-success">
+    <div class="panel-heading">Creator's Credentials for This Article</div>
+    <div class="panel-body">
+        <blockquote>{{post.credential}}</blockquote>
+        <hr>
+        <mark>More by the Creator</mark>
+        <hr>
+        {% for other in posts %}
+        -- <a href={{url_for('main.post', id=other.id)}}>{{other.title}}</a><br>
+        {% endfor %}
+
+        <div class="text-right">
+            {% if posts_count > m %}
+            <a href={{url_for('main.morepost',id=post.creator.id)}} target="_blank"> -- More</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock rightside %}

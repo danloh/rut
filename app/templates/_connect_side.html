@@ -1,0 +1,14 @@
+<!--include connect with panel in-->
+{% if not current_user.is_authenticated %}
+<div>
+    <div class="text-left" style="color:lightseagreen">
+        <h4>Connect With</h4>
+    </div>
+    <hr>
+    <div>
+        <li><a href={{url_for('auth.login', server_name='Google')}}>Google</a></li>
+        <li><a href={{url_for('auth.login', server_name='Facebook')}}>Facebook</a></li>
+        <!--<li><a href={{url_for('auth.login', server_name='Twitter')}}>Twitter</a></li>-->
+    </div>
+</div>
+{% endif %}

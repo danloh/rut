@@ -1,0 +1,42 @@
+<!--include item info in-->
+
+<div class="row">
+    <div class="col-md-2">
+        <img src="{{item.cover or item.item_cover}}" style="width:80px" alt="Item_Cover">
+    </div>
+    <div class="col-md-8 text-left">
+        <h4>{{item.cate}}&nbsp;
+            <a {% block titlelink %} href={{url_for('main.item',id=item.id)}} {% endblock %}>
+                {{item.title}}
+            </a>
+        </h4>
+        <p><mark>Included in</mark>&nbsp;:&nbsp;{{item.posts.count()}}<br>
+           <mark>Author</mark>&nbsp;:&nbsp;{{item.author}}<br>
+           <mark>UID/ISBN</mark>&nbsp;:&nbsp;
+           <a {% block uidlink %}href={{url_for('main.item',id=item.id)}} {% endblock %}>
+               {{item.uid}}
+           </a>
+        </p>    
+    </div>
+    
+    <div class="col-md-2">
+        <div class="text-center">
+            <!-- <a href="#">get it</a> -->
+            {% block toflag %}
+            <div class="dropdown">
+                <a class="btn dropdown-toggle" type="button" data-toggle="dropdown">
+                    <mark>{{current_user.flaging(item)}}</mark>
+                    <span class="caret"></span>
+                </a>
+                {% block dropul %}
+                <ul class="dropdown-menu">
+                    <li><a href={{url_for('main.flag_1_item',id=item.id)}}>Schedule</a></li>
+                    <li><a href={{url_for('main.flag_2_item',id=item.id)}}>Working On</a></li>
+                    <li><a href={{url_for('main.flag_3_item',id=item.id)}}>Have Done</a></li>
+                </ul>
+                {% endblock dropul %}
+            </div>
+            {% endblock toflag %}
+        </div>
+    </div>
+</div>

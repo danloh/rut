@@ -1,0 +1,26 @@
+{% extends "layout0.html" %}
+{% import "_macros.html" as macros %}
+
+{% block title %} {{user.nickname or user.name}} 's {{ref}} {% endblock title %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <h4>See More {{ref}}
+      of 
+      <a href={{url_for('auth.profile', id=user.id)}}>{{user.nickname or user.name}}</a>
+    </h4>
+</div>
+    <hr>
+<div>
+    {% for user in follows %}
+    {% include '_show_user.html' %}
+    {% endfor %}
+</div>
+{% if pagination and pagination.pages > 1 %}
+<div class="text-center">
+    {{ macros.pagination_widget(pagination, '.ref',id=user.id) }}
+</div>
+{% endif %}
+
+{% endblock content %}

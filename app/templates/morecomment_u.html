@@ -1,0 +1,24 @@
+{% extends "layout1.html" %}
+{% import "_macros.html" as macros %}
+
+{% block title %} More comments {% endblock title %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <h4>See More comments by 
+        <a href={{url_for('auth.profile', id=user.id)}}>{{user.nickname or user.name}}</a>
+    </h4>
+    <hr>
+    {% for commt in comments %}
+       {% include '_show_comment.html' %}
+    {% endfor %}
+
+</div>
+{% if pagination and pagination.pages > 1 %}
+<div class="text-center">
+    {{ macros.pagination_widget(pagination, '.morecomment_u',id=user.id) }}
+</div>
+{% endif %}
+
+{% endblock content %}

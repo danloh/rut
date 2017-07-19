@@ -1,0 +1,18 @@
+<!--include users in follow, challengers-->
+
+<div class="media">        
+    <div class="media-left media-top">
+        <img src={{user.avatar}} class="media-object" style="width:30px" alt="avatar">
+    </div>
+    <div class="media-body">
+        <h5><a href={{url_for('auth.profile', id=user.id)}}>
+                {{user.nickname or user.name}}
+            </a>
+            &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href={{url_for('main.myclips', id=user.id)}}>
+                >> see clips
+            </a>
+        </h5>
+        
+    </div>
+</div>

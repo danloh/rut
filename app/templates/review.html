@@ -1,0 +1,54 @@
+{% extends 'layout1.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "_macros.html" as macros %}
+
+{% block title %} {{review.heading}} {% endblock title %}
+
+{% block content %}
+
+<div>  
+    <h3>{{review.heading}}</h3>
+    <p> Created by <a href={{url_for('auth.profile', id=review.creator.id)}}>
+        {{review.creator.nickname or review.creator.name}}</a>
+        for item
+        <a href={{url_for('main.item', id=review.item.id)}}>
+        {{review.item.title|truncate(40)}}</a> 
+        &nbsp;|&nbsp; 
+        {{moment(review.timestamp).format("MMM Do YYYY")}},&nbsp;
+    </p>
+    <hr>
+</div>
+<div>
+    {{review.body|safe}}
+</div>
+<hr>
+<div class="text-right">
+    {% if current_user == review.creator %}
+    <span>
+        <a href={{url_for('main.edit_review',id=review.id)}}>Edit</a>
+    </span>
+    {% endif %}
+    &nbsp;&nbsp;&nbsp;      
+    <span>{{review.vote}}&nbsp;
+        <a href={{url_for('main.upvote',id=review.id)}}>Endorse</a>
+    </span>
+</div>
+<!--show comments -->
+<div>
+    {{wtf.quick_form(form)}}
+    <hr>
+    {% for commt in comments %}
+    {% include '_show_comment.html' %}
+    {% endfor %}
+</div>
+{% if pagination and pagination.pages > 1 %}
+<div class="text-center">
+    {{ macros.pagination_widget(pagination, '.review',id=review.id) }}
+</div>
+{% endif %}
+
+{% endblock content %}
+
+{% block rightside %}
+
+{% endblock rightside %}

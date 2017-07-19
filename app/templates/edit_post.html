@@ -1,0 +1,25 @@
+{% extends 'layout0.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block head %}
+{{super()}}
+<script src="{{url_for('static', filename='ck/ckeditor0/ckeditor.js')}}"></script>
+{% endblock head %}
+
+{% block title %} Edit Article {% endblock title %}
+
+{% block content %}
+<div>
+    <p>Edit Article</p>
+</div>
+<div>
+    <form class="form" method="POST">
+        {{form.hidden_tag()}}
+        {{wtf.form_field(form.title)}}
+        {{wtf.form_field(form.intro, class="ckeditor")}}
+        {{wtf.form_field(form.rating)}}
+        {{wtf.form_field(form.credential)}}
+        {{wtf.form_field(form.submit)}}
+    </form>
+</div>
+{% endblock content %}

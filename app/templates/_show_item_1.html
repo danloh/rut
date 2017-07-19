@@ -1,0 +1,10 @@
+<!--include item info. now using in post, due to ajax issue in for loop-->
+{% extends '_show_item.html' %}
+
+{% block dropul %}
+<ul class="dropdown-menu">
+    <li><a href={{url_for('main.flag_1_item',id=item.id)}} target="_blank">Schedule</a></li>
+    <li><a href={{url_for('main.flag_2_item',id=item.id)}} target="_blank">Working On</a></li>
+    <li><a href={{url_for('main.flag_3_item',id=item.id)}} target="_blank">Have Done</a></li>
+</ul>
+{% endblock dropul %}

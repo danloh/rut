@@ -1,0 +1,33 @@
+{% extends 'layout0.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "_macros.html" as macros %}
+
+{% block title %} {{demand.body}} {% endblock title %}
+
+{% block leftside %}
+{% include '_tag_side.html' %}
+
+{% endblock leftside %}
+
+{% block content %}
+<div>
+    {% include '_show_demand.html' %}
+</div>
+<div>
+    {{wtf.quick_form(form)}}
+    <hr>
+    {% for commt in comments %}
+    {% include '_show_comment.html' %}
+    {% endfor %}
+</div>
+{% if pagination and pagination.pages > 1 %}
+<div class="text-center">
+    {{ macros.pagination_widget(pagination, '.myclips',id=user.id) }}
+</div>
+{% endif %}
+
+{% endblock content %}
+
+{% block rightside %}
+
+{% endblock rightside %}

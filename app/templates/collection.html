@@ -1,0 +1,38 @@
+{% extends "layout0.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "_macros.html" as macros %}
+
+{% block title %} Collection - My Feed {% endblock title %}
+
+{% block leftside %}
+{% include '_tag_side.html' %}
+
+{% endblock leftside %}
+
+{% block content %}
+
+<div>
+    {{wtf.quick_form(form)}}
+    <br>
+    <h5>Feeds</h5> 
+    <hr>
+</div>
+
+<div class="container-fluid">
+    {% for post in posts %}
+    {% include '_post_list.html' %}
+
+    {% endfor %}
+</div>
+
+{% if pagination and pagination.pages > 1 %}
+<div class="text-center">
+    {{ macros.pagination_widget(pagination, '.collection') }}
+</div>
+{% endif %}
+
+{% endblock content %}
+
+{% block rightside %}
+
+{% endblock rightside %}

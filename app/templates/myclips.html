@@ -1,0 +1,53 @@
+{% extends "layout1.html" %}
+{% import "_macros.html" as macros %}
+
+{% block title %} Clips From {{user.nickname or user.name}} {% endblock title %}
+
+{% block content %}
+<div>
+    <h4>See More Clips
+    from 
+        <a href={{url_for('auth.profile', id=user.id)}}>{{user.nickname or user.name}}</a>
+    </h4>
+    <hr>
+    {% for commt in myclips %}
+       {% include '_show_comment.html' %}
+    {% endfor %}
+
+</div>
+{% if pagination and pagination.pages > 1 %}
+<div class="text-center">
+    {{ macros.pagination_widget(pagination, '.myclips',id=user.id) }}
+</div>
+{% endif %}
+
+{% endblock content %}
+
+{% block rightside %}
+<div>
+    {% if post_chal  %}
+    <p> <a href={{url_for('auth.profile', id=user.id)}}>{{user.nickname or user.name}}</a>
+        Challenging :<br>
+       <h4><a href={{url_for('main.post',id=post_chal.id)}}>
+           {{post_chal.title}}</a></h4> 
+    </p>
+    <div>
+        <p id="deadline">
+            Deadline: 
+            {% if chal_post.deadline %}
+            {{moment(chal_post.deadline).format("MMM Do YYYY")}}
+            {% else %} not set
+            {% endif %}
+        </p>
+    </div>
+    <hr>
+    <h4>Including items:</h4>
+    {% for item in items  %}
+    -- {{item.cate}}
+    <a href={{url_for('main.item',id=item.id)}}>{{item.title|truncate(60)}}</a><br>
+    {% endfor %}
+    <hr>
+    {% endif %} 
+</div>
+
+{% endblock rightside %}

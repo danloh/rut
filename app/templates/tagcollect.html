@@ -1,0 +1,89 @@
+{% extends "layout0.html" %}
+
+{% block title %} {{tag.tag}} Collection {% endblock title %}
+
+{% block leftside %}
+<div>
+    {% if parent_tags %}
+    <div class="text-left" style="color:darkcyan">
+        <h4>Parent Tags</h4>
+    </div>
+    <hr>
+    <div>
+        {% for tag in parent_tags %}
+        <li><a href="{{url_for('main.tagcollect', id=tag.id)}}">{{tag.tag}}</a></li>
+        {% endfor %}
+    </div>
+    <br>
+    {% endif %}
+    <div class="text-left" style="color:darkcyan">
+        <h4>Related Tags</h4>
+    </div>
+    <hr>
+    <div>
+        {% for tag in tags %}
+        <li><a href="{{url_for('main.tagcollect', id=tag.id)}}">{{tag.tag}}</a></li>
+        {% endfor %}
+        <br>
+        <a href={{url_for('main.catagory')}}>...More</a>
+    </div>
+</div>
+
+{% endblock leftside %}
+
+{% block content %}
+
+<div>
+    <h4><mark>{{tag.tag}}</mark></h4>
+    <hr>
+    <p>
+       {{tag.descript or ''}}<br>   
+    </p>
+    <div class="text-right">
+        <span><a href={{url_for('main.edit_tag',id=tag.id)}}>Add Description</a></span>
+        &nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;
+        <span id="actstar">
+        <a id="n">{{tag.favers.count()}}</a>&nbsp;
+        <a id="fav" class="btn btn-default"> 
+            {% if current_user.faving(tag) %} 
+            Faving 
+            {% else %} 
+            Fav 
+            {% endif %} 
+        </a>      
+        </span>
+        <!--script start-->
+        <p id="favUrl" style="display:none">{{url_for('main.countfav', id=tag.id)}}</p>
+        <script>
+        $(document).ready(function(){
+            $("a#fav").click(function(){
+                $.get($("#favUrl").text(), function(data){                
+                    var old = $("#fav").text();
+                    $("#fav").text(function(){
+                        if (old == "Faving"){
+                            return "Fav" ;
+                        } else {
+                            return "Faving"; 
+                        }
+                    });
+                    $("#n").text(data);
+                });
+            });
+        });
+        </script>
+        <!--script end-->
+    </div>
+</div>
+<hr>
+<div class="container-fluid">
+    {% for post in posts %}
+    {% include '_post_list.html' %}
+    {% endfor %}
+</div>
+
+{% endblock content %}
+
+{% block rightside %}
+{% include '_connect_side.html' %}
+
+{% endblock rightside %}

@@ -1,0 +1,21 @@
+<!--include post list in-->
+<div class="media">
+    <div class="media-left media-middle">
+        <img src="{{post.post_cover or url_for('static', filename='pic/dpc.png')}}" class="media-object img-circle" \
+        style="width:80px; height:80px" alt="theme">   
+    </div>
+    <div class="media-body">
+        <h3 class="media-heading">
+            <a href={{url_for('main.post', id=post.id)}}>{{post.title}}</a>
+        </h3> 
+        <p>{{post.intro|safe|truncate(250,False,'',10)}}
+            <span>
+                <a href={{url_for('main.post', id=post.id)}}>...more
+                &nbsp;|&nbsp;including {{post.items.count()}} items
+                &nbsp;|&nbsp;by {{post.creator.nickname or post.creator.name}}
+                </a>
+            </span>   
+        </p>
+    </div>
+    <hr>
+</div>
