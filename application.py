@@ -25,14 +25,18 @@ manager.add_command('db', MigrateCommand)
 
 
 @manager.command
+def createdb():
+    # create db
+    db.create_all()
+    # create user roles
+    Roles.add_role()
+
+@manager.command
 def deploy():
     """Run deployment tasks."""
     from flask_migrate import upgrade
     from app.models import Roles 
     
-    # create db
-    db.create_all()
-
     # migrate database to latest revision
     upgrade()
 
