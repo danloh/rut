@@ -5,6 +5,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') # for form CRSF
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True  #??
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
     ADMIN = os.environ.get('WEB_ADMIN')  # init set admin
 
     POST_PER_PAGE = 20
