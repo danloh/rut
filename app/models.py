@@ -161,15 +161,16 @@ class Posts(db.Model):
         _query = Tags.query
         for t in _taglist:
             _tg = t.strip()
-            _tag = _query.filter_by(tag=_tg).first()
-            if _tag is None:
-                tag=Tags(tag=_tg)
-                tag.posts.append(self)  
-                db.session.add(tag)
-            else:
-                _tag.posts.append(self)  
-                db.session.add(_tag)
-        db.session.commit()  #if need commit?
+            if _tg is not "":
+                _tag = _query.filter_by(tag=_tg).first()
+                if _tag is None:
+                    tag=Tags(tag=_tg)
+                    tag.posts.append(self)  
+                    db.session.add(tag)
+                else:
+                    _tag.posts.append(self)  
+                    db.session.add(_tag)
+        db.session.commit()   
 
     # set logo cover of  post 
     @property    
@@ -236,14 +237,15 @@ class Items(db.Model):
         _query = Tags.query
         for t in _taglist:
             _tg = t.strip()
-            _tag = _query.filter_by(tag=_tg).first()
-            if _tag is None:
-                tag=Tags(tag=_tg)
-                tag.items.append(self)  
-                db.session.add(tag)
-            elif _tag.items.filter_by(item_id=self.id).first() is None:
-                _tag.items.append(self)  
-                db.session.add(_tag)
+            if _tg is not "":
+                _tag = _query.filter_by(tag=_tg).first()
+                if _tag is None:
+                    tag=Tags(tag=_tg)
+                    tag.items.append(self)  
+                    db.session.add(tag)
+                elif _tag.items.filter_by(item_id=self.id).first() is None:
+                    _tag.items.append(self)  
+                    db.session.add(_tag)
         db.session.commit()
 
 
@@ -373,15 +375,16 @@ class Demands(db.Model):
         _query = Tags.query
         for t in _taglist:
             _tg = t.strip()
-            _tag = _query.filter_by(tag=_tg).first()
-            if _tag is None:
-                tag=Tags(tag=_tg)
-                tag.demands.append(self)  
-                db.session.add(tag)
-            else:
-                _tag.demands.append(self)  
-                db.session.add(_tag)
-        db.session.commit()  #if need commit?
+            if _tg is not "":
+                _tag = _query.filter_by(tag=_tg).first()
+                if _tag is None:
+                    tag=Tags(tag=_tg)
+                    tag.demands.append(self)  
+                    db.session.add(tag)
+                else:
+                    _tag.demands.append(self)  
+                    db.session.add(_tag)
+        db.session.commit()   
     
     def __repr__(self):
         return '<Demands %r>' % self.body 
