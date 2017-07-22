@@ -13,10 +13,11 @@
 <div class="container-fluid">
     <h4>Post Your Comment</h4>
     <p>
-        On {{mark}} &nbsp; 
-        {% if mark == item %}
+        {% if mark %}
+        On item &nbsp; 
         <a href={{url_for('main.item',id=onsth.id)}}>{{onsth.title|truncate(45)}}</a>
         {% else %}
+        On post &nbsp; 
         <a href={{url_for('main.post',id=onsth.id)}}>{{onsth.title|truncate(45)}}</a>
         {% endif %}
     </p>

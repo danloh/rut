@@ -12,7 +12,7 @@
 <div>
     <h4>Edit Tips</h4>
     <p>for item 
-        <a href={{url_for('main.item', id=item.id)}}, target="_blank">{{item.title|truncate(30)}}</a> 
+        <a href={{url_for('main.item', id=item.id)}} target="_blank">{{item.title|truncate(30)}}</a> 
         in post 
         <a href={{url_for('main.post', id=post.id)}}>{{post.title|truncate(30)}}</a>
     </p>

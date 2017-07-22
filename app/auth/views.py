@@ -201,7 +201,7 @@ def twitter_authorized():
     name = resp['screen_name']
 
     #flash('You were signed in as %s' % resp['screen_name'])
-    return set_tw_user('Twitter', auth_social_id, name, next_url)   #?? 和其他的不一样
+    return set_tw_user('Twitter', auth_social_id, name, next_url)   
 
 @twitter.tokengetter
 def get_twitter_token():

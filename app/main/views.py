@@ -343,6 +343,7 @@ def edit_item(id):
 
         item.uid = form.uid.data
         item.title = form.title.data
+        item.res_url = form.res_url.data
         item.author = form.author.data
         item.translator = form.translator.data
         item.cover = form.cover.data
@@ -363,6 +364,7 @@ def edit_item(id):
 
     form.uid.data = item.uid 
     form.title.data = item.title 
+    form.res_url.data = item.res_url
     form.author.data = item.author  
     form.translator.data = item.translator  
     form.cover.data = item.cover 
@@ -694,7 +696,8 @@ def add_post_comment(id):
         db.session.commit()
         return redirect(url_for('.post', id=id))
 
-    return render_template('comment.html', form=form, onsth=post, mark="post")
+    return render_template('comment.html', form=form, 
+                            onsth=post, mark=None)
 
 
 @main.route('/comment/i/<int:id>', methods=['GET','POST'])  
@@ -710,7 +713,8 @@ def add_item_comment(id):
         db.session.add(commt)
         db.session.commit()
         return redirect(url_for('.item', id=id))
-    return render_template('comment.html', form=form, onsth=item, mark="item")
+    return render_template('comment.html', form=form, 
+                            onsth=item, mark=True)
 
 
 @main.route('/review/<int:id>', methods=['GET','POST'])
