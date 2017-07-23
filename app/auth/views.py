@@ -123,11 +123,11 @@ def login(server_name):
     '''route to different oauth server'''
     #Google
     if server_name == "Google":
-    return google.authorize(
-            callback=url_for(
-                'auth.g_authorized', 
-                _external=True)
-            )
+        return google.authorize(
+                   callback=url_for(
+                        'auth.g_authorized', 
+                         _external=True)
+                        )
 
     #Facebook
     elif server_name == "Facebook":
