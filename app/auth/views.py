@@ -99,7 +99,7 @@ def set_tw_user(server_name, auth_social_id, name, next_url):
     if user is None:
         avatar_url_tw = 'https://twitter.com/%s/profile_image?size=original' % name
         new_user = Users(
-            auth_server=auth_server_name, 
+            auth_server=server_name, 
             auth_social_id=auth_social_id,
             name=name,
             avatar=avatar_url_tw
