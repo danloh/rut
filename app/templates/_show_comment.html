@@ -32,7 +32,7 @@
              &nbsp;|&nbsp; {{ moment(commt.timestamp).format("MMM Do YYYY")}}
         </p>
     
-        <div>
+        <div style="font-size:medium">
             {% if not commt.disabled %}           
             {{commt.body|safe}}
             {% else %}

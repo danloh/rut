@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import re
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, TextAreaField, SelectField, SubmitField, DateField

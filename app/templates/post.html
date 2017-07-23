@@ -30,7 +30,7 @@
     </p>
     <hr>
 </div>
-<div>
+<div style="font-size:medium">
     {{post.intro|safe}}
 </div>
 <br>
@@ -114,10 +114,10 @@
         <div class="panel-heading">
             {% include '_show_item_1.html' %}
         </div>
-        <div class="panel-body">
+        <div class="panel-body" style="font-size:medium">
             <!--tips_c is collects, by item.id get tip-collect-object then get tip content--> 
             {% set tip_c = tips_c[item.id] %}           
-            <p>{{tip_c.tips|safe}}</p>  <!--now, tip_c is collect obj, and tips is attr-->
+            {{tip_c.tips|safe}}  <!--now, tip_c is collect obj, and tips is attr-->
 
             <div class="text-right">   
                 <!--then get tip_c.id, ie collect.id-->

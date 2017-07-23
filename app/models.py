@@ -634,6 +634,10 @@ class AnonymousUser(AnonymousUserMixin):
     def flaging(self,item):
         return "Flag It"
 
+    def role(self):
+        r = Roles(duty=None,permissions=0x0000)
+        return r
+
 login_manager.anonymous_user = AnonymousUser
 
 
