@@ -206,7 +206,7 @@ def del_post(id):
     db.session.delete(post)
     db.session.commit()
 
-    return redirect(url_for('.post', id=id))
+    return redirect(url_for('.index'))
 
 
 @main.route('/post/tagstr/<int:id>',methods=['GET','POST'])

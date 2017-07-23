@@ -97,11 +97,12 @@ def set_tw_user(server_name, auth_social_id, name, next_url):
         auth_social_id=auth_social_id
     ).first()
     if user is None:
+        avatar_url_tw = 'https://twitter.com/%s/profile_image?size=original' % name
         new_user = Users(
             auth_server=auth_server_name, 
             auth_social_id=auth_social_id,
             name=name,
-            #avatar=avatar_url  #??
+            avatar=avatar_url_tw
         )  
         db.session.add(new_user)
         db.session.commit()
@@ -120,8 +121,16 @@ def connect():
 @auth.route('/login/<string:server_name>')
 def login(server_name):
     '''route to different oauth server'''
+    #Google
+    if server_name == "Google":
+    return google.authorize(
+            callback=url_for(
+                'auth.g_authorized', 
+                _external=True)
+            )
+
     #Facebook
-    if server_name == "Facebook":
+    elif server_name == "Facebook":
         callback = url_for(
             'auth.facebook_authorized',
             next=request.args.get('next')
@@ -132,15 +141,14 @@ def login(server_name):
         return facebook.authorize(callback=callback)
     #Twitter
     elif server_name == "Twitter":
-        callback_url = url_for('auth.twitter_authorized', next=request.args.get('next'))    
-        return twitter.authorize(callback=callback_url or request.referrer or None )
-    #Google
-    return google.authorize(
-            callback=url_for(
-                'auth.g_authorized', 
-                _external=True)
-            )
-
+        callback_url = url_for(
+                        'auth.twitter_authorized', 
+                        next=request.args.get('next') 
+                            or request.referrer 
+                            or None
+                        )    
+        return twitter.authorize(callback=callback_url)    
+    
 #Facebook
 @auth.route('/login/facebook_authorized')
 def facebook_authorized():
