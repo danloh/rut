@@ -277,6 +277,7 @@ def edit_profile():
     if form.validate_on_submit():
         current_user.nickname = form.nickname.data
         current_user.location = form.location.data
+        current_user.avatar = form.avatar.data
         current_user.about_me = form.about.data
         current_user.links = form.links.data
         db.session.add(current_user)
@@ -284,6 +285,7 @@ def edit_profile():
         return redirect(url_for('auth.profile', id=current_user.id))
     form.nickname.data = current_user.nickname
     form.location.data = current_user.location
+    form.avatar.data = current_user.avatar
     form.about.data = current_user.about_me
     form.links.data = current_user.links
     return render_template('edit_profile.html', form=form)
