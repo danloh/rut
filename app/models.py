@@ -228,6 +228,8 @@ class Items(db.Model):
                 return url_for('static', filename='pic/video.svg')
             if self.cate == 'Album':
                 return url_for('static', filename='pic/album.svg')
+            if self.cate == 'Other':
+                return url_for('static', filename='pic/other.svg')
 
     # add item tags to database        
     def itag_to_db(self):

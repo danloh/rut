@@ -3,7 +3,7 @@
 <div class="media">        
     <div class="media-left media-top">
         <img src="{{user.avatar or url_for('static', filename='pic/profile.svg')}}" \
-         class="media-object" style="width:30px" alt="avatar">
+         class="media-object" style="width:30px; height:30px" alt="avatar">
     </div>
     <div class="media-body">
         <h5><a href={{url_for('auth.profile', id=user.id)}}>

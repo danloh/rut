@@ -6,25 +6,24 @@
 <div>
     <div>
         <img src="{{user.avatar or url_for('static', filename='pic/profile.svg')}}" \
-         style="width:75px" alt="avatar">
+         style="width:120px" alt="avatar">
     </div>
-    <hr>
+    <br>
     <div>
-        <p><mark>About Me</mark><br>
-           {{user.about_me or ' no bio'}}
-        </p>
-        <hr>
-        <p>
-            <mark>From</mark><br>
-            {{user.location or 'not add location yet' }}<br>
-            {% if user.links %}
-            <mark>More</mark><br>
-            <a href={{user.links}} target="_blank">link to me</a>
-            {% elif current_user == user %}
-            <hr>
-            <a href={{url_for('auth.edit_profile')}}>Edit Profile</a>
-            {% endif %}
-        </p>
+        <mark>About Me</mark><br>
+        {{user.about_me or ' no bio'}}
+        <br><br>
+        <mark>From</mark><br>
+        {{user.location or 'not add location yet' }}
+        <br><br>
+        {% if user.links %}
+        <mark>Link</mark><br>
+        <a href={{user.links}} target="_blank">link to me</a>
+        {% endif %}
+        <br><br>   
+        {% if current_user == user %}
+        <a href={{url_for('auth.edit_profile')}}>--Edit Profile--</a>
+        {% endif %}
     </div>
 </div>
 {% endblock leftside %}

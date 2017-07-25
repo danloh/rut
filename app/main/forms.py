@@ -101,7 +101,7 @@ class ItemForm(FlaskForm):
     cover = StringField('Image Url for item Cover',
                 render_kw={"placeholder":"Put VALID Img URL ends with .jpg/.png/.gif/.svg"})
     cate = SelectField('Select a Type', 
-           choices=[('Book','Book'),('Video','video'),('Online','Online'),('Album','Album')])
+           choices=[('Book','Book'),('Video','video'),('Online','Online'),('Album','Album'),('Other','Other')])
     tips = TextAreaField('The Reading Tips--REQUIRED⁎', 
                 validators = [DataRequired()],
                 render_kw={"placeholder":"REQUIRED"})
@@ -124,7 +124,7 @@ class EditItemForm(FlaskForm):
                  validators = [ImgURL()],
                  render_kw={"placeholder":"REQUIRED VALID URL ends with .jpg/.png/.gif/.svg"})
     cate = SelectField('Select a Type', 
-           choices=[('Book','Book'),('Video','video'),('Online','Online'),('Album','Album')])
+           choices=[('Book','Book'),('Video','video'),('Online','Online'),('Album','Album'),('Other','Other')])
     publisher = StringField('Publisher',validators = [DataRequired()],
                                         render_kw={"placeholder":"REQUIRED"})
     language = StringField('Language',validators = [DataRequired()],
