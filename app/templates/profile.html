@@ -5,7 +5,8 @@
 {% block leftside %}
 <div>
     <div>
-        <img src={{user.avatar}} style="width:75px" alt="avatar">
+        <img src="{{user.avatar or url_for('static', filename='pic/profile.svg')}}" \
+         style="width:75px" alt="avatar">
     </div>
     <hr>
     <div>

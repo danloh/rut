@@ -265,9 +265,12 @@ def profile(id):
     commt_count = commt_query.count()
     mycomments = commt_query.limit(m)
 
-    return render_template('profile.html',m=m, user=user,todos=todos, count_1=count_1, doings=doings,
-                count_2=count_2, dones=dones, count_3=count_3, posts=posts, post_count=post_count,
-                star_posts=star_posts, star_count=star_count, mycomments=mycomments, commt_count=commt_count,
+    return render_template('profile.html', m=m, user=user, 
+                count_1=count_1, count_2=count_2, count_3=count_3,
+                todos=todos, doings=doings, dones=dones, 
+                posts=posts, post_count=post_count,
+                star_posts=star_posts, star_count=star_count, 
+                mycomments=mycomments, commt_count=commt_count,
                 myreviews=myreviews, review_count=review_count)
 
 @auth.route('/editprofile', methods=['GET','POST'])

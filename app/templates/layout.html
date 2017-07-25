@@ -6,6 +6,7 @@
 	<title>{% block title %}{% endblock title %}</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="google-site-verification" content="11STKnLcYCgwdVf1OT81FcZRR92A-Hz6QN4YFjKJggI" />
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -123,19 +124,19 @@
 	<div class="row">
 		<div class="col-md-4 col-md-offset-1">
 			<div class="text-left">
-				<a href={{url_for('main.about')}}>About</a> &nbsp;|&nbsp;
-				<a href={{url_for('main.about')}}></a> &nbsp;
+				<a href={{url_for('main.about')}}#about>About</a> &nbsp;|&nbsp;
+				<a href={{url_for('main.about')}}>Terms</a> &nbsp;
 	        </div>
 		</div>
 		<div class="col-md-2">
 			<div class="text-center">
-				<b>©2017 Readup.Tips</b>
+				<b>© Since 2017 Readup.Tips</b>
 	        </div>
 		</div>
 		<div class="col-md-4">
 			<div class="text-right">
 				<a href="#"></a>&nbsp;|&nbsp;
-                <a href="#">Blog</a>
+                <a href="https://medium.com/@readup.tips">Blog</a>
 	        </div>
 		</div>
 	</div>
@@ -163,7 +164,7 @@
 		var googlesite = function() {
 			q = document.getElementById("q");
 			if (q.value != "") {
-				window.open('https://www.google.com/search?q=site:readup.tips/t%20' + q.value, "_blank");
+				window.open('https://www.google.com/search?q=site:readup.tips/' + q.value, "_blank");
 				return false;
 			} else {
 				return false;

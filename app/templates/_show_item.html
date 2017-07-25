@@ -1,10 +1,10 @@
 <!--include item info in-->
 
 <div class="row">
-    <div class="col-md-2">
-        <img src="{{item.cover or item.item_cover}}" style="width:80px" alt="Item_Cover">
+    <div class="col-md-3">
+        <img src="{{item.cover or item.item_cover}}" style="width:120px" alt="Item_Cover">
     </div>
-    <div class="col-md-8 text-left">
+    <div class="col-md-7 text-left">
         <h4>{{item.cate}}&nbsp;
             <a {% block titlelink %} href={{url_for('main.item',id=item.id)}} {% endblock %}>
                 {{item.title}}

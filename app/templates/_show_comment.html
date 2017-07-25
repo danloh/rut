@@ -2,7 +2,8 @@
 
 <div class="media">        
     <div class="media-left media-top">
-        <img src={{commt.creator.avatar}} class="media-object" style="width:40px" alt="avatar">
+        <img src="{{commt.creator.avatar or url_for('static', filename='pic/profile.svg')}}" \
+          class="media-object" style="width:40px" alt="avatar">
     </div>
     <div class="media-body">
         <p style="background-color:whitesmoke">

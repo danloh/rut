@@ -39,7 +39,7 @@ def collection():
         sp = form.body.data.split("#")+['42']
         tag_str = sp[1].strip()
         demand = Demands(body=sp[0],
-                         dtag_str = tag_str if tag_str is not "" else "42",
+                         dtag_str = tag_str,
                          requestor=current_user._get_current_object())
         db.session.add(demand)
         db.session.commit()
@@ -215,7 +215,9 @@ def edit_tag_str(id):
     post = Posts.query.get_or_404(id)
     form = TagStrForm()
 
-    old_str = set(_tag.tag for _tag in post.tags)
+    #old_str = set(_tag.tag for _tag in post.tags)
+    old = post.tag_str
+    old_str = set(t.strip() for t in old.split(','))
     
     if form.validate_on_submit():
 
@@ -245,7 +247,7 @@ def edit_tag_str(id):
         
         return redirect(url_for('.post', id=post.id))
 
-    form.tag.data = post.tag_str
+    form.tag.data = old
     
     return render_template('edit_tagstr.html', post=post, form=form)
 
@@ -354,7 +356,12 @@ def edit_item(id):
 
         # add tags to db, if any
         if form.itag.data.strip() is not "":
-            item.itag = form.itag.data
+            itag_str = item.itag_str
+            if itag_str:
+                itag_str += ',' + form.itag.data
+            else:
+                itag_str = form.itag.data
+            item.itag_str = itag_str 
             item.itag_to_db()
 
         db.session.add(item)

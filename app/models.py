@@ -157,10 +157,10 @@ class Posts(db.Model):
         split the input tags to seperated tag,
         and add them into Tags Table
         '''
-        _taglist = self.tag_str.split(',')
+        _tagset = set(t.strip() for t in self.tag_str.split(','))
         _query = Tags.query
-        for t in _taglist:
-            _tg = t.strip()
+        for _tg in _tagset:
+            #_tg = _tg.strip()
             if _tg is not "":
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
@@ -177,7 +177,7 @@ class Posts(db.Model):
     def post_cover(self):
         n = self.items.count()
         if n ==0:
-            return url_for('static', filename='pic/dpc.png')
+            return url_for('static', filename='pic/dpc.svg')
         else:
             m = random.randrange(n)
             return self.items.all()[m].item.cover
@@ -220,12 +220,14 @@ class Items(db.Model):
     @property    
     def item_cover(self):
         if self.cover is None or not self.cover.strip():
-            if self.cate == 'Online-Course':
-                return url_for('static', filename='pic/oc_cover.png')
+            if self.cate == 'Online':
+                return url_for('static', filename='pic/online.svg')
             if self.cate == 'Book':
-                return url_for('static', filename='pic/b_cover.png')
-            if self.cate == 'Documentary':
-                return url_for('static', filename='pic/d_cover.png')
+                return url_for('static', filename='pic/book.svg')
+            if self.cate == 'Video':
+                return url_for('static', filename='pic/video.svg')
+            if self.cate == 'Album':
+                return url_for('static', filename='pic/album.svg')
 
     # add item tags to database        
     def itag_to_db(self):
@@ -233,17 +235,18 @@ class Items(db.Model):
         split the input tags to seperated tag,
         and add them into Tags Table
         '''
-        _taglist = self.itag_str.split(',')
+        #_taglist = self.itag_str.split(',')
+        _tagset = set(t.strip() for t in self.itag_str.split(','))
         _query = Tags.query
-        for t in _taglist:
-            _tg = t.strip()
+        for _tg in _tagset:
+            #_tg = _tg.strip()
             if _tg is not "":
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
                     tag=Tags(tag=_tg)
                     tag.items.append(self)  
                     db.session.add(tag)
-                elif _tag.items.filter_by(item_id=self.id).first() is None:
+                elif _tag.items.filter_by(id=self.id).first() is None:
                     _tag.items.append(self)  
                     db.session.add(_tag)
         db.session.commit()
@@ -371,10 +374,11 @@ class Demands(db.Model):
 
     def dtag_to_db(self):
       
-        _taglist = self.dtag_str.split(',')
+        #_taglist = self.dtag_str.split(',')
+        _tagset = set(t.strip() for t in self.dtag_str.split(','))
         _query = Tags.query
-        for t in _taglist:
-            _tg = t.strip()
+        for _tg in _tagset:
+            #_tg = _tg.strip()
             if _tg is not "":
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
