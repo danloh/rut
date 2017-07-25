@@ -12,7 +12,7 @@ class ImgURL(URL):
 
     def __init__(self, require_tld=True, message="Ivalid Image URL"):
         #regex = r'^[a-z]+://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?\.(?P<format>png|jpg|gif|jpeg|bmp|webp)$'
-        regex = r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?\.(?P<format>png|jpg|gif|jpeg|bmp|webp)$'
+        regex = r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?\.(?P<format>png|jpg|gif|jpeg|bmp|webp|svg)$'
         super(URL, self).__init__(regex, re.IGNORECASE, message)
         self.validate_hostname = HostnameValidation(
             require_tld=require_tld,
@@ -99,7 +99,7 @@ class ItemForm(FlaskForm):
     author = StringField('Author',
                 render_kw={"placeholder":"The Author or the Lecturer"})
     cover = StringField('Image Url for item Cover',
-                render_kw={"placeholder":"Put VALID Img URL ends with .jpg/.png/.gif"})
+                render_kw={"placeholder":"Put VALID Img URL ends with .jpg/.png/.gif/.svg"})
     cate = SelectField('Select a Type', 
            choices=[('Book','Book'),('Video','video'),('Online','Online'),('Album','Album')])
     tips = TextAreaField('The Reading Tips--REQUIRED⁎', 
@@ -122,7 +122,7 @@ class EditItemForm(FlaskForm):
     translator = StringField('Translator')
     cover = StringField('Image Url for item Cover',
                  validators = [ImgURL()],
-                 render_kw={"placeholder":"REQUIRED VALID URL ends with .jpg/.png/.gif"})
+                 render_kw={"placeholder":"REQUIRED VALID URL ends with .jpg/.png/.gif/.svg"})
     cate = SelectField('Select a Type', 
            choices=[('Book','Book'),('Video','video'),('Online','Online'),('Album','Album')])
     publisher = StringField('Publisher',validators = [DataRequired()],
