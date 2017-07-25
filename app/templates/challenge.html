@@ -11,7 +11,9 @@
 {% block content %}
 
 <div>
-    <button id="showform">Post some clips or review as the milestone for you reading</button>
+    <button id="showform" class="btn btn-primary btn-block">
+        Post Clips Here
+    </button>
     <script>
     $(document).ready(function(){
         $("#showform").click(function(){
@@ -78,12 +80,13 @@
         {{wtf.form_field(form2.deadline)}}
         {{wtf.form_field(form2.submit)}}
     </form>
+    <hr>
     {% endif %} 
 </div>
-<hr>
+
 <div>
     <h4>Tips</h4>
-    <p>You can post some clips ,inspiration here as a memo 
+    <p>You can post some clips, inspiration here as a memo 
         or to track your reading process</p>
 </div>
 <hr>

@@ -8,7 +8,7 @@ from .. import db, oauth, login_manager
 from config import Config as C
 from ..models import Users, Posts, Comments 
 from .forms import EditProfileForm
-
+from ..safeurl import is_safe_url, get_redirect_target
 
 google = oauth.remote_app(
 	'google',
@@ -88,10 +88,11 @@ def set_user(server_name, me):
         return redirect(url_for('auth.edit_profile'))  #note!!
 
     login_user(user, remember=True)
-    return redirect(url_for('main.index'))  #note!!
+    next_url = session['next'] or url_for('main.index')
+    return redirect(next_url)  #note!!
 
 
-def set_tw_user(server_name, auth_social_id, name, next_url):
+def set_tw_user(server_name, auth_social_id, name):
     user = Users.query.filter_by(
         auth_server=server_name, 
         auth_social_id=auth_social_id
@@ -110,11 +111,12 @@ def set_tw_user(server_name, auth_social_id, name, next_url):
         return redirect(url_for('auth.edit_profile'))  #note!!
 
     login_user(user, remember=True)
+    next_url = session['next'] or url_for('main.index')
     return redirect(next_url) 
 
 @auth.route('/connect')
 def connect():
-    next_c = request.args.get('next')
+    next_c = get_redirect_target()
     session['next'] = next_c
     return render_template('connect.html') 
 
@@ -124,18 +126,14 @@ def login(server_name):
     #Google
     if server_name == "Google":
         return google.authorize(
-                   callback=url_for(
-                        'auth.g_authorized', 
-                         _external=True)
-                        )
+                 callback=url_for('auth.g_authorized', _external=True)
+               )
 
     #Facebook
     elif server_name == "Facebook":
         callback = url_for(
             'auth.facebook_authorized',
-            next=request.args.get('next')
-                or request.referrer 
-                or None,
+            next = get_redirect_target(),
             _external=True
         )
         return facebook.authorize(callback=callback)
@@ -143,9 +141,7 @@ def login(server_name):
     elif server_name == "Twitter":
         callback_url = url_for(
                         'auth.twitter_authorized', 
-                        next=request.args.get('next') 
-                            or request.referrer 
-                            or None
+                        next = get_redirect_target()
                         )    
         return twitter.authorize(callback=callback_url)    
     
@@ -154,12 +150,16 @@ def login(server_name):
 def facebook_authorized():
     resp = facebook.authorized_response()
     if resp is None:
-        return 'Access denied: reason=%s error=%s' % (
+        flash( 'Access denied: reason=%s error=%s' % (
             request.args['error_reason'],
-            request.args['error_description']
+            request.args['error_description'])
         )
+        next_url = get_redirect_target() or url_for('main.index')
+        return redirect(next_url)
     if isinstance(resp, OAuthException):
-        return 'Access denied: %s' % resp.message
+        flash( 'Access denied: %s' % resp.message)
+        next_url = get_redirect_target() or url_for('main.index')
+        return redirect(next_url)
 
     session['oauth_token'] = (resp['access_token'], '')
     me = facebook.get(
@@ -177,10 +177,13 @@ def get_facebook_oauth_token():
 def g_authorized():
     resp = google.authorized_response()
     if resp is None:
-        return 'Access denied: reason=%s error=%s' % (
+        flash( 'Access denied: reason=%s error=%s' % (
             request.args['error_reason'],
-            request.args['error_description']
+            request.args['error_description'])
         )
+        next_url = get_redirect_target() or url_for('main.index')
+        return redirect(next_url)
+
     session['google_token'] = (resp['access_token'], '')
     me = google.get('userinfo')
     return set_user('Google', me)
@@ -193,10 +196,10 @@ def get_google_oauth_token():
 #Twitter    
 @auth.route('/login/twitter_authorized')
 def twitter_authorized():
-    next_url = request.args.get('next') or url_for('main.index')
     resp = twitter.authorized_response()
     if resp is None:
-        #flash('You denied the request to sign in.')
+        flash('You denied the request to sign in.')
+        next_url = get_redirect_target() or url_for('main.index')
         return redirect(next_url)
     
     session['twitter_token'] = (
@@ -207,9 +210,7 @@ def twitter_authorized():
 
     auth_social_id = resp['user_id']
     name = resp['screen_name']
-
-    #flash('You were signed in as %s' % resp['screen_name'])
-    return set_tw_user('Twitter', auth_social_id, name, next_url)   
+    return set_tw_user('Twitter', auth_social_id, name)   
 
 @twitter.tokengetter
 def get_twitter_token():

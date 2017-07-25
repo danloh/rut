@@ -6,9 +6,15 @@
     </div>
     <hr>
     <div>
-        <li><a href={{url_for('auth.login', server_name='Google')}}>Google</a></li>
-        <li><a href={{url_for('auth.login', server_name='Facebook')}}>Facebook</a></li>
-        <li><a href={{url_for('auth.login', server_name='Twitter')}}>Twitter</a></li>
+        <li><a href={{url_for('auth.login', server_name='Google')}}>
+            <p style="font-size:larger">Google</p>
+        </a></li>
+        <li><a href={{url_for('auth.login', server_name='Facebook')}}>
+            <p style="font-size:larger">Facebook</p>
+        </a></li>
+        <li><a href={{url_for('auth.login', server_name='Twitter')}}>
+            <p style="font-size:larger">Twitter</p>
+        </a></li>
     </div>
 </div>
 {% endif %}
