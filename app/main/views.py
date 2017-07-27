@@ -48,7 +48,6 @@ def collection():
 
         return redirect(url_for('.collection'))
     
-    
     # list all tag related to user
     tag_s = [p.star_post.tags for p in current_user.star_posts] #2D LIST
     tag_c = [p.challenge_post.tags for p in current_user.challenge_posts] #2D LIST
@@ -63,7 +62,7 @@ def collection():
     q_list = post_fo
     for tag_obj in tag_set:
         q_list.append(tag_obj.posts)
-    q_rand = Posts.query.order_by(db.func.rand()).limit(0)
+    q_rand = Posts.query.order_by(db.func.rand()).limit(5)
     # union the queries,
     query = q_rand.union(*q_list) #or q_rand
 
