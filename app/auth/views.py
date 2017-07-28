@@ -62,7 +62,6 @@ def create_user(me, auth_server_name):
     
     else:
         pass
-        #avatar_url = me.data['picture']
     
     new_user = Users(
         auth_server=auth_server_name, 
@@ -88,11 +87,16 @@ def set_user(server_name, me):
         return redirect(url_for('auth.edit_profile'))  #note!!
 
     login_user(user, remember=True)
-    next_url = session['next'] or url_for('main.index')
+    next_url = session.get('next') or url_for('main.index')
+    session.pop('next',None)
     return redirect(next_url)  #note!!
 
 
-def set_tw_user(server_name, auth_social_id, name):
+def set_tw_user(server_name,resp):
+    auth_social_id = resp['user_id']
+    name = resp['screen_name']
+    email = resp.get('email')
+
     user = Users.query.filter_by(
         auth_server=server_name, 
         auth_social_id=auth_social_id
@@ -103,6 +107,7 @@ def set_tw_user(server_name, auth_social_id, name):
             auth_server=server_name, 
             auth_social_id=auth_social_id,
             name=name,
+            email=email,
             avatar=avatar_url_tw
         )  
         db.session.add(new_user)
@@ -111,7 +116,8 @@ def set_tw_user(server_name, auth_social_id, name):
         return redirect(url_for('auth.edit_profile'))  #note!!
 
     login_user(user, remember=True)
-    next_url = session['next'] or url_for('main.index')
+    next_url = session.get('next') or url_for('main.index')
+    session.pop('next',None)
     return redirect(next_url) 
 
 @auth.route('/connect')
@@ -122,6 +128,9 @@ def connect():
 
 @auth.route('/login/<string:server_name>')
 def login(server_name):
+    next_c = get_redirect_target()
+    session['next'] = next_c
+
     '''route to different oauth server'''
     #Google
     if server_name == "Google":
@@ -208,13 +217,11 @@ def twitter_authorized():
     )
     session['twitter_user'] = resp['screen_name']
 
-    auth_social_id = resp['user_id']
-    name = resp['screen_name']
-    return set_tw_user('Twitter', auth_social_id, name)   
+    return set_tw_user('Twitter', resp)   
 
 @twitter.tokengetter
 def get_twitter_token():
-    return session.get('twitter_token')  #??
+    return session.get('twitter_token')   
 #Twitter end
 
 
