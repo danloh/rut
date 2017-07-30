@@ -39,7 +39,7 @@ class TestConfig(Config):
 
 #for production 
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = os.environ.get('PRO_DB_URI') or 'mysql+pymysql://root:psw@localhost/test'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('PRO_DB_URI')
 
 
 config = {

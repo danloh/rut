@@ -28,7 +28,12 @@
 <hr>
 
 <div>
-    <p>Or &nbsp;<a data-toggle="modal" href="#deltips">delete</a>&nbsp;&nbsp;Tips</p>          
+    {% if current_user == post.creator %}
+    <p>Or &nbsp;
+        <a data-toggle="modal" href="#deltips">delete</a>
+        &nbsp;Tips. Only post Creator can delete tips no matter who added it.
+    </p> 
+    {% endif %}         
     <!-- Modal for delete Tips confirm -->
     <div class="modal fade" id="deltips" role="dialog">
         <div class="modal-dialog modal-sm">

@@ -36,9 +36,11 @@
 <br>
 <!--post toolbar widget-->
 <div class="text-right">
-    {% if display %}
+    {% if current_user == post.creator %}
     <span><a data-toggle="modal" href="#delpost">Delete</a></span>
-    &nbsp;&nbsp;||&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+    {% endif %}
+    &nbsp;&nbsp;||&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {% if display %} 
     <span><a href={{url_for('main.edit_post',id=post.id)}}>Edit Intro</a></span>
     &nbsp;&nbsp;|&nbsp;&nbsp;
     <span><a href={{url_for('main.add_item',id=post.id)}}>Add Item</a></span>
@@ -195,5 +197,57 @@
         </div>
     </div>
 </div>
+
+{% if post.editable == 'Contributors' %}
+<hr>
+<div>
+    <div class="text-left">
+        <span><b>Current Other Contributors</b></span>
+        &nbsp;&nbsp;>>&nbsp;
+        <span><a href={{url_for('main.apply_contributor', id=post.id)}}>
+            Apply
+        </a>
+        </span>
+    </div>
+    <hr>
+    {% for contribute in contributes %}
+    {% if contribute.disabled == False %}
+    <div class="text-left">
+        <span>   
+        <a href={{url_for('auth.profile', id=contribute.contributor.id)}}>
+            {{ contribute.contributor.nickname or contribute.contributor.name }}
+        </a>
+        </span>   
+    {% if current_user == post.creator %}
+        &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;
+        <span>
+            <a href={{url_for('main.disable_contributor',id=contribute.id)}}>
+                <mark>Disable</mark>
+            </a>
+        </span>
+    {% endif %}
+    </div>
+    <br>
+    {% endif %}
+
+    {% if contribute.disabled == True and current_user == post.creator %}
+    <div>
+        <span>   
+        <a href={{url_for('auth.profile', id=contribute.contributor.id)}}>
+            {{ contribute.contributor.nickname or contribute.contributor.name }}
+        </a>
+        </span>
+        &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;
+        <span>
+            <a href={{url_for('main.approve_contributor',id=contribute.id)}}>
+                <mark>Approve</mark>
+            </a>
+        </span>   
+    </div>
+    <br>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
 
 {% endblock rightside %}

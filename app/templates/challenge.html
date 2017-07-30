@@ -12,7 +12,7 @@
 
 <div>
     <button id="showform" class="btn btn-primary btn-block">
-        Post Clips Here
+        Post Quote or Spark of thought Here
     </button>
     <script>
     $(document).ready(function(){
@@ -34,7 +34,7 @@
     <!--Show comments-->
     <div>
         <hr>
-        {% for commt in mycomments %}
+        {% for commt in myclips %}
         {% include '_show_comment.html' %}
         {% endfor %}
 

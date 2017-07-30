@@ -5,12 +5,15 @@ from flask import g, render_template, redirect, url_for, current_app,\
                   request, session, flash, make_response, abort
 from flask_login import login_required, current_user
 from . import main
-from .forms import PostForm, ItemForm, EditItemForm, TagForm, EditPostForm,EditTipsForm,\
-                   CommentForm, TagStrForm, ChCommentForm, DeadlineForm, DemandForm, ReviewForm
+from .forms import PostForm, ItemForm, EditItemForm, TagForm, EditPostForm,\
+                   EditTipsForm, CommentForm, TagStrForm, ClipForm,\
+                   DeadlineForm, DemandForm, ReviewForm
 from .. import db
-from ..models import Posts, Items, Collect, Tags, Fav, tag_post, tag_item, Comments,\
-                     Users, Star, Flag, Challenge, Follow, Roles, Permission, Authors,\
-                     author_item, Demands, tag_demand, Reply, Clan
+from ..models import Posts, Items, Collect, Tags, Clan, Fav, tag_post, tag_item,\
+                     Comments, Reviews, Clips, Demands, tag_demand, Reply,\
+                     Star, Flag, Challenge, Contribute, \
+                     Users, Follow, Roles, Permission,\
+                     Authors, author_item, Messages, Dialog, Events
 from ..decorators import admin_required, permission_required
 
 
@@ -30,6 +33,7 @@ def index():
                             posts_popular = posts_popular,
                             posts_random = posts_random)
 
+
 @main.route('/collection', methods=['GET','POST'])
 @login_required
 def collection():
@@ -38,9 +42,11 @@ def collection():
     if form.validate_on_submit():
         sp = form.body.data.split("#")+['42']
         tag_str = sp[1].strip()
-        demand = Demands(body=sp[0],
-                         dtag_str = tag_str,
-                         requestor=current_user._get_current_object())
+        demand = Demands(
+            body=sp[0],
+            dtag_str = tag_str,
+            requestor=current_user._get_current_object()
+        )
         db.session.add(demand)
         db.session.commit()
 
@@ -50,14 +56,14 @@ def collection():
     
     # list all tag related to user
     tag_s = [p.star_post.tags for p in current_user.star_posts] #2D LIST
-    tag_c = [p.challenge_post.tags for p in current_user.challenge_posts] #2D LIST
-    tag_fg = [i.flag_item.itags for i in current_user.flag_items] #2D LIST
-    tag_fv = [i.fav_tag for i in current_user.fav_tags.order_by(db.func.rand())]  #1D LIST
+    tag_c = [p.challenge_post.tags for p in current_user.challenge_posts] #2D 
+    tag_fg = [i.flag_item.itags for i in current_user.flag_items] #2D 
+    tag_fv = [i.fav_tag for i in current_user.fav_tags.order_by(db.func.rand())]
     #be unique
     tag_all = sum(tag_s + tag_c + tag_fg,[]) + tag_fv
     tag_set = set(tag_all)
     # get followed posts queries
-    post_fo = [f.followed.posts for f in current_user.followed] #1D LIST
+    post_fo = [f.followed.posts for f in current_user.followed] 
     #list the queries, followed _posts as init 
     q_list = post_fo
     for tag_obj in tag_set:
@@ -69,28 +75,35 @@ def collection():
     #posts = query.all()
     page = request.args.get('page', 1, type=int)
     pagination = query.filter(Posts.creator != current_user).\
-                order_by(Posts.timestamp.desc()).paginate(page,\
-                per_page=current_app.config['POST_PER_PAGE'],error_out=False)
+                order_by(Posts.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['POST_PER_PAGE'],
+                    error_out=False
+                )
     posts = pagination.items
 
-    return render_template('collection.html', posts=posts, form=form,
+    return render_template('collection.html', 
+                        posts=posts, form=form,
                         pagination=pagination, tags=tag_fv[:20])
 
 
-
 @main.route('/create',methods=['GET','POST'])
-@login_required
+#@login_required
 def create():
     
     form = PostForm()
 
     if form.validate_on_submit():
-        post = Posts(title=form.title.data,
-                     intro=form.intro.data,
-                     tag_str=form.tag.data,
-                     rating=form.rating.data,
-                     credential=form.credential.data,
-                     creator=current_user._get_current_object())
+        post = Posts(
+            title=form.title.data,
+            intro=form.intro.data,
+            tag_str=form.tag.data,
+            rating=form.rating.data,
+            credential=form.credential.data,
+            editable=form.editable.data,
+            creator=current_user._get_current_object()
+        )
                 
         db.session.add(post)
         db.session.commit()
@@ -98,7 +111,7 @@ def create():
         post.tag_to_db()
         
         id = post.id
-        flash('The post has been created, now add items to the post.')  
+        flash('The post has been created, now add items to it.')  
         return redirect(url_for('.post',id=id))  
     return render_template('create.html',form = form)
 
@@ -107,21 +120,33 @@ def create():
 def post(id):
     
     post = Posts.query.get_or_404(id) 
+    contribute = post.contributors.filter_by(
+        user_id=current_user.id,
+        disabled=False
+        ).first()
 
     posts_query = post.creator.posts.filter(Posts.id != id)
     m = 20
     posts = posts_query.limit(m) 
     posts_count = posts_query.count()
     
-    display = True if current_user == post.creator else False
+    if current_user == post.creator \
+      or contribute  or post.editable == 'Everyone' :
+        display = True 
+    else:
+        display = False
     
-    items = [_c.item for _c in post.items.order_by(Collect.order)] # a list
+    items = [_c.item for _c in post.items.order_by(Collect.order)]  
     c_tips = Collect.query.filter_by(post_id=id)
-    tips_c = {t.item_id:t for t in c_tips}    # a dict, using item_id maping tip-object
+    tips_c = {t.item_id:t for t in c_tips}  # item_id maping tip-object
+
+    contributes = post.contributors
      
-    return render_template('post.html', m=m, posts_count=posts_count,
+    return render_template('post.html', 
+                           m=m, posts_count=posts_count,
                            post=post, items=items, posts=posts,
-                           tips_c=tips_c, display=display)
+                           tips_c=tips_c, display=display,
+                           contributes=contributes)
 
 
 @main.route('/post/add/<int:id>',methods=['GET','POST'])
@@ -129,7 +154,12 @@ def post(id):
 def add_item(id):
     '''add item and tips to post'''
     post = Posts.query.get_or_404(id)
-    if current_user != post.creator:
+    contribute = post.contributors.filter_by(
+        user_id=current_user.id,
+        disabled=False
+        ).first()
+    if current_user != post.creator and contribute is None \
+       and post.editable != 'Everyone' :
         abort(403)
 
     form = ItemForm()
@@ -139,7 +169,8 @@ def add_item(id):
         old_item = Items.query.filter_by(uid=form.uid.data).first()
 
         if form.res_url.data.strip() is not "":  # check the input whitespace
-            oc_item = Items.query.filter_by(res_url=form.res_url.data.strip()).first()
+            oc_item = Items.query.filter_by(
+                res_url=form.res_url.data.strip()).first()
         else:
             oc_item = None
 
@@ -147,12 +178,14 @@ def add_item(id):
         tip_creator = current_user._get_current_object()
 
         if old_item is None and oc_item is None:
-            new_item = Items(uid=form.uid.data,
-                         title=form.title.data,
-                         res_url = form.res_url.data,
-                         author=form.author.data,
-                         cover=form.cover.data,
-                         cate=form.cate.data)
+            new_item = Items(
+                uid=form.uid.data,
+                title=form.title.data,
+                res_url = form.res_url.data,
+                author=form.author.data,
+                cover=form.cover.data,
+                cate=form.cate.data
+            )
             db.session.add(new_item)            
             post.collecting(new_item,tips,tip_creator)
             
@@ -165,14 +198,20 @@ def add_item(id):
         
         return redirect(url_for('.post', id=post.id))
 
-    return render_template('add_item.html', form=form, post=post)
+    return render_template('add_item.html', 
+                            form=form, post=post)
 
 
 @main.route('/post/edit/<int:id>',methods=['GET','POST'])
 @login_required
 def edit_post(id):
     post = Posts.query.get_or_404(id)
-    if current_user != post.creator:
+    contribute = post.contributors.filter_by(
+        user_id=current_user.id,
+        disabled=False
+        ).first()
+    if current_user != post.creator and contribute is None \
+       and post.editable != 'Everyone' :
         abort(403)
 
     form = EditPostForm()
@@ -182,6 +221,7 @@ def edit_post(id):
         post.intro = form.intro.data
         post.rating = form.rating.data
         post.credential = form.credential.data
+        post.editable = form.editable.data
         db.session.add(post)
         db.session.commit()
         
@@ -191,6 +231,7 @@ def edit_post(id):
     form.intro.data = post.intro
     form.rating.data = post.rating
     form.credential.data = post.credential
+    form.editable.data = post.editable
     return render_template('edit_post.html', form=form)
 
 @main.route('/post/del/<int:id>',methods=['GET','POST'])
@@ -198,14 +239,57 @@ def edit_post(id):
 def del_post(id):
     post = Posts.query.get_or_404(id)  #post 's id
 
-    if current_user != post.creator or post.starers.count() != 0 or\
-    post.challengers.count() != 0:
+    if current_user != post.creator\
+     or post.starers.count() != 0\
+     or post.challengers.count() != 0\
+     or post.contributors.count() != 0:
         abort(403)
     
     db.session.delete(post)
     db.session.commit()
 
     return redirect(url_for('.index'))
+
+
+@main.route('/post/applycontribute/<int:id>',methods=['GET'])
+@login_required
+def apply_contributor(id):
+    post = Posts.query.get_or_404(id)  #post 's id
+    if current_user == post.creator:
+        pass
+    else:
+        c = Contribute(
+            contributor = current_user._get_current_object(),
+            contribute_post = post
+        )
+        db.session.add(c)
+        db.session.commit()
+        flash('You have applied to be a contributor, waiting on approval')
+        return redirect(url_for('.post', id=id))
+
+@main.route('/post/approcecontributor/<int:id>',methods=['GET'])
+@login_required
+def approve_contributor(id):
+    c = Contribute.query.filter_by(id=id).first()
+    post = Posts.query.get_or_404(c.post_id)
+    if current_user == post.creator:
+        c.disabled = False
+        db.session.add(c)
+        db.session.commit()
+        flash('Approved')
+        return redirect(url_for('.post', id=post.id))
+
+@main.route('/post/disablecontributor/<int:id>',methods=['GET'])
+@login_required
+def disable_contributor(id):
+    c = Contribute.query.filter_by(id=id).first()
+    post = Posts.query.get_or_404(c.post_id)
+    if current_user == post.creator:
+        c.disabled = True
+        db.session.add(c)
+        db.session.commit()
+        flash('Disabled')
+        return redirect(url_for('.post', id=post.id))
 
 
 @main.route('/post/tagstr/<int:id>',methods=['GET','POST'])
@@ -248,7 +332,9 @@ def edit_tag_str(id):
 
     form.tag.data = old
     
-    return render_template('edit_tagstr.html', post=post, form=form)
+    return render_template('edit_tagstr.html', 
+                            post=post, form=form)
+
 
 ## star and unstar --non-ajax
 @main.route('/star/post/<int:id>',methods=['GET','POST'])
@@ -310,23 +396,27 @@ def item(id):
     posts = [_c.post for _c in item.posts]
 
     m = 10
-    query = item.comments
-    review_q = query.filter(Comments.heading != None)
+    
+    review_q = item.reviews
     count_review = review_q.count()
 
-    comment_q = query.filter(Comments.heading == None)
+    comment_q = item.comments
     count_comment = comment_q.count()
 
     #comment_my = query.filter(Comments.creator==current_user)
     #count_my = comment_my.count()
   
     comments = comment_q.limit(m)
-    review_latest = review_q.order_by(Comments.timestamp.desc()).limit(m)
-    review_hot = review_q.order_by(Comments.vote.desc()).limit(m)
+    review_latest = review_q.order_by(Reviews.timestamp.desc()).limit(m)
+    review_hot = review_q.order_by(Reviews.vote.desc()).limit(m)
      
-    return render_template('item.html', item=item, posts=posts,review_hot=review_hot,
-                           count_review=count_review, review_latest=review_latest, 
-                           count_comment=count_comment, comments=comments, m=m)
+    return render_template('item.html', 
+                           item=item, posts=posts,
+                           review_hot=review_hot,
+                           count_review=count_review, 
+                           review_latest=review_latest, 
+                           count_comment=count_comment, 
+                           comments=comments, m=m)
 
 
 @main.route('/item/edit/<int:id>',methods=['GET','POST'])
@@ -424,13 +514,20 @@ def flag_3(id):
 ###################################################################
 ###end for flag Ajax####################################################
 
+
 @main.route('/tips/edit/<int:id>',methods=['GET','POST'])
 @login_required
 def edit_tips(id):
 
     tip_c = Collect.query.filter_by(id=id).first_or_404()  #collect 's id
     post = Posts.query.get_or_404(tip_c.post_id)
-    if current_user != post.creator:
+
+    contribute = post.contributors.filter_by(
+        user_id=current_user.id,
+        disabled=False
+        ).first()
+    if current_user != post.creator and contribute is None \
+       and post.editable != 'Everyone' :
         abort(403)
 
     item = Items.query.get_or_404(tip_c.item_id)
@@ -442,22 +539,22 @@ def edit_tips(id):
         tip_c.tips = form.tips.data
         db.session.add(tip_c)
         db.session.commit()
-
-        
+    
         return redirect(url_for('.post', id=tip_c.post_id))
     
-    #collect = Collect.query.filter_by(post_id=post.id, item_id=item.id).first()
-
     form.tips.data = tip_c.tips
     form.order.data = tip_c.order
      
-    return render_template('edit_tips.html', form=form, tip_c=tip_c,
-                                             post=post, item=item)    
+    return render_template('edit_tips.html', 
+                           form=form, tip_c=tip_c,
+                           post=post, item=item)    
 
 @main.route('/tips/del/<int:id>',methods=['GET','POST'])
 @login_required
 def del_tips(id):
-    tip_c = Collect.query.filter_by(id=id).first_or_404()  #collect 's id,but not get_or_404, for 3 primary key
+    tip_c = Collect.query.filter_by(id=id).first_or_404()  
+    #collect 's id,but not get_or_404, for 3 primary key
+
     if current_user != tip_c.tip_creator:
         abort(403)
 
@@ -480,17 +577,20 @@ def tagcollect(id):
     _query = Tags.query 
     tag = _query.get_or_404(id)
 
-    parent_tags = [t.parent_tag for t in tag.parent_tags.order_by(db.func.rand()).limit(5)]
+    parent_tags = [t.parent_tag for t in tag.parent_tags.\
+                    order_by(db.func.rand()).limit(5)]
     tags = Tags.query.order_by(db.func.rand()).limit(0).all()
     for tg in parent_tags:
-        c_tags = [t.child_tag for t in Clan.query.filter_by(parent_tag_id=tg.id).\
+        c_tags = [t.child_tag for t in Clan.query.\
+                  filter_by(parent_tag_id=tg.id).\
                   order_by(db.func.rand()).limit(5)]
         tags += c_tags
 
      
     posts = tag.posts
     
-    return render_template('tagcollect.html',tag=tag, tags=tags, 
+    return render_template('tagcollect.html',
+                           tag=tag, tags=tags, 
                            posts=posts, parent_tags=parent_tags)
 
 
@@ -523,7 +623,8 @@ def edit_tag(id):
     form.tag.data = tag.tag
     form.descript.data = tag.descript
      
-    return render_template('edit_tag.html',tag=tag, form=form) 
+    return render_template('edit_tag.html',
+                           tag=tag, form=form) 
 
 ##start for fav tag Ajax ##################################################
 ######################################################################
@@ -548,12 +649,16 @@ def countfav(id):
 def catagory():
 
     page = request.args.get('page', 1, type=int)
-    pagination = Tags.query.order_by(db.func.rand()).paginate(page,\
-                 per_page=current_app.config['TAG_PER_PAGE'],error_out=False)
-
+    pagination = Tags.query.order_by(db.func.rand()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['TAG_PER_PAGE'],
+                    error_out=False
+                )
     tags = pagination.items
 
-    return render_template('catagory.html', tags=tags,pagination=pagination)
+    return render_template('catagory.html', 
+                           tags=tags,pagination=pagination)
 
 
 @main.route('/challenge',methods=['GET','POST'])
@@ -564,7 +669,8 @@ def challenge():
     ing_n = [i.flag_item for i in current_user.flag_items.\
                filter_by(flag_label=2).order_by(Flag.timestamp.desc())\
                .limit(n)]
-    form = ChCommentForm()   # dynamic choice SelectField
+    form = ClipForm()   
+    # dynamic choice SelectField
     form.resource.choices = [(i.id,i.title) for i in ing_n]+[(0,"")]
 
     chal_post = current_user.challenge_posts.first()
@@ -578,10 +684,12 @@ def challenge():
          
 
     if form.validate_on_submit():
-        commt = Comments(body=form.body.data,
-                      item = Items.query.get(form.resource.data),
-                      creator = current_user._get_current_object())
-        db.session.add(commt)
+        clip = Clips(
+            body = form.body.data,
+            item = Items.query.get(form.resource.data),
+            creator = current_user._get_current_object()
+        )
+        db.session.add(clip)
         db.session.commit()
     
     form2 = DeadlineForm()
@@ -590,19 +698,19 @@ def challenge():
         db.session.add(chal_post)
         db.session.commit()
 
-    # comments  
+    # clips  
     m = 20  # when exeed this to show more
-    _query = Comments.query
-    query_my = _query.filter(Comments.creator==current_user,Comments.item != None).\
-              order_by(Comments.timestamp.desc())
+    query_my = current_user.clips.order_by(Clips.timestamp.desc())
     count_my = query_my.count()
     
-    mycomments =query_my.limit(m)
+    myclips =query_my.limit(m)
     
             
-    return render_template('challenge.html', form=form, form2=form2, m=m,
-                            mycomments=mycomments, count_my=count_my,
-                            chal_post=chal_post, items=items, post_chal=post_chal)
+    return render_template('challenge.html', 
+                            form=form, form2=form2, m=m,
+                            myclips=myclips, count_my=count_my,
+                            chal_post=chal_post, 
+                            items=items, post_chal=post_chal)
 
 
 @main.route('/myclips/<int:id>',methods=['GET'])
@@ -620,27 +728,36 @@ def myclips(id):
         items = None
 
     page = request.args.get('page', 1, type=int)
-    pagination = Comments.query.filter(Comments.creator==user,Comments.item != None).\
-                order_by(Comments.timestamp.desc()).paginate(page,\
-                per_page=current_app.config['COMMENT_PER_PAGE'],error_out=False)
+    pagination = user.clips.order_by(Clips.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['COMMENT_PER_PAGE'],
+                    error_out=False
+                )
     myclips = pagination.items
 
-    return render_template('myclips.html',user=user,pagination=pagination, myclips=myclips,
-                            chal_post=chal_post, items=items, post_chal=post_chal)
-
+    return render_template('myclips.html',
+                            user=user,pagination=pagination, 
+                            myclips=myclips, chal_post=chal_post, 
+                            items=items, post_chal=post_chal)
 
 @main.route('/allclips',methods=['GET'])
 @login_required
 def allclips():
     
     page = request.args.get('page', 1, type=int)
-    pagination = Comments.query.filter(Comments.creator != current_user,Comments.item != None).\
-                order_by(Comments.timestamp.desc()).paginate(page,\
-                per_page=current_app.config['COMMENT_PER_PAGE'],error_out=False)
+    pagination = Clips.query.filter(Clips.creator!=current_user)\
+                      .order_by(Clips.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['COMMENT_PER_PAGE'],
+                    error_out=False
+                )
     allclips = pagination.items
 
-    return render_template('allclips.html',pagination=pagination,
-                                          allclips=allclips)
+    return render_template('allclips.html',
+                           pagination=pagination,
+                           allclips=allclips)
 
 
 @main.route('/demands', methods=['GET'])
@@ -653,14 +770,19 @@ def demands():
     demands_random = _query.order_by(db.func.rand()).limit(50)
 
 
-    pagination_latest = _query.order_by(Demands.timestamp.desc()).paginate(page,\
-                       per_page=current_app.config['DEMAND_PER_PAGE'],error_out=False)
+    pagination_latest = _query.order_by(Demands.timestamp.desc()).\
+                        paginate(
+                            page,
+                            per_page=current_app.config['DEMAND_PER_PAGE'],
+                            error_out=False
+                        )
     demands_latest = pagination_latest.items
 
-    return render_template('demands.html',demands_latest=demands_latest,
-                                          pagination_latest=pagination_latest,
-                                          demands_most=demands_most,
-                                          demands_random=demands_random)
+    return render_template('demands.html',
+                            demands_latest=demands_latest,
+                            pagination_latest=pagination_latest,
+                            demands_most=demands_most,
+                            demands_random=demands_random)
 
 @main.route('/demand/<int:id>', methods=['GET','POST'])
 @login_required
@@ -669,22 +791,28 @@ def demand(id):
     demand = Demands.query.get_or_404(id)
     form = CommentForm()
     if form.validate_on_submit():
-        cmmt = Comments(body=form.body.data,
-                        demand = demand,
-                        creator=current_user._get_current_object())
-        db.session.add(cmmt)
+        commt = Comments(
+            body=form.body.data,
+            demand = demand,
+            creator=current_user._get_current_object()
+        )
+        db.session.add(commt)
         db.session.commit()
         
-        #return redirect(url_for('.demand', id=id))
     page = request.args.get('page', 1, type=int)
 
     pagination = demand.comments.order_by(Comments.timestamp.desc()).\
-                paginate(page,per_page=current_app.config['COMMENT_PER_PAGE'],error_out=False)
+                paginate(
+                    page,
+                    per_page=current_app.config['COMMENT_PER_PAGE'],
+                    error_out=False
+                )
     comments = pagination.items
 
     tags = Tags.query.order_by(db.func.rand()).limit(20)
 
-    return render_template('demand.html',demand=demand,form=form,tags=tags,
+    return render_template('demand.html',
+                            demand=demand, form=form, tags=tags,
                             pangination=pagination, comments=comments)
 
     
@@ -695,16 +823,18 @@ def add_post_comment(id):
     form = CommentForm()
     
     if form.validate_on_submit():
-        commt = Comments(body=form.body.data,
-                        post = post,
-                        creator=current_user._get_current_object())
+        commt = Comments(
+            body=form.body.data,
+            post = post,
+            creator=current_user._get_current_object()
+        )
         db.session.add(commt)
         db.session.commit()
         return redirect(url_for('.post', id=id))
 
-    return render_template('comment.html', form=form, 
+    return render_template('comment.html', 
+                            form=form, 
                             onsth=post, mark=None)
-
 
 @main.route('/comment/i/<int:id>', methods=['GET','POST'])  
 @login_required
@@ -713,13 +843,16 @@ def add_item_comment(id):
     form = CommentForm()
     
     if form.validate_on_submit():
-        commt = Comments(body=form.body.data,
-                        item = item,
-                        creator=current_user._get_current_object())
+        commt = Comments(
+            body=form.body.data,
+            item = item,
+            creator=current_user._get_current_object()
+        )
         db.session.add(commt)
         db.session.commit()
         return redirect(url_for('.item', id=id))
-    return render_template('comment.html', form=form, 
+    return render_template('comment.html', 
+                            form=form, 
                             onsth=item, mark=True)
 
 
@@ -727,27 +860,34 @@ def add_item_comment(id):
 @login_required
 def review(id):
     
-    review = Comments.query.get_or_404(id) #review(comment) 's id
+    review = Reviews.query.get_or_404(id) #review's id
     form = CommentForm()
     if form.validate_on_submit():
-        commt = Comments(body=form.body.data,
-                         item=review.item,
-                        creator=current_user._get_current_object())
+        commt = Comments(
+            body=form.body.data,
+            review=review,
+            creator=current_user._get_current_object()
+        )
         db.session.add(commt)
         db.session.commit()
-        review.reply(commt)
         
         #return redirect(url_for('.demand', id=id))
     page = request.args.get('page', 1, type=int)
 
-    pagination = review.child_commts.order_by(Reply.timestamp.desc()).\
-                paginate(page,per_page=current_app.config['COMMENT_PER_PAGE'],error_out=False)
-    comments = [item.child_commt for item in pagination.items]
+    pagination = review.comments.order_by(Comments.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['COMMENT_PER_PAGE'],
+                    error_out=False
+                )
+    comments = pagination.items
 
     tags = Tags.query.order_by(db.func.rand()).limit(20)
 
-    return render_template('review.html',review=review,form=form,tags=tags,
-                            pangination=pagination, comments=comments)
+    return render_template(
+                'review.html',
+                review=review, form=form, tags=tags,
+                pangination=pagination, comments=comments)
 
 
 @main.route('/review/i/<int:id>', methods=['GET','POST'])  
@@ -757,19 +897,23 @@ def add_review(id):
     form = ReviewForm()
     
     if form.validate_on_submit():
-        commt = Comments(heading=form.heading.data,
-                         body=form.body.data,
-                         item = item,
-                         creator=current_user._get_current_object())
-        db.session.add(commt)
+        review = Reviews(
+            heading=form.heading.data,
+            body=form.body.data,
+            item = item,
+            creator=current_user._get_current_object()
+        )
+        db.session.add(review)
         db.session.commit()
         return redirect(url_for('.item', id=id))
-    return render_template('add_review.html', form=form, item=item)
 
+    return render_template('add_review.html', 
+                           form=form, item=item)
+                           
 @main.route('/review/edit/<int:id>', methods=['GET','POST'])  
 @login_required
 def edit_review(id):
-    review = Comments.query.get_or_404(id) # review 's id
+    review = Reviews.query.get_or_404(id) # review 's id
     form = ReviewForm()
     
     if form.validate_on_submit():
@@ -783,7 +927,8 @@ def edit_review(id):
     form.heading.data = review.heading
     form.body.data = review.body
     
-    return render_template('edit_review.html', form=form, review=review)
+    return render_template('edit_review.html', 
+                           form=form, review=review)
 
 
 @main.route('/delcommt/<int:id>', methods=['GET','POST'])  
@@ -818,7 +963,8 @@ def enable_comment(id):
     db.session.add(commt)
     db.session.commit()
 
-    return "Enabled, DOME" #redirect(url_for('.index'))
+    return "Enabled, DONE" #redirect(url_for('.index'))
+
 
 @main.route('/morecommt/u/<int:id>', methods=['GET','POST'])  
 @login_required
@@ -827,11 +973,17 @@ def morecomment_u(id):
 
     page = request.args.get('page', 1, type=int)
 
-    pagination = user.comments.order_by(Comments.timestamp.desc()).paginate(page,\
-                   per_page=current_app.config['COMMENT_PER_PAGE'],error_out=False)
+    pagination = user.comments.order_by(Comments.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['COMMENT_PER_PAGE'],
+                    error_out=False
+                )
     comments = pagination.items
 
-    return render_template('morecomment_u.html',user=user, comments=comments,
+    return render_template('morecomment_u.html',
+                           user=user, 
+                           comments=comments,
                            pagination=pagination)
 
 @main.route('/morecommt/i/<int:id>', methods=['GET','POST'])  
@@ -842,11 +994,16 @@ def morecomment_i(id):
     page = request.args.get('page', 1, type=int)
 
     pagination = item.comments.filter(Comments.heading == None).\
-                   order_by(Comments.timestamp.desc()).paginate(page,\
-                   per_page=current_app.config['COMMENT_PER_PAGE'],error_out=False)
+                order_by(Comments.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['COMMENT_PER_PAGE'],
+                    error_out=False
+                )
     comments = pagination.items
 
-    return render_template('morecomment_i.html',item=item, comments=comments,
+    return render_template('morecomment_i.html',
+                           item=item, comments=comments,
                            pagination=pagination, user=None)
 
 @main.route('/mycommt/i/<int:id>', methods=['GET','POST'])  
@@ -857,11 +1014,16 @@ def mycomment_i(id):
     page = request.args.get('page', 1, type=int)
 
     pagination = item.comments.filter(Comments.creator == current_user).\
-                   order_by(Comments.timestamp.desc()).paginate(page,\
-                   per_page=current_app.config['COMMENT_PER_PAGE'],error_out=False)
+                order_by(Comments.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['COMMENT_PER_PAGE'],
+                    error_out=False
+                )
     comments = pagination.items
 
-    return render_template('morecomment_i.html',item=item, comments=comments,
+    return render_template('morecomment_i.html',
+                           item=item, comments=comments,
                            pagination=pagination, user=True)
 
 @main.route('/morecommt/p/<int:id>', methods=['GET','POST'])  
@@ -874,11 +1036,16 @@ def morecomment_p(id):
     page = request.args.get('page', 1, type=int)
 
     pagination = post.comments.order_by(Comments.timestamp.desc()).\
-                paginate(page,per_page=current_app.config['COMMENT_PER_PAGE'],error_out=False)
+                paginate(
+                    page,per_page=current_app.config['COMMENT_PER_PAGE'],
+                    error_out=False
+                )
     comments = pagination.items
 
-    return render_template('morecomment_p.html',post=post, comments=comments,
-                           pagination=pagination, challengers=challengers)
+    return render_template('morecomment_p.html',
+                           post=post, comments=comments,
+                           pagination=pagination, 
+                           challengers=challengers)
 
 
 @main.route('/morepost/u/<int:id>', methods=['GET','POST'])  
@@ -888,12 +1055,18 @@ def morepost(id):
 
     page = request.args.get('page', 1, type=int)
 
-    pagination = user.posts.order_by(Posts.timestamp.desc()).paginate(page,\
-                   per_page=current_app.config['POST_PER_PAGE'],error_out=False)
+    pagination = user.posts.order_by(Posts.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['POST_PER_PAGE'],
+                    error_out=False
+                )
     posts = pagination.items
 
-    return render_template('morepost.html',user=user, posts=posts,
+    return render_template('morepost.html',
+                           user=user, posts=posts,
                            pagination=pagination, ref="created")
+
 
 @main.route('/morereview/u/<id>', methods=['GET','POST'])  
 @login_required
@@ -902,13 +1075,18 @@ def morereview_u(id):
 
     page = request.args.get('page', 1, type=int)
 
-    pagination = user.comments.filter(Comments.heading != None).\
-                 order_by(Comments.vote.desc()).paginate(page,\
-                per_page=current_app.config['POST_PER_PAGE'],error_out=False)
+    pagination = user.reviews.order_by(Reviews.vote.desc()).\
+                paginate(
+                     page,
+                     per_page=current_app.config['POST_PER_PAGE'],
+                     error_out=False
+                )
     reviews = pagination.items
 
-    return render_template('morereview.html',item=None, reviews=reviews,
-                           pagination=pagination, user=user, ref="user")
+    return render_template('morereview.html',
+                           item=None, reviews=reviews,
+                           pagination=pagination, 
+                           user=user, ref="user")
 
 
 @main.route('/morereview/i/<id>', methods=['GET','POST'])  
@@ -918,13 +1096,18 @@ def morereview(id):
 
     page = request.args.get('page', 1, type=int)
 
-    pagination = item.comments.filter(Comments.heading != None).\
-                 order_by(Comments.timestamp.desc()).paginate(page,\
-                per_page=current_app.config['POST_PER_PAGE'],error_out=False)
+    pagination = item.reviews.order_by(Comments.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['POST_PER_PAGE'],
+                    error_out=False
+                )
     reviews = pagination.items
 
-    return render_template('morereview.html',item=item, reviews=reviews,
-                           pagination=pagination, user=None, ref="Latest")
+    return render_template('morereview.html',
+                           item=item, reviews=reviews,
+                           pagination=pagination, 
+                           user=None, ref="Latest")
 
 @main.route('/morehot/i/<id>', methods=['GET','POST'])  
 @login_required
@@ -933,13 +1116,18 @@ def morehot(id):
 
     page = request.args.get('page', 1, type=int)
 
-    pagination = item.comments.filter(Comments.heading != None).\
-                 order_by(Comments.vote.desc()).paginate(page,\
-                per_page=current_app.config['POST_PER_PAGE'],error_out=False)
+    pagination = item.reviews.order_by(Comments.vote.desc()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['POST_PER_PAGE'],
+                    error_out=False
+                )
     reviews = pagination.items
 
-    return render_template('morereview.html',item=item, reviews=reviews,
-                           pagination=pagination, user=None, ref="Hot")
+    return render_template('morereview.html',
+                           item=item, reviews=reviews,
+                           pagination=pagination, 
+                           user=None, ref="Hot")
 
 @main.route('/morestar/u/<id>', methods=['GET','POST'])  
 @login_required
@@ -948,11 +1136,16 @@ def morestar(id):
 
     page = request.args.get('page', 1, type=int)
 
-    pagination = user.star_posts.order_by(Star.timestamp.desc()).paginate(page,\
-                   per_page=current_app.config['POST_PER_PAGE'],error_out=False)
+    pagination = user.star_posts.order_by(Star.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['POST_PER_PAGE'],
+                    error_out=False
+                )
     posts = [item.star_post for item in pagination.items]
 
-    return render_template('morepost.html',user=user, posts=posts,
+    return render_template('morepost.html',
+                           user=user, posts=posts,
                            pagination=pagination, ref="star-ed")
 
 @main.route('/moreschedule/u/<id>', methods=['GET','POST'])  
@@ -963,11 +1156,16 @@ def moreschedule(id):
     page = request.args.get('page', 1, type=int)
 
     pagination = user.flag_items.filter_by(flag_label=1).\
-                     order_by(Flag.timestamp.desc()).paginate(page,\
-                   per_page=current_app.config['POST_PER_PAGE'],error_out=False)
+                order_by(Flag.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['POST_PER_PAGE'],
+                    error_out=False
+                )
     items = [item.flag_item for item in pagination.items]
 
-    return render_template('moreitem.html',user=user, items=items,
+    return render_template('moreitem.html',
+                           user=user, items=items,
                            pagination=pagination, ref="scheduled")
 
 
@@ -979,11 +1177,16 @@ def moredoing(id):
     page = request.args.get('page', 1, type=int)
 
     pagination = user.flag_items.filter_by(flag_label=2).\
-                     order_by(Flag.timestamp.desc()).paginate(page,\
-                   per_page=current_app.config['POST_PER_PAGE'],error_out=False)
+                order_by(Flag.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['POST_PER_PAGE'],
+                    error_out=False
+                )
     items = [item.flag_item for item in pagination.items]
 
-    return render_template('moreitem.html',user=user, items=items,
+    return render_template('moreitem.html',
+                           user=user, items=items,
                            pagination=pagination, ref="working on")
 
 @main.route('/moredone/u/<id>', methods=['GET','POST'])  
@@ -994,11 +1197,16 @@ def moredone(id):
     page = request.args.get('page', 1, type=int)
 
     pagination = user.flag_items.filter_by(flag_label=3).\
-                     order_by(Flag.timestamp.desc()).paginate(page,\
-                   per_page=current_app.config['POST_PER_PAGE'],error_out=False)
+                order_by(Flag.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['POST_PER_PAGE'],
+                    error_out=False
+                )
     items = [item.flag_item for item in pagination.items]
 
-    return render_template('moreitem.html',user=user, items=items,
+    return render_template('moreitem.html',
+                           user=user, items=items,
                            pagination=pagination, ref="have done")
 
 ## follow and unfollow - non-ajax
@@ -1054,10 +1262,15 @@ def follower(id):
     page = request.args.get('page', 1, type=int)
 
     pagination = user.followers.order_by(Follow.timestamp.desc()).\
-                paginate(page,per_page=current_app.config['COMMENT_PER_PAGE'],error_out=False)
+                paginate(
+                    page,
+                    per_page=current_app.config['COMMENT_PER_PAGE'],
+                    error_out=False
+                )
     followers = [item.follower for item in pagination.items]
 
-    return render_template('follows.html',user=user, follows=followers,
+    return render_template('follows.html',
+                           user=user, follows=followers,
                            pagination=pagination, ref='follower')
 
 @main.route('/following/<id>')
@@ -1068,11 +1281,17 @@ def following(id):
     page = request.args.get('page', 1, type=int)
 
     pagination = user.followed.order_by(Follow.timestamp.desc()).\
-                paginate(page,per_page=current_app.config['COMMENT_PER_PAGE'],error_out=False)
+                paginate(
+                    page,
+                    per_page=current_app.config['COMMENT_PER_PAGE'],
+                    error_out=False
+                )
     following = [item.followed for item in pagination.items]
 
-    return render_template('follows.html',user=user, follows=following,
+    return render_template('follows.html',
+                           user=user, follows=following,
                            pagination=pagination, ref='following')
+
 
 @main.route('/alsoreq/<int:id>', methods=['GET'])
 @login_required
@@ -1090,12 +1309,12 @@ def alsoreq(id):
 @login_required
 def upvote(id):
 
-    comment = Comments.query.get_or_404(id) # comment's id
-    if current_user != comment.creator:
-        comment.vote = comment.vote + 1 
-        db.session.add(comment)
+    review = Reviews.query.get_or_404(id) # review's id
+    if current_user != review.creator:
+        review.vote = review.vote + 1 
+        db.session.add(review)
         db.session.commit()
-    #n = comment.vote
+    #n = review.vote
     #m = str(n)
     return redirect(url_for('.review',id=id))
 
@@ -1103,6 +1322,7 @@ def upvote(id):
 @main.route('/about', methods=['GET'])
 def about():
     return render_template('about.html')
+
 
 @main.route('/uid', methods=['GET'])
 def random_uid():

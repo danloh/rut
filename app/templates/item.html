@@ -21,38 +21,47 @@
     <hr>
     <mark>More Details</mark><br>
     {{ item.details|safe or 'no details, you can help add more info'}}
+    
     <hr>
     <a href={{url_for('main.add_review',id=item.id)}}>Post your review</a>
     <hr>
-    <h4>The Latest Review</h4><br>
-    <div>
-        {% for review in review_latest %}
-        {% include '_review_list.html' %}
-        {% endfor %}
+    <!--Show review-->
+    <ul class="nav nav-tabs">
+        <li class="active"><a data-toggle="tab" href="#latest">Latest Review</a></li>
+        <li><a data-toggle="tab" href="#hot">Hot Review</a></li>
+    </ul>
+    <div class="tab-content">
+        <div id="latest" class="tab-pane fade in active">
+            <br>
+            {% for review in review_latest %}
+            {% include '_review_list.html' %}
+            {% endfor %}
 
-        <div class="text-right">
-            {% if count_review > m %}
-            <a href={{url_for('main.morereview',id=item.id)}} target="_blank">More</a>
-            {% endif %}
+            <div class="text-right">
+                {% if count_review > m %}
+                <a href={{url_for('main.morereview',id=item.id)}} target="_blank">More</a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div id="hot" class="tab-pane fade">
+            <br>
+            {% for review in review_hot %}
+            {% include '_review_list.html' %}
+            {% endfor %}
+
+            <div class="text-right">
+                {% if count_review > m %}
+                <a href={{url_for('main.morehot',id=item.id)}} target="_blank">More</a>
+                {% endif %}
+            </div>
         </div>
     </div>
-    <hr>
-    <h4>The Hot Review</h4><br>
-    <div>
-        {% for review in review_hot %}
-        {% include '_review_list.html' %}
-        {% endfor %}
 
-        <div class="text-right">
-            {% if count_review > m %}
-            <a href={{url_for('main.morehot',id=item.id)}} target="_blank">More</a>
-            {% endif %}
-        </div>
-
-    </div>
     <hr>
     <a href={{url_for('main.add_item_comment',id=item.id)}}>Post your comment</a>
     <hr>
+    <!--Show comments-->
     <div>
         {% for commt in comments %}
         {% include '_show_comment.html' %}

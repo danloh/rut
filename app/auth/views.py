@@ -6,7 +6,7 @@ from flask_oauthlib.client import OAuthException
 from . import auth
 from .. import db, oauth, login_manager
 from config import Config as C
-from ..models import Users, Posts, Comments 
+from ..models import Users, Posts, Comments, Reviews, Clips, Messages, Dialog 
 from .forms import EditProfileForm
 from ..safeurl import is_safe_url, get_redirect_target
 
@@ -129,7 +129,7 @@ def connect():
 @auth.route('/login/<string:server_name>')
 def login(server_name):
     next_c = get_redirect_target()
-    session['next'] = next_c
+    session.setdefault('next',next_c)
 
     '''route to different oauth server'''
     #Google
@@ -262,14 +262,12 @@ def profile(id):
     doings = [i.flag_item for i in query_2.limit(m)]
     dones = [i.flag_item for i in query_3.limit(m)]
 
-    c_query = Comments.query.filter(Comments.creator==user)
     # Reviews
-    review_query = c_query.filter(Comments.heading!=None)
+    review_query = user.reviews
     review_count = review_query.count()
     myreviews = review_query.limit(m)
-
     # comments
-    commt_query = c_query.filter(Comments.heading==None)
+    commt_query = user.comments
     commt_count = commt_query.count()
     mycomments = commt_query.limit(m)
 

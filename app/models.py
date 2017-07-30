@@ -1,76 +1,153 @@
 # -*- coding: utf-8 -*-
 
 import random
-from datetime import datetime
+from datetime import datetime, date
 from flask import url_for, current_app, request
 from flask_sqlalchemy import SQLAlchemy 
 from flask_login import UserMixin, AnonymousUserMixin
 from .import db, login_manager
 
+# simple n2n for Tags Posts 
+tag_post = db.Table(
+    'tag_post',
+    db.Column(
+        'tag_id', db.Integer, db.ForeignKey("tags.id")
+    ),
+    db.Column(
+        'post_id', db.Integer, db.ForeignKey("posts.id")
+    )
+)
+# simple n2n for Tags Items 
+tag_item = db.Table(
+    'tag_item',
+    db.Column(
+        'tag_id', db.Integer, db.ForeignKey("tags.id")
+    ),
+    db.Column(
+        'item_id', db.Integer, db.ForeignKey("items.id")
+    )
+)
+# simple n2n for Tags Demands 
+tag_demand = db.Table(
+    'tag_demand',
+    db.Column(
+        'tag_id', db.Integer, db.ForeignKey("tags.id")
+    ),
+    db.Column(
+        'demand_id', db.Integer, db.ForeignKey("demands.id")
+    )
+)
+# simple n2n for Authors of Items 
+author_item = db.Table(
+    'author_item',  
+    db.Column(
+        'author_id', db.Integer, db.ForeignKey("authors.id")
+    ),
+    db.Column(
+        'item_id', db.Integer, db.ForeignKey("items.id")
+    )
+)
 
-tag_post = db.Table('tag_post',  # simple n2n tag with posts 
-        db.Column('tag_id', db.Integer, db.ForeignKey("tags.id")),
-        db.Column('post_id', db.Integer, db.ForeignKey("posts.id"))
-        )
-tag_item = db.Table('tag_item',  # simple n2n tag with items 
-        db.Column('tag_id', db.Integer, db.ForeignKey("tags.id")),
-        db.Column('item_id', db.Integer, db.ForeignKey("items.id"))
-        )
-tag_demand = db.Table('tag_demand',  # simple n2n tag with demands 
-        db.Column('tag_id', db.Integer, db.ForeignKey("tags.id")),
-        db.Column('demand_id', db.Integer, db.ForeignKey("demands.id"))
-        )
-author_item = db.Table('author_item',  # simple n2n tag with item 
-        db.Column('author_id', db.Integer, db.ForeignKey("authors.id")),
-        db.Column('item_id', db.Integer, db.ForeignKey("items.id"))
-        )
-
+# helper Model for n2n Posts collect Items
 class Collect(db.Model): 
-    __table_name__ = 'collect'   # helper Model for n2n  posts with items
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True) ##??
-    item_id = db.Column(db.Integer, db.ForeignKey("items.id"), 
-                        primary_key=True)
-    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"), 
-                        primary_key=True)
-    order = db.Column(db.Integer)   #item's order in post
+    __table_name__ = 'collect'   
+    id = db.Column(db.Integer, primary_key=True, 
+                   autoincrement=True)  
+    item_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("items.id"), 
+        primary_key=True)
+    post_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("posts.id"), 
+        primary_key=True)
+    order = db.Column(db.SmallInteger)   #item's order in post
     tips = db.Column(db.Text, nullable=False)
-    tip_creator_id = db.Column(db.Integer, db.ForeignKey("users.id")) # n to 1 with Users
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
     
-class Star(db.Model): 
-    __table_name__ = 'star'   # helper Model for n2n  posts with users for star
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), 
-                        primary_key=True)
-    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"), 
-                        primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    # n to 1 with Users
+    tip_creator_id = db.Column(
+        db.Integer, db.ForeignKey("users.id")
+    ) 
+    
 
+# helper Model for n2n Posts with Users for star   
+class Star(db.Model): 
+    __table_name__ = 'star'   
+    user_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("users.id"), 
+        primary_key=True)
+    post_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("posts.id"), 
+        primary_key=True)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
+
+# helper Model for n2n Posts with Users for challenge
 class Challenge(db.Model): 
-    __table_name__ = 'challenge'   # helper Model for n2n  posts with users for challenge
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), 
-                        primary_key=True)
-    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"), 
-                        primary_key=True)
+    __table_name__ = 'challenge'   
+    user_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("users.id"), 
+        primary_key=True)
+    post_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("posts.id"), 
+        primary_key=True)
     deadline = db.Column(db.Date)
     done = db.Column(db.Boolean)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-     
-class Flag(db.Model): 
-    __table_name__ = 'flag'      # helper Model for n2n  users with items
-    item_id = db.Column(db.Integer, db.ForeignKey("items.id"), 
-                        primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), 
-                        primary_key=True)
-    flag_label = db.Column(db.Integer,default=0) #label to read-1,reading-2,read-3
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
 
+# helper Model for n2n Posts co-Contribute
+class Contribute(db.Model): 
+    __table_name__ = 'contribute'   
+    id = db.Column(db.Integer, primary_key=True, 
+                   autoincrement=True) 
+    user_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("users.id"), 
+        primary_key=True)
+    post_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("posts.id"), 
+        primary_key=True)
+    disabled = db.Column(db.Boolean, default=True)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
+
+# helper Model for n2n Users flag Items     
+class Flag(db.Model): 
+    __table_name__ = 'flag'      
+    item_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("items.id"), 
+        primary_key=True)
+    user_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("users.id"), 
+        primary_key=True)
+    #flag label: read-1,reading-2,read-3                   
+    flag_label = db.Column(db.SmallInteger,default=0) 
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
+
+# helper Model for n2n Users favirate Tags
 class Fav(db.Model): 
-    __table_name__ = 'fav'      # helper Model for n2n  users with tags
-    tag_id = db.Column(db.Integer, db.ForeignKey("tags.id"), 
-                        primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), 
-                        primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    __table_name__ = 'fav'      
+    tag_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("tags.id"), 
+        primary_key=True)
+    user_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("users.id"), 
+        primary_key=True)
+    timestamp = db.Column(db.DateTime, 
+                        default=datetime.utcnow)
     
 
 class Posts(db.Model):
@@ -81,29 +158,51 @@ class Posts(db.Model):
     credential = db.Column(db.Text)
     rating = db.Column(db.String(32))
     tag_str = db.Column(db.String(256), default="42")
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
+    # who can edit post, 0-creator,1-applied,2-everyone
+    editable = db.Column(db.String(32),default='Creator')
+
+    # n to 1 with Users
+    creator_id = db.Column(
+        db.Integer, db.ForeignKey("users.id")
+    )  
+
+    # 1 to n with Comments
+    comments = db.relationship(
+        'Comments', backref='post', lazy='dynamic') 
+    # 1 to n with Events
+    events = db.relationship(
+        'Events',backref='post',lazy='dynamic') 
     
-    creator_id = db.Column(db.Integer, db.ForeignKey("users.id"))  # n to 1 with Users
-    
-    comments = db.relationship('Comments', backref='post', lazy='dynamic') # 1 to n with Comments
-
-    starers = db.relationship('Star',                          # n2n with Users for star
-                                foreign_keys=[Star.post_id],
-                                backref=db.backref('star_post',lazy='joined'),
-                                lazy='dynamic',
-                                cascade='all, delete-orphan')
-
-    challengers = db.relationship('Challenge',                          # n2n with Users for challenge
-                                foreign_keys=[Challenge.post_id],
-                                backref=db.backref('challenge_post',lazy='joined'),
-                                lazy='dynamic',
-                                cascade='all, delete-orphan')
-
-    items = db.relationship('Collect',                              # n2n with Items
-                            foreign_keys=[Collect.post_id],
-                            backref=db.backref('post', lazy='joined'),
-                            lazy='dynamic',
-                            cascade='all, delete-orphan')
+    # n2n with Users for contributor
+    contributors = db.relationship(
+        'Contribute',                          
+        foreign_keys=[Contribute.post_id],
+        backref=db.backref('contribute_post',lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with Users for star
+    starers = db.relationship(
+        'Star',                          
+        foreign_keys=[Star.post_id],
+        backref=db.backref('star_post',lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with Users for challenge
+    challengers = db.relationship(
+        'Challenge',                          
+        foreign_keys=[Challenge.post_id],
+        backref=db.backref('challenge_post',lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with Items
+    items = db.relationship(
+        'Collect',                              
+        foreign_keys=[Collect.post_id],
+        backref=db.backref('post', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
     
     # collect items into post
     def collected(self,item):
@@ -116,11 +215,17 @@ class Posts(db.Model):
 
     def collecting(self, item, tips, tip_creator):
         '''
-        collect item into post, ie. add a record into Collect table
+        collect item into post, 
+        ie. add a record into Collect table
         '''
         if not self.collected(item):
-            c = Collect(post=self,item=item,order=self.items.count()+1,
-                        tips=tips,tip_creator=tip_creator) # refer to the relationship-backref var
+            c = Collect(
+                post=self,
+                item=item,
+                order=self.items.count()+1,
+                tips=tips,
+                tip_creator=tip_creator
+            ) # refer to the relationship-backref var
             db.session.add(c)
             db.session.commit() #if need commit?
 
@@ -190,31 +295,46 @@ class Items(db.Model):
     __table_name__ = 'items'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(256), nullable=False)
-    res_url = db.Column(db.String(256))
+    res_url = db.Column(db.String(512))
     uid = db.Column(db.String(64), unique=True, nullable=False)
-    author = db.Column(db.String(128))
-    translator = db.Column(db.String(128))
-    cover = db.Column(db.String(256))
+    author = db.Column(db.String(256))
+    translator = db.Column(db.String(256))
+    cover = db.Column(db.String(512))
     cate = db.Column(db.String(32))
-    publisher = db.Column(db.String(128))
+    publisher = db.Column(db.String(256))
     language = db.Column(db.String(32))
     details = db.Column(db.Text)
     itag_str = db.Column(db.String(512))
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
 
-    comments = db.relationship('Comments',backref='item',lazy='dynamic') # 1 to n with Comments
+    # 1 to n with Comments
+    comments = db.relationship(
+        'Comments',backref='item',lazy='dynamic') 
+    # 1 to n with reviews
+    reviews = db.relationship(
+        'Reviews',backref='item',lazy='dynamic') 
+    # 1 to n with Clips
+    clips = db.relationship(
+        'Clips',backref='item',lazy='dynamic') 
+    # 1 to n with Events
+    events = db.relationship(
+        'Events',backref='item',lazy='dynamic') 
 
-    posts = db.relationship('Collect',                                   # n2n with Posts
-                            foreign_keys=[Collect.item_id],
-                            backref=db.backref('item', lazy='joined'),
-                            lazy='dynamic',
-                            cascade='all, delete-orphan')
-    
-    flagers = db.relationship('Flag',
-                              foreign_keys=[Flag.item_id],
-                              backref=db.backref('flag_item',lazy='joined'),
-                              lazy='dynamic',
-                              cascade='all, delete-orphan')
+    # n2n with Posts
+    posts = db.relationship(
+        'Collect',                                   
+        foreign_keys=[Collect.item_id],
+        backref=db.backref('item', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with Users
+    flagers = db.relationship(
+        'Flag',
+        foreign_keys=[Flag.item_id],
+        backref=db.backref('flag_item',lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
 
     # set default item cover 
     @property    
@@ -237,11 +357,11 @@ class Items(db.Model):
         split the input tags to seperated tag,
         and add them into Tags Table
         '''
-        #_taglist = self.itag_str.split(',')
+        #_taglist = self.itag_str.split(',') #
         _tagset = set(t.strip() for t in self.itag_str.split(','))
         _query = Tags.query
         for _tg in _tagset:
-            #_tg = _tg.strip()
+            #_tg = _tg.strip() #
             if _tg is not "":
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
@@ -257,53 +377,73 @@ class Items(db.Model):
     def __repr__(self):
         return '<Items %r>' % self.title
 
+# helper Model for Tags hierarchy
 class Clan(db.Model):
     __tablename__ = 'clan'
-    parent_tag_id = db.Column(db.Integer, db.ForeignKey('tags.id'),
-                            primary_key=True)
-    child_tag_id = db.Column(db.Integer, db.ForeignKey('tags.id'),
-                            primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    parent_tag_id = db.Column(
+        db.Integer, 
+        db.ForeignKey('tags.id'),
+        primary_key=True)
+    child_tag_id = db.Column(
+        db.Integer, 
+        db.ForeignKey('tags.id'),
+        primary_key=True)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
 
 
 class Tags(db.Model):
     __table_name__ = "tags"
     id = db.Column(db.Integer, primary_key=True)
-    tag = db.Column(db.String(64), nullable=False, unique=True)  
-    descript = db.Column(db.String(320))
+    tag = db.Column(db.String(128), nullable=False, unique=True)  
+    descript = db.Column(db.String(512))
 
-    favers = db.relationship('Fav',       # n2n with users
-                              foreign_keys=[Fav.tag_id],
-                              backref=db.backref('fav_tag',lazy='joined'),
-                              lazy='dynamic',
-                              cascade='all, delete-orphan')
+    # 1 to n with Events
+    events = db.relationship(
+        'Events',backref='tag',lazy='dynamic') 
 
-    posts = db.relationship('Posts',      # simple n2n relationship with Posts
-                            secondary=tag_post,
-                            backref=db.backref('tags', lazy='joined'),
-                            lazy='dynamic')
+    # n2n with users
+    favers = db.relationship(
+        'Fav',       
+        foreign_keys=[Fav.tag_id],
+        backref=db.backref('fav_tag',lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
 
-    items = db.relationship('Items',      # simple n2n relationship with items
-                            secondary=tag_item,
-                            backref=db.backref('itags', lazy='joined'),
-                            lazy='dynamic')
+    # simple n2n relationship with Posts
+    posts = db.relationship(
+        'Posts',      
+        secondary=tag_post,
+        backref=db.backref('tags', lazy='joined'),
+        lazy='dynamic')
 
-    demands = db.relationship('Demands',      # simple n2n relationship with demands
-                            secondary=tag_demand,
-                            backref=db.backref('dtags', lazy='joined'),
-                            lazy='dynamic')
+    # simple n2n relationship with items
+    items = db.relationship(
+        'Items',      
+        secondary=tag_item,
+        backref=db.backref('itags', lazy='joined'),
+        lazy='dynamic')
 
-
-    parent_tags = db.relationship('Clan',
-                               foreign_keys=[Clan.child_tag_id],
-                               backref=db.backref('child_tag', lazy='joined'),
-                               lazy='dynamic',
-                               cascade='all, delete-orphan')
-    child_tags = db.relationship('Clan',
-                                foreign_keys=[Clan.parent_tag_id],
-                                backref=db.backref('parent_tag', lazy='joined'),
-                                lazy='dynamic',
-                                cascade='all, delete-orphan')
+    # simple n2n relationship with demands
+    demands = db.relationship(
+        'Demands',      
+        secondary=tag_demand,
+        backref=db.backref('dtags', lazy='joined'),
+        lazy='dynamic')
+    
+    # n2n with self
+    parent_tags = db.relationship(
+        'Clan',
+        foreign_keys=[Clan.child_tag_id],
+        backref=db.backref('child_tag', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    child_tags = db.relationship(
+        'Clan',
+        foreign_keys=[Clan.parent_tag_id],
+        backref=db.backref('parent_tag', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
     
     def parent_is(self, tag):
         return self.parent_tags.filter_by(
@@ -318,14 +458,19 @@ class Tags(db.Model):
     def __repr__(self):
         return '<Tags %r>' % self.tag
 
-
+# helper Model for Reply comments 
 class Reply(db.Model):
     __tablename__ = 'reply'
-    parent_commt_id = db.Column(db.Integer, db.ForeignKey('comments.id'),
-                            primary_key=True)
-    child_commt_id = db.Column(db.Integer, db.ForeignKey('comments.id'),
-                            primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    parent_commt_id = db.Column(
+        db.Integer, 
+        db.ForeignKey('comments.id'),
+        primary_key=True)
+    child_commt_id = db.Column(
+        db.Integer, 
+        db.ForeignKey('comments.id'),
+        primary_key=True)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
 
 
 class Comments(db.Model):
@@ -334,24 +479,48 @@ class Comments(db.Model):
     heading = db.Column(db.String(256))
     body = db.Column(db.Text, nullable=False)
     vote = db.Column(db.Integer,default=1)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
     
-    creator_id = db.Column(db.Integer, db.ForeignKey("users.id"))  # n to 1   with Users
-    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"))  # n to 1  with Posts
-    item_id = db.Column(db.Integer, db.ForeignKey("items.id"))  # n to 1   with Items
-    demand_id = db.Column(db.Integer, db.ForeignKey("demands.id"))  # n to 1 with demands
+    #1 to n with Events
+    events = db.relationship(
+        'Events',backref='comment',lazy='dynamic') 
 
-    parent_commts = db.relationship('Reply',
-                               foreign_keys=[Reply.child_commt_id],
-                               backref=db.backref('child_commt', lazy='joined'),
-                               lazy='dynamic',
-                               cascade='all, delete-orphan')
-    child_commts = db.relationship('Reply',
-                                foreign_keys=[Reply.parent_commt_id],
-                                backref=db.backref('parent_commt', lazy='joined'),
-                                lazy='dynamic',
-                                cascade='all, delete-orphan')
+    # n to 1 with Users
+    creator_id = db.Column(
+        db.Integer, db.ForeignKey("users.id")
+    ) 
+    # n to 1 with Posts 
+    post_id = db.Column(
+        db.Integer, db.ForeignKey("posts.id")
+    )  
+    # n to 1 with Items
+    item_id = db.Column(
+        db.Integer, db.ForeignKey("items.id")
+    )  
+    # n to 1 with Reviews
+    review_id = db.Column(
+        db.Integer, db.ForeignKey("reviews.id")
+    )  
+    # n to 1 with demands
+    demand_id = db.Column(
+        db.Integer, db.ForeignKey("demands.id")
+    )  
+
+    # n2n with self
+    parent_commts = db.relationship(
+        'Reply',
+        foreign_keys=[Reply.child_commt_id],
+        backref=db.backref('child_commt', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    child_commts = db.relationship(
+        'Reply',
+        foreign_keys=[Reply.parent_commt_id],
+        backref=db.backref('parent_commt', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
                                 
     def reply(self, commt):
         r = Reply(parent_commt=self, child_commt=commt)
@@ -361,6 +530,60 @@ class Comments(db.Model):
     def __repr__(self):
         return '<Coments %r>' % self.body 
 
+class Reviews(db.Model):
+    __table_name__ = "reviews"
+    id = db.Column(db.Integer, primary_key=True)
+    heading = db.Column(db.String(256), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    vote = db.Column(db.Integer,default=1)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
+    disabled = db.Column(db.Boolean)
+
+    # 1 to n with Comments
+    comments = db.relationship(
+        'Comments',backref='review',lazy='dynamic') 
+    # 1 to n with Events
+    events = db.relationship(
+        'Events',backref='review',lazy='dynamic') 
+    
+    # n to 1 with Users
+    creator_id = db.Column(
+        db.Integer, db.ForeignKey("users.id")
+    )  
+    # n to 1 with Items
+    item_id = db.Column(
+        db.Integer, db.ForeignKey("items.id")
+    )  
+    
+    def __repr__(self):
+        return '<Reviews %r>' % self.heading
+
+class Clips(db.Model):
+    __table_name__ = "clips"
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text, nullable=False)
+    vote = db.Column(db.Integer,default=1)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
+    disabled = db.Column(db.Boolean)
+
+    # 1 to n with Events
+    events = db.relationship(
+        'Events',backref='clip',lazy='dynamic') 
+    
+    # n to 1   with Users
+    creator_id = db.Column(
+        db.Integer, db.ForeignKey("users.id")
+    )  
+    # n to 1   with Items
+    item_id = db.Column(
+        db.Integer, db.ForeignKey("items.id")
+    )  
+    
+    def __repr__(self):
+        return '<Clips %r>' % self.body
+
 
 class Demands(db.Model):
     __table_name__ = "demands"
@@ -368,19 +591,28 @@ class Demands(db.Model):
     body = db.Column(db.Text, nullable=False)
     vote = db.Column(db.Integer,default=1)
     dtag_str = db.Column(db.String(512))
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
 
-    comments = db.relationship('Comments',backref='demand',lazy='dynamic') # 1 to n with Comments
+    # 1 to n with Comments
+    comments = db.relationship(
+        'Comments',backref='demand',lazy='dynamic') 
+    # 1 to n with Events
+    events = db.relationship(
+        'Events',backref='demand',lazy='dynamic') 
 
-    requestor_id = db.Column(db.Integer, db.ForeignKey("users.id"))  # n to 1 relation with Users
+    # n to 1 relation with Users
+    requestor_id = db.Column(
+        db.Integer, db.ForeignKey("users.id")
+    )  
 
     def dtag_to_db(self):
       
-        #_taglist = self.dtag_str.split(',')
+        #_taglist = self.dtag_str.split(',') #
         _tagset = set(t.strip() for t in self.dtag_str.split(','))
         _query = Tags.query
         for _tg in _tagset:
-            #_tg = _tg.strip()
+            #_tg = _tg.strip() #
             if _tg is not "":
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
@@ -394,6 +626,57 @@ class Demands(db.Model):
     
     def __repr__(self):
         return '<Demands %r>' % self.body 
+
+
+# helper Model for Messages n2n with self for dialog
+class Dialog(db.Model):
+    __tablename__ = 'dialog'
+    s_id = db.Column(
+        db.Integer, 
+        db.ForeignKey('messages.id'),
+        primary_key=True)
+    r_id = db.Column(
+        db.Integer, 
+        db.ForeignKey('messages.id'),
+        primary_key=True)
+    timestamp = db.Column(db.DateTime, 
+                         default=datetime.utcnow)
+
+class Messages(db.Model):
+    __table_name__ = "messages"
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text) # !! encrypt, to do 
+    status = db.Column(db.String(32)) #unread,read,s_del,r_del
+
+    # n to 1 with Users for send and receive msg
+    send_id = db.Column(
+        db.Integer, db.ForeignKey('users.id')
+    )
+    receive_id = db.Column(
+        db.Integer, db.ForeignKey('users.id')
+    )
+
+    # n2n with self for re msg, ie, dialog
+    sends = db.relationship(
+        'Dialog',
+        foreign_keys=[Dialog.r_id],
+        backref=db.backref('re', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    res = db.relationship(
+        'Dialog',
+        foreign_keys=[Dialog.s_id],
+        backref=db.backref('send', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+
+    def dialog(self, message):
+        d = Dialog(send=self, re=message)
+        db.session.add(d)
+        db.session.commit()
+
+    def __repr__(self):
+        return '<Messages %r>' % self.content
 
 
 class Permission:
@@ -414,20 +697,26 @@ class Roles(db.Model):
     __table_name__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
     duty = db.Column(db.String(32), unique=True)
-    default = db.Column(db.Boolean, default=False, index=True)
+    default = db.Column(db.Boolean, default=False)
     permissions = db.Column(db.Integer)
-    users = db.relationship('Users', backref='role', lazy='dynamic')  #1 to n with Users
+
+    # 1 to n with Users
+    users = db.relationship(
+        'Users', backref='role', lazy='dynamic')  
 
     # for add roles
     role_cases ={
-        "user":(Permission.COMMENT | Permission.SCFFF | Permission.POST | 
-                Permission.ADD_ITEM | Permission.ADD_TIPS | Permission.EDIT_POST | 
-                Permission.EDIT_ITEM | Permission.EDIT_TIPS | Permission.ADD_DEMAND, 
+        "user":(Permission.COMMENT | Permission.SCFFF | 
+                Permission.POST | Permission.ADD_ITEM | 
+                Permission.ADD_TIPS | Permission.EDIT_POST | 
+                Permission.EDIT_ITEM | Permission.EDIT_TIPS | 
+                Permission.ADD_DEMAND, 
                 True),
-        "moderator":(Permission.COMMENT | Permission.SCFFF | Permission.POST | 
-                    Permission.ADD_ITEM | Permission.ADD_TIPS | Permission.EDIT_POST | 
-                    Permission.EDIT_ITEM | Permission.EDIT_TIPS | Permission.ADD_DEMAND | 
-                    Permission.MOD_COMMENT, 
+        "moderator":(Permission.COMMENT | Permission.SCFFF | 
+                    Permission.POST | Permission.ADD_ITEM | 
+                    Permission.ADD_TIPS | Permission.EDIT_POST | 
+                    Permission.EDIT_ITEM | Permission.EDIT_TIPS | 
+                    Permission.ADD_DEMAND | Permission.MOD_COMMENT, 
                     False), 
         "Admin":(0xffff, False)               
     }
@@ -447,22 +736,28 @@ class Roles(db.Model):
     def __repr__(self):
         return '<Roles %r>' % self.duty
 
+# helper Model for follow Users 
 class Follow(db.Model):
     __tablename__ = 'follow'
-    follower_id = db.Column(db.Integer, db.ForeignKey('users.id'),
-                            primary_key=True)
-    followed_id = db.Column(db.Integer, db.ForeignKey('users.id'),
-                            primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    follower_id = db.Column(
+        db.Integer, 
+        db.ForeignKey('users.id'),
+        primary_key=True)
+    followed_id = db.Column(
+        db.Integer, 
+        db.ForeignKey('users.id'),
+        primary_key=True)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
 
 class Users(UserMixin, db.Model):
     __table_name__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     auth_server = db.Column(db.String(32), nullable=False)      
-    auth_social_id = db.Column(db.String(64), nullable=False)   
-    name = db.Column(db.String(64), nullable=False)   
+    auth_social_id = db.Column(db.String(128), nullable=False)   
+    name = db.Column(db.String(128), nullable=False)   
     email = db.Column(db.String(128))   
-    avatar = db.Column(db.String(256))   
+    avatar = db.Column(db.String(512))   
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     nickname = db.Column(db.String(64))
@@ -470,54 +765,105 @@ class Users(UserMixin, db.Model):
     about_me = db.Column(db.Text)
     links = db.Column(db.String(64))
 
-    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))  # n to 1 with Roles
-    posts = db.relationship('Posts', backref='creator', lazy='dynamic')  # 1 to n with Posts 
-    tips = db.relationship('Collect', backref='tip_creator', lazy='dynamic')  # 1 to n with Collect for Tips 
-    comments = db.relationship('Comments', backref='creator', lazy='dynamic')  # 1 to n with Comments 
-    demands = db.relationship('Demands', backref='requestor', lazy='dynamic')  # 1 to n with Demands
+    # n to 1 with Roles
+    role_id = db.Column(
+        db.Integer, db.ForeignKey('roles.id')
+    )  
 
-    star_posts = db.relationship('Star',                         # n2n with Posts for star
-                                 foreign_keys=[Star.user_id],
-                                 backref=db.backref('starer',lazy='joined'),
-                                 lazy='dynamic',
-                                 cascade='all, delete-orphan')
+    # 1 to n with Posts 
+    posts = db.relationship(
+        'Posts', backref='creator', lazy='dynamic')  
+    # 1 to n with Collect for Tips 
+    tips = db.relationship(
+        'Collect', backref='tip_creator', lazy='dynamic')  
+    # 1 to n with Comments 
+    comments = db.relationship(
+        'Comments', backref='creator', lazy='dynamic')  
+    # 1 to n with Reviews
+    reviews = db.relationship(
+        'Reviews', backref='creator', lazy='dynamic')   
+    # 1 to n with Clips
+    clips = db.relationship(
+        'Clips', backref='creator', lazy='dynamic')   
+    # 1 to n with Demands
+    demands = db.relationship(
+        'Demands', backref='requestor', lazy='dynamic')  
+    # 1 to n with Events 
+    events = db.relationship(
+        'Events', backref='actor', lazy='dynamic')  
+  
+    # n2n with self for Messages
+    # 1 to n with Messages for send
+    send_messages = db.relationship(
+        'Messages',
+        foreign_keys=[Messages.send_id],
+        backref=db.backref('sender',lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan') 
+    # 1 to n with Messages for receive
+    receive_messages = db.relationship(
+        'Messages',
+        foreign_keys=[Messages.receive_id],
+        backref=db.backref('receiver',lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')  
+    # n2n with Posts for contribute
+    contribute_posts = db.relationship(
+        'Contribute',               
+        foreign_keys=[Contribute.user_id],
+        backref=db.backref('contributor',lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with Posts for star
+    star_posts = db.relationship(
+        'Star',                         
+        foreign_keys=[Star.user_id],
+        backref=db.backref('starer',lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with Posts for challenge
+    challenge_posts = db.relationship(
+        'Challenge',               
+        foreign_keys=[Challenge.user_id],
+        backref=db.backref('challenger',lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with Items for flag 
+    flag_items = db.relationship(
+        'Flag',
+        foreign_keys=[Flag.user_id],
+        backref=db.backref('flager',lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with Tags for favirate
+    fav_tags = db.relationship(
+        'Fav',
+        foreign_keys=[Fav.user_id],
+        backref=db.backref('faver',lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with self for follow
+    followed = db.relationship(
+        'Follow',
+        foreign_keys=[Follow.follower_id],
+        backref=db.backref('follower', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with self for follow
+    followers = db.relationship(
+        'Follow',
+        foreign_keys=[Follow.followed_id],
+        backref=db.backref('followed', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
     
-    challenge_posts = db.relationship('Challenge',               # n2n with Posts for challenge
-                                 foreign_keys=[Challenge.user_id],
-                                 backref=db.backref('challenger',lazy='joined'),
-                                 lazy='dynamic',
-                                 cascade='all, delete-orphan')
-    
-    flag_items = db.relationship('Flag',
-                              foreign_keys=[Flag.user_id],
-                              backref=db.backref('flager',lazy='joined'),
-                              lazy='dynamic',
-                              cascade='all, delete-orphan')
-    
-    fav_tags = db.relationship('Fav',
-                              foreign_keys=[Fav.user_id],
-                              backref=db.backref('faver',lazy='joined'),
-                              lazy='dynamic',
-                              cascade='all, delete-orphan')
-
-    followed = db.relationship('Follow',
-                               foreign_keys=[Follow.follower_id],
-                               backref=db.backref('follower', lazy='joined'),
-                               lazy='dynamic',
-                               cascade='all, delete-orphan')
-    followers = db.relationship('Follow',
-                                foreign_keys=[Follow.followed_id],
-                                backref=db.backref('followed', lazy='joined'),
-                                lazy='dynamic',
-                                cascade='all, delete-orphan')
-    
-
     #init and set role
     def __init__(self, **kwargs):
         super(Users, self).__init__(**kwargs)
         if self.role is None:
             if self.email == current_app.config['ADMIN']:
-                self.role = Roles.query.filter_by(permissions=0xffff).first()
+                self.role = Roles.query.filter_by(permissions=0xffff).\
+                           first()
             if self.role is None:
                 self.role = Roles.query.filter_by(default=True).first()
 
@@ -559,7 +905,7 @@ class Users(UserMixin, db.Model):
     #follow and unfollow user
     def follow(self, user):
         if not self.is_following(user):
-            f = Follow(follower=self, followed=user)
+            f = Follow(follower=self,followed=user)
             db.session.add(f)
             db.session.commit()
     def unfollow(self, user):
@@ -575,17 +921,19 @@ class Users(UserMixin, db.Model):
             follower_id=user.id).first() is not None
 
     # flag an item as read, to read or reading
-    def flag(self, item,n):
-        fl = Flag.query.filter_by(user_id=self.id, item_id=item.id).first()
+    def flag(self, item, n):
+        fl = Flag.query.filter_by(user_id=self.id,item_id=item.id).\
+            first()
         if fl:
             fl.flag_label = n
             db.session.add(fl)
         else:
-            new_fl = Flag(flager=self, flag_item=item, flag_label=n)
+            new_fl = Flag(flager=self, flag_item=item,flag_label=n)
             db.session.add(new_fl)
         db.session.commit()
     def flaging(self,item):
-        fl = Flag.query.filter_by(user_id=self.id, item_id=item.id).first()
+        fl = Flag.query.filter_by(user_id=self.id,item_id=item.id).\
+            first()
         if fl is None:
             return "Flag It"
         if fl.flag_label == 1:
@@ -616,6 +964,11 @@ class Users(UserMixin, db.Model):
 
 
 class AnonymousUser(AnonymousUserMixin):
+    @property
+    def id(self):
+        id = -1
+        return id
+
     def can(self, permissions):
         return False
 
@@ -658,16 +1011,54 @@ class Authors(db.Model):
     gender = db.Column(db.String(16))
     age = db.Column(db.String(8))
     about = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
 
-    items = db.relationship('Items',      # simple n2n relationship with items
-                            secondary=author_item,
-                            backref=db.backref('authors', lazy='joined'),
-                            lazy='dynamic')
+    # simple n2n relationship with items
+    items = db.relationship(
+        'Items',      
+        secondary=author_item,
+        backref=db.backref('authors', lazy='joined'),
+        lazy='dynamic')
 
     def __repr__(self):
         return '<Authors %r>' % self.name
 
 
+class Events(db.Model):
+    __table_name__ = "events"
+    id = db.Column(db.Integer, primary_key=True)
+    action = db.Column(db.String(32))
+    date = db.Column(db.Date, default=date.today)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
+    
+    # n to 1 with Users and others for record activities
+    user_id =  db.Column(
+        db.Integer, db.ForeignKey('users.id')
+    )
+    post_id = db.Column(
+        db.Integer, db.ForeignKey('posts.id')
+    )
+    comment_id = db.Column(
+        db.Integer, db.ForeignKey('comments.id')
+    )
+    clip_id = db.Column(
+        db.Integer, db.ForeignKey('clips.id')
+    )
+    review_id = db.Column(
+        db.Integer, db.ForeignKey('reviews.id')
+    )
+    item_id = db.Column(
+        db.Integer, db.ForeignKey('items.id')
+    )
+    demand_id = db.Column(
+        db.Integer, db.ForeignKey('demands.id')
+    )
+    tag_id = db.Column(
+        db.Integer, db.ForeignKey('tags.id')
+    )
 
+    def __repr__(self):
+        return '<Events %r>' % self.action
 

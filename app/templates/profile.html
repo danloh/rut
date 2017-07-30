@@ -111,7 +111,7 @@
 <div class="tab-content">
 
     <div id="star" class="tab-pane fade">
-        <hr>
+        <br>
         {% for post in star_posts %}
         {% include '_post_list.html' %}
         {% endfor %}
@@ -125,7 +125,7 @@
     </div>
 
     <div id="ing" class="tab-pane fade in active">
-        <hr>
+        <br>
         {% for item in doings %}
         {% include '_show_item.html' %}
         <hr>
@@ -140,7 +140,7 @@
     </div>
 
     <div id="todo" class="tab-pane fade">
-        <hr>
+        <br>
         {% for item in todos %}
         {% include '_show_item.html' %}
         <hr>
@@ -154,7 +154,7 @@
     </div>
 
     <div id="done" class="tab-pane fade">
-        <hr>
+        <br>
         {% for item in dones %}
         {% include '_show_item.html' %}
         <hr>

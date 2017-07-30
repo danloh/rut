@@ -12,7 +12,7 @@
 <div class="text-center">
     <!-- <h3>The Tips for Reading up on Something</h3> -->
     <h4>Share the Challenging, Challenge the Sharing, 
-        <a href ="{{url_for('main.create')}}">Create</a> Now
+        <a href ="{{url_for('main.create')}}">Create Now</a>
     </h4>
     <hr>
 </div>
@@ -27,7 +27,7 @@
 <div class="tab-content">
 
     <div id="latest" class="tab-pane fade in active">
-        <hr>
+        <br>
         {% for post in posts_latest %}
         {% include '_post_list.html' %}
         
@@ -35,7 +35,7 @@
     </div>
 
     <div id="popular" class="tab-pane fade">
-        <hr>
+        <br>
         {% for post in posts_popular %}           
         {% include '_post_list.html' %}
 
@@ -43,7 +43,7 @@
     </div>
 
     <div id="random" class="tab-pane fade">
-        <hr>
+        <br>
         {% for post in posts_random %}
         {% include '_post_list.html' %}
 
