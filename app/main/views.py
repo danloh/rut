@@ -89,7 +89,7 @@ def collection():
 
 
 @main.route('/create',methods=['GET','POST'])
-#@login_required
+@login_required
 def create():
     
     form = PostForm()
