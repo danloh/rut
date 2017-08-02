@@ -63,10 +63,9 @@
     <hr>
     <!--Show comments-->
     <div>
-        {% for commt in comments %}
+        {% set commts = comments %}
         {% include '_show_comment.html' %}
-        {% endfor %}
-
+        
         <div class="text-right">
             {% if count_comment > m %}
             <a href={{url_for('main.morecomment_i',id=item.id)}} target="_blank">

@@ -1,7 +1,7 @@
 {% extends "layout1.html" %}
 {% import "_macros.html" as macros %}
 
-{% block title %} More Posts {% endblock title %}
+{% block title %} More Reviews {% endblock title %}
 
 {% block content %}
 
@@ -23,7 +23,7 @@
 </div>
 {% if pagination and pagination.pages > 1 %}
 <div class="text-center">
-    {{ macros.pagination_widget(pagination, '.morereview',id=item.id) }}
+    {{ macros.pagination_widget(pagination, endpoint,id=item.id if item else user.id) }}
 </div>
 {% endif %}
 

@@ -21,12 +21,13 @@ from ..decorators import admin_required, permission_required
 def index():
 
     _query = Posts.query
+    m = current_app.config['POST_PER_PAGE']
 
-    posts_latest = _query.order_by(Posts.timestamp.desc()).limit(20)
-    posts_popular = _query.order_by(Posts.starers).limit(20)
-    posts_random = _query.order_by(db.func.rand()).limit(20)
+    posts_latest = _query.order_by(Posts.timestamp.desc()).limit(m)
+    posts_popular = _query.order_by(Posts.starers).limit(m)
+    posts_random = _query.order_by(db.func.rand()).limit(m)
 
-    tags = Tags.query.order_by(db.func.rand()).limit(20)
+    tags = Tags.query.order_by(db.func.rand()).limit(m)
 
     return render_template("index.html",tags =tags, 
                             posts_latest = posts_latest, 
@@ -126,7 +127,7 @@ def post(id):
         ).first()
 
     posts_query = post.creator.posts.filter(Posts.id != id)
-    m = 20
+    m = current_app.config['COMMENT_PER_PAGE']
     posts = posts_query.limit(m) 
     posts_count = posts_query.count()
     
@@ -141,12 +142,14 @@ def post(id):
     tips_c = {t.item_id:t for t in c_tips}  # item_id maping tip-object
 
     contributes = post.contributors
+    comments = post.comments.order_by(Comments.timestamp.desc())
      
     return render_template('post.html', 
                            m=m, posts_count=posts_count,
                            post=post, items=items, posts=posts,
                            tips_c=tips_c, display=display,
-                           contributes=contributes)
+                           contributes=contributes,
+                           comments=comments)
 
 
 @main.route('/post/add/<int:id>',methods=['GET','POST'])
@@ -395,7 +398,7 @@ def item(id):
     item = Items.query.get_or_404(id)   # item 's id
     posts = [_c.post for _c in item.posts]
 
-    m = 10
+    m = current_app.config['COMMENT_PER_PAGE']
     
     review_q = item.reviews
     count_review = review_q.count()
@@ -406,7 +409,7 @@ def item(id):
     #comment_my = query.filter(Comments.creator==current_user)
     #count_my = comment_my.count()
   
-    comments = comment_q.limit(m)
+    comments = comment_q.order_by(Comments.timestamp.desc()).limit(m)
     review_latest = review_q.order_by(Reviews.timestamp.desc()).limit(m)
     review_hot = review_q.order_by(Reviews.vote.desc()).limit(m)
      
@@ -699,7 +702,7 @@ def challenge():
         db.session.commit()
 
     # clips  
-    m = 20  # when exeed this to show more
+    m = current_app.config['COMMENT_PER_PAGE']  # when exeed this to show more
     query_my = current_user.clips.order_by(Clips.timestamp.desc())
     count_my = query_my.count()
     
@@ -813,7 +816,7 @@ def demand(id):
 
     return render_template('demand.html',
                             demand=demand, form=form, tags=tags,
-                            pangination=pagination, comments=comments)
+                            pagination=pagination, comments=comments)
 
     
 @main.route('/comment/p/<int:id>', methods=['GET','POST'])  
@@ -887,7 +890,7 @@ def review(id):
     return render_template(
                 'review.html',
                 review=review, form=form, tags=tags,
-                pangination=pagination, comments=comments)
+                pagination=pagination, comments=comments)
 
 
 @main.route('/review/i/<int:id>', methods=['GET','POST'])  
@@ -993,8 +996,7 @@ def morecomment_i(id):
 
     page = request.args.get('page', 1, type=int)
 
-    pagination = item.comments.filter(Comments.heading == None).\
-                order_by(Comments.timestamp.desc()).\
+    pagination = item.comments.order_by(Comments.timestamp.desc()).\
                 paginate(
                     page,
                     per_page=current_app.config['COMMENT_PER_PAGE'],
@@ -1065,7 +1067,28 @@ def morepost(id):
 
     return render_template('morepost.html',
                            user=user, posts=posts,
-                           pagination=pagination, ref="created")
+                           pagination=pagination, ref="created",
+                           endpoint=".morepost")
+
+@main.route('/morestar/u/<id>', methods=['GET','POST'])  
+@login_required
+def morestar(id):
+    user = Users.query.get_or_404(id)   # user 's id 
+
+    page = request.args.get('page', 1, type=int)
+
+    pagination = user.star_posts.order_by(Star.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=current_app.config['POST_PER_PAGE'],
+                    error_out=False
+                )
+    posts = [item.star_post for item in pagination.items]
+
+    return render_template('morepost.html',
+                           user=user, posts=posts,
+                           pagination=pagination, ref="star-ed",
+                           endpoint=".morestar")
 
 
 @main.route('/morereview/u/<id>', methods=['GET','POST'])  
@@ -1086,7 +1109,8 @@ def morereview_u(id):
     return render_template('morereview.html',
                            item=None, reviews=reviews,
                            pagination=pagination, 
-                           user=user, ref="user")
+                           user=user, ref="user",
+                           endpoint=".morereview_u")
 
 
 @main.route('/morereview/i/<id>', methods=['GET','POST'])  
@@ -1096,7 +1120,7 @@ def morereview(id):
 
     page = request.args.get('page', 1, type=int)
 
-    pagination = item.reviews.order_by(Comments.timestamp.desc()).\
+    pagination = item.reviews.order_by(Reviews.timestamp.desc()).\
                 paginate(
                     page,
                     per_page=current_app.config['POST_PER_PAGE'],
@@ -1107,7 +1131,8 @@ def morereview(id):
     return render_template('morereview.html',
                            item=item, reviews=reviews,
                            pagination=pagination, 
-                           user=None, ref="Latest")
+                           user=None, ref="Latest",
+                           endpoint=".morereview")
 
 @main.route('/morehot/i/<id>', methods=['GET','POST'])  
 @login_required
@@ -1116,7 +1141,7 @@ def morehot(id):
 
     page = request.args.get('page', 1, type=int)
 
-    pagination = item.reviews.order_by(Comments.vote.desc()).\
+    pagination = item.reviews.order_by(Reviews.vote.desc()).\
                 paginate(
                     page,
                     per_page=current_app.config['POST_PER_PAGE'],
@@ -1127,26 +1152,9 @@ def morehot(id):
     return render_template('morereview.html',
                            item=item, reviews=reviews,
                            pagination=pagination, 
-                           user=None, ref="Hot")
+                           user=None, ref="Hot",
+                           endpoint=".morehot")
 
-@main.route('/morestar/u/<id>', methods=['GET','POST'])  
-@login_required
-def morestar(id):
-    user = Users.query.get_or_404(id)   # user 's id 
-
-    page = request.args.get('page', 1, type=int)
-
-    pagination = user.star_posts.order_by(Star.timestamp.desc()).\
-                paginate(
-                    page,
-                    per_page=current_app.config['POST_PER_PAGE'],
-                    error_out=False
-                )
-    posts = [item.star_post for item in pagination.items]
-
-    return render_template('morepost.html',
-                           user=user, posts=posts,
-                           pagination=pagination, ref="star-ed")
 
 @main.route('/moreschedule/u/<id>', methods=['GET','POST'])  
 @login_required
@@ -1166,7 +1174,8 @@ def moreschedule(id):
 
     return render_template('moreitem.html',
                            user=user, items=items,
-                           pagination=pagination, ref="scheduled")
+                           pagination=pagination, ref="scheduled",
+                           endpoint=".moreschedule")
 
 
 @main.route('/moredoing/u/<id>', methods=['GET','POST'])  
@@ -1187,7 +1196,8 @@ def moredoing(id):
 
     return render_template('moreitem.html',
                            user=user, items=items,
-                           pagination=pagination, ref="working on")
+                           pagination=pagination, ref="working on",
+                           endpoint=".moredoing")
 
 @main.route('/moredone/u/<id>', methods=['GET','POST'])  
 @login_required
@@ -1207,7 +1217,8 @@ def moredone(id):
 
     return render_template('moreitem.html',
                            user=user, items=items,
-                           pagination=pagination, ref="have done")
+                           pagination=pagination, ref="have done",
+                           endpoint=".moredone")
 
 ## follow and unfollow - non-ajax
 @main.route('/follow/<id>')

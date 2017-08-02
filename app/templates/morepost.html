@@ -17,7 +17,7 @@
 </div>
 {% if pagination and pagination.pages > 1 %}
 <div class="text-center">
-    {{ macros.pagination_widget(pagination, '.morecomment_u',id=user.id) }}
+    {{ macros.pagination_widget(pagination, endpoint,id=user.id) }}
 </div>
 {% endif %}
 

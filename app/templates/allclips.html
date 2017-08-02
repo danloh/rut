@@ -8,9 +8,8 @@
 <div class="container-fluid">
     <h4>See More Clips</h4>
     <hr>
-    {% for commt in allclips %}
-       {% include '_show_comment.html' %}
-    {% endfor %}
+    {% set commts = allclips %}
+    {% include '_show_comment.html' %}
 
 </div>
 {% if pagination and pagination.pages >1 %}

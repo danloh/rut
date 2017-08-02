@@ -139,13 +139,12 @@
 </div>
 <!--show comments -->
 <div>
-    {% set comments = post.comments %}
     <a href={{url_for('main.add_post_comment',id=post.id)}}>Post your comment</a>
-    {% for commt in comments.limit(20) %}
+    {% set commts = comments.limit(m)  %}
     {% include '_show_comment.html' %}
-    {% endfor %}
+
     <div class="text-center">
-        {% if comments.all()|count > 20 %}
+        {% if comments.all()|count > m %}
         <a href={{url_for('main.morecomment_p',id=post.id)}} target="_blank">More</a>
         {% endif %}
     </div>

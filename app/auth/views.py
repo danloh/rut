@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from flask import g, render_template, redirect, request, session, url_for, flash
+from flask import g, render_template, redirect, request, session, url_for, flash,\
+                  current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_oauthlib.client import OAuthException
 from . import auth
@@ -236,7 +237,7 @@ def profile(id):
     
     user = Users.query.get_or_404(id)
 
-    m = 10 # the num for show more to paginate
+    m = current_app.config['ITEM_IN_PROFILE'] # the num for show more to paginate
 
     #created post
     post_query = user.posts.order_by(Posts.timestamp.desc())

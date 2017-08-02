@@ -10,10 +10,8 @@
         <a href={{url_for('auth.profile', id=user.id)}}>{{user.nickname or user.name}}</a>
     </h4>
     <hr>
-    {% for commt in comments %}
-       {% include '_show_comment.html' %}
-    {% endfor %}
-
+    {% set commts = comments %}
+    {% include '_show_comment.html' %}
 </div>
 {% if pagination and pagination.pages > 1 %}
 <div class="text-center">

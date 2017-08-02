@@ -14,14 +14,14 @@
         <a href={{url_for('main.item', id=item.id)}}>{{item.title|truncate(50)}}</a>
     </p>
     <hr>
-    {% for commt in comments %}
+    {% set commts = comments %}
        {% include '_show_comment.html' %}
-    {% else %}
+    {% if comments|count == 0 %}
        <p>Nothing by you,  now post your
            <a href={{url_for('main.add_item_comment',id=item.id)}}>Comment</a> or
            <a href={{url_for('main.add_review',id=item.id)}}>Review</a>
         </p>
-    {% endfor %}
+    {% endif %}
 
 </div>
 {% if pagination and pagination.pages > 1 %}

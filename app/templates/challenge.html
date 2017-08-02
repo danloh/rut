@@ -34,9 +34,8 @@
     <!--Show comments-->
     <div>
         <hr>
-        {% for commt in myclips %}
+        {% set commts = myclips %}
         {% include '_show_comment.html' %}
-        {% endfor %}
 
         <div class="text-right">
             {% if count_my > m %}

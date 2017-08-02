@@ -12,9 +12,10 @@ class Config:
 
     POST_PER_PAGE = 20
     FOLLOW_PER_PAGE = 50
-    COMMENT_PER_PAGE = 30
+    COMMENT_PER_PAGE = 20
     DEMAND_PER_PAGE = 50
     TAG_PER_PAGE = 50
+    ITEM_IN_PROFILE = 8
     
     FACEBOOK_AUTH_ID = os.environ.get('FB_ID')  
     FACEBOOK_AUTH_SECRET = os.environ.get('FB_SECRET') 
