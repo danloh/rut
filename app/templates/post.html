@@ -202,11 +202,10 @@
 <div>
     <div class="text-left">
         <span><b>Current Other Contributors</b></span>
+        {% if current_user != post.creator and current_user not in contributors %}
         &nbsp;&nbsp;>>&nbsp;
-        <span><a href={{url_for('main.apply_contributor', id=post.id)}}>
-            Apply
-        </a>
-        </span>
+        <span><a href={{url_for('main.apply_contributor', id=post.id)}}>Apply</a></span>
+        {% endif %}
     </div>
     <hr>
     {% for contribute in contributes %}

@@ -142,6 +142,7 @@ def post(id):
     tips_c = {t.item_id:t for t in c_tips}  # item_id maping tip-object
 
     contributes = post.contributors
+    contributors = [i.contributor for i in contributes]
     comments = post.comments.order_by(Comments.timestamp.desc())
      
     return render_template('post.html', 
@@ -149,6 +150,7 @@ def post(id):
                            post=post, items=items, posts=posts,
                            tips_c=tips_c, display=display,
                            contributes=contributes,
+                           contributors=contributors,
                            comments=comments)
 
 
@@ -303,7 +305,7 @@ def edit_tag_str(id):
 
     #old_str = set(_tag.tag for _tag in post.tags)
     old = post.tag_str
-    old_str = set(t.strip() for t in old.split(','))
+    old_str = set(t.strip() for t in old.split(',') if t.strip() is not "")
     
     if form.validate_on_submit():
 

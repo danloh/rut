@@ -65,7 +65,7 @@ class PostForm(FlaskForm):
         validators = [DataRequired()],
         render_kw={"placeholder":"REQUIRED, Seperate by comma, if multiple"})
     rating = SelectField(
-        'Good for &nbsp;&nbsp;',
+        'Suitable for &nbsp;&nbsp;',
         choices=[('Professional','Professional'),\
                  ('All','All'),('College','College'),\
                  ('Secondary','Secondary'),\
@@ -92,7 +92,7 @@ class EditPostForm(FlaskForm):
         validators = [DataRequired()],
         render_kw={"placeholder":"REQUIRED"})
     rating = SelectField(
-        'Good for &nbsp;&nbsp;',
+        'Suitable for &nbsp;&nbsp;',
         choices=[('Professional','Professional'),\
                  ('All','All'),('College','College'),\
                  ('Secondary','Secondary'),\
@@ -102,7 +102,7 @@ class EditPostForm(FlaskForm):
     editable = SelectField(
         'Who Can Edit? &nbsp;&nbsp;',
         choices=[('Creator','Creator'),\
-                 ('Contributors','Contributors'),\
+                 ('Contributors','Approved Contributors'),\
                  ('Everyone','Everyone')])
     submit = SubmitField('submit')
 
