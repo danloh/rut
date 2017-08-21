@@ -1,0 +1,44 @@
+{% extends 'layout0.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+
+{% block title %} Check Item {% endblock title %}
+
+{% block content %}
+<div>
+    <h4>Check Item before adding manually</h4>
+    <p>for post&nbsp;&nbsp;
+        <a href={{url_for('main.post', id=post.id)}}>{{post.title|truncate(50)}}</a>
+    </p>
+</div>
+<hr>
+<div>
+    <form method="POST">
+        {{form.hidden_tag()}}
+        {{wtf.form_field(form.checker)}}
+        {{wtf.form_field(form.submit)}}
+    </form>
+    <br>
+    <p> Please wait a few seconds on processing</p>
+    <br>
+    <h5>You can 
+        <a href={{url_for('main.add_item',id=post.id)}}>
+            add the item
+        </a> 
+        information manually
+    </h5>
+</div>
+<hr>
+<h5>Tips</h5>
+<p>
+1. Here you can input UID/ISBN-13 or url to get information of a book or sth else;
+<br>
+2. Support ISBN-13 and Amazon url for Book, and limited info by any other url currently;
+<br>
+3. Please enable cookies, otherwise may not function properly;
+<br>
+4. It may fail, if it happens, sorry for that, please input the item info manually.
+<br>
+5. Bug report or suggestion is appreciated   
+</p>
+{% endblock content %}

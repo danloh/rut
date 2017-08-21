@@ -1,20 +1,23 @@
 # -*- coding: utf-8 -*-
 
 import random
+import re
 from flask import g, render_template, redirect, url_for, current_app,\
                   request, session, flash, make_response, abort
 from flask_login import login_required, current_user
 from . import main
 from .forms import PostForm, ItemForm, EditItemForm, TagForm, EditPostForm,\
                    EditTipsForm, CommentForm, TagStrForm, ClipForm,\
-                   DeadlineForm, DemandForm, ReviewForm
+                   DeadlineForm, DemandForm, ReviewForm, CheckItemForm
 from .. import db
 from ..models import Posts, Items, Collect, Tags, Clan, Fav, tag_post, tag_item,\
                      Comments, Reviews, Clips, Demands, tag_demand, Reply,\
                      Star, Flag, Challenge, Contribute, \
                      Users, Follow, Roles, Permission,\
-                     Authors, author_item, Messages, Dialog, Events
+                     Authors, Byline, Messages, Dialog, Events
 from ..decorators import admin_required, permission_required
+from ..utils import split_str, str_to_dict, str_to_set
+from ..bot import spider
 
 
 @main.route('/')
@@ -154,6 +157,48 @@ def post(id):
                            comments=comments)
 
 
+@main.route('/post/check/<int:id>',methods=['GET','POST'])
+@login_required
+def check_item(id):
+    '''
+    check a item if in db or can get info by spider
+    '''
+    post = Posts.query.get_or_404(id)
+    contribute = post.contributors.filter_by(
+        user_id=current_user.id,
+        disabled=False
+        ).first()
+    if current_user != post.creator and contribute is None \
+       and post.editable != 'Everyone' :
+        abort(403)
+    
+    re_url=r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
+    #re_uid=r'([-]*(1[03])*[ ]*(: ){0,1})*(([0-9Xx][- ]*){13}|([0-9Xx][- ]*){10})'
+    reg_url = re.compile(re_url,0)
+    form = CheckItemForm()
+    if form.validate_on_submit():
+        checker = form.checker.data
+        if reg_url.match(checker):
+            d = spider.parse_html(checker)
+        else:
+            uid=checker.replace('-','').replace(' ','')
+            item=Items.query.filter_by(uid=uid).first()
+            d={}
+            if item is not None:
+                d['title'] = item.title
+                d['uid'] = item.uid
+                d['res-url'] = item.res-url_for
+                d['author'] = item.author
+                d['cover'] = item.cover
+                d['cate'] = item.cate    
+
+        session['d_pass'] = d        
+                
+        return redirect(url_for('.add_item', id=id))
+    
+    return render_template('check_item.html',form=form,post=post)  
+            
+                
 @main.route('/post/add/<int:id>',methods=['GET','POST'])
 @login_required
 def add_item(id):
@@ -168,12 +213,14 @@ def add_item(id):
         abort(403)
 
     form = ItemForm()
+    d = session.get('d_pass') or {}
+    session.pop('d_pass',None)
 
     if form.validate_on_submit():
+        uid=form.uid.data.replace('-','').replace(' ','')
+        old_item = Items.query.filter_by(uid=uid).first()
 
-        old_item = Items.query.filter_by(uid=form.uid.data).first()
-
-        if form.res_url.data.strip() is not "":  # check the input whitespace
+        if form.res_url.data.strip(): # is not "": # check the input whitespace
             oc_item = Items.query.filter_by(
                 res_url=form.res_url.data.strip()).first()
         else:
@@ -184,24 +231,44 @@ def add_item(id):
 
         if old_item is None and oc_item is None:
             new_item = Items(
-                uid=form.uid.data,
+                uid=uid,
                 title=form.title.data,
                 res_url = form.res_url.data,
                 author=form.author.data,
                 cover=form.cover.data,
-                cate=form.cate.data
+                cate=d.get('cate') or form.cate.data,
+                publisher=d.get('Publisher'),
+                pub_date=d.get('publish_date'),
+                language=d.get('Language','English'),
+                details=d.get('details'),
+                isbn10=d.get('ISBN-10').replace('-','').replace(' ','') \
+                       if d.get('ISBN-10') else None,
+                asin=d.get('ASIN').replace('-','').replace(' ','') \
+                       if d.get('ASIN') else None,
+                page=d.get('Paperback') or d.get('Hardcover'),
+                level=d.get('Level')
             )
             db.session.add(new_item)            
             post.collecting(new_item,tips,tip_creator)
+
+            if form.author.data.strip(): # is not "":
+                new_item.author_to_db()
             
         elif old_item is not None:
             post.collecting(old_item,tips,tip_creator)
             
         elif oc_item is not None:
             post.collecting(oc_item,tips,tip_creator)
-            
-        
+    
         return redirect(url_for('.post', id=post.id))
+
+    if d:
+        form.cate.data = d.get('cate','Book')
+        form.title.data = d.get('title')
+        form.uid.data = d.get('uid')
+        form.author.data = d.get('author')
+        form.cover.data = d.get('cover')
+        form.res_url.data = d.get('res_url')
 
     return render_template('add_item.html', 
                             form=form, post=post)
@@ -304,17 +371,18 @@ def edit_tag_str(id):
     form = TagStrForm()
 
     #old_str = set(_tag.tag for _tag in post.tags)
-    old = post.tag_str
-    old_str = set(t.strip() for t in old.split(',') if t.strip() is not "")
+    old_str = post.tag_str
+    old_set = str_to_set(old_str)
     
     if form.validate_on_submit():
 
         post.tag_str = form.tag.data
         db.session.add(post)
 
-        new_str = set(t.strip() for t in form.tag.data.split(','))
-        add_tags = new_str - old_str
-        del_tags = old_str - new_str
+        new_str = form.tag.data
+        new_set = str_to_set(new_str)
+        add_tags = new_set - old_set
+        del_tags = old_set - new_set
 
         _query = Tags.query
 
@@ -335,7 +403,7 @@ def edit_tag_str(id):
         
         return redirect(url_for('.post', id=post.id))
 
-    form.tag.data = old
+    form.tag.data = old_str
     
     return render_template('edit_tagstr.html', 
                             post=post, form=form)
@@ -432,33 +500,77 @@ def edit_item(id):
     item = _query.get_or_404(id)  # item 's id
     form = EditItemForm()
 
+    #for edit author  byline
+    old_str = item.author
+
     if form.validate_on_submit():
-        if (_query.filter_by(uid=form.uid.data).first() is not None) and \
-        (item.uid != form.uid.data):
+        uid=form.uid.data.replace('-','').replace(' ','')
+        if (_query.filter_by(uid=uid).first() is not None) and \
+        (item.uid != uid):
             abort(403)
 
-        item.uid = form.uid.data
+        item.uid = uid
         item.title = form.title.data
         item.res_url = form.res_url.data
         item.author = form.author.data
-        item.translator = form.translator.data
         item.cover = form.cover.data
         item.cate = form.cate.data
         item.publisher = form.publisher.data
+        item.pub_date = form.pub_date.data
         item.language = form.language.data
+        item.page = form.page.data
+        item.level = form.level.data
+        item.price = form.price.data
         item.details = form.details.data
 
         # add tags to db, if any
-        if form.itag.data.strip() is not "":
+        if form.itag.data.strip(): # is not "":
             itag_str = item.itag_str
             if itag_str:
-                itag_str += ',' + form.itag.data
+                itag_str += ',' + form.itag.data.strip()
             else:
-                itag_str = form.itag.data
+                itag_str = form.itag.data.strip()
             item.itag_str = itag_str 
             item.itag_to_db()
 
         db.session.add(item)
+        
+        #edit author  byline
+        old_d = str_to_dict(old_str)
+        old_set = set(k for k in old_d if k is not "None")
+        new_str = form.author.data
+        new_d = str_to_dict(new_str)
+        new_set = set(k for k in new_d)
+        add_name = new_set - old_set
+        del_name = old_set - new_set
+
+        a_query = Authors.query
+        for name in add_name:
+            author = a_query.filter_by(name=name).first()
+            if author is None:
+                new_author = Authors(name=name)
+                db.session.add(new_author)
+                byline=Byline(
+                    item=item,
+                    by=new_author,
+                    contribution=new_d.get(name,"Author")
+                )
+                db.session.add(byline)
+            else:
+                byline=Byline(
+                    item=item,
+                    by=author,
+                    contribution=new_d.get(name,"Author")
+                )
+                db.session.add(byline)
+
+        b_query = Byline.query
+        for name in del_name:
+            old_author = a_query.filter_by(name=name).first()
+            byline = b_query.filter_by(item=item,by=old_author).first()
+            db.session.delete(byline)
+        #END edit author byline
+
         db.session.commit()
         
         return redirect(url_for('.item', id=item.id))
@@ -466,12 +578,15 @@ def edit_item(id):
     form.uid.data = item.uid 
     form.title.data = item.title 
     form.res_url.data = item.res_url
-    form.author.data = item.author  
-    form.translator.data = item.translator  
+    form.author.data = old_str    
     form.cover.data = item.cover 
     form.cate.data = item.cate  
-    form.publisher.data = item.publisher 
-    form.language.data = item.language  
+    form.publisher.data = item.publisher
+    form.pub_date.data = item.pub_date
+    form.language.data = item.language 
+    form.page.data = item.page 
+    form.level.data = item.level
+    form.price.data = item.price  
     form.details.data = item.details 
 
     return render_template('edit_item.html', form=form)

@@ -10,17 +10,70 @@
     <hr>
     <a href={{url_for('main.edit_item',id=item.id)}}>Add more information</a>
     <br><br>
-    <p>
-       {% if item.res_url %}
-       Resource&nbsp;:&nbsp;<a href={{item.res_url}}>link</a><br>
-       {% endif %}
-       Translator&nbsp;:&nbsp;{{item.translator or '---' }}<br>
-       Language&nbsp;:&nbsp;{{item.language or '---' }}<br>
-       Publisher&nbsp;:&nbsp;{{item.publisher or '---' }}<br>   
-    </p>
+    <div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <tbody>
+            {% if item.res_url %}
+            <tr>
+                <td style="width:20%">Resource</td>
+                <td><a href={{item.res_url}}>Resource Link</a></td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td style="width:20%">Language</td>
+                <td>{{item.language or '---' }}</td>
+            </tr>
+            <tr>
+                <td style="width:20%">Level</td>
+                <td>{{item.level or '---' }}</td>
+            </tr>
+            {% if item.cate =="Book" %}
+            <tr>
+                <td style="width:20%">Publisher</td>
+                <td>{{item.publisher or '---' }}</td>
+            </tr>
+            <tr>
+                <td style="width:20%">Publish Date</td>
+                <td>{{item.pub_date or '---' }}</td>
+            </tr>
+            <tr>
+                <td style="width:20%">Pages</td>
+                <td>{{item.page or '---' }}</td>
+            </tr>
+            {% elif item.cate =="Album"%}
+            <tr>
+                <td style="width:20%">Publisher</td>
+                <td>{{item.publisher or '---' }}</td>
+            </tr>
+            <tr>
+                <td style="width:20%">Publish Date</td>
+                <td>{{item.pub_date or '---' }}</td>
+            </tr>
+            {% elif item.cate =="Online" %}
+            <tr>
+                <td style="width:20%">Institution</td>
+                <td>{{item.publisher or '---' }}</td>
+            </tr>
+            <tr>
+                <td style="width:20%">Open Date</td>
+                <td>{{item.pub_date or '---' }}</td>
+            </tr>
+            <tr>
+                <td style="width:20%">Length</td>
+                <td>{{item.page or '---' }}</td>
+            </tr>            
+            {% endif %} 
+            <tr>
+                <td style="width:20%">Price</td>
+                <td>{{item.price or '---' }}</td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+    
     <hr>
-    <mark>More Details</mark><br>
-    {{ item.details|safe or 'no details, you can help add more info'}}
+    <mark>More Details</mark><br><br>
+    {{ item.details|safe or 'no more details, you can help add more'}}
     
     <hr>
     <a href={{url_for('main.add_review',id=item.id)}}>Post your review</a>

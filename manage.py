@@ -9,7 +9,7 @@ from app.models import Posts, Items, Collect, Tags, Fav, \
                        tag_post, tag_item, tag_demand,\
                        Comments, Reviews, Clips, Demands,\
                        Star, Flag, Challenge, Contribute, Follow,\
-                       Users, Roles, Permission, Authors, author_item,\
+                       Users, Roles, Permission, Authors, Byline,\
                        Reply, Clan, Messages, Dialog, Events
        
 
@@ -25,7 +25,7 @@ def make_shell_context():
                 Fav=Fav, Follow=Follow, Roles=Roles,
                 Permission=Permission, Challenge=Challenge, 
                 tag_demand=tag_demand, Demands=Demands,
-                Authors=Authors, author_item=author_item, 
+                Authors=Authors, Byline=Byline, 
                 Clan=Clan, Reply=Reply, Reviews=Reviews,
                 Clips=Clips, Messages=Messages, 
                 Dialog=Dialog, Events=Events)

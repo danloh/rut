@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import random
+import re
 from datetime import datetime, date
 from flask import url_for, current_app, request
 from flask_sqlalchemy import SQLAlchemy 
 from flask_login import UserMixin, AnonymousUserMixin
 from .import db, login_manager
+from .utils import split_str, str_to_dict, str_to_set
 
 # simple n2n for Tags Posts 
 tag_post = db.Table(
@@ -37,16 +39,7 @@ tag_demand = db.Table(
         'demand_id', db.Integer, db.ForeignKey("demands.id")
     )
 )
-# simple n2n for Authors of Items 
-author_item = db.Table(
-    'author_item',  
-    db.Column(
-        'author_id', db.Integer, db.ForeignKey("authors.id")
-    ),
-    db.Column(
-        'item_id', db.Integer, db.ForeignKey("items.id")
-    )
-)
+
 
 # helper Model for n2n Posts collect Items
 class Collect(db.Model): 
@@ -148,12 +141,26 @@ class Fav(db.Model):
         primary_key=True)
     timestamp = db.Column(db.DateTime, 
                         default=datetime.utcnow)
-    
+
+# helper Model for n2n Items with Authors
+# item-bys : by-items
+class Byline(db.Model): 
+    __table_name__ = 'byline'   
+    item_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("items.id"), 
+        primary_key=True)
+    author_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("authors.id"), 
+        primary_key=True)
+    contribution = db.Column(db.String(32), nullable=False)
+
 
 class Posts(db.Model):
     __table_name__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(128), nullable=False)
+    title = db.Column(db.String(256), nullable=False)
     intro = db.Column(db.Text, nullable=False)
     credential = db.Column(db.Text)
     rating = db.Column(db.String(32))
@@ -229,7 +236,7 @@ class Posts(db.Model):
             db.session.add(c)
             db.session.commit() #if need commit?
 
-    # set and change the order of items
+    # set and change the order of items, ##maybe an issue here##
     def ordering(self,item,new_order):
 
         _c = self.items  # ie. a collect-object
@@ -262,11 +269,12 @@ class Posts(db.Model):
         split the input tags to seperated tag,
         and add them into Tags Table
         '''
-        _tagset = set(t.strip() for t in self.tag_str.split(','))
+        _tag_str = self.tag_str
+        _tagset = str_to_set(_tag_str)
         _query = Tags.query
         for _tg in _tagset:
             #_tg = _tg.strip()
-            if _tg is not "":
+            if _tg: # is not "":
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
                     tag=Tags(tag=_tg)
@@ -296,13 +304,18 @@ class Items(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(256), nullable=False)
     res_url = db.Column(db.String(512))
-    uid = db.Column(db.String(64), unique=True, nullable=False)
-    author = db.Column(db.String(256))
-    translator = db.Column(db.String(256))
+    uid = db.Column(db.String(64), unique=True, nullable=False)  #isbn13 etc.
+    isbn10 = db.Column(db.String(32), unique=True)
+    asin = db.Column(db.String(32), unique=True)
+    author = db.Column(db.String(512)) # or instructor
     cover = db.Column(db.String(512))
-    cate = db.Column(db.String(32))
+    cate = db.Column(db.String(16),default='Book')
     publisher = db.Column(db.String(256))
-    language = db.Column(db.String(32))
+    pub_date = db.Column(db.String(64)) # or start date
+    language = db.Column(db.String(128))
+    page = db.Column(db.String(32)) # book page or length of course
+    level = db.Column(db.String(32))
+    price = db.Column(db.String(32))
     details = db.Column(db.Text)
     itag_str = db.Column(db.String(512))
     timestamp = db.Column(db.DateTime, 
@@ -335,6 +348,13 @@ class Items(db.Model):
         backref=db.backref('flag_item',lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
+    #n2n with Authors
+    bys =  db.relationship(
+        'Byline',
+        foreign_keys=[Byline.item_id],
+        backref=db.backref('item',lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
 
     # set default item cover 
     @property    
@@ -358,11 +378,12 @@ class Items(db.Model):
         and add them into Tags Table
         '''
         #_taglist = self.itag_str.split(',') #
-        _tagset = set(t.strip() for t in self.itag_str.split(','))
+        _itag_str = self.itag_str
+        _tagset = str_to_set(_itag_str)
         _query = Tags.query
         for _tg in _tagset:
             #_tg = _tg.strip() #
-            if _tg is not "":
+            if _tg: # is not "":
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
                     tag=Tags(tag=_tg)
@@ -372,6 +393,49 @@ class Items(db.Model):
                     _tag.items.append(self)  
                     db.session.add(_tag)
         db.session.commit()
+
+    # add author to db
+    def author_to_db(self,s=None):
+        author_str = s or self.author
+        d = str_to_dict(author_str)
+        ''' 
+        lst = split_str(author_str)
+        d = {}
+        for i in lst:
+            i_lst = split_str(i,r'[()（）]')
+            alst = [a.strip() for a in i_lst if a.strip()]+['Author']
+            name = alst[0]
+            contribution = alst[1]
+            d.setdefault(name,contribution) 
+        '''
+        
+        a_query = Authors.query
+        for k,v in d.items():
+            author_old = a_query.filter_by(name=k).first()
+            if author_old is None:
+                author = Authors(name=k)
+                db.session.add(author)
+            else:
+                author = author_old
+            if self.bys.filter_by(author_id=author.id).first() is None:
+                byline = Byline(
+                    item=self,
+                    by=author,
+                    contribution=v
+                )
+                db.session.add(byline)
+        db.session.commit()
+    
+    ##a function for replace uid -, del after update
+    @staticmethod
+    def repdash():
+        items = Items.query.all()
+        for item in items:
+            uid=item.uid.replace('-','').replace(' ','')
+            item.uid=uid
+            db.session.add(item)
+        db.session.commit()
+    ## del once update done
 
 
     def __repr__(self):
@@ -609,11 +673,12 @@ class Demands(db.Model):
     def dtag_to_db(self):
       
         #_taglist = self.dtag_str.split(',') #
-        _tagset = set(t.strip() for t in self.dtag_str.split(','))
+        _dtag_str = self.dtag_str
+        _tagset = str_to_set(_dtag_str)
         _query = Tags.query
         for _tg in _tagset:
             #_tg = _tg.strip() #
-            if _tg is not "":
+            if _tg: # is not "":
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
                     tag=Tags(tag=_tg)
@@ -646,7 +711,7 @@ class Messages(db.Model):
     __table_name__ = "messages"
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text) # !! encrypt, to do 
-    status = db.Column(db.String(32)) #unread,read,s_del,r_del
+    status = db.Column(db.String(16)) #unread,read,s_del,r_del
 
     # n to 1 with Users for send and receive msg
     send_id = db.Column(
@@ -1003,23 +1068,25 @@ login_manager.anonymous_user = AnonymousUser
 class Authors(db.Model):
     __table_name__ = "authors"
     id = db.Column(db.Integer, primary_key=True)  
-    name = db.Column(db.String(64), nullable=False)    
+    name = db.Column(db.String(128), unique=True, nullable=False) # uni maybe an issue  
     photo = db.Column(db.String(256)) 
     link =  db.Column(db.String(256))
     nation = db.Column(db.String(64))
-    language = db.Column(db.String(64))
-    gender = db.Column(db.String(16))
+    language = db.Column(db.String(32))
+    gender = db.Column(db.String(8))
+    birth = db.Column(db.Date)
     age = db.Column(db.String(8))
     about = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, 
                           default=datetime.utcnow)
 
-    # simple n2n relationship with items
+    #n2n with items for byline
     items = db.relationship(
-        'Items',      
-        secondary=author_item,
-        backref=db.backref('authors', lazy='joined'),
-        lazy='dynamic')
+        'Byline',                         
+        foreign_keys=[Byline.author_id],
+        backref=db.backref('by',lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
 
     def __repr__(self):
         return '<Authors %r>' % self.name

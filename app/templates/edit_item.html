@@ -15,15 +15,18 @@
 <div>
     <form class="form" method="POST">
         {{form.hidden_tag()}}
-        {{wtf.form_field(form.cate)}}
+        {{wtf.form_field(form.cate, class="inline")}}
         {{wtf.form_field(form.title)}}
         {{wtf.form_field(form.uid)}}
-        {{wtf.form_field(form.res_url)}}
         {{wtf.form_field(form.author)}}
-        {{wtf.form_field(form.translator)}}
         {{wtf.form_field(form.cover)}}
-        {{wtf.form_field(form.publisher)}}
         {{wtf.form_field(form.language)}}
+        {{wtf.form_field(form.publisher)}}
+        {{wtf.form_field(form.pub_date)}}
+        {{wtf.form_field(form.res_url)}}
+        {{wtf.form_field(form.page)}}
+        {{wtf.form_field(form.level)}}
+        {{wtf.form_field(form.price)}}
         {{wtf.form_field(form.itag)}}
         {{wtf.form_field(form.details, class="ckeditor")}}
         {{wtf.form_field(form.submit)}}
