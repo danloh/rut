@@ -6,8 +6,9 @@
 
 {% block content %}
 <div>
-    <p>Edit Description of {{tag.tag}}</p>
+    <p>Edit Description of Tag&nbsp;&nbsp;<a href={{url_for('main.tagcollect', id=tag.id)}}>{{tag.tag}}</a></p>
 </div>
+<hr>
 <div>
     <form class="form" method="POST">
         {{form.hidden_tag()}}

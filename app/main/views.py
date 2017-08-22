@@ -309,7 +309,7 @@ def edit_post(id):
     form.rating.data = post.rating
     form.credential.data = post.credential
     form.editable.data = post.editable
-    return render_template('edit_post.html', form=form)
+    return render_template('edit_post.html',form=form,post=post)
 
 @main.route('/post/del/<int:id>',methods=['GET','POST'])
 @login_required
@@ -523,6 +523,7 @@ def edit_item(id):
         item.publisher = form.publisher.data
         item.pub_date = form.pub_date.data
         item.language = form.language.data
+        item.binding = form.binding.data
         item.page = form.page.data
         item.level = form.level.data
         item.price = form.price.data
@@ -588,13 +589,14 @@ def edit_item(id):
     form.cate.data = item.cate  
     form.publisher.data = item.publisher
     form.pub_date.data = item.pub_date
-    form.language.data = item.language 
+    form.language.data = item.language
+    form.binding.data = item.binding
     form.page.data = item.page 
     form.level.data = item.level
     form.price.data = item.price  
     form.details.data = item.details 
 
-    return render_template('edit_item.html', form=form)
+    return render_template('edit_item.html',form=form,item=item)
 
 ##### flag  non-ajax ,using in _show_item_1, post ###
 @main.route('/item/flag1/<int:id>',methods=['GET','POST'])

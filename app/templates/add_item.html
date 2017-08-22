@@ -11,9 +11,7 @@
 {% block content %}
 <div>
     <h4>Add Item</h4>
-    <p>for Post&nbsp;&nbsp;
-        <a href={{url_for('main.post', id=post.id)}}>{{post.title|truncate(50)}}</a>
-    </p>
+    <p>for Post&nbsp;&nbsp;<a href={{url_for('main.post', id=post.id)}}>{{post.title|truncate(50)}}</a></p>
 </div>
 <hr>
 <div>

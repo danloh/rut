@@ -43,11 +43,11 @@
 	{% endblock head %}
 </head>
 
-<body style="background-color:#fbfaf4">
+<body>
 {% block body %}
 
 {% block navbar %}
-<nav class="navbar navbar-default" style="background-color:#fcf8e3">
+<nav class="navbar navbar-default">
 	<div class="container-fluid">
 		<div class="navbar-header">
 			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
@@ -71,8 +71,8 @@
 				<li>
 					{% if current_user.is_authenticated %}	
 					<div class="btn-group">
-						<button type="button" class="btn btn-info navbar-btn">
-							<a href="{{url_for('main.create')}}">Create Now</a>
+						<button type="button" class="btn btn-success navbar-btn">
+							<a href="{{url_for('main.create')}}" style="color:white">Create Now</a>
 						</button>
 						<button type="button" class="btn btn-link navbar-btn">
 							<a href={{url_for('auth.profile', id=current_user.id)}}>

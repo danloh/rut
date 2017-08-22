@@ -6,12 +6,13 @@
 <script src="{{url_for('static', filename='ck/ckeditor0/ckeditor.js')}}"></script>
 {% endblock head %}
 
-{% block title %} Edit Article {% endblock title %}
+{% block title %} Edit Post {% endblock title %}
 
 {% block content %}
 <div>
-    <p>Edit Article</p>
+    <h4>Edit Post&nbsp;&nbsp;<a href={{url_for('main.post', id=post.id)}}>{{post.title|truncate(40)}}</a></h4>
 </div>
+<hr>
 <div>
     <form class="form" method="POST">
         {{form.hidden_tag()}}

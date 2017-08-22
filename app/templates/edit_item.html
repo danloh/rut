@@ -6,12 +6,14 @@
 <script src="{{url_for('static', filename='ck/ckeditor/ckeditor.js')}}"></script>
 {% endblock head %}
 
-{% block title %} Edit Item {% endblock title %}
+{% block title %} Add More Information for Item {% endblock title %}
 
 {% block content %}
 <div>
-    <p>Edit Item</p>
+    <h4>Add More Information </h4>
+    <p>for Item&nbsp;&nbsp;<a href={{url_for('main.item', id=item.id)}}>{{item.title|truncate(50)}}</a></p>
 </div>
+<hr>
 <div>
     <form class="form" method="POST">
         {{form.hidden_tag()}}
@@ -24,6 +26,7 @@
         {{wtf.form_field(form.publisher)}}
         {{wtf.form_field(form.pub_date)}}
         {{wtf.form_field(form.res_url)}}
+        {{wtf.form_field(form.binding)}}
         {{wtf.form_field(form.page)}}
         {{wtf.form_field(form.level)}}
         {{wtf.form_field(form.price)}}

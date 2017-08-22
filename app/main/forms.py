@@ -55,15 +55,15 @@ class PostForm(FlaskForm):
         'Title', 
         validators = [DataRequired(),\
             Length(min=1,max=256,message='max 256 characters')],
-        render_kw={"placeholder":"REQUIRED"})
+        render_kw={"placeholder":"Required"})
     intro = TextAreaField(
-        'Preface⁎', 
+        '*Preface', 
         validators = [DataRequired()], 
-        render_kw={"placeholder":"REQUIRED, Introduction of Article"})
+        render_kw={"placeholder":"Required, as Introduction"})
     tag = StringField(
         "Set Tag", 
         validators = [DataRequired()],
-        render_kw={"placeholder":"REQUIRED, Seperate by comma, if multiple"})
+        render_kw={"placeholder":"Required, Seperate by comma, if multiple"})
     rating = SelectField(
         'Suitable for &nbsp;&nbsp;',
         choices=[('Professional','Professional'),\
@@ -86,11 +86,11 @@ class EditPostForm(FlaskForm):
         'Title', 
         validators = [DataRequired(),\
             Length(min=1,max=256,message='max 256 characters')],
-        render_kw={"placeholder":"REQUIRED"})
+        render_kw={"placeholder":"Required"})
     intro = TextAreaField(
-        '⁎Preface', 
+        '*Preface', 
         validators = [DataRequired()],
-        render_kw={"placeholder":"REQUIRED"})
+        render_kw={"placeholder":"Required"})
     rating = SelectField(
         'Suitable for &nbsp;&nbsp;',
         choices=[('Professional','Professional'),\
@@ -111,7 +111,7 @@ class EditTipsForm(FlaskForm):
     tips = TextAreaField(
         'Edit Tips', 
         validators = [DataRequired()],
-        render_kw={"placeholder":"REQUIRED"})
+        render_kw={"placeholder":"Required"})
     submit = SubmitField('submit')
 
 class CheckItemForm(FlaskForm): 
@@ -126,11 +126,11 @@ class ItemForm(FlaskForm):
     uid = StringField(
         'UID / ISBN-13',
         validators = [DataRequired()],
-        render_kw={"placeholder":"REQUIRED, if no,Please input url below and hit the right button to generate"})
+        render_kw={"placeholder":"Required, if no,Please input url below and hit the right button to generate"})
     title = StringField(
         'Title', 
         validators = [DataRequired(),Length(min=1,max=256,message='max 256 characters')],
-        render_kw={"placeholder":"REQUIRED"})
+        render_kw={"placeholder":"Required"})
     res_url = StringField(
         'Online Resource URL. Required for Online Resource', 
         render_kw={"placeholder":"Required Url for Online resource, Optional for others"})
@@ -146,9 +146,9 @@ class ItemForm(FlaskForm):
         choices=[('Book','Book'),('Video','video'),('Online','Online-Resource'),\
                  ('Album','Album'),('Other','Other')])
     tips = TextAreaField(
-        'The Reading Tips--REQUIRED⁎', 
+        '*The Tips--Required : Tell sth Why you add this Item', 
         validators = [DataRequired()],
-        render_kw={"placeholder":"REQUIRED"})
+        render_kw={"placeholder":"Required"})
 
     submit = SubmitField('submit')
 
@@ -157,13 +157,13 @@ class EditItemForm(FlaskForm):
     title = StringField('Title', 
         validators = [DataRequired(),
             Length(min=1,max=256,message='max 256 characters')],
-        render_kw={"placeholder":"REQUIRED"})
+        render_kw={"placeholder":"Required"})
     res_url = StringField('Online Resource URL', 
         render_kw={"placeholder":"input url for item like online-course"})
     author = StringField(
         'Author or Instructor, e.g. Ann(Author),Ian(Instructor)', 
         validators = [DataRequired()],
-        render_kw={"placeholder":"REQUIRED,\
+        render_kw={"placeholder":"Required,\
          e.g. Ada(Author),Bill(Translator),Carl(Illustrator),Dan(Instructor)"})
     cover = StringField(
         'Image Url for Cover/Logo of item',
@@ -175,16 +175,17 @@ class EditItemForm(FlaskForm):
                  ('Album','Album'),('Other','Other')])
     publisher = StringField('Publisher or Institution',
         validators = [DataRequired()],
-        render_kw={"placeholder":"REQUIRED"})
+        render_kw={"placeholder":"Required"})
     pub_date = StringField('Publish date or Open date of course',
         render_kw={"placeholder":"Publish Date"})
     language = StringField(
         'Language',validators = [DataRequired()],
-        render_kw={"placeholder":"REQUIRED"})
+        render_kw={"placeholder":"Required"})
+    binding = StringField('Binding of Book, Paperback or Hardcover or eBook?')
     page = StringField('Pages of a book or Lenght of a course')
     level = StringField('Level')
     price = StringField('Price')
-    details = TextAreaField('⁎More Details',
+    details = TextAreaField('*More Details',
                             render_kw={"placeholder":"Required More Information"})
     itag = StringField("Set Tag",
                  render_kw={"placeholder":"Seperate by comma, if multiple"})
@@ -194,23 +195,23 @@ class EditItemForm(FlaskForm):
 
 class CommentForm(FlaskForm):
     body = TextAreaField('', validators = [DataRequired()],
-                       render_kw={"placeholder":"REQUIRED"})
+                       render_kw={"placeholder":"Required"})
     submit = SubmitField('Submit')
 
 class ClipForm(FlaskForm):
     body = TextAreaField('', validators = [DataRequired()],
-                       render_kw={"placeholder":"REQUIRED"})
+                       render_kw={"placeholder":"Required"})
     resource = SelectField('Here are items(up to 5) You are Working on',coerce=int)
     submit = SubmitField('Submit')
 
 class ReviewForm(FlaskForm):
     heading = StringField('Title', 
         validators = [DataRequired(),Length(min=1,max=256,message='max 256 characters')],
-        render_kw={"placeholder":"REQUIRED, Max 256 characters"})
+        render_kw={"placeholder":"Required, Max 256 characters"})
     body = TextAreaField(
         'Review, at least 256 characters', 
         validators = [DataRequired(),Length(min=256,message='at least 256 characters')],
-        render_kw={"placeholder":"REQUIRED, at least 256 characters"})
+        render_kw={"placeholder":"Required, at least 256 characters"})
     submit = SubmitField('Submit')
 
 
@@ -221,13 +222,13 @@ class TagForm(FlaskForm):
         'Tag Description', 
         validators = [DataRequired(),\
             Length(min=1,max=500,message='max 500 characters')],
-        render_kw={"placeholder":"REQUIRED, Max 500 characters"})
+        render_kw={"placeholder":"Required, Max 500 characters"})
     submit = SubmitField('Submit')
 
 class TagStrForm(FlaskForm):
     tag = StringField("Tags",
         validators = [DataRequired()],
-        render_kw={"placeholder":"REQUIRED, Seperate by comma, if multiple"})
+        render_kw={"placeholder":"Required, Seperate by comma, if multiple"})
     submit = SubmitField('Update')   
 
 class DeadlineForm(FlaskForm):

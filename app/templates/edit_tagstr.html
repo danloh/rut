@@ -6,8 +6,9 @@
 
 {% block content %}
 <div>
-    <p>Edit Tag of {{post.title}}</p>
+    <p>Edit Tags for Post&nbsp;&nbsp;<a href={{url_for('main.post', id=post.id)}}>{{post.title|truncate(50)}}</a></p>
 </div>
+<hr>
 <div>
     <form class="form" method="POST">
         {{form.hidden_tag()}}
