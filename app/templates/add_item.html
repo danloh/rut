@@ -11,7 +11,7 @@
 {% block content %}
 <div>
     <h4>Add Item</h4>
-    <p>for post&nbsp;&nbsp;
+    <p>for Post&nbsp;&nbsp;
         <a href={{url_for('main.post', id=post.id)}}>{{post.title|truncate(50)}}</a>
     </p>
 </div>
@@ -35,8 +35,9 @@
 
 <h4>Tips</h4>
 <br>
-<p>If adding the item without UID such as the ISBN or other, like online-course,
-    Please make sure a Resource Url is added and generate UID by hitting the below button.
+<p>If adding the item without UID / ISBN, such as online-course or any other 
+    <b style="color:darkorange">Online Resource, Please Make Sure a Valid Resource Url is Added</b> 
+    then Generate UID by hitting the below button.
 </p>
 <br>
 <button id="guid">Generate Random UID</button>

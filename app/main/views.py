@@ -213,8 +213,8 @@ def add_item(id):
         abort(403)
 
     form = ItemForm()
-    d = session.get('d_pass') or {}
-    session.pop('d_pass',None)
+    d = session.get('d_pass') or {}   
+    #session.pop('d_pass',None) #if pop here, no d for on_submit
 
     if form.validate_on_submit():
         uid=form.uid.data.replace('-','').replace(' ','')
@@ -230,6 +230,7 @@ def add_item(id):
         tip_creator = current_user._get_current_object()
 
         if old_item is None and oc_item is None:
+            _binding=d.get('binding')
             new_item = Items(
                 uid=uid,
                 title=form.title.data,
@@ -238,14 +239,16 @@ def add_item(id):
                 cover=form.cover.data,
                 cate=d.get('cate') or form.cate.data,
                 publisher=d.get('Publisher'),
-                pub_date=d.get('publish_date'),
+                pub_date=d.get('Publication Date') or d.get('publish_date'),
                 language=d.get('Language','English'),
                 details=d.get('details'),
                 isbn10=d.get('ISBN-10').replace('-','').replace(' ','') \
                        if d.get('ISBN-10') else None,
                 asin=d.get('ASIN').replace('-','').replace(' ','') \
                        if d.get('ASIN') else None,
-                page=d.get('Paperback') or d.get('Hardcover'),
+                binding= _binding, 
+                page=d.get(_binding) or d.get('Print Length'),
+                price=d.get('price'),
                 level=d.get('Level')
             )
             db.session.add(new_item)            
@@ -259,7 +262,9 @@ def add_item(id):
             
         elif oc_item is not None:
             post.collecting(oc_item,tips,tip_creator)
-    
+
+        session.pop('d_pass',None)
+
         return redirect(url_for('.post', id=post.id))
 
     if d:
@@ -269,7 +274,7 @@ def add_item(id):
         form.author.data = d.get('author')
         form.cover.data = d.get('cover')
         form.res_url.data = d.get('res_url')
-
+    
     return render_template('add_item.html', 
                             form=form, post=post)
 

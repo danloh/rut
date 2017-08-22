@@ -116,34 +116,34 @@ class EditTipsForm(FlaskForm):
 
 class CheckItemForm(FlaskForm): 
     checker = StringField(
-        'UID/ISBN-13 or URL of To-be-Added item to check info',
+        'URL or UID/ISBN-13 to Fetch Information of Item To-be-Added',
         validators = [DataRequired()],
-        render_kw={"placeholder":"Required, Please input a uid number or a valid url "})
-    submit = SubmitField('Check')
+        render_kw={"placeholder":"Required, Please input a valid url or UID/ISBN-13"})
+    submit = SubmitField('Fetch')
 
 
 class ItemForm(FlaskForm):   
     uid = StringField(
-        'UID or ISBN-13',
+        'UID / ISBN-13',
         validators = [DataRequired()],
-        render_kw={"placeholder":"REQUIRED, if no, hit the right button to generate"})
+        render_kw={"placeholder":"REQUIRED, if no,Please input url below and hit the right button to generate"})
     title = StringField(
         'Title', 
         validators = [DataRequired(),Length(min=1,max=256,message='max 256 characters')],
         render_kw={"placeholder":"REQUIRED"})
     res_url = StringField(
-        'Resource URL', 
-        render_kw={"placeholder":"Required Url for Online source, Optional for others"})
+        'Online Resource URL. Required for Online Resource', 
+        render_kw={"placeholder":"Required Url for Online resource, Optional for others"})
     author = StringField(
-        'Author or Instructor, e.g. Ann(Author),Ian(Instructor)',
+        'Author or Instructor:  e.g. Ann(Author) or Ian(Instructor)',
         render_kw={"placeholder":\
         "e.g. Ada(Author),Bill(Translator),Carl(Illustrator),Dan(Instructor)"})
     cover = StringField(
         'Image Url for Cover/Logo of item',
-        render_kw={"placeholder":"Put VALID Img URL ends with .jpg/.png/.gif/.svg"})
+        render_kw={"placeholder":"Please input VALID Img URL"})
     cate = SelectField(
         'Select a Type', 
-        choices=[('Book','Book'),('Video','video'),('Online','Online-Course'),\
+        choices=[('Book','Book'),('Video','video'),('Online','Online-Resource'),\
                  ('Album','Album'),('Other','Other')])
     tips = TextAreaField(
         'The Reading Tips--REQUIRED⁎', 
@@ -158,7 +158,7 @@ class EditItemForm(FlaskForm):
         validators = [DataRequired(),
             Length(min=1,max=256,message='max 256 characters')],
         render_kw={"placeholder":"REQUIRED"})
-    res_url = StringField('Resource URL', 
+    res_url = StringField('Online Resource URL', 
         render_kw={"placeholder":"input url for item like online-course"})
     author = StringField(
         'Author or Instructor, e.g. Ann(Author),Ian(Instructor)', 
@@ -168,10 +168,10 @@ class EditItemForm(FlaskForm):
     cover = StringField(
         'Image Url for Cover/Logo of item',
         validators = [URL()],
-        render_kw={"placeholder":"REQUIRED VALID URL ends with .jpg/.png/.gif/.svg"})
+        render_kw={"placeholder":"REQUIRED VALID Img URL"})
     cate = SelectField(
         'Select a Type', 
-        choices=[('Book','Book'),('Video','video'),('Online','Online-Course'),\
+        choices=[('Book','Book'),('Video','video'),('Online','Online-Resource'),\
                  ('Album','Album'),('Other','Other')])
     publisher = StringField('Publisher or Institution',
         validators = [DataRequired()],

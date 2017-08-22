@@ -30,24 +30,16 @@
             {% if item.cate =="Book" %}
             <tr>
                 <td style="width:20%">Publisher</td>
-                <td>{{item.publisher or '---' }}</td>
-            </tr>
-            <tr>
-                <td style="width:20%">Publish Date</td>
-                <td>{{item.pub_date or '---' }}</td>
+                <td>{{item.publisher or '--' }}&nbsp;||&nbsp;{{item.pub_date or '--' }}</td>
             </tr>
             <tr>
                 <td style="width:20%">Pages</td>
-                <td>{{item.page or '---' }}</td>
+                <td>{{item.page or '--' }}&nbsp;||&nbsp;{{item.binding or '--' }}</td>
             </tr>
             {% elif item.cate =="Album"%}
             <tr>
                 <td style="width:20%">Publisher</td>
-                <td>{{item.publisher or '---' }}</td>
-            </tr>
-            <tr>
-                <td style="width:20%">Publish Date</td>
-                <td>{{item.pub_date or '---' }}</td>
+                <td>{{item.publisher or '--' }}&nbsp;||&nbsp;{{item.pub_date or '--' }}</td>
             </tr>
             {% elif item.cate =="Online" %}
             <tr>
@@ -55,7 +47,7 @@
                 <td>{{item.publisher or '---' }}</td>
             </tr>
             <tr>
-                <td style="width:20%">Open Date</td>
+                <td style="width:20%">When Open?</td>
                 <td>{{item.pub_date or '---' }}</td>
             </tr>
             <tr>

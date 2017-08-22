@@ -312,7 +312,8 @@ class Items(db.Model):
     cate = db.Column(db.String(16),default='Book')
     publisher = db.Column(db.String(256))
     pub_date = db.Column(db.String(64)) # or start date
-    language = db.Column(db.String(128))
+    language = db.Column(db.String(256))
+    binding = db.Column(db.String(32))
     page = db.Column(db.String(32)) # book page or length of course
     level = db.Column(db.String(32))
     price = db.Column(db.String(32))
@@ -819,7 +820,7 @@ class Users(UserMixin, db.Model):
     __table_name__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     auth_server = db.Column(db.String(32), nullable=False)      
-    auth_social_id = db.Column(db.String(128), nullable=False)   
+    auth_social_id = db.Column(db.String(64), nullable=False)   
     name = db.Column(db.String(128), nullable=False)   
     email = db.Column(db.String(128))   
     avatar = db.Column(db.String(512))   
@@ -1072,8 +1073,8 @@ class Authors(db.Model):
     photo = db.Column(db.String(256)) 
     link =  db.Column(db.String(256))
     nation = db.Column(db.String(64))
-    language = db.Column(db.String(32))
-    gender = db.Column(db.String(8))
+    language = db.Column(db.String(64))
+    gender = db.Column(db.String(16))
     birth = db.Column(db.Date)
     age = db.Column(db.String(8))
     about = db.Column(db.Text)

@@ -121,7 +121,7 @@ def parse_html_amazon(url):
     if l > 0:  
         d['title'] = tg[0].text.strip()
     if l > 1:
-        d['binding'] = tg[1].get_text(strip=True)
+        d['bind'] = tg[1].get_text(strip=True)
     if l > 2:
         d['publish_date'] = tg[2].text.strip()
 
@@ -152,6 +152,18 @@ def parse_html_amazon(url):
             d_authors[name]=role
 
     d['authors']=d_authors
+
+    #get binding and price
+    swatchSect = soup.find('li',class_='swatchElement selected')
+    try:
+        selected = swatchSect.find('a').find_all('span')
+        binding = selected[0].text.strip()
+        price = selected[1].text.strip()
+    except:
+        binding = d.get('bind')
+        price = ''
+    d['binding'] = binding
+    d['price'] = price
 
     #get detail info
     detailTable = soup.find(
