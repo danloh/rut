@@ -7,13 +7,13 @@ from flask import g, render_template, redirect, url_for, current_app,\
 from flask_login import login_required, current_user
 from . import main
 from .forms import PostForm, ItemForm, EditItemForm, TagForm, EditPostForm,\
-                   EditTipsForm, CommentForm, TagStrForm, ClipForm,\
+                   EditTipsForm, CommentForm, TagStrForm, ClipForm, ArticleForm, \
                    DeadlineForm, DemandForm, ReviewForm, CheckItemForm
 from .. import db
 from ..models import Posts, Items, Collect, Tags, Clan, Fav, tag_post, tag_item,\
                      Comments, Reviews, Clips, Demands, tag_demand, Reply,\
-                     Star, Flag, Challenge, Contribute, \
-                     Users, Follow, Roles, Permission,\
+                     Star, Flag, Challenge, Contribute, Respon, Rvote, Dvote,\
+                     Users, Follow, Roles, Permission, Articles, Columns,\
                      Authors, Byline, Messages, Dialog, Events
 from ..decorators import admin_required, permission_required
 from ..utils import split_str, str_to_dict, str_to_set
@@ -93,12 +93,14 @@ def collection():
 
 
 @main.route('/create',methods=['GET','POST'])
+@main.route('/answer/<int:id>',methods=['GET','POST'])
 @login_required
-def create():
+def create(id=None):
     
     form = PostForm()
 
     if form.validate_on_submit():
+
         post = Posts(
             title=form.title.data,
             intro=form.intro.data,
@@ -108,18 +110,30 @@ def create():
             editable=form.editable.data,
             creator=current_user._get_current_object()
         )
-                
+
         db.session.add(post)
+
+        # link to demand if come from demand
+        if id:
+            demand = Demands.query.get(id) #demand's id
+            if demand:
+                respon = Respon(
+                    post=post,
+                    demand=demand
+                )
+                db.session.add(respon) 
+
         db.session.commit()
         #add tag to db, attach post to tag
         post.tag_to_db()
-        
-        id = post.id
-        flash('The post has been created, now add items to it.')  
-        return redirect(url_for('.post',id=id))  
-    return render_template('create.html',form = form)
 
+        post_id = post.id
+        flash('The post has been created, now add items to it.')
+        return redirect(url_for('.post',id=post_id))
 
+    return render_template('create.html',form=form)
+
+    
 @main.route('/post/<int:id>',methods=['GET','POST'])
 def post(id):
     
@@ -187,7 +201,7 @@ def check_item(id):
             if item is not None:
                 d['title'] = item.title
                 d['uid'] = item.uid
-                d['res-url'] = item.res-url_for
+                d['res_url'] = item.res_url
                 d['author'] = item.author
                 d['cover'] = item.cover
                 d['cate'] = item.cate    
@@ -262,7 +276,10 @@ def add_item(id):
             
         elif oc_item is not None:
             post.collecting(oc_item,tips,tip_creator)
-
+        
+        #update the update stamp
+        post.up_time()
+        #pop session
         session.pop('d_pass',None)
 
         return redirect(url_for('.post', id=post.id))
@@ -299,8 +316,12 @@ def edit_post(id):
         post.rating = form.rating.data
         post.credential = form.credential.data
         post.editable = form.editable.data
-        db.session.add(post)
-        db.session.commit()
+        
+        #update the update stamp
+        post.up_time()
+
+        #db.session.add(post)
+        #db.session.commit()
         
         return redirect(url_for('.post', id=post.id))
 
@@ -1058,6 +1079,46 @@ def edit_review(id):
                            form=form, review=review)
 
 
+@main.route('/alsoreq/<int:id>', methods=['GET'])
+@login_required
+def alsoreq(id):
+
+    demand = Demands.query.get_or_404(id) # demand's id
+    voted = Dvote.query.filter_by(user_id=current_user.id,demand_id=id).first()
+    if current_user != demand.requestor and voted is None:
+        demand.vote = demand.vote + 1 
+        db.session.add(demand)
+
+        dvote = Dvote(
+            voter=current_user._get_current_object(),
+            vote_demand=demand
+        )
+        db.session.add(dvote)
+        db.session.commit()
+
+    return redirect(url_for('.demand',id=id))
+
+@main.route('/endorse/<int:id>', methods=['GET'])
+@login_required
+def endorse(id):
+
+    review = Reviews.query.get_or_404(id) # review's id
+    endorsed = Rvote.query.filter_by(user_id=current_user.id,review_id=id).first()
+    if current_user != review.creator and endorsed is None:
+        review.vote = review.vote + 1 
+        db.session.add(review)
+
+        rvote = Rvote(
+            voter=current_user._get_current_object(),
+            vote_review=review
+        )
+        db.session.add(rvote)
+        db.session.commit()
+    #n = review.vote
+    #m = str(n)
+    return redirect(url_for('.review',id=id))
+
+
 @main.route('/delcommt/<int:id>', methods=['GET','POST'])  
 @login_required
 def del_comment(id):
@@ -1428,30 +1489,72 @@ def following(id):
                            pagination=pagination, ref='following')
 
 
-@main.route('/alsoreq/<int:id>', methods=['GET'])
+@main.route('/article/<int:id>',methods=['GET'])
 @login_required
-def alsoreq(id):
+def article(id):
 
-    demand = Demands.query.get_or_404(id) # demand's id
-    if current_user != demand.requestor:
-        demand.vote = demand.vote + 1 
-        db.session.add(demand)
+    article = Articles.query.get_or_404(id)
+
+    return render_template('article.html',article=article)
+
+
+@main.route('/write', methods=['GET','POST'])
+@main.route('/write/<int:id>',methods=['GET','POST'])
+@login_required
+def write(id=None):
+
+    form = ArticleForm()
+
+    if form.validate_on_submit():
+        
+        if id:
+            column = Columns.query.get(id) #column's id
+        else:
+            column = None
+
+        article = Articles(
+            title=form.title.data,
+            figure=form.figure.data,
+            body=form.body.data,
+            column=column,
+            writer=current_user._get_current_object()
+        )
+
+        db.session.add(article)
         db.session.commit()
 
-    return redirect(url_for('.demands'))
+        article_id = article.id
+        return redirect(url_for('.article',id=article_id))
+    
+    return render_template('write.html',form=form)
 
-@main.route('/upvote/<int:id>', methods=['GET'])
+@main.route('/article/edit/<int:id>',methods=['GET','POST'])
 @login_required
-def upvote(id):
+def edit_article(id):
 
-    review = Reviews.query.get_or_404(id) # review's id
-    if current_user != review.creator:
-        review.vote = review.vote + 1 
-        db.session.add(review)
+    article = Articles.query.get_or_404(id)
+
+    if current_user != article.writer:
+        abort(403)
+
+    form = ArticleForm()
+
+    if form.validate_on_submit():
+        article.title = form.title.data
+        article.figure = form.figure.data
+        article.body = form.body.data
+        
+        db.session.add(article)
         db.session.commit()
-    #n = review.vote
-    #m = str(n)
-    return redirect(url_for('.review',id=id))
+        article.up_time()
+        
+        return redirect(url_for('.article',id=id))
+
+    form.title.data = article.title
+    form.figure.data = article.figure
+    form.body.data = article.body
+
+    return render_template('write.html',form=form,article=article)
 
 
 @main.route('/about', methods=['GET'])

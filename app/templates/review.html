@@ -30,7 +30,7 @@
     {% endif %}
     &nbsp;&nbsp;&nbsp;      
     <span>{{review.vote}}&nbsp;
-        <a href={{url_for('main.upvote',id=review.id)}}>Endorse</a>
+        <a href={{url_for('main.endorse',id=review.id)}}>Endorse</a>
     </span>
 </div>
 <!--show comments -->

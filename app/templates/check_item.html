@@ -16,10 +16,17 @@
     <form method="POST">
         {{form.hidden_tag()}}
         {{wtf.form_field(form.checker)}}
-        {{wtf.form_field(form.submit)}}
+        {{wtf.form_field(form.submit,id="fetch")}}
     </form>
     <br>
-    <p style="color:forestgreen"> Please wait a few seconds on processing</p>
+    <p style="color:forestgreen; display:none" id="process"> Please wait a few seconds on processing...</p>
+    <script>
+    $(document).ready(function(){
+        $("#fetch").click(function(){
+            $("#process").show();
+        });
+    });
+    </script>
     <br>
     <h4>or You can 
         <a href={{url_for('main.add_item',id=post.id)}}>

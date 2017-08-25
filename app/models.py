@@ -156,6 +156,47 @@ class Byline(db.Model):
         primary_key=True)
     contribution = db.Column(db.String(32), nullable=False)
 
+# helper for n2n Users vote Demands
+class Dvote(db.Model): 
+    __table_name__ = 'dvote'    
+    user_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("users.id"), 
+        primary_key=True)
+    demand_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("demands.id"),
+        primary_key=True)
+    timestamp = db.Column(db.DateTime, 
+                        default=datetime.utcnow)
+    
+# helper for n2n Users vote Reviews
+class Rvote(db.Model):
+    __table_name__ = 'rvote'
+    user_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("users.id"), 
+        primary_key=True)    
+    review_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("reviews.id"),
+        primary_key=True)
+    timestamp = db.Column(db.DateTime, 
+                        default=datetime.utcnow)
+
+# helper Model for n2n Posts re Demands
+class Respon(db.Model): 
+    __table_name__ = 'respon'      
+    post_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("posts.id"), 
+        primary_key=True)
+    demand_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("demands.id"), 
+        primary_key=True)
+    timestamp = db.Column(db.DateTime, 
+                        default=datetime.utcnow)
 
 class Posts(db.Model):
     __table_name__ = 'posts'
@@ -167,13 +208,16 @@ class Posts(db.Model):
     tag_str = db.Column(db.String(256), default="42")
     timestamp = db.Column(db.DateTime, 
                           default=datetime.utcnow)
-    # who can edit post, 0-creator,1-applied,2-everyone
+    update = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
     editable = db.Column(db.String(32),default='Creator')
+    disabled = db.Column(db.Boolean)
 
     # n to 1 with Users
     creator_id = db.Column(
-        db.Integer, db.ForeignKey("users.id")
-    )  
+        db.Integer, 
+        db.ForeignKey("users.id")
+    )
 
     # 1 to n with Comments
     comments = db.relationship(
@@ -207,6 +251,13 @@ class Posts(db.Model):
     items = db.relationship(
         'Collect',                              
         foreign_keys=[Collect.post_id],
+        backref=db.backref('post', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with Demands
+    demands = db.relationship(
+        'Respon',                              
+        foreign_keys=[Respon.post_id],
         backref=db.backref('post', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
@@ -283,7 +334,12 @@ class Posts(db.Model):
                 else:
                     _tag.posts.append(self)  
                     db.session.add(_tag)
-        db.session.commit()   
+        db.session.commit() 
+
+    def up_time(self):
+        self.update = datetime.utcnow()
+        db.session.add(self)
+        db.session.commit()  
 
     # set logo cover of  post 
     @property    
@@ -321,6 +377,7 @@ class Items(db.Model):
     itag_str = db.Column(db.String(512))
     timestamp = db.Column(db.DateTime, 
                           default=datetime.utcnow)
+    disabled = db.Column(db.Boolean)
 
     # 1 to n with Comments
     comments = db.relationship(
@@ -571,7 +628,7 @@ class Comments(db.Model):
     # n to 1 with demands
     demand_id = db.Column(
         db.Integer, db.ForeignKey("demands.id")
-    )  
+    )
 
     # n2n with self
     parent_commts = db.relationship(
@@ -607,7 +664,7 @@ class Reviews(db.Model):
 
     # 1 to n with Comments
     comments = db.relationship(
-        'Comments',backref='review',lazy='dynamic') 
+        'Comments',backref='review',lazy='dynamic')
     # 1 to n with Events
     events = db.relationship(
         'Events',backref='review',lazy='dynamic') 
@@ -619,7 +676,15 @@ class Reviews(db.Model):
     # n to 1 with Items
     item_id = db.Column(
         db.Integer, db.ForeignKey("items.id")
-    )  
+    )
+
+    # n2n with Users for vote
+    voters = db.relationship(
+        'Rvote',                              
+        foreign_keys=[Rvote.review_id],
+        backref=db.backref('vote_review', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
     
     def __repr__(self):
         return '<Reviews %r>' % self.heading
@@ -644,7 +709,7 @@ class Clips(db.Model):
     # n to 1   with Items
     item_id = db.Column(
         db.Integer, db.ForeignKey("items.id")
-    )  
+    )
     
     def __repr__(self):
         return '<Clips %r>' % self.body
@@ -658,6 +723,7 @@ class Demands(db.Model):
     dtag_str = db.Column(db.String(512))
     timestamp = db.Column(db.DateTime, 
                           default=datetime.utcnow)
+    disabled = db.Column(db.Boolean)
 
     # 1 to n with Comments
     comments = db.relationship(
@@ -668,8 +734,24 @@ class Demands(db.Model):
 
     # n to 1 relation with Users
     requestor_id = db.Column(
-        db.Integer, db.ForeignKey("users.id")
-    )  
+        db.Integer, 
+        db.ForeignKey("users.id")
+    )
+
+    # n2n with Posts
+    posts = db.relationship(
+        'Respon',                              
+        foreign_keys=[Respon.demand_id],
+        backref=db.backref('demand', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with Users for vote
+    voters = db.relationship(
+        'Dvote',                              
+        foreign_keys=[Dvote.demand_id],
+        backref=db.backref('vote_demand', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan') 
 
     def dtag_to_db(self):
       
@@ -825,7 +907,7 @@ class Users(UserMixin, db.Model):
     email = db.Column(db.String(128))   
     avatar = db.Column(db.String(512))   
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
+    disabled = db.Column(db.Boolean)
     nickname = db.Column(db.String(64))
     location = db.Column(db.String(64))
     about_me = db.Column(db.Text)
@@ -856,7 +938,13 @@ class Users(UserMixin, db.Model):
         'Demands', backref='requestor', lazy='dynamic')  
     # 1 to n with Events 
     events = db.relationship(
-        'Events', backref='actor', lazy='dynamic')  
+        'Events', backref='actor', lazy='dynamic')
+    # 1 to n with Articles 
+    articles = db.relationship(
+        'Articles', backref='writer', lazy='dynamic')
+    # 1 to n with Columns
+    columns = db.relationship(
+        'Columns', backref='host', lazy='dynamic')
   
     # n2n with self for Messages
     # 1 to n with Messages for send
@@ -922,6 +1010,21 @@ class Users(UserMixin, db.Model):
         backref=db.backref('followed', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
+
+    # n2n with Demands for vote
+    vote_demands = db.relationship(
+        'Dvote',                              
+        foreign_keys=[Dvote.user_id],
+        backref=db.backref('voter', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with Reviews for vote
+    vote_reviews = db.relationship(
+        'Rvote',                              
+        foreign_keys=[Rvote.user_id],
+        backref=db.backref('voter', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')    
     
     #init and set role
     def __init__(self, **kwargs):
@@ -1130,3 +1233,58 @@ class Events(db.Model):
     def __repr__(self):
         return '<Events %r>' % self.action
 
+class Articles(db.Model):
+    __table_name__ = "articles"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(256), nullable=False)
+    figure = db.Column(db.String(512)) 
+    body = db.Column(db.Text)
+    vote = db.Column(db.Integer,default=1)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
+    update = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
+    disabled = db.Column(db.Boolean)
+    
+    # n to 1 with Users
+    writer_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("users.id")
+    )
+    # n to 1 with Columns
+    column_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("columns.id")
+    )
+    
+    def up_time(self):
+        self.update = datetime.utcnow()
+        db.session.add(self)
+        db.session.commit()
+    
+    def __repr__(self):
+        return '<Articles %r>' % self.title
+
+class Columns(db.Model):
+    __table_name__ = "columns"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(256), nullable=False)
+    intro = db.Column(db.Text)
+    figure = db.Column(db.String(512)) 
+    vote = db.Column(db.Integer,default=1)
+    timestamp = db.Column(db.DateTime, 
+                          default=datetime.utcnow)
+    disabled = db.Column(db.Boolean)
+    
+    # n to 1 with Users
+    host_id = db.Column(
+        db.Integer, 
+        db.ForeignKey("users.id")
+    )
+
+    # 1 to n with Articles 
+    articles = db.relationship(
+        'Articles', backref='column', lazy='dynamic')
+        
+    def __repr__(self):
+        return '<Columns %r>' % self.title

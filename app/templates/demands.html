@@ -19,7 +19,7 @@
 
     <div class="tab-content">
         <div id="latest" class="tab-pane fade in active">
-            <hr>
+            <br>
             {% for demand in demands_latest %}
             {% include '_show_demand.html' %}
             {% endfor %}
@@ -32,14 +32,14 @@
         </div>
 
         <div id="most" class="tab-pane fade">
-            <hr>
+            <br>
             {% for demand in demands_most %}           
             {% include '_show_demand.html' %}
             {% endfor %}
         </div>
 
         <div id="random" class="tab-pane fade">
-            <hr>
+            <br>
             {% for demand in demands_random %}
             {% include '_show_demand.html' %}
 

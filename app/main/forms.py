@@ -195,7 +195,7 @@ class EditItemForm(FlaskForm):
 
 class CommentForm(FlaskForm):
     body = TextAreaField('', validators = [DataRequired()],
-                       render_kw={"placeholder":"Required"})
+                       render_kw={"placeholder":"Leave your comment"})
     submit = SubmitField('Submit')
 
 class ClipForm(FlaskForm):
@@ -244,3 +244,17 @@ class DemandForm(FlaskForm):
     #dtag = StringField("",validators = [DataRequired()],
     #                   render_kw={"placeholder":"Set Tag, Seperated by comma, if multiple"})
     submit = SubmitField('Send Request')
+
+class ArticleForm(FlaskForm):
+    title = StringField('Title', 
+        validators = [DataRequired(),
+            Length(min=1,max=256,message='Max 256 characters')],
+        render_kw={"placeholder":"Required"})
+    figure = StringField(
+        'Picture Url to be attached',
+        render_kw={"placeholder":"REQUIRED VALID Img URL"})
+    body = TextAreaField(
+        "Start writing",
+        validators = [DataRequired()], 
+        render_kw={"placeholder":"Writing..."})
+    submit = SubmitField('Submit')

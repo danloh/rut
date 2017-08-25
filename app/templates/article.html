@@ -1,0 +1,49 @@
+{% extends 'layout1.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "_macros.html" as macros %}
+
+{% block title %} {{article.title}} {% endblock title %}
+
+{% block content %}
+
+<div>
+    <h3>{{article.title}}</h3>
+    <p> By <a href={{url_for('auth.profile', id=article.writer.id)}}>
+        {{article.writer.nickname or article.writer.name}}</a>
+        &nbsp;&nbsp;|&nbsp; 
+        {{moment(article.timestamp).format("MMM Do YYYY")}}
+    </p>
+    <hr>
+</div>
+
+{% if article.figure %}
+<div>
+    <img class="img-responsive" src="{{article.figure}}" alt="Figure">
+</div>
+<hr>
+{% endif %}
+
+<div style="font-size:medium">
+    {{article.body|safe}}
+</div>
+<hr>
+<div class="text-right">
+    {% if article.update and article.update != article.timestamp  %}
+    <span>Update:&nbsp;{{moment(article.update).format("MMM Do YYYY")}}</span>
+    {% endif %}
+    
+    {% if current_user == article.writer %}
+    &nbsp;&nbsp;|&nbsp;
+    <span>
+        <a href={{url_for('main.edit_article',id=article.id)}}>Edit</a>
+    </span>
+    {% endif %}
+</div>
+
+<!--show comments -->
+
+{% endblock content %}
+
+{% block rightside %}
+
+{% endblock rightside %}

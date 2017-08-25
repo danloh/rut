@@ -13,6 +13,20 @@
 <div>
     {% include '_show_demand.html' %}
 </div>
+
+{% if demand.posts.count() > 0 %}
+<div>
+    <div class="text-left">
+        <span><b>The Posts answer This Request:</b></span>
+    </div>
+    <br>
+    {% for respon in demand.posts %}
+    -- <a href={{url_for('main.post', id=respon.post.id)}}>{{respon.post.title|truncate(90)}}</a><br>
+    {% endfor %}
+</div>
+<hr>
+{% endif %}
+
 <div>
     {{wtf.quick_form(form)}}
     <hr>

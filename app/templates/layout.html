@@ -63,51 +63,45 @@
 			</a>
 		</div>
 		<div class="collapse navbar-collapse" id="myNavbar">
+			
 			<ul class="nav navbar-nav">
-				
 				<li><a href="{{url_for('main.collection')}}"><b>Collection</b></a></li>
 				<li><a href="{{url_for('main.challenge')}}"><b>Challenge</b></a></li>
-				<li><a href="{{url_for('main.demands')}}"><b>Request</b></a></li>
-				
+				<li><a href="{{url_for('main.demands')}}"><b>Request</b></a></li>				
 			</ul>
+
 			<ul class="nav navbar-nav navbar-right">
-				<li>
-					{% if current_user.is_authenticated %}	
-					<div class="btn-group">
-						<button type="button" class="btn btn-success navbar-btn">
-							<a href="{{url_for('main.create')}}" style="color:white">Create Now</a>
-						</button>
-						<button type="button" class="btn btn-link navbar-btn">
-							<a href={{url_for('auth.profile', id=current_user.id)}}>
-								<img src="{{current_user.avatar or url_for('static', filename='pic/profile.svg')}}" \
-								style="width:24px;height:22px" alt="Profile" class="img-circle" \
-								title="{{current_user.nickname or current_user.name}}">
-							</a>
-						</button>
-						<button type="button" class="btn navbar-btn dropdown-toggle" data-toggle="dropdown">
-							<span class="caret"></span>
-						</button>
-						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						<ul class="dropdown-menu" role="menu">
-							<li><a href={{url_for('auth.edit_profile')}}>Edit Profile</a></li>
-							<li class="divider"></li>
-							<li><a href={{url_for('auth.logout')}}>Logout</a></li>
-						</ul>
-					</div>
-					{% else %}
-					<div class="btn-group">
-						<button type="button" class="btn btn-success navbar-btn dropdown-toggle" data-toggle="dropdown">
-							Connect With <span class="caret"></span>
-						</button>
-						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						<ul class="dropdown-menu" role="menu">
-							<li><a href={{url_for('auth.login', server_name='Google')}}>Google</a></li>
-							<li><a href={{url_for('auth.login', server_name='Facebook')}}>Facebook</a></li>
-							<li><a href={{url_for('auth.login', server_name='Twitter')}}>Twitter</a></li>
-						</ul>
-					</div>
-					{% endif %}
-				</li>
+				{% if current_user.is_authenticated %}	
+				<a class="btn btn-success navbar-btn" href="{{url_for('main.create')}}">
+					<b style="color:white">Create Now</b>
+				</a>
+				<a class="btn navbar-btn" href="{{url_for('auth.profile',id=current_user.id)}}">
+					<img src="{{current_user.avatar or url_for('static', filename='pic/profile.svg')}}" \
+					style="width:24px;height:22px" alt="Profile" class="img-circle" \
+					title="{{current_user.nickname or current_user.name}}">
+				</a>
+				<button class="btn navbar-btn dropdown-toggle" data-toggle="dropdown">
+					<span class="caret"></span>
+				</button>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<ul class="dropdown-menu" role="menu">
+					<li><a href={{url_for('auth.edit_profile')}}>Edit Profile</a></li>
+					<li class="divider"></li>
+					<li><a href={{url_for('auth.logout')}}>Logout</a></li>
+				</ul>
+				{% else %}
+				<div class="btn-group">
+					<button type="button" class="btn btn-success navbar-btn dropdown-toggle" data-toggle="dropdown">
+						Connect With <span class="caret"></span>
+					</button>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<ul class="dropdown-menu" role="menu">
+						<li><a href={{url_for('auth.login', server_name='Google')}}>Google</a></li>
+						<li><a href={{url_for('auth.login', server_name='Facebook')}}>Facebook</a></li>
+						<li><a href={{url_for('auth.login', server_name='Twitter')}}>Twitter</a></li>
+					</ul>
+				</div>
+				{% endif %}
 			</ul>
 		</div>
 	</div>

@@ -24,8 +24,7 @@
     <h3>{{post.title}}</h3>
     <p> Created by <a href={{url_for('auth.profile', id=post.creator.id)}}>
         {{post.creator.nickname or post.creator.name}}</a> 
-        &nbsp;|&nbsp;
-        {{moment(post.timestamp).format("MMM Do YYYY")}}&nbsp;|&nbsp;
+        &nbsp;|&nbsp;{{moment(post.timestamp).format("MMM Do YYYY")}}&nbsp;|&nbsp;
         including&nbsp; {{post.items.count()}}&nbsp; items
     </p>
     <hr>
@@ -35,39 +34,47 @@
 </div>
 <br>
 <!--post toolbar widget-->
-<div class="text-right">
+<div class="text-right" style="background-color:#f3f3f3">
     {% if current_user == post.creator %}
     <span><a data-toggle="modal" href="#delpost">Delete</a></span>
+    &nbsp;&nbsp;||&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     {% endif %}
-    &nbsp;&nbsp;||&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    {% if display %} 
-    <span><a href={{url_for('main.edit_post',id=post.id)}}>Edit Intro</a></span>
+    
+    {% if post.update and post.timestamp != post.update  %}
+    Update:&nbsp;{{moment(post.update).format("MMM Do YYYY")}}
     &nbsp;&nbsp;|&nbsp;&nbsp;
-    <span><a href={{url_for('main.check_item',id=post.id)}}>Add Item</a></span>
-    &nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     {% endif %}
+
+    {% if display %} 
+    <span><a href={{url_for('main.edit_post',id=post.id)}}><b>Edit</b></a></span>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    <span><a href={{url_for('main.check_item',id=post.id)}}><b>Add Item</b></a></span>
+    &nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;
+    {% endif %}
+    
     <span id="actstar">
-        <a id="count">{{post.starers.count()}}</a>&nbsp;
-        <a id="star" class="btn btn-default"> 
+        <a id="count"><b>{{post.starers.count()}}</b></a>&nbsp;
+        <a id="star" class="btn btn-info btn-xs"><b>
             {% if current_user.staring(post) %} 
             Staring 
             {% else %} 
             Star 
             {% endif %} 
-        </a>      
+        </b></a>      
     </span>
     &nbsp;&nbsp;|&nbsp;&nbsp;
     <span id="chall">
         <a id="num" href={{url_for('main.morecomment_p',id=post.id)}}>
-            {{post.challengers.count()}}
+            <b>{{post.challengers.count()}}</b>
         </a>&nbsp;
-        <a id="challenge" class="btn btn-default"> 
+        <a id="challenge" class="btn btn-info btn-xs"><b>
             {% if current_user.challenging(post) %} 
             Challenging 
             {% else %} 
             Challenge 
             {% endif %} 
-        </a>      
+        </b></a>
+    &nbsp;&nbsp;     
     </span>
 
     <!--script start-->
@@ -178,15 +185,17 @@
 {% endblock content %}
 
 {% block rightside %}
+
+<!-- about creator -->
 <div class="panel panel-success">
-    <div class="panel-heading">Creator's Credentials for This Article</div>
+    <div class="panel-heading">Creator's Credentials for This Post</div>
     <div class="panel-body">
         <blockquote>{{post.credential}}</blockquote>
         <hr>
         <mark>More by the Creator</mark>
         <hr>
         {% for other in posts %}
-        -- <a href={{url_for('main.post', id=other.id)}}>{{other.title}}</a><br>
+        -- <a href={{url_for('main.post', id=other.id)}}>{{other.title|truncate(60)}}</a><br>
         {% endfor %}
 
         <div class="text-right">
@@ -197,6 +206,18 @@
     </div>
 </div>
 
+<!-- link to demand -->
+{% if post.demands.count() > 0 %}
+<div>
+    <h5>As a response to Request(s):</h5>
+    {% for respon in post.demands %}
+    --&nbsp;<a href={{url_for('main.demand',id=respon.demand.id)}}>{{respon.demand.body|truncate(60)}}</a><br>
+    {% endfor %}
+</div>
+<hr>
+{% endif %}
+
+<!-- show approve disable contributors -->
 {% if post.editable == 'Contributors' %}
 <hr>
 <div>
@@ -227,7 +248,7 @@
     </div>
     <br>
     {% endif %}
-
+    
     {% if contribute.disabled == True and current_user == post.creator %}
     <div>
         <span>   
