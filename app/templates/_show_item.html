@@ -2,7 +2,8 @@
 
 <div class="row">
     <div class="col-md-3">
-        <img src="{{item.cover or item.item_cover}}" style="width:120px; height:160px" alt="Item_Cover">
+        {% set item_cover = item.cover or item.item_cover %}
+        <img src={{item_cover}} style="width:120px; height:160px" alt="ItemCover">
     </div>
     <div class="col-md-7 text-left">
         <h4>{{item.cate}}&nbsp;
@@ -16,7 +17,7 @@
            <a {% block uidlink %}href={{url_for('main.item',id=item.id)}} {% endblock %}>
                {{item.uid}}
            </a>
-        </p>    
+        </p>
     </div>
     
     <div class="col-md-2">

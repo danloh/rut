@@ -24,7 +24,8 @@
 {% endif %}
 
 <div style="font-size:medium">
-    {{article.body|safe}}
+    {% set article_body = article.body_html or article.body %}
+    {{article_body|safe}}
 </div>
 <hr>
 <div class="text-right">

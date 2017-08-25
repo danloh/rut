@@ -1,10 +1,6 @@
 {% extends "layout0.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block head %}
-{{super()}}
-<script src="{{url_for('static', filename='ck/ckeditor/ckeditor.js')}}"></script>
-{% endblock head %}
 
 {% block title %} Edit Review {% endblock title %}
 
@@ -18,9 +14,14 @@
     <form class="form" method="POST">
     {{form.hidden_tag()}}
     {{wtf.form_field(form.heading)}}
-    {{wtf.form_field(form.body, class="ckeditor")}}
+    {{wtf.form_field(form.body)}}
     {{wtf.form_field(form.submit)}}
     </form>
 </div>
 
 {% endblock content %}
+
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
+{% endblock scripts %}

@@ -6,8 +6,16 @@ from datetime import datetime, date
 from flask import url_for, current_app, request
 from flask_sqlalchemy import SQLAlchemy 
 from flask_login import UserMixin, AnonymousUserMixin
+from markdown import markdown
+import bleach
 from .import db, login_manager
 from .utils import split_str, str_to_dict, str_to_set
+
+
+# html_tags Whitelist for Bleach
+allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
+                'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
+                'h1', 'h2', 'h3', 'h4','h5','p']
 
 # simple n2n for Tags Posts 
 tag_post = db.Table(
@@ -56,14 +64,22 @@ class Collect(db.Model):
         primary_key=True)
     order = db.Column(db.SmallInteger)   #item's order in post
     tips = db.Column(db.Text, nullable=False)
+    tips_html = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, 
                           default=datetime.utcnow)
     
     # n to 1 with Users
     tip_creator_id = db.Column(
         db.Integer, db.ForeignKey("users.id")
-    ) 
+    )
+
+    @staticmethod
+    def on_changed_tips(target, value, oldvalue, initiator):
+        target.tips_html = bleach.linkify(bleach.clean(
+            markdown(value, output_format='html'),
+            tags=allowed_tags, strip=True))
     
+db.event.listen(Collect.tips, 'set', Collect.on_changed_tips)
 
 # helper Model for n2n Posts with Users for star   
 class Star(db.Model): 
@@ -203,7 +219,8 @@ class Posts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(256), nullable=False)
     intro = db.Column(db.Text, nullable=False)
-    credential = db.Column(db.Text)
+    intro_html = db.Column(db.Text)
+    credential = db.Column(db.String(256))
     rating = db.Column(db.String(32))
     tag_str = db.Column(db.String(256), default="42")
     timestamp = db.Column(db.DateTime, 
@@ -351,8 +368,16 @@ class Posts(db.Model):
             m = random.randrange(n)
             return self.items.all()[m].item.cover
 
+    @staticmethod
+    def on_changed_intro(target, value, oldvalue, initiator):
+        target.intro_html = bleach.linkify(bleach.clean(
+            markdown(value, output_format='html'),
+            tags=allowed_tags, strip=True))
+
     def __repr__(self):
         return '<Posts %r>' % self.title
+
+db.event.listen(Posts.intro, 'set', Posts.on_changed_intro)
 
 
 class Items(db.Model):
@@ -484,20 +509,9 @@ class Items(db.Model):
                 db.session.add(byline)
         db.session.commit()
     
-    ##a function for replace uid -, del after update
-    @staticmethod
-    def repdash():
-        items = Items.query.all()
-        for item in items:
-            uid=item.uid.replace('-','').replace(' ','')
-            item.uid=uid
-            db.session.add(item)
-        db.session.commit()
-    ## del once update done
-
-
     def __repr__(self):
         return '<Items %r>' % self.title
+
 
 # helper Model for Tags hierarchy
 class Clan(db.Model):
@@ -512,7 +526,6 @@ class Clan(db.Model):
         primary_key=True)
     timestamp = db.Column(db.DateTime, 
                           default=datetime.utcnow)
-
 
 class Tags(db.Model):
     __table_name__ = "tags"
@@ -580,6 +593,7 @@ class Tags(db.Model):
     def __repr__(self):
         return '<Tags %r>' % self.tag
 
+
 # helper Model for Reply comments 
 class Reply(db.Model):
     __tablename__ = 'reply'
@@ -593,7 +607,6 @@ class Reply(db.Model):
         primary_key=True)
     timestamp = db.Column(db.DateTime, 
                           default=datetime.utcnow)
-
 
 class Comments(db.Model):
     __table_name__ = "comments"
@@ -652,11 +665,13 @@ class Comments(db.Model):
     def __repr__(self):
         return '<Coments %r>' % self.body 
 
+
 class Reviews(db.Model):
     __table_name__ = "reviews"
     id = db.Column(db.Integer, primary_key=True)
     heading = db.Column(db.String(256), nullable=False)
     body = db.Column(db.Text, nullable=False)
+    body_html = db.Column(db.Text)
     vote = db.Column(db.Integer,default=1)
     timestamp = db.Column(db.DateTime, 
                           default=datetime.utcnow)
@@ -685,14 +700,24 @@ class Reviews(db.Model):
         backref=db.backref('vote_review', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
+
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        target.body_html = bleach.linkify(bleach.clean(
+            markdown(value, output_format='html'),
+            tags=allowed_tags, strip=True))    
     
     def __repr__(self):
         return '<Reviews %r>' % self.heading
+
+db.event.listen(Reviews.body, 'set', Reviews.on_changed_body)
+
 
 class Clips(db.Model):
     __table_name__ = "clips"
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text, nullable=False)
+    body_html = db.Column(db.Text)
     vote = db.Column(db.Integer,default=1)
     timestamp = db.Column(db.DateTime, 
                           default=datetime.utcnow)
@@ -710,9 +735,17 @@ class Clips(db.Model):
     item_id = db.Column(
         db.Integer, db.ForeignKey("items.id")
     )
+
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        target.body_html = bleach.linkify(bleach.clean(
+            markdown(value, output_format='html'),
+            tags=allowed_tags, strip=True)) 
     
     def __repr__(self):
         return '<Clips %r>' % self.body
+
+db.event.listen(Clips.body, 'set', Clips.on_changed_body)
 
 
 class Demands(db.Model):
@@ -1233,12 +1266,14 @@ class Events(db.Model):
     def __repr__(self):
         return '<Events %r>' % self.action
 
+
 class Articles(db.Model):
     __table_name__ = "articles"
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(256), nullable=False)
     figure = db.Column(db.String(512)) 
-    body = db.Column(db.Text)
+    body = db.Column(db.Text, nullable=False)
+    body_html = db.Column(db.Text)
     vote = db.Column(db.Integer,default=1)
     timestamp = db.Column(db.DateTime, 
                           default=datetime.utcnow)
@@ -1261,9 +1296,18 @@ class Articles(db.Model):
         self.update = datetime.utcnow()
         db.session.add(self)
         db.session.commit()
+
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        target.body_html = bleach.linkify(bleach.clean(
+            markdown(value, output_format='html'),
+            tags=allowed_tags, strip=True)) 
     
     def __repr__(self):
         return '<Articles %r>' % self.title
+
+db.event.listen(Articles.body, 'set', Articles.on_changed_body)
+
 
 class Columns(db.Model):
     __table_name__ = "columns"

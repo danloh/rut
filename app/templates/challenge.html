@@ -1,11 +1,6 @@
 {% extends "layout1.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block head %}
-{{super()}}
-<script src="{{url_for('static', filename='ck/ckeditor/ckeditor.js')}}"></script>
-{% endblock head %}
-
 {% block title %} Readup.Tips - Challenge {% endblock title %}
 
 {% block content %}
@@ -24,7 +19,7 @@
     <div>
         <form id="clip" class="form" style="display:none" method="POST">
         {{form.hidden_tag()}}
-        {{wtf.form_field(form.body, class="ckeditor")}}
+        {{wtf.form_field(form.body)}}
         {{wtf.form_field(form.resource)}}
         {{wtf.form_field(form.submit)}}
         </form>
@@ -49,6 +44,11 @@
 </div>
 
 {% endblock content %}
+
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
+{% endblock scripts %}
 
 {% block rightside %}
 <div>

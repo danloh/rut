@@ -1,10 +1,6 @@
 {% extends 'layout1.html' %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block head %}
-{{super()}}
-<script src="{{url_for('static', filename='ck/ckeditor/ckeditor.js')}}"></script>
-{% endblock head %}
 
 {% block title %} {{post.title}} {% endblock title %}
 
@@ -30,7 +26,8 @@
     <hr>
 </div>
 <div style="font-size:medium">
-    {{post.intro|safe}}
+    {% set post_intro = post.intro_html or post.intro %}
+    {{post_intro|safe}}
 </div>
 <br>
 <!--post toolbar widget-->
@@ -125,8 +122,9 @@
         </div>
         <div class="panel-body" style="font-size:medium">
             <!--tips_c is collects, by item.id get tip-collect-object then get tip content--> 
-            {% set tip_c = tips_c[item.id] %}           
-            {{tip_c.tips|safe}}  <!--now, tip_c is collect obj, and tips is attr-->
+            {% set tip_c = tips_c[item.id] %}
+            {% set tips_body = tip_c.tips_html or tip_c.tips %}  <!--now, tip_c is collect obj, and tips is attr-->     
+            {{ tips_body|safe }}  
 
             <div class="text-right">   
                 <!--then get tip_c.id, ie collect.id-->

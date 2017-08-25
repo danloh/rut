@@ -8,12 +8,14 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_oauthlib.client import OAuth
 from flask_login import LoginManager
 from flask_moment import Moment
+from flask_pagedown import PageDown
 
 from config import config 
 
 bootstrap = Bootstrap()  # to be init_ed later
 moment = Moment()
-db = SQLAlchemy()   
+pagedown = PageDown() 
+db = SQLAlchemy()
 
 oauth = OAuth()
 login_manager = LoginManager()
@@ -27,6 +29,7 @@ def create_app(config_name):
 
     bootstrap.init_app(app)
     moment.init_app(app)
+    pagedown.init_app(app)
     db.init_app(app)
 
     oauth.init_app(app)

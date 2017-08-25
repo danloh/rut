@@ -13,8 +13,9 @@
                 {{review.creator.nickname or review.creator.name}}
             </a>
             &nbsp;|&nbsp;{{moment(review.timestamp).format("MMM Do YYYY")}} 
-        </p> 
-        <p>{{review.body|safe|truncate(250,False,'',10)}}
+        </p>
+        {% set review_body = review.body_html or review.body %}
+        <p>{{ review_body|safe|truncate(256,False,'',5) }}
             <span>
                 <a href={{url_for('main.review', id=review.id)}}>...more</a>
             </span>   

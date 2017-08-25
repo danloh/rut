@@ -19,7 +19,8 @@
     <hr>
 </div>
 <div style="font-size:medium">
-    {{review.body|safe}}
+    {% set review_body = review.body_html or review.body %}
+    {{review_body|safe}}
 </div>
 <hr>
 <div class="text-right">
