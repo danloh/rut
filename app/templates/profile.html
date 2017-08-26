@@ -193,33 +193,35 @@
     <div style="background-color:seashell">
         --On
         {% if commt.post %}
-        post
+        Post
         <a href={{url_for('main.post', id=commt.post.id)}}>
-            {{commt.post.title|truncate(40,True)}}
+            {{commt.post.title|truncate(35,True)}}
         </a>
         {% endif %}
         {% if commt.item %}
         item
         <a href={{url_for('main.item', id=commt.item.id)}}>
-            {{commt.item.title|truncate(40,True)}}
+            {{commt.item.title|truncate(35,True)}}
         </a>
         {% endif %}
         {% if commt.demand %}
-        request
+        Request
         <a href={{url_for('main.demand', id=commt.demand.id)}}>
-            {{commt.demand.body|truncate(30,True)}}
+            {{commt.demand.body|truncate(35,True)}}
         </a>
         {% endif %}
+        {% if commt.review %}
+        Review
+        <a href={{url_for('main.review', id=commt.review.id)}}>
+            {{commt.review.heading|truncate(35,True)}}
+        </a>
+        {% endif %}        
         &nbsp;|&nbsp;{{moment(commt.timestamp).format("MMM Do YYYY")}}
-        <br>
-    </div>
-    <p style="font-size:large">{{commt.body}}</p>
-    <br>
-
-    <div class="text-center">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;
         {% if user == current_user %}
-        <span><a data-toggle="modal" href="#del{{commt.id}}">delete</a></span>
-
+        <span>
+            <a data-toggle="modal" href="#del{{commt.id}}">delete</a>
+        </span>
         <!-- Modal for delete comment confirm -->
         <div class="modal fade" id="del{{commt.id}}" role="dialog">
             <div class="modal-dialog modal-sm">
@@ -240,9 +242,15 @@
             </div>
         </div>
         <!-- end Modal for delete comment confirm -->
-        <hr>
-        {% endif %}
-    </div>  
+        {% endif %}        
+    </div>
+    <br>
+    <div style="font-size:medium">
+        {% set commt_body = commt.body_html or commt.body %} 
+        {{commt_body|safe}}
+    </div>
+    <hr>
+ 
     {% endfor %}
 
     <div class="text-right">

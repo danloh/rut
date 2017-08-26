@@ -14,8 +14,8 @@ from .utils import split_str, str_to_dict, str_to_set
 
 # html_tags Whitelist for Bleach
 allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
-                'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
-                'h1', 'h2', 'h3', 'h4','h5','p']
+                'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul', 'img',
+                'h3', 'h4','h5','p']
 
 # simple n2n for Tags Posts 
 tag_post = db.Table(
@@ -613,6 +613,7 @@ class Comments(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     heading = db.Column(db.String(256))
     body = db.Column(db.Text, nullable=False)
+    body_html = db.Column(db.Text)
     vote = db.Column(db.Integer,default=1)
     timestamp = db.Column(db.DateTime, 
                           default=datetime.utcnow)
@@ -662,8 +663,16 @@ class Comments(db.Model):
         db.session.add(r)
         db.session.commit()
 
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        target.body_html = bleach.linkify(bleach.clean(
+            markdown(value, output_format='html'),
+            tags=allowed_tags, strip=True)) 
+
     def __repr__(self):
-        return '<Coments %r>' % self.body 
+        return '<Coments %r>' % self.body
+
+db.event.listen(Comments.body, 'set', Comments.on_changed_body)
 
 
 class Reviews(db.Model):
@@ -861,16 +870,18 @@ class Messages(db.Model):
 
 
 class Permission:
-    COMMENT = 0x0001
-    SCFFF = 0x0002  # STAR,CHALLENGE,FAV,FLAG,FOLLOW
-    POST = 0x0004
-    ADD_ITEM = 0x0008
-    ADD_TIPS = 0x0010
-    EDIT_POST = 0x0020
-    EDIT_ITEM = 0x0040
-    EDIT_TIPS = 0x0080 
-    ADD_DEMAND = 0x0100
-    MOD_COMMENT =0x2000
+    SCFFFV = 0x0001  # STAR,CHALLENGE,FAV,FLAG,FOLLOW,VOTE
+    DEMAND = 0x0002
+    EDIT_ITEM = 0x0004 # EDIT ITEM/TAG
+    COMMENT = 0x0008
+    POST = 0x0010
+    ADD_ITEM = 0x0020
+    REVIEW = 0x0040
+    ARTICLE = 0x0080
+    EDIT_POST = 0x0100
+    EDIT_TIPS = 0x0200
+
+    MOD_CONTENT =0x2000
     MOD_ROLE = 0x4000
     ADMIN =0x8000
 
@@ -887,18 +898,18 @@ class Roles(db.Model):
 
     # for add roles
     role_cases ={
-        "user":(Permission.COMMENT | Permission.SCFFF | 
+        "limited":(Permission.SCFFFV, False),
+        "user":(Permission.SCFFFV | Permission.DEMAND | 
+                Permission.EDIT_ITEM | Permission.COMMENT |
                 Permission.POST | Permission.ADD_ITEM | 
-                Permission.ADD_TIPS | Permission.EDIT_POST | 
-                Permission.EDIT_ITEM | Permission.EDIT_TIPS | 
-                Permission.ADD_DEMAND, 
+                Permission.REVIEW | Permission.ARTICLE, 
                 True),
-        "moderator":(Permission.COMMENT | Permission.SCFFF | 
-                    Permission.POST | Permission.ADD_ITEM | 
-                    Permission.ADD_TIPS | Permission.EDIT_POST | 
-                    Permission.EDIT_ITEM | Permission.EDIT_TIPS | 
-                    Permission.ADD_DEMAND | Permission.MOD_COMMENT, 
-                    False), 
+        "moderator":(Permission.SCFFFV | Permission.DEMAND | 
+                Permission.EDIT_ITEM | Permission.COMMENT |
+                Permission.POST | Permission.ADD_ITEM | 
+                Permission.REVIEW | Permission.ARTICLE | 
+                Permission.EDIT_POST | Permission.EDIT_TIPS |
+                Permission.MOD_CONTENT, False), 
         "Admin":(0xffff, False)               
     }
 

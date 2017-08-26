@@ -5,22 +5,18 @@
 
 {% block content %}
 
-<div class="container-fluid">
+<div>
     <h4>Post Your Review</h4>
-    <p>
-        On item &nbsp; 
-        <a href={{url_for('main.item',id=item.id)}}>{{item.title|truncate(45)}}</a>
-        
-    </p>
-    <div>
-        <form class="form" method="POST">
+    <p>On item &nbsp;<a href={{url_for('main.item',id=item.id)}}>{{item.title|truncate(65)}}</a></p>
+</div>
+<hr>
+<div>
+    <form class="form" method="POST">
         {{form.hidden_tag()}}
         {{wtf.form_field(form.heading)}}
         {{wtf.form_field(form.body)}}
         {{wtf.form_field(form.submit)}}
-        </form>
-    </div>
-    <hr>
+    </form>
 </div>
 
 {% endblock content %}

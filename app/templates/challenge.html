@@ -16,32 +16,28 @@
         });
     });
     </script>
-    <div>
-        <form id="clip" class="form" style="display:none" method="POST">
+</div>
+<div>
+    <form id="clip" class="form" style="display:none" method="POST">
         {{form.hidden_tag()}}
         {{wtf.form_field(form.body)}}
         {{wtf.form_field(form.resource)}}
         {{wtf.form_field(form.submit)}}
-        </form>
-    </div>
-    <hr>
-
-    <!--Show comments-->
-    <div>
-        <hr>
-        {% set commts = myclips %}
-        {% include '_show_comment.html' %}
-
-        <div class="text-right">
-            {% if count_my > m %}
-            <a href={{url_for('main.myclips',id=current_user.id)}} target="_blank">
-                More
-            </a>
-            {% endif %}
-        </div>
-    </div>
-
+    </form>
 </div>
+<hr>
+<!--Show comments-->
+<div>
+    {% set commts = myclips %}
+    {% include '_show_comment.html' %}
+
+    <div class="text-right">
+        {% if count_my > m %}
+        <a href={{url_for('main.myclips',id=current_user.id)}} target="_blank">More</a>
+        {% endif %}
+    </div>
+</div>
+
 
 {% endblock content %}
 

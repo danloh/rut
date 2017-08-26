@@ -1133,7 +1133,7 @@ def del_comment(id):
 ## Moderate comments
 @main.route('/disablecomment/<int:id>', methods=['GET','POST'])  
 @login_required
-@permission_required(Permission.MOD_COMMENT)
+@permission_required(Permission.MOD_CONTENT)
 def disable_comment(id):
     commt = Comments.query.get_or_404(id)   # comment 's id
     commt.disabled = True
@@ -1144,7 +1144,7 @@ def disable_comment(id):
 
 @main.route('/enablecommt/<int:id>', methods=['GET','POST'])  
 @login_required
-@permission_required(Permission.MOD_COMMENT)
+@permission_required(Permission.MOD_CONTENT)
 def enable_comment(id):
     commt = Comments.query.get_or_404(id)   # comment 's id    
     commt.disabled = False

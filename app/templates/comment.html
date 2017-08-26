@@ -20,12 +20,17 @@
     <hr>
     <div>
         <form class="form" method="POST">
-        {{form.hidden_tag()}}
-        {{wtf.form_field(form.body)}}
-        {{wtf.form_field(form.submit)}}
+            {{form.hidden_tag()}}
+            {{wtf.form_field(form.body)}}
+            {{wtf.form_field(form.submit)}}
         </form>
     </div>
     <hr>
 </div>
 
 {% endblock content %}
+
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
+{% endblock scripts %}

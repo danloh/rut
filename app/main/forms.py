@@ -199,8 +199,9 @@ class EditItemForm(FlaskForm):
 
 
 class CommentForm(FlaskForm):
-    body = TextAreaField('', validators = [DataRequired()],
-                       render_kw={"placeholder":"Leave your comment"})
+    body = PageDownField('', 
+        validators = [DataRequired()],
+        render_kw={"placeholder":"Leave your comment, Markdown Support"})
     submit = SubmitField('Submit')
 
 class ClipForm(FlaskForm):

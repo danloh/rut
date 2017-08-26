@@ -1,0 +1,12 @@
+
+div.flask-pagedown-preview {
+    margin: 0px 0px 10px 0px;
+    border: 1px dotted green;
+    padding: 5px;
+}
+div.flask-pagedown-preview h1 {
+    font-size: 100%;
+}
+div.flask-pagedown-preview h2 {
+    font-size: 100%;
+}

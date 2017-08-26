@@ -41,6 +41,11 @@
 
 {% endblock content %}
 
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
+{% endblock scripts %}
+
 {% block rightside %}
 
 {% endblock rightside %}

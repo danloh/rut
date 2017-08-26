@@ -6,51 +6,55 @@
           class="media-object" style="width:40px; height:40px" alt="avatar">
     </div>
     <div class="media-body">
-        <p style="background-color:whitesmoke">
+        <div style="background-color:whitesmoke">
             <mark>{{loop.revindex}}</mark>&nbsp;|&nbsp;By 
             <a href={{url_for('auth.profile', id=commt.creator.id)}}>
                 {{commt.creator.nickname or commt.creator.name}}
             </a> 
-            From 
             {% if commt.post %}
-            post 
+            On Post 
             <a href={{url_for('main.post', id=commt.post.id)}}>
                 {{commt.post.title|truncate(30,True)}}
             </a>
             {% endif %}
             {% if commt.item %}
-            item 
+            From item 
             <a href={{url_for('main.item', id=commt.item.id)}}>
                 {{commt.item.title|truncate(30,True)}}
             </a>
             {% endif %}
             {% if commt.demand %}
-            request
+            For Request
             <a href={{url_for('main.demand', id=commt.demand.id)}}>
                 {{commt.demand.body|truncate(30,True)}}
             </a>
             {% endif %}
-             &nbsp;|&nbsp; {{ moment(commt.timestamp).format("MMM Do YYYY")}} 
-        </p>
-    
+            {% if commt.review %}
+            On Review
+            <a href={{url_for('main.review', id=commt.review.id)}}>
+                {{commt.review.heading|truncate(30,True)}}
+            </a>
+            {% endif %}
+             &nbsp;|&nbsp; {{ moment(commt.timestamp).format("MMM Do YYYY")}}
+             
+             {% if current_user.role.duty == "moderator" %}
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;
+             {% if not commt.disabled %}
+             <span><a href={{url_for('main.disable_comment', id=commt.id)}} target="_blank">Disable</a></span>
+             {% else %}
+             <span><a href={{url_for('main.enable_comment', id=commt.id)}} target="_blank">Enable</a></span>
+             {% endif %}
+             {% endif %} 
+        </div>
+        <br>
         <div style="font-size:medium">
-            {% if not commt.disabled %}           
-            {{commt.body}}
+            {% if not commt.disabled %}
+            {% set commt_body = commt.body_html or commt.body %}      
+            {{commt_body|safe}}
             {% else %}
             <p>The Content has been disabled by a moderator</p>
             {% endif %}
         </div>
-
-        <div class="text-right">
-            {% if current_user.role.duty == "moderator" %}
-            {% if not commt.disabled %}
-            <span><a href={{url_for('main.disable_comment', id=commt.id)}} target="_blank">Disable</a></span>
-            {% else %}
-            <span><a href={{url_for('main.enable_comment', id=commt.id)}} target="_blank">Enable</a></span>
-            {% endif %}
-            {% endif %}
-        </div>
-
     </div>
     <hr>   
 </div>
