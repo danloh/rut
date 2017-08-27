@@ -405,6 +405,7 @@ def parse_html_other(url):
     # init a dict to store info
     d = {}
     d['res_url'] = url
+    d['cate'] = 'Online'
     if soup == "Error":
         return d
 

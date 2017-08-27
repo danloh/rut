@@ -5,13 +5,13 @@
 
 {% block content %}
 
-<div class="container-fluid">
+<div>
     <h4>See More {{ref}}
       of 
       <a href={{url_for('auth.profile', id=user.id)}}>{{user.nickname or user.name}}</a>
     </h4>
 </div>
-    <hr>
+<hr>
 <div>
     {% for user in follows %}
     {% include '_show_user.html' %}

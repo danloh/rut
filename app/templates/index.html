@@ -14,46 +14,20 @@
     <h4>Share the Challenging, Challenge the Sharing, 
         <a href ="{{url_for('main.create')}}">Create Now</a>
     </h4>
-    <hr>
+    <hr class="colored" />
 </div>
 
 <!--Show some digest -->
-<ul class="nav nav-tabs">
-    <li class="active"><a data-toggle="tab" href="#latest">Latest</a></li>
-    <li><a data-toggle="tab" href="#popular">Most Popular</a></li>
-    <li><a data-toggle="tab" href="#random">Random</a></li>
-</ul>
-
-<div class="tab-content">
-
-    <div id="latest" class="tab-pane fade in active">
-        <br>
-        {% for post in posts_latest %}
-        {% include '_post_list.html' %}
-        
-        {% endfor %}
-    </div>
-
-    <div id="popular" class="tab-pane fade">
-        <br>
-        {% for post in posts_popular %}           
-        {% include '_post_list.html' %}
-
-        {% endfor %}
-    </div>
-
-    <div id="random" class="tab-pane fade">
-        <br>
-        {% for post in posts_random %}
-        {% include '_post_list.html' %}
-
-        {% endfor %}
-    </div>
+<div id="select">
+    <br>
+    {% for post in posts_select %}
+    {% include '_post_list.html' %}
+    {% endfor %}
 </div>
 
 {% endblock content %}
 
 {% block rightside %}
 {% include '_connect_side.html' %}
-
+{% include '_rand_side.html' %}
 {% endblock rightside %}

@@ -5,7 +5,7 @@
 
 {% block content %}
 
-<div class="container-fluid">
+<div>
     <h4>See More Items  
         <a href={{url_for('auth.profile', id=user.id)}}>{{user.nickname or user.name}}</a>
         {{ref}}
@@ -15,7 +15,6 @@
        {% include '_show_item_0.html' %}
        <hr>
     {% endfor %}
-
 </div>
 {% if pagination and pagination.pages > 1 %}
 <div class="text-center">

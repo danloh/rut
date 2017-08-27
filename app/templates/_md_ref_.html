@@ -1,0 +1,164 @@
+<!--Markdown reference-->
+<table class="table table-bordered" id="markdown-reference">
+    <thead>
+        <tr>
+            <th>Tags</th>
+            <th>Markdown</th>
+            <th>Processed</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Line breaks</td>
+            <td>
+                <em>double-space to generate a line break</em>
+            </td>
+            <td>&nbsp;</td>
+        </tr>
+        <tr>
+            <td>Header</td>
+            <td>
+                <pre>### Header 3 <br>#### Header 4</pre>
+                <h6>No support h1,h2 Here</h6>
+            </td>
+            <td>
+                <br><h4>Header 4</h4>
+            </td>
+        </tr>       
+        <tr>
+            <td>Emphasis</td>
+            <td>
+                <pre>*Emphasize* _emphasize_ <br>**Strong** __Strong__</pre>
+            </td>
+            <td>
+                <em>Emphasize</em><br>
+                <strong>Strong</strong>
+            </td>
+        </tr>
+        <tr>
+            <td>Inline Links</td>
+            <td>
+                <pre>Go [Readup Tips](http://readup.tips "Title").</pre>
+            </td>
+            <td>
+                Go <a title="Title" href="http://readup.tips/">Readup Tips</a>.
+            </td>
+        </tr>
+        <tr>
+            <td>Referenced Links</td>
+            <td>
+                <pre>Link [Readup Tips][1] and anotder [link][2].<br>[1]: http://readup.tips/ "Title"<br>[2]: http://readup.tips/ "Title"</pre>
+            </td>
+            <td>
+                Like <a title="Title" href="http://readup.tips/">Readup Tips</a> and anotder <a title="Title" href="http://readup.tips/">link</a>.
+            </td>
+        </tr>
+        <tr>
+            <td>Inline Images</td>
+            <td>
+                <pre>Logo: ![Alt](/path/to/img.svg "Title")</pre>
+            </td>
+            <td>
+                Logo: <img title="Title" alt="Alt" src="/static/pic/dpc.svg" width="22px">
+            </td>
+        </tr>
+        <tr>
+            <td>Referenced Images</td>
+            <td>
+                <pre> Logo: ![Alt][1] <br> [1]: /path/to/logo.png "Logo"</pre>
+            </td>
+            <td>
+                Logo: <img title="Logo" alt="Alt" src="/static/pic/dpc.svg" width="22px">
+            </td>
+        </tr>
+        <tr>
+            <td>Linked Images</td>
+            <td>
+                <pre>Linked: [![alt](/logo.png)](http://readup.tips/ "Title")</pre>
+            </td>
+            <td>
+                Linked: <a href="http://wordpress.com/" title="Title"><img src="/static/pic/dpc.svg" width="22px"></a>
+            </td>
+        </tr>
+        <tr>
+            <td>Bullet Lists</td>
+            <td>
+                <pre> * Item <br> - Item</pre>
+            </td>
+            <td>
+                <ul>
+                    <li>Item</li>
+                    <li>Item</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>Numbered Lists</td>
+            <td>
+                <pre>1. Item1<br>2. Item2</pre>
+            </td>
+            <td>
+                <ol>
+                    <li>Item1</li>
+                    <li>Item2</li>
+                </ol>
+            </td>
+        </tr>
+        <tr>
+            <td>Mixed Lists</td>
+            <td>
+                <pre>1. Item1<br>2. Item2<br>* Mixed<br>* Mixed<br>3. Item</pre>
+            </td>
+            <td>
+                <ol>
+                    <li>Item1</li>
+                    <li>Item2
+                    <ul>
+                        <li>Mixed</li>
+                        <li>Mixed</li>
+                    </ul>
+                    </li>
+                    <li>Item3</li>
+                </ol>
+            </td>
+        </tr>
+        <tr>
+            <td>Horizontal Rule</td>
+            <td>
+                <pre> --- <br> *** </pre>
+            </td>
+            <td>
+                <p><hr></p>
+            </td>
+        </tr>
+        <tr>
+            <td>Blockquotes</td>
+            <td>
+                <pre>&gt; Quoted text.<br>&gt; &gt; Quoted quote.<br>&gt; * Quoted <br>&gt; * List</pre>
+            </td>
+            <td>
+                <blockquote>
+                    <p>Quoted text or list</p>
+                </blockquote>
+            </td>
+        </tr>
+        <tr>
+            <td>Code</td>
+            <td>
+                <pre>`import this`</pre>
+            </td>
+            <td>
+                <code>import this</code>
+            </td>
+        </tr>
+        <tr>
+            <td>Abbreviations</td>
+            <td>
+                <pre>Markdown to HTML.<br>*[HTML]: HyperText Markup Language</pre>
+            </td>
+            <td>
+                Markdown to <abbr title="HyperText Markup Language">HTML</abbr>.
+            </td>
+        </tr>
+    </tbody>
+</table>

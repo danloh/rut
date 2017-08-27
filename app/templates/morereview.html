@@ -5,7 +5,7 @@
 
 {% block content %}
 
-<div class="container-fluid">
+<div>
     {% if ref=='user' %}
     <h4>See More Reviews By
         <a href={{url_for('auth.profile', id=user.id)}}>{{user.nickname or user.name}}</a>
@@ -19,7 +19,6 @@
     {% for review in reviews %}
        {% include '_review_list.html' %}
     {% endfor %}
-
 </div>
 {% if pagination and pagination.pages > 1 %}
 <div class="text-center">

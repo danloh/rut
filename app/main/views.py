@@ -26,16 +26,16 @@ def index():
     _query = Posts.query
     m = current_app.config['POST_PER_PAGE']
 
-    posts_latest = _query.order_by(Posts.timestamp.desc()).limit(m)
-    posts_popular = _query.order_by(Posts.starers).limit(m)
-    posts_random = _query.order_by(db.func.rand()).limit(m)
+    posts_latest = _query.order_by(Posts.update.desc()).limit(m)
+    posts_popular = _query.order_by(Posts.vote.desc()).limit(m)
+    #posts_random = _query.order_by(db.func.rand()).limit(m)
+
+    posts_select = posts_latest.union(posts_popular).limit(m)
 
     tags = Tags.query.order_by(db.func.rand()).limit(m)
 
-    return render_template("index.html",tags =tags, 
-                            posts_latest = posts_latest, 
-                            posts_popular = posts_popular,
-                            posts_random = posts_random)
+    return render_template("index.html",tags =tags,
+                            posts_select=posts_select)
 
 
 @main.route('/collection', methods=['GET','POST'])
@@ -464,8 +464,9 @@ def countstar(id):
         current_user.unstar(post)
 
     n = post.starers.count()
+    post.cal_vote(n=n)
     m=str(n)
-
+    
     return m 
 #######################################################################
 ##end for star Ajax ######################################################
@@ -482,8 +483,9 @@ def countchallenge(id):
         current_user.unchallenge(post)
 
     a = post.challengers.count()
+    post.cal_vote(m=a*2)
     b=str(a)
-
+    
     return b 
 #######################################################################
 ##end for challenge Ajax ######################################################
@@ -1570,3 +1572,28 @@ def random_uid():
         uid = 'RUT'+str(round(random.random()*10E8))
     else:
         return uid
+
+# some random action
+@main.route('/randreq', methods=['GET'])
+def randreq():
+    demand = Demands.query.order_by(db.func.rand()).first()
+    if demand:
+        return redirect(url_for('.demand',id=demand.id))
+
+@main.route('/randpost', methods=['GET'])
+def randpost():
+    post = Posts.query.order_by(db.func.rand()).first()
+    if post:
+        return redirect(url_for('.post',id=post.id))
+
+@main.route('/randreview', methods=['GET'])
+def randreview():
+    review = Reviews.query.order_by(db.func.rand()).first()
+    if review:
+        return redirect(url_for('.review',id=review.id))
+
+@main.route('/latest/post', methods=['GET'])
+def latestpost():
+    post = Posts.query.order_by(Posts.timestamp.desc()).first()
+    if post:
+        return redirect(url_for('.post',id=post.id))

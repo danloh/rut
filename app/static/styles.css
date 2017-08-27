@@ -1,4 +1,7 @@
 
+textarea.flask-pagedown-input {
+    height:6em;
+}
 div.flask-pagedown-preview {
     margin: 0px 0px 10px 0px;
     border: 1px dotted green;
@@ -9,4 +12,8 @@ div.flask-pagedown-preview h1 {
 }
 div.flask-pagedown-preview h2 {
     font-size: 100%;
+}
+hr.colored {
+    height: 1px;
+    border: 1px dotted darkorange;
 }

@@ -5,7 +5,7 @@
 
 {% block content %}
 
-<div class="container-fluid">
+<div>
     <h4>See More comments</h4>
     {% if user %}
     <p>by myself</p>
@@ -22,7 +22,6 @@
            <a href={{url_for('main.add_review',id=item.id)}}>Review</a>
         </p>
     {% endif %}
-
 </div>
 {% if pagination and pagination.pages > 1 %}
 <div class="text-center">

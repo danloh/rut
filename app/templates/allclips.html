@@ -5,12 +5,11 @@
 
 {% block content %}
 
-<div class="container-fluid">
+<div>
     <h4>See More Clips</h4>
     <hr>
     {% set commts = allclips %}
     {% include '_show_comment.html' %}
-
 </div>
 {% if pagination and pagination.pages >1 %}
 <div class="text-center">

@@ -6,7 +6,7 @@
 
 {% block content %}
 
-<div class="container-fluid">
+<div>
     <h4>Post Your Comment</h4>
     <p>
         {% if mark %}
@@ -34,3 +34,7 @@
 {{ super() }}
 {{ pagedown.include_pagedown() }}
 {% endblock scripts %}
+
+{% block rightside %}
+<a target="_blank" href={{url_for('main.about')}}#markdown>Markdown Quick Reference</a>
+{% endblock rightside %}

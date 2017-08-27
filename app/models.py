@@ -13,9 +13,9 @@ from .utils import split_str, str_to_dict, str_to_set
 
 
 # html_tags Whitelist for Bleach
-allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
-                'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul', 'img',
-                'h3', 'h4','h5','p']
+allowed_tags = ['a', 'abbr', 'b', 'blockquote', 'code', 'img',
+                'em', 'i', 'li', 'ol', 'ul', 'pre', 'strong', 
+                'h3', 'h4', 'h5', 'h6', 'hr', 'p']
 
 # simple n2n for Tags Posts 
 tag_post = db.Table(
@@ -229,6 +229,7 @@ class Posts(db.Model):
                           default=datetime.utcnow)
     editable = db.Column(db.String(32),default='Creator')
     disabled = db.Column(db.Boolean)
+    vote = db.Column(db.Integer, default=0)
 
     # n to 1 with Users
     creator_id = db.Column(
@@ -356,7 +357,14 @@ class Posts(db.Model):
     def up_time(self):
         self.update = datetime.utcnow()
         db.session.add(self)
-        db.session.commit()  
+        db.session.commit()
+
+    def cal_vote(self,n=None,m=None):
+        n = n or self.starers.count() 
+        m = m or self.challengers.count() * 2
+        self.vote = n+m
+        db.session.add(self)
+        #db.session.commit() 
 
     # set logo cover of  post 
     @property    
@@ -383,21 +391,21 @@ db.event.listen(Posts.intro, 'set', Posts.on_changed_intro)
 class Items(db.Model):
     __table_name__ = 'items'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(256), nullable=False)
+    title = db.Column(db.String(512), nullable=False)
     res_url = db.Column(db.String(512))
-    uid = db.Column(db.String(64), unique=True, nullable=False)  #isbn13 etc.
+    uid = db.Column(db.String(128), unique=True, nullable=False)  #isbn13 etc.
     isbn10 = db.Column(db.String(32), unique=True)
     asin = db.Column(db.String(32), unique=True)
     author = db.Column(db.String(512)) # or instructor
     cover = db.Column(db.String(512))
     cate = db.Column(db.String(16),default='Book')
     publisher = db.Column(db.String(256))
-    pub_date = db.Column(db.String(64)) # or start date
+    pub_date = db.Column(db.String(128)) # or start date
     language = db.Column(db.String(256))
-    binding = db.Column(db.String(32))
-    page = db.Column(db.String(32)) # book page or length of course
-    level = db.Column(db.String(32))
-    price = db.Column(db.String(32))
+    binding = db.Column(db.String(128))
+    page = db.Column(db.String(128)) # book page or length of course
+    level = db.Column(db.String(128))
+    price = db.Column(db.String(128))
     details = db.Column(db.Text)
     itag_str = db.Column(db.String(512))
     timestamp = db.Column(db.DateTime, 
@@ -956,6 +964,9 @@ class Users(UserMixin, db.Model):
     location = db.Column(db.String(64))
     about_me = db.Column(db.Text)
     links = db.Column(db.String(64))
+    #record mission accomplished
+    mission = db.Column(db.Integer, default=0)
+    rank = db.Column(db.Integer, default=0)
 
     # n to 1 with Roles
     role_id = db.Column(
@@ -1170,6 +1181,21 @@ class Users(UserMixin, db.Model):
     def faving(self, tag):
         return self.fav_tags.filter_by(
             tag_id=tag.id).first() is not None
+
+    def accomplished(self):
+        pass
+    
+    def cal_rank(self,p=None,t=None,r=None,a=None,c=None,d=None,m=None):
+        m = m or self.mission*10
+        p = p or self.posts.count()*5
+        t = t or self.tips.count()*5
+        r = r or self.reviews.count()*5
+        a = a or self.articles.count()*5
+        c = c or self.clips.count()*2
+        d = d or self.demands.count() 
+        self.rank = m+p+t+r+a+c+d
+        db.session.add(self)
+        #db.session.commit()
 
  
     def __repr__(self):
