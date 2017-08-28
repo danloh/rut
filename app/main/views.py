@@ -30,7 +30,7 @@ def index():
     posts_popular = _query.order_by(Posts.vote.desc()).limit(m)
     #posts_random = _query.order_by(db.func.rand()).limit(m)
 
-    posts_select = posts_latest.union(posts_popular).limit(m)
+    posts_select = posts_latest.union(posts_popular).order_by(db.func.rand()).limit(m)
 
     tags = Tags.query.order_by(db.func.rand()).limit(m)
 
@@ -1579,21 +1579,29 @@ def randreq():
     demand = Demands.query.order_by(db.func.rand()).first()
     if demand:
         return redirect(url_for('.demand',id=demand.id))
+    else:
+        return False
 
 @main.route('/randpost', methods=['GET'])
 def randpost():
     post = Posts.query.order_by(db.func.rand()).first()
     if post:
         return redirect(url_for('.post',id=post.id))
+    else:
+        return False
 
 @main.route('/randreview', methods=['GET'])
 def randreview():
     review = Reviews.query.order_by(db.func.rand()).first()
     if review:
         return redirect(url_for('.review',id=review.id))
+    else:
+        return False
 
 @main.route('/latest/post', methods=['GET'])
 def latestpost():
     post = Posts.query.order_by(Posts.timestamp.desc()).first()
     if post:
         return redirect(url_for('.post',id=post.id))
+    else:
+        return False

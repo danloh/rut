@@ -531,9 +531,9 @@ def store(d=None,url=''):
 
 # for debug case
 def start():
-    url = 'https://www.amazon.com/Egyptian-Book-Dead-Coming-Forth/dp/1884564283'
-    get_html(url)
-    parse_html_amazon(url)
+    url = 'https://www.amazon.com/Art-War-AmazonClassics-Sun-Tzu/dp/1542047528/'
+    #get_html(url)
+    parse_html(url)
 
 if __name__ == "__main__":
     start()

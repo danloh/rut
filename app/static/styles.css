@@ -17,3 +17,9 @@ hr.colored {
     height: 1px;
     border: 1px dotted darkorange;
 }
+hr.top {
+    height: 1px;
+    margin: 0px 0px 2px 0px;
+    color: green;
+    background-color: green;
+}

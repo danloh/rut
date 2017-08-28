@@ -88,8 +88,8 @@ def set_user(server_name, me):
         return redirect(url_for('auth.edit_profile'))  #note!!
 
     login_user(user, remember=True)
-    next_url = session.get('next') or url_for('main.index')
-    session.pop('next',None)
+    next_url = session.pop('next',None) or url_for('main.index')
+    #session.pop('next',None)
     return redirect(next_url)  #note!!
 
 
@@ -117,8 +117,8 @@ def set_tw_user(server_name,resp):
         return redirect(url_for('auth.edit_profile'))  #note!!
 
     login_user(user, remember=True)
-    next_url = session.get('next') or url_for('main.index')
-    session.pop('next',None)
+    next_url = session.pop('next',None) or url_for('main.index')
+    #session.pop('next',None)
     return redirect(next_url) 
 
 @auth.route('/connect')
