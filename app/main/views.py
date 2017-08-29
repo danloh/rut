@@ -1580,7 +1580,7 @@ def randreq():
     if demand:
         return redirect(url_for('.demand',id=demand.id))
     else:
-        return False
+        return redirect(url_for('.index'))
 
 @main.route('/randpost', methods=['GET'])
 def randpost():
@@ -1588,7 +1588,7 @@ def randpost():
     if post:
         return redirect(url_for('.post',id=post.id))
     else:
-        return False
+        return redirect(url_for('.index'))
 
 @main.route('/randreview', methods=['GET'])
 def randreview():
@@ -1596,7 +1596,7 @@ def randreview():
     if review:
         return redirect(url_for('.review',id=review.id))
     else:
-        return False
+        return redirect(url_for('.index'))
 
 @main.route('/latest/post', methods=['GET'])
 def latestpost():
@@ -1604,4 +1604,4 @@ def latestpost():
     if post:
         return redirect(url_for('.post',id=post.id))
     else:
-        return False
+        return redirect(url_for('.index'))
