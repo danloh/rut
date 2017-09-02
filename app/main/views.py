@@ -1597,11 +1597,20 @@ def randreview():
         return redirect(url_for('.review',id=review.id))
     else:
         return redirect(url_for('.index'))
-
+# check latest 
 @main.route('/latest/post', methods=['GET'])
 def latestpost():
     post = Posts.query.order_by(Posts.timestamp.desc()).first()
     if post:
         return redirect(url_for('.post',id=post.id))
+    else:
+        return redirect(url_for('.index'))
+
+@main.route('/latest/<string:cat>', methods=['GET'])
+def latestitem(cat):
+    cate=str(cat).capitalize()
+    item = Items.query.filter_by(cate=cate).order_by(Items.timestamp.desc()).first()
+    if item:
+        return redirect(url_for('.item',id=item.id))
     else:
         return redirect(url_for('.index'))

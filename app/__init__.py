@@ -24,9 +24,11 @@ login_manager.login_view = 'auth.connect'
 
 def create_app(config_name):
     app = Flask(__name__)
+    #load config
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
+    #load extension
     bootstrap.init_app(app)
     moment.init_app(app)
     pagedown.init_app(app)
@@ -35,6 +37,7 @@ def create_app(config_name):
     oauth.init_app(app)
     login_manager.init_app(app)
 
+    #load blueprints
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
 

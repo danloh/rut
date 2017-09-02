@@ -30,6 +30,9 @@
 <div>
     {{wtf.quick_form(form)}}
     <hr>
+    <!--share widgets-->
+    {% include '_share.html' %}
+    <!--show comments-->
     {% set commts = comments %}
     {% include '_show_comment.html' %}
 </div>

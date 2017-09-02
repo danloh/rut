@@ -1,28 +1,21 @@
 <!--include share widgets in-->
-
-<!--facebook share-->
-<!-- Load Facebook SDK for JavaScript -->
-<div id="fb-root"></div>
-<script>
-(function(d, s, id) {
-    var js, fjs = d.getElementsByTagName(s)[0];
-    if (d.getElementById(id)) 
-    return;
-    js = d.createElement(s); js.id = id;
-    js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1";
-    fjs.parentNode.insertBefore(js, fjs);
-}
-  (document, 'script', 'facebook-jssdk'));
-
-</script>
-
-<!-- Your share button code -->
-<div class="fb-share-button" 
-     data-href="{{loaction.href}}"   
-     data-layout="button_count">
-</div>
-
+<div class="text-right">
 
 <!--Twitter share-->
-<a href="https://twitter.com/share" class="twitter-share-button" data-show-count="false">Tweet</a>
+<a href="https://twitter.com/share" class="twitter-share-button" data-show-count="false" style="height:20px">
+  Tweet
+</a>
 <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+<!--G+ share-->
+<a class="g-plus" data-action="share" style="height:20px"></a>
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+
+<!--facebook share-->
+<a href="#" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href), 'facebook-share-dialog', 'width=626,height=436'); return false;" class="btn btn-primary btn-xs" style="height:20px">
+  Share
+</a>
+
+</div>
+
+<!-why fb-share cannot verticle-align??, need to tackle-->
