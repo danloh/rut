@@ -617,7 +617,6 @@ class Tags(db.Model):
     @staticmethod
     @cache.memoize()
     def get_tags():
-        print('tag called')
         return Tags.query.order_by(db.func.rand()).limit(20).all()
     
     def __repr__(self):
