@@ -4,7 +4,7 @@ import os
 from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
 
-from app import create_app, db 
+from app import create_app, db, cache 
 from app.models import Posts, Items, Collect, Tags, Fav, Rvote, Dvote,\
                        tag_post, tag_item, tag_demand, Respon,\
                        Comments, Reviews, Clips, Demands, Articles, Columns,\
@@ -18,7 +18,7 @@ manager = Manager(app)
 migrate = Migrate(app, db)
 
 def make_shell_context():
-    return dict(app=app, db=db, Posts=Posts, Items=Items, 
+    return dict(app=app, db=db, cache=cache, Posts=Posts, Items=Items, 
                 Collect=Collect, Star=Star, Flag=Flag, 
                 Tags=Tags, tag_post=tag_post, tag_item=tag_item, 
                 Comments=Comments, Users=Users, Contribute=Contribute,

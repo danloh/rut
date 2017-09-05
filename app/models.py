@@ -8,7 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, AnonymousUserMixin
 from markdown import markdown
 import bleach
-from .import db, login_manager
+from . import db, login_manager, cache
 from .utils import split_str, str_to_dict, str_to_set
 
 
@@ -377,6 +377,21 @@ class Posts(db.Model):
             return self.items.all()[m].item.cover
 
     @staticmethod
+    #@cache.memoize() #to tackle
+    def select_posts():
+        _query = Posts.query
+        m = current_app.config['POST_PER_PAGE']
+
+        posts_latest = _query.order_by(Posts.update.desc()).limit(m)
+        posts_popular = _query.order_by(Posts.vote.desc()).limit(m)
+
+        posts_select = posts_latest.union(posts_popular).\
+                       order_by(db.func.rand()).limit(m)
+
+        return posts_select
+
+
+    @staticmethod
     def on_changed_intro(target, value, oldvalue, initiator):
         target.intro_html = bleach.linkify(bleach.clean(
             markdown(value, output_format='html'),
@@ -597,6 +612,13 @@ class Tags(db.Model):
             c = Clan(child_tag=self, parent_tag=tag)
             db.session.add(c)
             db.session.commit()
+
+    #cache get rand tags
+    @staticmethod
+    @cache.memoize()
+    def get_tags():
+        print('tag called')
+        return Tags.query.order_by(db.func.rand()).limit(20).all()
     
     def __repr__(self):
         return '<Tags %r>' % self.tag
@@ -1196,10 +1218,25 @@ class Users(UserMixin, db.Model):
         self.rank = m+p+t+r+a+c+d
         db.session.add(self)
         #db.session.commit()
+    
+    #@cache.memoize(timeout=60*5)#cannot cache,due to n2n lazy opt? to tackle. 
+    def get_tag_set(self):
+        # star posts' Tags
+        tag_s = [p.star_post.tags for p in self.star_posts] #2D LIST
+        #challenge posts'tags
+        tag_c = [p.challenge_post.tags for p in self.challenge_posts] #2D
+        #flaged items' Tags
+        tag_fg = [i.flag_item.itags for i in self.flag_items] #2D
+        #faving tags
+        tag_fv = [i.fav_tag for i in self.fav_tags]
+        #merge and unduplicated
+        tag_all = sum(tag_s + tag_c + tag_fg, tag_fv)
+        tag_set = set(tag_all)
+        
+        return tag_set,tag_fv
 
- 
     def __repr__(self):
-        return '<Users %r>' % self.name
+        return '<Users %r>' % (self.name + str(self.id))
 
 
 class AnonymousUser(AnonymousUserMixin):

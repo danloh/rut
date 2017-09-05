@@ -60,7 +60,7 @@ class PostForm(FlaskForm):
     intro = PageDownField(
         '*Preface', 
         validators = [DataRequired()], 
-        render_kw={"placeholder":"Required, as Introduction; \nMarkdown Supported, Preview Below"})
+        render_kw={"placeholder":"Required, as Introduction; \nMarkdown support, Preview Below"})
     tag = StringField(
         "*Set Tag", 
         validators = [DataRequired()],
@@ -92,7 +92,7 @@ class EditPostForm(FlaskForm):
     intro = PageDownField(
         '*Preface', 
         validators = [DataRequired()],
-        render_kw={"placeholder":"Required; \nMarkdown Supported, Preview Below"})
+        render_kw={"placeholder":"Required; \nMarkdown support, Preview Below"})
     rating = SelectField(
         'Suitable for? &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
         choices=[('Professional','Professional'),\
@@ -116,7 +116,7 @@ class EditTipsForm(FlaskForm):
     tips = PageDownField(
         '*Edit Tips', 
         validators = [DataRequired()],
-        render_kw={"placeholder":"Required; \nMarkdown Supported, Preview Below"})
+        render_kw={"placeholder":"Required; \nMarkdown support, Preview Below"})
     submit = SubmitField('submit')
 
 class CheckItemForm(FlaskForm): 
@@ -153,7 +153,7 @@ class ItemForm(FlaskForm):
     tips = PageDownField(
         '*The Tips--Required : Tell sth Why you add this Item', 
         validators = [DataRequired()],
-        render_kw={"placeholder":"Required; \nMarkdown Supported, Preview Below"})
+        render_kw={"placeholder":"Required; \nMarkdown support, Preview Below"})
 
     submit = SubmitField('submit')
 
@@ -201,12 +201,12 @@ class EditItemForm(FlaskForm):
 class CommentForm(FlaskForm):
     body = PageDownField('', 
         validators = [DataRequired()],
-        render_kw={"placeholder":"Leave your comment; \nMarkdown Supported, Preview Below"})
+        render_kw={"placeholder":"Leave your comment; \nMarkdown support, Preview Below"})
     submit = SubmitField('Submit')
 
 class ClipForm(FlaskForm):
     body = PageDownField('', validators = [DataRequired()],
-                       render_kw={"placeholder":"Required; \nMarkdown Supported, Preview Below"})
+                       render_kw={"placeholder":"Required; \nMarkdown support, Preview Below"})
     resource = SelectField('Here are items(up to 5) You are Working on',coerce=int)
     submit = SubmitField('Submit')
 
@@ -217,7 +217,7 @@ class ReviewForm(FlaskForm):
     body = PageDownField(
         '*Review, at least 256 characters', 
         validators = [DataRequired(),Length(min=256,message='at least 256 characters')],
-        render_kw={"placeholder":"Required at least 256 characters; \nMarkdown Supported, Preview Below"})
+        render_kw={"placeholder":"Required at least 256 characters; \nMarkdown support, Preview Below"})
     submit = SubmitField('Submit')
 
 
@@ -260,5 +260,5 @@ class ArticleForm(FlaskForm):
     body = PageDownField(
         "*Start writing",
         validators = [DataRequired()], 
-        render_kw={"placeholder":"Writing.... \nMarkdown Supported, Preview Below"})
+        render_kw={"placeholder":"Writing.... \nMarkdown support, Preview Below"})
     submit = SubmitField('Submit')
