@@ -60,7 +60,7 @@ class PostForm(FlaskForm):
     intro = PageDownField(
         '*Preface', 
         validators = [DataRequired()], 
-        render_kw={"placeholder":"Required, as Introduction; \nMarkdown support, Preview Below"})
+        render_kw={"placeholder":"Required, as Introduction; \nMarkdown Support, Preview Below"})
     tag = StringField(
         "*Set Tag", 
         validators = [DataRequired()],
@@ -92,7 +92,7 @@ class EditPostForm(FlaskForm):
     intro = PageDownField(
         '*Preface', 
         validators = [DataRequired()],
-        render_kw={"placeholder":"Required; \nMarkdown support, Preview Below"})
+        render_kw={"placeholder":"Required; \nMarkdown Support, Preview Below"})
     rating = SelectField(
         'Suitable for? &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
         choices=[('Professional','Professional'),\
@@ -116,7 +116,7 @@ class EditTipsForm(FlaskForm):
     tips = PageDownField(
         '*Edit Tips', 
         validators = [DataRequired()],
-        render_kw={"placeholder":"Required; \nMarkdown support, Preview Below"})
+        render_kw={"placeholder":"Required; \nMarkdown Support, Preview Below"})
     submit = SubmitField('submit')
 
 class CheckItemForm(FlaskForm): 
@@ -151,13 +151,24 @@ class ItemForm(FlaskForm):
         choices=[('Book','Book'),('Video','video'),('Online','Online-Resource'),\
                  ('Album','Album'),('Other','Other')])
     tips = PageDownField(
-        '*The Tips--Required : Tell sth Why you add this Item', 
+        '*The Tips--Required : Tell Why You Add this Item', 
         validators = [DataRequired()],
-        render_kw={"placeholder":"Required; \nMarkdown support, Preview Below"})
-
+        render_kw={"placeholder":"Required; \nMarkdown Support, Preview Below"})
     submit = SubmitField('submit')
 
-class EditItemForm(FlaskForm):   
+class SelectAddForm(FlaskForm):
+    
+    selectpost = SelectField(
+        '*Select a Post You Will Add item',
+        validators = [DataRequired()],
+        coerce=int)
+    tips = PageDownField(
+        '*The Tips--Required : Tell Why You Add this Item', 
+        validators = [DataRequired()],
+        render_kw={"placeholder":"Required; \nMarkdown Support, Preview Below"})
+    submit = SubmitField('Submit')
+
+class EditItemForm(FlaskForm):
     uid = StringField('*UID or ISBN-13', validators = [DataRequired()])
     title = StringField('*Title', 
         validators = [DataRequired(),
@@ -194,19 +205,18 @@ class EditItemForm(FlaskForm):
                             render_kw={"placeholder":"Required More Information"})
     itag = StringField("Set Tag",
                  render_kw={"placeholder":"Seperate by comma, if multiple"})
-    
     submit = SubmitField('submit')
 
 
 class CommentForm(FlaskForm):
     body = PageDownField('', 
         validators = [DataRequired()],
-        render_kw={"placeholder":"Leave your comment; \nMarkdown support, Preview Below"})
+        render_kw={"placeholder":"Leave your comment; \nMarkdown Support, Preview Below"})
     submit = SubmitField('Submit')
 
 class ClipForm(FlaskForm):
     body = PageDownField('', validators = [DataRequired()],
-                       render_kw={"placeholder":"Required; \nMarkdown support, Preview Below"})
+                       render_kw={"placeholder":"Required; \nMarkdown Support, Preview Below"})
     resource = SelectField('Here are items(up to 5) You are Working on',coerce=int)
     submit = SubmitField('Submit')
 
@@ -217,7 +227,7 @@ class ReviewForm(FlaskForm):
     body = PageDownField(
         '*Review, at least 256 characters', 
         validators = [DataRequired(),Length(min=256,message='at least 256 characters')],
-        render_kw={"placeholder":"Required at least 256 characters; \nMarkdown support, Preview Below"})
+        render_kw={"placeholder":"Required at least 256 characters; \nMarkdown Support, Preview Below"})
     submit = SubmitField('Submit')
 
 
@@ -260,5 +270,5 @@ class ArticleForm(FlaskForm):
     body = PageDownField(
         "*Start writing",
         validators = [DataRequired()], 
-        render_kw={"placeholder":"Writing.... \nMarkdown support, Preview Below"})
+        render_kw={"placeholder":"Writing.... \nMarkdown Support, Preview Below"})
     submit = SubmitField('Submit')

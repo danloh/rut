@@ -26,7 +26,7 @@
             {% block toflag %}
             <div class="dropdown">
                 <a class="btn dropdown-toggle" type="button" data-toggle="dropdown">
-                    <mark>{{current_user.flaging(item)}}</mark>
+                    <mark class="btn btn-xs">{{current_user.flaging(item)}}</mark>
                     <span class="caret"></span>
                 </a>
                 {% block dropul %}
@@ -38,6 +38,8 @@
                 {% endblock dropul %}
             </div>
             {% endblock toflag %}
+            <br>
+            <a href={{url_for('main.item_to_post',item_id=item.id)}} class="btn btn-default btn-xs" target="_blank">Add To Post</a>
         </div>
     </div>
 </div>

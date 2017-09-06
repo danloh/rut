@@ -5,7 +5,7 @@ import re
 from datetime import datetime, date
 from flask import url_for, current_app, request
 from flask_sqlalchemy import SQLAlchemy 
-from flask_login import UserMixin, AnonymousUserMixin
+from flask_login import UserMixin, AnonymousUserMixin, current_user
 from markdown import markdown
 import bleach
 from . import db, login_manager, cache
@@ -282,18 +282,18 @@ class Posts(db.Model):
     
     # collect items into post
     def collected(self,item):
-        '''
+        """
         check if there is a record in Collect table,
         record indicates post linking item 
         return True or False
-        '''
+        """
         return self.items.filter_by(item_id=item.id).first() is not None 
 
     def collecting(self, item, tips, tip_creator):
-        '''
+        """
         collect item into post, 
         ie. add a record into Collect table
-        '''
+        """
         if not self.collected(item):
             c = Collect(
                 post=self,
@@ -303,7 +303,11 @@ class Posts(db.Model):
                 tip_creator=tip_creator
             ) # refer to the relationship-backref var
             db.session.add(c)
-            db.session.commit() #if need commit?
+            # update the update timestamp
+            self.up_time()
+            #save activity to db Events
+            current_user.set_event(action='update',post=self,item=item)
+            #db.session.commit() #if need commit?
 
     # set and change the order of items, ##maybe an issue here##
     def ordering(self,item,new_order):
@@ -357,7 +361,7 @@ class Posts(db.Model):
     def up_time(self):
         self.update = datetime.utcnow()
         db.session.add(self)
-        db.session.commit()
+        #db.session.commit()
 
     def cal_vote(self,n=None,m=None):
         n = n or self.starers.count() 
@@ -419,7 +423,7 @@ class Items(db.Model):
     language = db.Column(db.String(256))
     binding = db.Column(db.String(128))
     page = db.Column(db.String(128)) # book page or length of course
-    level = db.Column(db.String(128))
+    level = db.Column(db.String(256))
     price = db.Column(db.String(128))
     details = db.Column(db.Text)
     itag_str = db.Column(db.String(512))
@@ -1122,7 +1126,7 @@ class Users(UserMixin, db.Model):
         if not self.staring(post):
             s = Star(starer=self, star_post=post)
             db.session.add(s)
-            db.session.commit()
+            #db.session.commit()
     def unstar(self, post):
         s = self.star_posts.filter_by(post_id=post.id).first()
         if s:
@@ -1137,7 +1141,7 @@ class Users(UserMixin, db.Model):
         if not self.challenging(post):
             c = Challenge(challenger=self, challenge_post=post)
             db.session.add(c)
-            db.session.commit()
+            #db.session.commit()
     def unchallenge(self, post):
         c = self.challenge_posts.filter_by(post_id=post.id).first()
         if c:
@@ -1175,7 +1179,7 @@ class Users(UserMixin, db.Model):
         else:
             new_fl = Flag(flager=self, flag_item=item,flag_label=n)
             db.session.add(new_fl)
-        db.session.commit()
+        #db.session.commit()
     def flaging(self,item):
         fl = Flag.query.filter_by(user_id=self.id,item_id=item.id).\
             first()
@@ -1193,7 +1197,7 @@ class Users(UserMixin, db.Model):
         if not self.faving(tag):
             fv = Fav(faver=self, fav_tag=tag)
             db.session.add(fv)
-            db.session.commit()
+            #db.session.commit()
     def unfav(self, tag):
         fv = self.fav_tags.filter_by(tag_id=tag.id).first()
         if fv:
@@ -1202,6 +1206,23 @@ class Users(UserMixin, db.Model):
     def faving(self, tag):
         return self.fav_tags.filter_by(
             tag_id=tag.id).first() is not None
+    
+    #save activities to db Events
+    def set_event(self,action=None,post=None,item=None,comment=None,\
+                       clip=None,review=None,demand=None,tag=None):
+        ev = Events(
+            actor=self,
+            action=action,
+            post=post,
+            item=item,
+            comment=comment,
+            clip=clip,
+            review=review,
+            demand=demand,
+            tag=tag
+        )
+        db.session.add(ev)
+        db.session.commit()
 
     def accomplished(self):
         pass
@@ -1309,8 +1330,29 @@ class Events(db.Model):
     date = db.Column(db.Date, default=date.today)
     timestamp = db.Column(db.DateTime, 
                           default=datetime.utcnow)
+
+    dict_action_content = {
+        'create':'post',
+        'alter':'post', #edit intro
+        'update':'post', #add item
+        'modify':'post', #edit tips
+        'star':'post',
+        'challenge':'post',
+        'comment':'comment',
+        'request':'demand',
+        'add':'review',
+        'endorse':'review',
+        'excerpt':'clip',
+        'fav':'tag',
+        'descript':'tag',
+        'edit':'item',  #add item info
+        'schedule':'item',
+        'working on':'item',
+        'get done':'item'
+    }
     
     # n to 1 with Users and others for record activities
+    #events - actor
     user_id =  db.Column(
         db.Integer, db.ForeignKey('users.id')
     )
@@ -1337,7 +1379,7 @@ class Events(db.Model):
     )
 
     def __repr__(self):
-        return '<Events %r>' % self.action
+        return '<Events %r>' % (self.action + str(self.id))
 
 
 class Articles(db.Model):

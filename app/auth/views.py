@@ -7,7 +7,7 @@ from flask_oauthlib.client import OAuthException
 from . import auth
 from .. import db, oauth, login_manager
 from config import Config as C
-from ..models import Users, Posts, Comments, Reviews, Clips, Messages, Dialog 
+from ..models import Users, Posts, Comments, Reviews, Clips, Messages, Dialog, Events 
 from .forms import EditProfileForm
 from ..safeurl import is_safe_url, get_redirect_target
 
@@ -279,6 +279,15 @@ def profile(id):
                 star_posts=star_posts, star_count=star_count, 
                 mycomments=mycomments, commt_count=commt_count,
                 myreviews=myreviews, review_count=review_count)
+
+
+@auth.route('/activity/<int:id>')
+def activity(id):
+    user = Users.query.get_or_404(id) #user's id
+    pass
+
+
+
 
 @auth.route('/editprofile', methods=['GET','POST'])
 @login_required

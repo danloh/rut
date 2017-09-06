@@ -6,8 +6,9 @@ from flask import g, render_template, redirect, url_for, current_app,\
                   request, session, flash, make_response, abort
 from flask_login import login_required, current_user
 from . import main
-from .forms import PostForm, ItemForm, EditItemForm, TagForm, EditPostForm,\
-                   EditTipsForm, CommentForm, TagStrForm, ClipForm, ArticleForm, \
+from .forms import PostForm, ItemForm, EditItemForm, SelectAddForm,\
+                   TagForm, EditPostForm, EditTipsForm, CommentForm,\
+                   TagStrForm, ClipForm, ArticleForm, \
                    DeadlineForm, DemandForm, ReviewForm, CheckItemForm
 from .. import db
 from ..models import Posts, Items, Collect, Tags, Clan, Fav, tag_post, tag_item,\
@@ -41,7 +42,10 @@ def index():
 @main.route('/collection', methods=['GET','POST'])
 @login_required
 def collection():
-     
+    """
+    News Feeds as per user's activities: follow, favirate, 
+    challenge etc.
+    """ 
     form = DemandForm() 
     if form.validate_on_submit():
         sp = form.body.data.split("#")+['42']
@@ -52,7 +56,10 @@ def collection():
             requestor=current_user._get_current_object()
         )
         db.session.add(demand)
-        db.session.commit()
+
+        #save activity to db Events
+        current_user.set_event(action='request',demand=demand)
+        #db.session.commit()
 
         demand.dtag_to_db()  # need to confirm
 
@@ -91,7 +98,7 @@ def collection():
 @main.route('/answer/<int:id>',methods=['GET','POST'])
 @login_required
 def create(id=None):
-    
+    """Create new Post or Answer a Request"""
     form = PostForm()
 
     if form.validate_on_submit():
@@ -121,6 +128,8 @@ def create(id=None):
         db.session.commit()
         #add tag to db, attach post to tag
         post.tag_to_db()
+        #save activity to db Events
+        current_user.set_event(action='create',post=post)
 
         post_id = post.id
         flash('The post has been created, now add items to it.')
@@ -169,9 +178,7 @@ def post(id):
 @main.route('/post/check/<int:id>',methods=['GET','POST'])
 @login_required
 def check_item(id):
-    '''
-    check a item if in db or can get info by spider
-    '''
+    """Check a item if in db or can get info by spider"""
     post = Posts.query.get_or_404(id)
     contribute = post.contributors.filter_by(
         user_id=current_user.id,
@@ -211,7 +218,7 @@ def check_item(id):
 @main.route('/post/add/<int:id>',methods=['GET','POST'])
 @login_required
 def add_item(id):
-    '''add item and tips to post'''
+    """Add item and tips to post"""
     post = Posts.query.get_or_404(id)
     contribute = post.contributors.filter_by(
         user_id=current_user.id,
@@ -272,12 +279,10 @@ def add_item(id):
         elif oc_item is not None:
             post.collecting(oc_item,tips,tip_creator)
         
-        #update the update stamp
-        post.up_time()
         #pop session
         session.pop('d_pass',None)
 
-        return redirect(url_for('.post',id=id))
+        return redirect(url_for('.post', id=id))
 
     if d:
         form.cate.data = d.get('cate','Book')
@@ -290,10 +295,37 @@ def add_item(id):
     return render_template('add_item.html', 
                             form=form, post=post)
 
+@main.route('/item/<int:item_id>/topost',methods=['GET','POST'])
+@login_required
+def item_to_post(item_id=None,post_id=None):
+    """Add an existing item to created Post"""
+    item = Items.query.get_or_404(item_id)
+    form = SelectAddForm()
+    
+    #get the current posts and set as chioices
+    myposts = current_user.posts.order_by(db.func.rand())
+    if myposts.count() == 0:
+        flash('Have not created any, You can create now')
+        return redirect(url_for('.create'))
+    else:
+        form.selectpost.choices = [(m.id,m.title) for m in myposts]
+
+    if form.validate_on_submit():
+        post = Posts.query.get_or_404(form.selectpost.data)
+        tips = form.tips.data
+        tip_creator = current_user._get_current_object()
+        #collect to post
+        post.collecting(item,tips,tip_creator)
+
+        return redirect(url_for('.post', id=post.id))
+
+    return render_template('item_to_post.html', form=form, item=item)
+
 
 @main.route('/post/edit/<int:id>',methods=['GET','POST'])
 @login_required
 def edit_post(id):
+    """Edit Post Title,intro,credential,editable"""
     post = Posts.query.get_or_404(id)
     contribute = post.contributors.filter_by(
         user_id=current_user.id,
@@ -312,11 +344,12 @@ def edit_post(id):
         post.credential = form.credential.data
         post.editable = form.editable.data
         
-        #update the update stamp
+        #update the update timestamp
         post.up_time()
-
-        #db.session.add(post)
-        #db.session.commit()
+        # save activity to db Events
+        current_user.set_event(action='alter',post=post)
+        #db.session.add(post)  # in up_time
+        #db.session.commit()   # in set_event
         
         return redirect(url_for('.post',id=id))
 
@@ -330,6 +363,7 @@ def edit_post(id):
 @main.route('/post/del/<int:id>')
 @login_required
 def del_post(id):
+    """Del Post by creator if no star or challenge"""
     post = Posts.query.get_or_404(id)  #post 's id
 
     if current_user != post.creator\
@@ -347,6 +381,7 @@ def del_post(id):
 @main.route('/post/applycontribute/<int:id>')
 @login_required
 def apply_contributor(id):
+    """Apply to be a contributor if the post set as editable"""
     post = Posts.query.get_or_404(id)  #post 's id
     if current_user == post.creator:
         pass
@@ -357,13 +392,14 @@ def apply_contributor(id):
         )
         db.session.add(c)
         db.session.commit()
-        flash('You have applied to be a contributor, waiting on approval')
+        flash('You have applied to be a contributor, Please Waiting on approval')
 
         return redirect(url_for('.post',id=id))
 
 @main.route('/post/approcecontributor/<int:id>')
 @login_required
 def approve_contributor(id):
+    """Approve contributor by creator"""
     c = Contribute.query.filter_by(id=id).first_or_404() # collect's id
     post = Posts.query.get_or_404(c.post_id)
     if current_user == post.creator:
@@ -378,6 +414,7 @@ def approve_contributor(id):
 @main.route('/post/disablecontributor/<int:id>')
 @login_required
 def disable_contributor(id):
+    """Disable contributor by creator"""
     c = Contribute.query.filter_by(id=id).first_or_404() #collect's id
     post = Posts.query.get_or_404(c.post_id)
     if current_user == post.creator:
@@ -392,6 +429,7 @@ def disable_contributor(id):
 @main.route('/post/tagstr/<int:id>',methods=['GET','POST'])
 @login_required
 def edit_tag_str(id):
+    """Edit tag_str and add new tags to db"""
     post = Posts.query.get_or_404(id)
     form = TagStrForm()
 
@@ -459,6 +497,8 @@ def countstar(id):
     post = Posts.query.get_or_404(id)
     if not current_user.staring(post):
         current_user.star(post)
+        #save activity to db Events
+        current_user.set_event(action='star',post=post)
     else:
         current_user.unstar(post)
 
@@ -478,6 +518,8 @@ def countchallenge(id):
     post = Posts.query.get_or_404(id)
     if not current_user.challenging(post):
         current_user.challenge(post)
+        #save activity to db Events
+        current_user.set_event(action='challenge',post=post)
     else:
         current_user.unchallenge(post)
 
@@ -598,7 +640,10 @@ def edit_item(id):
             byline = b_query.filter_by(item=item,by=old_author).first()
             db.session.delete(byline)
         #END edit author byline
-        db.session.commit()
+
+        #save activity to db Events
+        current_user.set_event(action='edit',item=item)
+        #db.session.commit()
 
         return redirect(url_for('.item',id=id))
 
@@ -619,13 +664,15 @@ def edit_item(id):
 
     return render_template('edit_item.html',form=form,item=item)
 
+#####################################################
 ##### flag  non-ajax ,using in _show_item_1, post ###
 @main.route('/item/flag1/<int:id>')
 @login_required
 def flag_1_item(id):
     item = Items.query.get_or_404(id)
     current_user.flag(item,1)
-
+    #save activity to db Events
+    current_user.set_event(action='schedule',item=item)
     return redirect(url_for('.item',id=id))
 
 @main.route('/item/flag2/<int:id>')
@@ -633,7 +680,8 @@ def flag_1_item(id):
 def flag_2_item(id):
     item = Items.query.get_or_404(id)
     current_user.flag(item,2)
-    
+    #save activity to db Events
+    current_user.set_event(action='working on',item=item)
     return redirect(url_for('.item',id=id))
 
 @main.route('/item/flag3/<int:id>')
@@ -641,37 +689,46 @@ def flag_2_item(id):
 def flag_3_item(id):
     item = Items.query.get_or_404(id)
     current_user.flag(item,3)
-
+    #save activity to db Events
+    current_user.set_event(action='get done',item=item)
     return redirect(url_for('.item',id=id))
 
-##start for flag Ajax #################################################
+#################################################################
+#### start for flag Ajax ########################################
 #################################################################
 @main.route('/flag1/<int:id>')
 #@login_required
 def flag_1(id):
     item = Items.query.get_or_404(id)
     current_user.flag(item,1)
+    #save activity to db Events
+    current_user.set_event(action='schedule',item=item)
     return "" 
 @main.route('/flag2/<int:id>')
 #@login_required
 def flag_2(id):
     item = Items.query.get_or_404(id)
     current_user.flag(item,2)
+    #save activity to db Events
+    current_user.set_event(action='working on',item=item)
     return "" 
 @main.route('/flag3/<int:id>')
 #@login_required
 def flag_3(id):
     item = Items.query.get_or_404(id)
     current_user.flag(item,3)
+    #save activity to db Events
+    current_user.set_event(action='get done',item=item)
     return "" 
 ###################################################################
-###end for flag Ajax####################################################
+#### end for flag Ajax#############################################
+###################################################################
 
 
 @main.route('/tips/edit/<int:id>',methods=['GET','POST'])
 @login_required
 def edit_tips(id):
-
+    """Edit tips or modify the item order"""
     tip_c = Collect.query.filter_by(id=id).first_or_404()  #collect 's id
     post = Posts.query.get_or_404(tip_c.post_id)
 
@@ -691,7 +748,10 @@ def edit_tips(id):
         post.ordering(item, form.order.data)
         tip_c.tips = form.tips.data
         db.session.add(tip_c)
-        db.session.commit()
+
+        #save activity to db Events
+        current_user.set_event(action='modify',post=post,item=item)
+        #db.session.commit()
 
         return redirect(url_for('.post', id=tip_c.post_id)) 
     
@@ -705,6 +765,7 @@ def edit_tips(id):
 @main.route('/tips/del/<int:id>')
 @login_required
 def del_tips(id):
+    """Del item and tips , re-ordering items"""
     tip_c = Collect.query.filter_by(id=id).first_or_404()  
     #collect 's id,but not get_or_404, for 3 primary key
 
@@ -768,7 +829,10 @@ def edit_tag(id):
             parent_tag= Tags(tag=form.parent.data)
             db.session.add(parent_tag)
         
-        db.session.commit()
+        #save activity to db Events
+        current_user.set_event(action='edit',tag=tag)
+        
+        #db.session.commit()
         tag.parent(parent_tag)
         
         return redirect(url_for('.tagcollect', id=id))
@@ -779,7 +843,8 @@ def edit_tag(id):
     return render_template('edit_tag.html',
                            tag=tag, form=form) 
 
-##start for fav tag Ajax ##################################################
+######################################################################
+#### start for fav tag Ajax ##########################################
 ######################################################################
 @main.route('/countfav/<int:id>')
 #@login_required
@@ -787,6 +852,8 @@ def countfav(id):
     tag = Tags.query.get_or_404(id)   # tag 's id
     if not current_user.faving(tag):
         current_user.fav(tag)
+        #save activity to db Events
+        current_user.set_event(action='fav',tag=tag)
     else:
         current_user.unfav(tag)
 
@@ -795,7 +862,8 @@ def countfav(id):
 
     return fv 
 #######################################################################
-##end for fav tag Ajax ######################################################
+#### end for fav tag Ajax #############################################
+#######################################################################
 
 
 @main.route('/catagory')
@@ -817,7 +885,11 @@ def catagory():
 @main.route('/challenge',methods=['GET','POST'])
 @login_required
 def challenge():
-    
+    """
+    Show user's challenge post and items included
+    Post clips of some item working on, like quote
+    Set deadline for challenging
+    """
     n = 5  # the num will show in challenge page
     ing_n = [i.flag_item for i in current_user.flag_items.\
                filter_by(flag_label=2).order_by(Flag.timestamp.desc())\
@@ -842,7 +914,9 @@ def challenge():
             creator = current_user._get_current_object()
         )
         db.session.add(clip)
-        db.session.commit()
+        #save activity to db Events
+        current_user.set_event(action='excerpt',clip=clip)
+        #db.session.commit()
     
     form2 = DeadlineForm()
     if form2.validate_on_submit() and chal_post is not None:
@@ -867,6 +941,7 @@ def challenge():
 @main.route('/myclips/<int:id>')
 @login_required
 def myclips(id):
+    """Show all the clips of a user"""
     user = Users.query.get_or_404(id) # user id
 
     chal_post = user.challenge_posts.first()
@@ -895,7 +970,7 @@ def myclips(id):
 @main.route('/allclips')
 @login_required
 def allclips():
-    
+    """Show all clips except current_user's"""
     page = request.args.get('page', 1, type=int)
     pagination = Clips.query.filter(Clips.creator!=current_user)\
                       .order_by(Clips.timestamp.desc()).\
@@ -1056,7 +1131,10 @@ def add_review(id):
             creator=current_user._get_current_object()
         )
         db.session.add(review)
-        db.session.commit()
+
+        #save activity to db Events
+        current_user.set_event(action='add',review=review)
+        #db.session.commit()
 
         return redirect(url_for('.item', id=id))
 
@@ -1100,7 +1178,10 @@ def alsoreq(id):
             vote_demand=demand
         )
         db.session.add(dvote)
-        db.session.commit()
+
+        #save activity to db Events
+        current_user.set_event(action='request',demand=demand)
+        #db.session.commit()
 
     return redirect(url_for('.demand',id=id))
 
@@ -1119,7 +1200,10 @@ def endorse(id):
             vote_review=review
         )
         db.session.add(rvote)
-        db.session.commit()
+
+        #save activity to db Events
+        current_user.set_event(action='endorse',review=review)
+        #db.session.commit()
     #n = review.vote
     #m = str(n)
     return redirect(url_for('.review',id=id))
@@ -1411,7 +1495,8 @@ def moredone(id):
                            pagination=pagination, ref="have done",
                            endpoint=".moredone")
 
-## follow and unfollow - non-ajax
+##################################################################
+#### follow and unfollow - non-ajax ##############################
 @main.route('/follow/<id>')
 @login_required
 def follow(id):
@@ -1438,7 +1523,8 @@ def unfollow(id):
     current_user.unfollow(user)
     return redirect(url_for('auth.profile', id=id))
 
-##start for follow Ajax ##################################################
+######################################################################
+#### start for follow Ajax ###########################################
 ######################################################################
 @main.route('/countfollow/<int:id>')
 #@login_required
@@ -1454,7 +1540,8 @@ def countfollow(id):
 
     return fs 
 #######################################################################
-##end for follow Ajax ######################################################
+#### end for follow Ajax ##############################################
+#######################################################################
 
 @main.route('/followers/<id>')
 @login_required

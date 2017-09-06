@@ -15,7 +15,7 @@
             </a> &nbsp; 
         </span>
         {% endfor %}
-        <span>&nbsp;&nbsp;<a href={{url_for('main.edit_tag_str',id=post.id)}}>edit</a></span>
+        <span>&nbsp;&nbsp;<a href={{url_for('main.edit_tag_str',id=post.id)}}>Edit</a></span>
     </div>
     <h3>{{post.title}}</h3>
     <p> Created by <a href={{url_for('auth.profile', id=post.creator.id)}}>

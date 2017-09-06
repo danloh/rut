@@ -10,10 +10,7 @@
 {% block content %}
 
 <div class="text-center">
-    <!-- <h3>The Tips for Reading up on Something</h3> -->
-    <h4>Share the Challenging, Challenge the Sharing, 
-        <a href ="{{url_for('main.create')}}">Create Now</a>
-    </h4>
+    <h4>Share the Challenging, Challenge the Sharing, <a href ="{{url_for('main.create')}}">Create Now</a></h4>
     <hr class="colored" />
 </div>
 
@@ -25,11 +22,11 @@
     {% endfor %}
 </div>
 
+{% if not current_user.is_authenticated %}
 <div class="text-center">
-    <h4>Want to Share or Challenge a Reading List?  Welcome to
-        <a href ="{{url_for('auth.connect')}}">Join in</a> ...
-    </h4>
+    <h4>To <a href ="{{url_for('main.create')}}">Share</a> or <a href ="{{url_for('main.challenge')}}">Challenge</a> Reading List? <a href ="{{url_for('auth.connect')}}"> Join in </a> Now...</h4>
 </div>
+{% endif %}
 
 {% endblock content %}
 
