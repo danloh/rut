@@ -158,7 +158,7 @@ class ItemForm(FlaskForm):
 
 class SelectAddForm(FlaskForm):
     
-    selectpost = SelectField(
+    selectlist = SelectField(
         '*Select a Post You Will Add item',
         validators = [DataRequired()],
         coerce=int)

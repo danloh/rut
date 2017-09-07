@@ -12,7 +12,7 @@
                 {{commt.creator.nickname or commt.creator.name}}
             </a> 
             {% if commt.post %}
-            On Post 
+            On Readup List 
             <a href={{url_for('main.post', id=commt.post.id)}}>
                 {{commt.post.title|truncate(30,True)}}
             </a>

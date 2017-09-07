@@ -1,12 +1,12 @@
 {% extends "layout1.html" %}
 {% import "_macros.html" as macros %}
 
-{% block title %} More Posts {% endblock title %}
+{% block title %} More Readup Lists {% endblock title %}
 
 {% block content %}
 
 <div>
-    <h4>See More Posts {{ref}} by 
+    <h4>See More Lists {{ref}} by 
         <a href={{url_for('auth.profile', id=user.id)}}>{{user.nickname or user.name}}</a>
     </h4>
     <hr>

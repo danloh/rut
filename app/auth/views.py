@@ -234,31 +234,27 @@ def logout():
 
 @auth.route('/profile/<id>')
 def profile(id):
-    
     user = Users.query.get_or_404(id)
-
     m = current_app.config['ITEM_IN_PROFILE'] # the num for show more to paginate
 
-    #created post
+    #created list
     post_query = user.posts.order_by(Posts.timestamp.desc())
     post_count = post_query.count()
     posts = post_query.limit(m)
 
-    #star posts
+    #star lists
     star_query = user.star_posts
     star_count = star_query.count()
     star_posts = [s.star_post for s in user.star_posts.limit(m)]
     
     # flag items
     fl_items = user.flag_items
-
     query_1 = fl_items.filter_by(flag_label=1)
     count_1 = query_1.count()
     query_2 = fl_items.filter_by(flag_label=2)
     count_2 = query_2.count()
     query_3 = fl_items.filter_by(flag_label=3)
     count_3 = query_3.count()
-
     todos = [i.flag_item for i in query_1.limit(m)]
     doings = [i.flag_item for i in query_2.limit(m)]
     dones = [i.flag_item for i in query_3.limit(m)]
@@ -267,6 +263,7 @@ def profile(id):
     review_query = user.reviews
     review_count = review_query.count()
     myreviews = review_query.limit(m)
+    
     # comments
     commt_query = user.comments
     commt_count = commt_query.count()
@@ -300,6 +297,7 @@ def edit_profile():
         current_user.about_me = form.about.data
         current_user.links = form.links.data
         db.session.add(current_user)
+        db.session.commit()
         flash('Your profile has been updated.')
         return redirect(url_for('auth.profile', id=current_user.id))
     form.nickname.data = current_user.nickname

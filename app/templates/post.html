@@ -5,7 +5,7 @@
 {% block title %} {{post.title}} {% endblock title %}
 
 {% block content %}
-<!--post header-->
+<!--list header-->
 <div>
     <div class="text-left">
         {% for tag in post.tags %}
@@ -30,7 +30,7 @@
     {{post_intro|safe}}
 </div>
 <br>
-<!--post toolbar widget-->
+<!--list toolbar widget-->
 <div class="text-right" style="background-color:#f3f3f3">
     {% if current_user == post.creator %}
     <span><a data-toggle="modal" href="#delpost">Delete</a></span>
@@ -113,7 +113,7 @@
 
 </div>
 <hr>
-<!--items included in post-->
+<!--items included in list-->
 <div class="panel-group">
     {% for item in items %}
     <div class="panel panel-default">
@@ -158,19 +158,19 @@
     </div>
 </div>
 
-<!-- Modal for delete post confirm -->
+<!-- Modal for delete list confirm -->
 <div class="modal fade" id="delpost" role="dialog">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Confirm Delete The Post?</h4>
+                <h4 class="modal-title">Confirm Delete The List?</h4>
             </div>
             <div class="modal-body">
                 <a href={{url_for('main.del_post',id=post.id)}}>
                    Yes Delete
                 </a>
-                <p>NOTE: Cannot be delteted,if The Post has being stared or challenged by any user</p>
+                <p>NOTE: Cannot be delteted,if The List has being stared or challenged by any user</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">No, Close</button>
@@ -178,7 +178,7 @@
         </div>
     </div>
 </div>
-<!-- end Modal for delete post confirm -->
+<!-- end Modal for delete list confirm -->
 
 <!--reserved-->
 <div>
@@ -189,7 +189,7 @@
 
 <!-- about creator -->
 <div class="panel panel-success">
-    <div class="panel-heading">Creator's Credentials for This Post</div>
+    <div class="panel-heading">Creator's Credentials for Readup List</div>
     <div class="panel-body">
         <blockquote>{{post.credential}}</blockquote>
         <hr>

@@ -23,15 +23,7 @@ from ..bot import spider
 
 @main.route('/')
 def index():
-
-    # _query = Posts.query
-    # m = current_app.config['POST_PER_PAGE']
-
-    # posts_latest = _query.order_by(Posts.update.desc()).limit(m)
-    # posts_popular = _query.order_by(Posts.vote.desc()).limit(m)
-
-    # posts_select = posts_latest.union(posts_popular).order_by(db.func.rand()).limit(m)
-
+    """Get posts from func in Model. need to tackle the cache issue"""
     posts_select = Posts.select_posts()
     tags = Tags.get_tags()
 
@@ -56,18 +48,15 @@ def collection():
             requestor=current_user._get_current_object()
         )
         db.session.add(demand)
-
         #save activity to db Events
         current_user.set_event(action='request',demand=demand)
-        #db.session.commit()
-
         demand.dtag_to_db()  # need to confirm
+        db.session.commit()
 
         return redirect(url_for('.collection'))
     
     #get related tags set and fav tags, from cached Model-func
     tag_set, tag_fv = current_user.get_tag_set()
-
     # get followed posts queries
     post_fo = [f.followed.posts for f in current_user.followed] 
     #list the queries, followed _posts as init 
@@ -77,8 +66,7 @@ def collection():
     q_rand = Posts.query.order_by(db.func.rand()).limit(5)
     # union the queries,
     query = q_rand.union(*q_list) 
-
-    #posts = query.all()
+   
     page = request.args.get('page', 1, type=int)
     pagination = query.filter(Posts.creator != current_user).\
                 order_by(Posts.timestamp.desc()).\
@@ -100,9 +88,7 @@ def collection():
 def create(id=None):
     """Create new Post or Answer a Request"""
     form = PostForm()
-
     if form.validate_on_submit():
-
         post = Posts(
             title=form.title.data,
             intro=form.intro.data,
@@ -112,7 +98,6 @@ def create(id=None):
             editable=form.editable.data,
             creator=current_user._get_current_object()
         )
-
         db.session.add(post)
 
         # link to demand if come from demand
@@ -125,11 +110,11 @@ def create(id=None):
                 )
                 db.session.add(respon) 
 
-        db.session.commit()
         #add tag to db, attach post to tag
         post.tag_to_db()
         #save activity to db Events
         current_user.set_event(action='create',post=post)
+        db.session.commit()
 
         post_id = post.id
         flash('The post has been created, now add items to it.')
@@ -138,9 +123,8 @@ def create(id=None):
     return render_template('create.html',form=form)
 
 
-@main.route('/post/<int:id>')
+@main.route('/readuplist/<int:id>')
 def post(id):
-    
     post = Posts.query.get_or_404(id) 
     contribute = post.contributors.filter_by(
         user_id=current_user.id,
@@ -175,7 +159,7 @@ def post(id):
                            comments=comments)
 
 
-@main.route('/post/check/<int:id>',methods=['GET','POST'])
+@main.route('/checkitemfor/<int:id>',methods=['GET','POST'])
 @login_required
 def check_item(id):
     """Check a item if in db or can get info by spider"""
@@ -215,7 +199,7 @@ def check_item(id):
     return render_template('check_item.html',form=form,post=post)  
             
                 
-@main.route('/post/add/<int:id>',methods=['GET','POST'])
+@main.route('/readuplist/add/<int:id>',methods=['GET','POST'])
 @login_required
 def add_item(id):
     """Add item and tips to post"""
@@ -231,7 +215,6 @@ def add_item(id):
     form = ItemForm()
     d = session.get('d_pass') or {}   
     #session.pop('d_pass',None) #if pop here, no d for on_submit
-
     if form.validate_on_submit():
         uid=form.uid.data.replace('-','').replace(' ','')
         old_item = Items.query.filter_by(uid=uid).first()
@@ -279,6 +262,7 @@ def add_item(id):
         elif oc_item is not None:
             post.collecting(oc_item,tips,tip_creator)
         
+        db.session.commit()
         #pop session
         session.pop('d_pass',None)
 
@@ -295,34 +279,34 @@ def add_item(id):
     return render_template('add_item.html', 
                             form=form, post=post)
 
-@main.route('/item/<int:item_id>/topost',methods=['GET','POST'])
+@main.route('/item/<int:item_id>/tolist',methods=['GET','POST'])
 @login_required
 def item_to_post(item_id=None,post_id=None):
     """Add an existing item to created Post"""
     item = Items.query.get_or_404(item_id)
-    form = SelectAddForm()
-    
     #get the current posts and set as chioices
     myposts = current_user.posts.order_by(db.func.rand())
+    form = SelectAddForm()
     if myposts.count() == 0:
         flash('Have not created any, You can create now')
         return redirect(url_for('.create'))
     else:
-        form.selectpost.choices = [(m.id,m.title) for m in myposts]
+        form.selectlist.choices = [(m.id,m.title) for m in myposts]
 
     if form.validate_on_submit():
-        post = Posts.query.get_or_404(form.selectpost.data)
+        post = Posts.query.get_or_404(form.selectlist.data)
         tips = form.tips.data
         tip_creator = current_user._get_current_object()
         #collect to post
         post.collecting(item,tips,tip_creator)
+        db.session.commit()
 
         return redirect(url_for('.post', id=post.id))
 
     return render_template('item_to_post.html', form=form, item=item)
 
 
-@main.route('/post/edit/<int:id>',methods=['GET','POST'])
+@main.route('/readuplist/edit/<int:id>',methods=['GET','POST'])
 @login_required
 def edit_post(id):
     """Edit Post Title,intro,credential,editable"""
@@ -336,7 +320,6 @@ def edit_post(id):
         abort(403)
 
     form = EditPostForm()
-
     if form.validate_on_submit():
         post.title = form.title.data
         post.intro = form.intro.data
@@ -348,8 +331,7 @@ def edit_post(id):
         post.up_time()
         # save activity to db Events
         current_user.set_event(action='alter',post=post)
-        #db.session.add(post)  # in up_time
-        #db.session.commit()   # in set_event
+        db.session.commit()    
         
         return redirect(url_for('.post',id=id))
 
@@ -360,7 +342,7 @@ def edit_post(id):
     form.editable.data = post.editable
     return render_template('edit_post.html',form=form,post=post)
 
-@main.route('/post/del/<int:id>')
+@main.route('/del/readuplist/<int:id>')
 @login_required
 def del_post(id):
     """Del Post by creator if no star or challenge"""
@@ -378,7 +360,7 @@ def del_post(id):
     return redirect(url_for('.index'))
 
 
-@main.route('/post/applycontribute/<int:id>')
+@main.route('/applycontributetolist/<int:id>')
 @login_required
 def apply_contributor(id):
     """Apply to be a contributor if the post set as editable"""
@@ -396,7 +378,7 @@ def apply_contributor(id):
 
         return redirect(url_for('.post',id=id))
 
-@main.route('/post/approcecontributor/<int:id>')
+@main.route('/approcecontributoroflist/<int:id>')
 @login_required
 def approve_contributor(id):
     """Approve contributor by creator"""
@@ -411,7 +393,7 @@ def approve_contributor(id):
         return redirect(url_for('.post',id=id))
 
 
-@main.route('/post/disablecontributor/<int:id>')
+@main.route('/disablecontributoroflist/<int:id>')
 @login_required
 def disable_contributor(id):
     """Disable contributor by creator"""
@@ -426,7 +408,7 @@ def disable_contributor(id):
         return redirect(url_for('.post',id=id))
 
 
-@main.route('/post/tagstr/<int:id>',methods=['GET','POST'])
+@main.route('/tagstr/readuplist/<int:id>',methods=['GET','POST'])
 @login_required
 def edit_tag_str(id):
     """Edit tag_str and add new tags to db"""
@@ -438,7 +420,6 @@ def edit_tag_str(id):
     old_set = str_to_set(old_str)
     
     if form.validate_on_submit():
-
         post.tag_str = form.tag.data
         db.session.add(post)
 
@@ -473,20 +454,20 @@ def edit_tag_str(id):
 
 
 ## star and unstar --non-ajax
-@main.route('/star/post/<int:id>',methods=['GET','POST'])
+@main.route('/star/readuplist/<int:id>',methods=['GET','POST'])
 @login_required
 def star_post(id):
     post = Posts.query.get_or_404(id)
     current_user.star(post)
-    
+    db.session.commit()
     return redirect(url_for('.post', id=post.id))
 
-@main.route('/unstar/post/<int:id>',methods=['GET','POST'])
+@main.route('/unstar/readuplist/<int:id>',methods=['GET','POST'])
 @login_required
 def unstar_post(id):
     post = Posts.query.get_or_404(id)
     current_user.unstar(post)
-    
+    db.session.commit()
     return redirect(url_for('.post', id=post.id))
 
 ##start for star Ajax ##################################################
@@ -501,11 +482,12 @@ def countstar(id):
         current_user.set_event(action='star',post=post)
     else:
         current_user.unstar(post)
-
+    
     n = post.starers.count()
     post.cal_vote(n=n)
+    db.session.commit()
+
     m=str(n)
-    
     return m 
 #######################################################################
 ##end for star Ajax ######################################################
@@ -525,8 +507,9 @@ def countchallenge(id):
 
     a = post.challengers.count()
     post.cal_vote(m=a*2)
-    b=str(a)
+    db.session.commit()
     
+    b=str(a)
     return b 
 #######################################################################
 ##end for challenge Ajax ######################################################
@@ -541,10 +524,8 @@ def item(id):
     
     review_q = item.reviews
     count_review = review_q.count()
-
     comment_q = item.comments
     count_comment = comment_q.count()
-
     #comment_my = query.filter(Comments.creator==current_user)
     #count_my = comment_my.count()
   
@@ -564,7 +545,6 @@ def item(id):
 @main.route('/item/edit/<int:id>',methods=['GET','POST'])
 @login_required
 def edit_item(id):
-
     _query = Items.query     
     item = _query.get_or_404(id)  # item 's id
     form = EditItemForm()
@@ -643,9 +623,9 @@ def edit_item(id):
 
         #save activity to db Events
         current_user.set_event(action='edit',item=item)
-        #db.session.commit()
+        db.session.commit()
 
-        return redirect(url_for('.item',id=id))
+        return redirect(url_for('.item', id=id))
 
     form.uid.data = item.uid 
     form.title.data = item.title 
@@ -673,6 +653,7 @@ def flag_1_item(id):
     current_user.flag(item,1)
     #save activity to db Events
     current_user.set_event(action='schedule',item=item)
+    db.session.commit()
     return redirect(url_for('.item',id=id))
 
 @main.route('/item/flag2/<int:id>')
@@ -682,6 +663,7 @@ def flag_2_item(id):
     current_user.flag(item,2)
     #save activity to db Events
     current_user.set_event(action='working on',item=item)
+    db.session.commit()
     return redirect(url_for('.item',id=id))
 
 @main.route('/item/flag3/<int:id>')
@@ -691,6 +673,7 @@ def flag_3_item(id):
     current_user.flag(item,3)
     #save activity to db Events
     current_user.set_event(action='get done',item=item)
+    db.session.commit()
     return redirect(url_for('.item',id=id))
 
 #################################################################
@@ -703,6 +686,7 @@ def flag_1(id):
     current_user.flag(item,1)
     #save activity to db Events
     current_user.set_event(action='schedule',item=item)
+    db.session.commit()
     return "" 
 @main.route('/flag2/<int:id>')
 #@login_required
@@ -711,6 +695,7 @@ def flag_2(id):
     current_user.flag(item,2)
     #save activity to db Events
     current_user.set_event(action='working on',item=item)
+    db.session.commit()
     return "" 
 @main.route('/flag3/<int:id>')
 #@login_required
@@ -719,13 +704,14 @@ def flag_3(id):
     current_user.flag(item,3)
     #save activity to db Events
     current_user.set_event(action='get done',item=item)
+    db.session.commit()
     return "" 
 ###################################################################
 #### end for flag Ajax#############################################
 ###################################################################
 
 
-@main.route('/tips/edit/<int:id>',methods=['GET','POST'])
+@main.route('/readuptips/edit/<int:id>',methods=['GET','POST'])
 @login_required
 def edit_tips(id):
     """Edit tips or modify the item order"""
@@ -743,15 +729,13 @@ def edit_tips(id):
     item = Items.query.get_or_404(tip_c.item_id)
     
     form = EditTipsForm()
-
     if form.validate_on_submit():
         post.ordering(item, form.order.data)
         tip_c.tips = form.tips.data
         db.session.add(tip_c)
-
         #save activity to db Events
         current_user.set_event(action='modify',post=post,item=item)
-        #db.session.commit()
+        db.session.commit()
 
         return redirect(url_for('.post', id=tip_c.post_id)) 
     
@@ -778,7 +762,6 @@ def del_tips(id):
     post = Posts.query.get_or_404(tip_c.post_id)
     n = post.items.count()
     post.ordering(item, n)
-
     db.session.delete(tip_c)
     db.session.commit()
 
@@ -787,7 +770,7 @@ def del_tips(id):
 
 @main.route('/tag/<int:id>')
 def tagcollect(id):
-    # joined query should be here, per the tagname, return the posts
+    # joined query should be here, per the tagname, return the lists
     _query = Tags.query 
     tag = _query.get_or_404(id)
 
@@ -800,7 +783,6 @@ def tagcollect(id):
                   order_by(db.func.rand()).limit(5)]
         tags += c_tags
 
-     
     posts = tag.posts
     
     return render_template('tagcollect.html',
@@ -813,8 +795,8 @@ def tagcollect(id):
 def edit_tag(id):
     _query = Tags.query
     tag = _query.get_or_404(id)  #tag 's id
-    form = TagForm()
 
+    form = TagForm()
     if form.validate_on_submit():
         if (tag.tag != form.tag.data) and \
         (_query.filter_by(tag=form.tag.data).first() is not None):
@@ -828,12 +810,10 @@ def edit_tag(id):
         if parent_tag is None:
             parent_tag= Tags(tag=form.parent.data)
             db.session.add(parent_tag)
-        
         #save activity to db Events
         current_user.set_event(action='edit',tag=tag)
-        
-        #db.session.commit()
         tag.parent(parent_tag)
+        db.session.commit()
         
         return redirect(url_for('.tagcollect', id=id))
     
@@ -858,8 +838,9 @@ def countfav(id):
         current_user.unfav(tag)
 
     v = tag.favers.count()
-    fv=str(v)
+    db.session.commit()
 
+    fv=str(v)
     return fv 
 #######################################################################
 #### end for fav tag Ajax #############################################
@@ -868,7 +849,6 @@ def countfav(id):
 
 @main.route('/catagory')
 def catagory():
-
     page = request.args.get('page', 1, type=int)
     pagination = Tags.query.order_by(db.func.rand()).\
                 paginate(
@@ -916,7 +896,9 @@ def challenge():
         db.session.add(clip)
         #save activity to db Events
         current_user.set_event(action='excerpt',clip=clip)
-        #db.session.commit()
+        db.session.commit()
+
+        return redirect(url_for('.challenge'))
     
     form2 = DeadlineForm()
     if form2.validate_on_submit() and chal_post is not None:
@@ -924,11 +906,12 @@ def challenge():
         db.session.add(chal_post)
         db.session.commit()
 
+        return redirect(url_for('.challenge'))
+
     # clips  
     m = current_app.config['COMMENT_PER_PAGE']  # when exeed this to show more
     query_my = current_user.clips.order_by(Clips.timestamp.desc())
     count_my = query_my.count()
-    
     myclips =query_my.limit(m)
      
     return render_template('challenge.html', 
@@ -943,12 +926,10 @@ def challenge():
 def myclips(id):
     """Show all the clips of a user"""
     user = Users.query.get_or_404(id) # user id
-
     chal_post = user.challenge_posts.first()
     if chal_post is not None:
         post_chal = chal_post.challenge_post
         items = [i.item for i in post_chal.items.order_by(Collect.order)]
-        
     else:
         post_chal = None
         items = None
@@ -989,13 +970,10 @@ def allclips():
 @main.route('/demands')
 def demands():
     _query = Demands.query
-
-    page = request.args.get('page', 1, type=int)
-
     demands_most = _query.order_by(Demands.vote.desc()).limit(50)
     demands_random = _query.order_by(db.func.rand()).limit(50)
 
-
+    page = request.args.get('page', 1, type=int)
     pagination_latest = _query.order_by(Demands.timestamp.desc()).\
                         paginate(
                             page,
@@ -1013,7 +991,6 @@ def demands():
 @main.route('/demand/<int:id>', methods=['GET','POST'])
 @login_required
 def demand(id):
-    
     demand = Demands.query.get_or_404(id)
     form = CommentForm()
     if form.validate_on_submit():
@@ -1024,9 +1001,10 @@ def demand(id):
         )
         db.session.add(commt)
         db.session.commit()
+
+        return redirect(url_for('.demand', id=id))
         
     page = request.args.get('page', 1, type=int)
-
     pagination = demand.comments.order_by(Comments.timestamp.desc()).\
                 paginate(
                     page,
@@ -1047,7 +1025,6 @@ def demand(id):
 def add_post_comment(id):
     post = Posts.query.get_or_404(id)   # post 's id
     form = CommentForm()
-    
     if form.validate_on_submit():
         commt = Comments(
             body=form.body.data,
@@ -1068,7 +1045,6 @@ def add_post_comment(id):
 def add_item_comment(id):
     item = Items.query.get_or_404(id)   # item 's id
     form = CommentForm()
-    
     if form.validate_on_submit():
         commt = Comments(
             body=form.body.data,
@@ -1088,7 +1064,6 @@ def add_item_comment(id):
 @main.route('/review/<int:id>', methods=['GET','POST'])
 @login_required
 def review(id):
-    
     review = Reviews.query.get_or_404(id) #review's id
     form = CommentForm()
     if form.validate_on_submit():
@@ -1099,10 +1074,10 @@ def review(id):
         )
         db.session.add(commt)
         db.session.commit()
-        
-        #return redirect(url_for('.demand', id=id))
-    page = request.args.get('page', 1, type=int)
 
+        return redirect(url_for('.review',id=id))
+        
+    page = request.args.get('page', 1, type=int)
     pagination = review.comments.order_by(Comments.timestamp.desc()).\
                 paginate(
                     page,
@@ -1122,7 +1097,6 @@ def review(id):
 def add_review(id):
     item = Items.query.get_or_404(id)   # item 's id
     form = ReviewForm()
-    
     if form.validate_on_submit():
         review = Reviews(
             heading=form.heading.data,
@@ -1131,10 +1105,9 @@ def add_review(id):
             creator=current_user._get_current_object()
         )
         db.session.add(review)
-
         #save activity to db Events
         current_user.set_event(action='add',review=review)
-        #db.session.commit()
+        db.session.commit()
 
         return redirect(url_for('.item', id=id))
 
@@ -1146,11 +1119,9 @@ def add_review(id):
 def edit_review(id):
     review = Reviews.query.get_or_404(id) # review 's id
     form = ReviewForm()
-    
     if form.validate_on_submit():
         review.heading=form.heading.data
         review.body=form.body.data
-  
         db.session.add(review)
         db.session.commit()
         
@@ -1166,7 +1137,6 @@ def edit_review(id):
 @main.route('/alsoreq/<int:id>')
 @login_required
 def alsoreq(id):
-
     demand = Demands.query.get_or_404(id) # demand's id
     voted = Dvote.query.filter_by(user_id=current_user.id,demand_id=id).first()
     if current_user != demand.requestor and voted is None:
@@ -1178,17 +1148,15 @@ def alsoreq(id):
             vote_demand=demand
         )
         db.session.add(dvote)
-
         #save activity to db Events
         current_user.set_event(action='request',demand=demand)
-        #db.session.commit()
+        db.session.commit()
 
     return redirect(url_for('.demand',id=id))
 
 @main.route('/endorse/<int:id>')
 @login_required
 def endorse(id):
-
     review = Reviews.query.get_or_404(id) # review's id
     endorsed = Rvote.query.filter_by(user_id=current_user.id,review_id=id).first()
     if current_user != review.creator and endorsed is None:
@@ -1200,10 +1168,9 @@ def endorse(id):
             vote_review=review
         )
         db.session.add(rvote)
-
         #save activity to db Events
         current_user.set_event(action='endorse',review=review)
-        #db.session.commit()
+        db.session.commit()
     #n = review.vote
     #m = str(n)
     return redirect(url_for('.review',id=id))
@@ -1250,7 +1217,6 @@ def morecomment_u(id):
     user = Users.query.get_or_404(id)   # user 's id 
 
     page = request.args.get('page', 1, type=int)
-
     pagination = user.comments.order_by(Comments.timestamp.desc()).\
                 paginate(
                     page,
@@ -1270,7 +1236,6 @@ def morecomment_i(id):
     item = Items.query.get_or_404(id)   # item 's id 
 
     page = request.args.get('page', 1, type=int)
-
     pagination = item.comments.order_by(Comments.timestamp.desc()).\
                 paginate(
                     page,
@@ -1289,7 +1254,6 @@ def mycomment_i(id):
     item = Items.query.get_or_404(id)   # item 's id 
 
     page = request.args.get('page', 1, type=int)
-
     pagination = item.comments.filter(Comments.creator == current_user).\
                 order_by(Comments.timestamp.desc()).\
                 paginate(
@@ -1307,11 +1271,9 @@ def mycomment_i(id):
 @login_required
 def morecomment_p(id):
     post = Posts.query.get_or_404(id)   # post 's id 
-
     challengers = [c.challenger for c in post.challengers]
 
     page = request.args.get('page', 1, type=int)
-
     pagination = post.comments.order_by(Comments.timestamp.desc()).\
                 paginate(
                     page,per_page=current_app.config['COMMENT_PER_PAGE'],
@@ -1325,13 +1287,12 @@ def morecomment_p(id):
                            challengers=challengers)
 
 
-@main.route('/morepost/u/<int:id>')  
+@main.route('/morelist/u/<int:id>')
 @login_required
 def morepost(id):
     user = Users.query.get_or_404(id)   # user 's id 
 
     page = request.args.get('page', 1, type=int)
-
     pagination = user.posts.order_by(Posts.timestamp.desc()).\
                 paginate(
                     page,
@@ -1351,7 +1312,6 @@ def morestar(id):
     user = Users.query.get_or_404(id)   # user 's id 
 
     page = request.args.get('page', 1, type=int)
-
     pagination = user.star_posts.order_by(Star.timestamp.desc()).\
                 paginate(
                     page,
@@ -1372,7 +1332,6 @@ def morereview_u(id):
     user = Users.query.get_or_404(id)   # user 's id 
 
     page = request.args.get('page', 1, type=int)
-
     pagination = user.reviews.order_by(Reviews.vote.desc()).\
                 paginate(
                      page,
@@ -1394,7 +1353,6 @@ def morereview(id):
     item = Items.query.get_or_404(id)   # item 's id 
 
     page = request.args.get('page', 1, type=int)
-
     pagination = item.reviews.order_by(Reviews.timestamp.desc()).\
                 paginate(
                     page,
@@ -1415,7 +1373,6 @@ def morehot(id):
     item = Items.query.get_or_404(id)   # item 's id 
 
     page = request.args.get('page', 1, type=int)
-
     pagination = item.reviews.order_by(Reviews.vote.desc()).\
                 paginate(
                     page,
@@ -1437,7 +1394,6 @@ def moreschedule(id):
     user = Users.query.get_or_404(id)   # user 's id 
 
     page = request.args.get('page', 1, type=int)
-
     pagination = user.flag_items.filter_by(flag_label=1).\
                 order_by(Flag.timestamp.desc()).\
                 paginate(
@@ -1459,7 +1415,6 @@ def moredoing(id):
     user = Users.query.get_or_404(id)   # user 's id 
 
     page = request.args.get('page', 1, type=int)
-
     pagination = user.flag_items.filter_by(flag_label=2).\
                 order_by(Flag.timestamp.desc()).\
                 paginate(
@@ -1480,7 +1435,6 @@ def moredone(id):
     user = Users.query.get_or_404(id)   # user 's id 
 
     page = request.args.get('page', 1, type=int)
-
     pagination = user.flag_items.filter_by(flag_label=3).\
                 order_by(Flag.timestamp.desc()).\
                 paginate(
@@ -1508,6 +1462,7 @@ def follow(id):
         flash('You are already following this user.')
         return redirect(url_for('auth.profile', id=id))
     current_user.follow(user)
+    db.session.commit()
     return redirect(url_for('auth.profile', id=id))
 
 @main.route('/unfollow/<id>')
@@ -1521,6 +1476,7 @@ def unfollow(id):
         flash('You are not following this user.')
         return redirect(url_for('auth.profile', id=id))
     current_user.unfollow(user)
+    db.session.commit()
     return redirect(url_for('auth.profile', id=id))
 
 ######################################################################
@@ -1536,8 +1492,9 @@ def countfollow(id):
         current_user.unfollow(user)
 
     f = user.followers.count()
-    fs = str(f)
+    db.session.commit()
 
+    fs = str(f)
     return fs 
 #######################################################################
 #### end for follow Ajax ##############################################
@@ -1549,7 +1506,6 @@ def follower(id):
     user = Users.query.get_or_404(id)   # user's id 
 
     page = request.args.get('page', 1, type=int)
-
     pagination = user.followers.order_by(Follow.timestamp.desc()).\
                 paginate(
                     page,
@@ -1568,7 +1524,6 @@ def following(id):
     user = Users.query.get_or_404(id)   # user 's id 
 
     page = request.args.get('page', 1, type=int)
-
     pagination = user.followed.order_by(Follow.timestamp.desc()).\
                 paginate(
                     page,
@@ -1585,7 +1540,6 @@ def following(id):
 @main.route('/article/<int:id>')
 @login_required
 def article(id):
-
     article = Articles.query.get_or_404(id)
 
     return render_template('article.html',article=article)
@@ -1595,16 +1549,12 @@ def article(id):
 @main.route('/write/<int:id>',methods=['GET','POST'])
 @login_required
 def write(id=None):
-
     form = ArticleForm()
-
-    if form.validate_on_submit():
-        
+    if form.validate_on_submit():   
         if id:
             column = Columns.query.get_or_404(id) #column's id
         else:
             column = None
-
         article = Articles(
             title=form.title.data,
             figure=form.figure.data,
@@ -1612,7 +1562,6 @@ def write(id=None):
             column=column,
             writer=current_user._get_current_object()
         )
-
         db.session.add(article)
         db.session.commit()
 
@@ -1624,22 +1573,19 @@ def write(id=None):
 @main.route('/article/edit/<int:id>',methods=['GET','POST'])
 @login_required
 def edit_article(id):
-
     article = Articles.query.get_or_404(id)
 
     if current_user != article.writer:
         abort(403)
 
     form = ArticleForm()
-
     if form.validate_on_submit():
         article.title = form.title.data
         article.figure = form.figure.data
         article.body = form.body.data
         
-        db.session.add(article)
-        db.session.commit()
         article.up_time()
+        db.session.commit()
         
         return redirect(url_for('.article', id=id))
 
@@ -1673,7 +1619,7 @@ def randreq():
     else:
         return redirect(url_for('.index'))
 
-@main.route('/randpost')
+@main.route('/randlist')
 def randpost():
     post = Posts.query.order_by(db.func.rand()).first()
     if post:
@@ -1689,7 +1635,7 @@ def randreview():
     else:
         return redirect(url_for('.index'))
 # check latest 
-@main.route('/latest/post')
+@main.route('/latest/list')
 def latestpost():
     post = Posts.query.order_by(Posts.timestamp.desc()).first()
     if post:

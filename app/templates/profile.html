@@ -70,7 +70,7 @@
     </div>
 </div>
 <hr>
-<!--Show post -->
+<!--Show list -->
 <div class="row">
     <h4>-- Created --&nbsp;&nbsp;<b>({{post_count}})</b></h4>
     <hr>
@@ -193,7 +193,7 @@
     <div style="background-color:seashell">
         --On
         {% if commt.post %}
-        Post
+        Readup List
         <a href={{url_for('main.post', id=commt.post.id)}}>
             {{commt.post.title|truncate(35,True)}}
         </a>

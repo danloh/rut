@@ -7,7 +7,7 @@
 
 <div>
     <h4>See More Discussion</h4>
-    <p>for Post&nbsp;&nbsp;
+    <p>for Readup List&nbsp;&nbsp;
         <a href={{url_for('main.post', id=post.id)}}>{{post.title|truncate(50)}}</a>
     </p>
     <hr>
@@ -23,7 +23,7 @@
 {% endblock content %}
 
 {% block rightside %}
-<h4>Who Challenging This Post:</h4>
+<h4>Who Challenging This List:</h4>
 <hr>
 {% for user in challengers %}
 <div class="text-left">

@@ -311,7 +311,6 @@ class Posts(db.Model):
 
     # set and change the order of items, ##maybe an issue here##
     def ordering(self,item,new_order):
-
         _c = self.items  # ie. a collect-object
         c_old = _c.filter_by(item_id=item.id).first()
         old_order = c_old.order
@@ -324,18 +323,15 @@ class Posts(db.Model):
                     c = _c.filter_by(order=i).first()
                     c.order = i-1
                     db.session.add(c)
-            
             if new_order < old_order:                 
                 for i in range(new_order,old_order):
                     c = _c.filter_by(order=i).first()
                     c.order = i+1
                     db.session.add(c)
-
             c_old.order = new_order
             db.session.add(c_old)
-            db.session.commit()
-
-            
+            #db.session.commit()
+           
     # add post tags to database        
     def tag_to_db(self):
         '''
@@ -356,7 +352,7 @@ class Posts(db.Model):
                 else:
                     _tag.posts.append(self)  
                     db.session.add(_tag)
-        db.session.commit() 
+        #db.session.commit()
 
     def up_time(self):
         self.update = datetime.utcnow()
@@ -502,23 +498,12 @@ class Items(db.Model):
                 elif _tag.items.filter_by(id=self.id).first() is None:
                     _tag.items.append(self)  
                     db.session.add(_tag)
-        db.session.commit()
+        #db.session.commit()
 
     # add author to db
     def author_to_db(self,s=None):
         author_str = s or self.author
         d = str_to_dict(author_str)
-        ''' 
-        lst = split_str(author_str)
-        d = {}
-        for i in lst:
-            i_lst = split_str(i,r'[()（）]')
-            alst = [a.strip() for a in i_lst if a.strip()]+['Author']
-            name = alst[0]
-            contribution = alst[1]
-            d.setdefault(name,contribution) 
-        '''
-        
         a_query = Authors.query
         for k,v in d.items():
             author_old = a_query.filter_by(name=k).first()
@@ -534,7 +519,7 @@ class Items(db.Model):
                     contribution=v
                 )
                 db.session.add(byline)
-        db.session.commit()
+        #db.session.commit()
     
     def __repr__(self):
         return '<Items %r>' % self.title
@@ -578,14 +563,12 @@ class Tags(db.Model):
         secondary=tag_post,
         backref=db.backref('tags', lazy='joined'),
         lazy='dynamic')
-
     # simple n2n relationship with items
     items = db.relationship(
         'Items',      
         secondary=tag_item,
         backref=db.backref('itags', lazy='joined'),
         lazy='dynamic')
-
     # simple n2n relationship with demands
     demands = db.relationship(
         'Demands',      
@@ -615,7 +598,7 @@ class Tags(db.Model):
         if not self.parent_is(tag):
             c = Clan(child_tag=self, parent_tag=tag)
             db.session.add(c)
-            db.session.commit()
+            #db.session.commit()
 
     #cache get rand tags
     @staticmethod
@@ -694,7 +677,7 @@ class Comments(db.Model):
     def reply(self, commt):
         r = Reply(parent_commt=self, child_commt=commt)
         db.session.add(r)
-        db.session.commit()
+        #db.session.commit()
 
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):
@@ -845,7 +828,7 @@ class Demands(db.Model):
                 else:
                     _tag.demands.append(self)  
                     db.session.add(_tag)
-        db.session.commit()   
+        #db.session.commit() 
     
     def __repr__(self):
         return '<Demands %r>' % self.body 
@@ -896,7 +879,7 @@ class Messages(db.Model):
     def dialog(self, message):
         d = Dialog(send=self, re=message)
         db.session.add(d)
-        db.session.commit()
+        #db.session.commit()
 
     def __repr__(self):
         return '<Messages %r>' % self.content
@@ -1131,7 +1114,7 @@ class Users(UserMixin, db.Model):
         s = self.star_posts.filter_by(post_id=post.id).first()
         if s:
             db.session.delete(s)
-            db.session.commit()
+            #db.session.commit()
     def staring(self, post):
         return self.star_posts.filter_by(
             post_id=post.id).first() is not None
@@ -1146,7 +1129,7 @@ class Users(UserMixin, db.Model):
         c = self.challenge_posts.filter_by(post_id=post.id).first()
         if c:
             db.session.delete(c)
-            db.session.commit()
+            #db.session.commit()
     def challenging(self, post):
         return self.challenge_posts.filter_by(
             post_id=post.id).first() is not None
@@ -1156,12 +1139,12 @@ class Users(UserMixin, db.Model):
         if not self.is_following(user):
             f = Follow(follower=self,followed=user)
             db.session.add(f)
-            db.session.commit()
+            #db.session.commit()
     def unfollow(self, user):
         f = self.followed.filter_by(followed_id=user.id).first()
         if f:
             db.session.delete(f)
-            db.session.commit()
+            #db.session.commit()
     def is_following(self, user):
         return self.followed.filter_by(
             followed_id=user.id).first() is not None
@@ -1202,7 +1185,7 @@ class Users(UserMixin, db.Model):
         fv = self.fav_tags.filter_by(tag_id=tag.id).first()
         if fv:
             db.session.delete(fv)
-            db.session.commit()
+            #db.session.commit()
     def faving(self, tag):
         return self.fav_tags.filter_by(
             tag_id=tag.id).first() is not None
@@ -1222,7 +1205,7 @@ class Users(UserMixin, db.Model):
             tag=tag
         )
         db.session.add(ev)
-        db.session.commit()
+        #db.session.commit()
 
     def accomplished(self):
         pass
@@ -1264,35 +1247,25 @@ class AnonymousUser(AnonymousUserMixin):
     def id(self):
         id = -1
         return id
-
     def can(self, permissions):
         return False
-
     def is_administrator(self):
         return False
-
     def staring(self, post):
         return False
-    
     def challenging(self, post):
         return False
-    
     def is_following(self, user):
         return False
-    
     def is_followed_by(self, user):
         return False
-    
     def faving(self, tag):
         return False
-
     def flaging(self,item):
         return "Flag It"
-
     def role(self):
         r = Roles(duty=None,permissions=0x0000)
         return r
-
 login_manager.anonymous_user = AnonymousUser
 
 
@@ -1410,7 +1383,7 @@ class Articles(db.Model):
     def up_time(self):
         self.update = datetime.utcnow()
         db.session.add(self)
-        db.session.commit()
+        #db.session.commit()
 
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):

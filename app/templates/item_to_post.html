@@ -2,18 +2,18 @@
 {% import "bootstrap/wtf.html" as wtf %}
 
 
-{% block title %} Add Item to Post {% endblock title %}
+{% block title %} Add Item to Readup List {% endblock title %}
 
 {% block content %}
 <div>
-    <h4>Add Item to Post</h4>
-    <p>Add item&nbsp;<a href={{url_for('main.item', id=item.id)}}>{{item.title|truncate(50)}}</a>&nbsp;to a Selected Post</p>
+    <h4>Add Item to Readup List</h4>
+    <p>Add item&nbsp;<a href={{url_for('main.item', id=item.id)}}>{{item.title|truncate(50)}}</a>&nbsp;to a Selected list</p>
 </div>
 <hr>
 <div>
     <form class="form" method="POST">
         {{form.hidden_tag()}}  
-        {{wtf.form_field(form.selectpost)}}    
+        {{wtf.form_field(form.selectlist)}}    
         {{wtf.form_field(form.tips)}}
         {{wtf.form_field(form.submit)}}
     </form>
