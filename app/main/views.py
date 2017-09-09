@@ -136,11 +136,10 @@ def post(id):
     posts = posts_query.limit(m) 
     posts_count = posts_query.count()
     
-    if current_user == post.creator \
-      or contribute  or post.editable == 'Everyone':
-        display = True 
-    else:
+    if post.uneditable:
         display = False
+    else:
+        display = True
     
     items = [_c.item for _c in post.items.order_by(Collect.order)]
     c_tips = Collect.query.filter_by(post_id=id)
@@ -164,13 +163,14 @@ def post(id):
 def check_item(id):
     """Check a item if in db or can get info by spider"""
     post = Posts.query.get_or_404(id)
-    contribute = post.contributors.filter_by(
-        user_id=current_user.id,
-        disabled=False
-        ).first()
-    if current_user != post.creator and contribute is None \
-       and post.editable != 'Everyone' :
+
+    if post.uneditable:
+        flash('You do not have the permissions to edit this content')
         abort(403)
+    #Should be locked during editing
+    if post.editable != "Creator":
+        if post.mod_locked():
+            return redirect(url_for('.post',id=id))
     
     re_url=r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
     #re_uid=r'([-]*(1[03])*[ ]*(: ){0,1})*(([0-9Xx][- ]*){13}|([0-9Xx][- ]*){10})'
@@ -197,24 +197,34 @@ def check_item(id):
         return redirect(url_for('.add_item', id=id))
     
     return render_template('check_item.html',form=form,post=post)  
-            
+
+@main.route('/checktoadditemfor/<int:id>')
+@login_required
+def check_to_add(id):
+    """bridge gap and unlock temporarily"""
+    post = Posts.query.get_or_404(id)
+    post.unlock() ##!!
+    return redirect(url_for('.add_item',id=id))
+
                 
 @main.route('/readuplist/add/<int:id>',methods=['GET','POST'])
 @login_required
 def add_item(id):
     """Add item and tips to post"""
     post = Posts.query.get_or_404(id)
-    contribute = post.contributors.filter_by(
-        user_id=current_user.id,
-        disabled=False
-        ).first()
-    if current_user != post.creator and contribute is None \
-       and post.editable != 'Everyone' :
+    if post.uneditable:
+        flash('You do not have the permissions to edit this content')
         abort(403)
 
     form = ItemForm()
-    d = session.get('d_pass') or {}   
+    d = session.get('d_pass') or {}
     #session.pop('d_pass',None) #if pop here, no d for on_submit
+
+    #Should be locked during editing, cannot bypass if from check_item
+    if post.editable != "Creator":
+        if post.mod_locked():
+            return redirect(url_for('.post',id=id))
+
     if form.validate_on_submit():
         uid=form.uid.data.replace('-','').replace(' ','')
         old_item = Items.query.filter_by(uid=uid).first()
@@ -261,7 +271,7 @@ def add_item(id):
             
         elif oc_item is not None:
             post.collecting(oc_item,tips,tip_creator)
-        
+
         db.session.commit()
         #pop session
         session.pop('d_pass',None)
@@ -284,17 +294,21 @@ def add_item(id):
 def item_to_post(item_id=None,post_id=None):
     """Add an existing item to created Post"""
     item = Items.query.get_or_404(item_id)
-    #get the current posts and set as chioices
+    #get lists created by current_user and set as chioices
     myposts = current_user.posts.order_by(db.func.rand())
     form = SelectAddForm()
     if myposts.count() == 0:
-        flash('Have not created any, You can create now')
+        flash('You have not created any list, You can create now')
         return redirect(url_for('.create'))
     else:
-        form.selectlist.choices = [(m.id,m.title) for m in myposts]
+        form.selectlist.choices = [(0,"")] + [(m.id,m.title) for m in myposts]
 
     if form.validate_on_submit():
         post = Posts.query.get_or_404(form.selectlist.data)
+        #Should be locked during editing
+        if post.editable != "Creator":
+            post.unlock()  ##!!
+        
         tips = form.tips.data
         tip_creator = current_user._get_current_object()
         #collect to post
@@ -306,19 +320,38 @@ def item_to_post(item_id=None,post_id=None):
     return render_template('item_to_post.html', form=form, item=item)
 
 
+@main.route('/lockselected/<id>')
+def lock_select(id):
+    post = Posts.query.get(int(id))
+    if current_user == post.creator and post.editable != "Creator":
+        post.lock() ## if change select w/o submit, how to unlock the locked ?
+    return 'The content selected should be locked during edit'
+
+
 @main.route('/readuplist/edit/<int:id>',methods=['GET','POST'])
 @login_required
 def edit_post(id):
     """Edit Post Title,intro,credential,editable"""
     post = Posts.query.get_or_404(id)
-    contribute = post.contributors.filter_by(
-        user_id=current_user.id,
-        disabled=False
-        ).first()
-    if current_user != post.creator and contribute is None \
-       and post.editable != 'Everyone' :
-        abort(403)
 
+    if post.uneditable:
+        flash('You do not have the permission to edit this content')
+        abort(403)
+    #Should be locked during editing
+    if post.editable != "Creator":
+        if post.mod_locked():
+            return redirect(url_for('.post',id=id))
+        # # GET to  render edit tpl
+        # if request.method == "GET":
+        #     if post.check_locked():
+        #         flash('The content is in editing, to avoid conflict, Please Try later')
+        #         return redirect(url_for('.post',id=id))
+        #     # set edit_start as indict editing
+        #     post.lock()
+        # # on_submit as edit done POST
+        # if request.method == "POST":
+        #     post.unlock()
+    
     form = EditPostForm()
     if form.validate_on_submit():
         post.title = form.title.data
@@ -327,8 +360,8 @@ def edit_post(id):
         post.credential = form.credential.data
         post.editable = form.editable.data
         
-        #update the update timestamp
-        post.up_time()
+        #update the renew timestamp
+        post.renew()
         # save activity to db Events
         current_user.set_event(action='alter',post=post)
         db.session.commit()    
@@ -342,16 +375,28 @@ def edit_post(id):
     form.editable.data = post.editable
     return render_template('edit_post.html',form=form,post=post)
 
+@main.route('/gobackreaduplist/<int:id>')  
+@login_required
+def goback_edit(id):
+    """give up the editing and unlock"""
+    post = Posts.query.get_or_404(id)
+    post.unlock() ##!!
+    return redirect(url_for('.post',id=id))
+
+
 @main.route('/del/readuplist/<int:id>')
 @login_required
 def del_post(id):
     """Del Post by creator if no star or challenge"""
     post = Posts.query.get_or_404(id)  #post 's id
 
-    if current_user != post.creator\
-     or post.starers.count() != 0\
-     or post.challengers.count() != 0\
-     or post.contributors.count() != 0:
+    if (current_user != post.creator or 
+        post.starers.count() != 0 or 
+        post.challengers.count() != 0 or 
+        post.contributors.count() != 0 or 
+        post.check_locked()):
+        flash('You do not have the permissions to delete this content \
+               or The content is locked')
         abort(403)
     
     db.session.delete(post)
@@ -716,28 +761,30 @@ def flag_3(id):
 def edit_tips(id):
     """Edit tips or modify the item order"""
     tip_c = Collect.query.filter_by(id=id).first_or_404()  #collect 's id
-    post = Posts.query.get_or_404(tip_c.post_id)
+    post_id = tip_c.post_id
+    post = Posts.query.get_or_404(post_id)
 
-    contribute = post.contributors.filter_by(
-        user_id=current_user.id,
-        disabled=False
-        ).first()
-    if current_user != post.creator and contribute is None \
-       and post.editable != 'Everyone' :
+    if post.uneditable:
+        flash('You do not have the permissions to edit the content')
         abort(403)
+    #Should be locked during editing
+    if post.editable != "Creator":
+        if post.mod_locked():
+            return redirect(url_for('.post',id=post_id))
 
     item = Items.query.get_or_404(tip_c.item_id)
     
     form = EditTipsForm()
     if form.validate_on_submit():
         post.ordering(item, form.order.data)
+        post.renew()
         tip_c.tips = form.tips.data
         db.session.add(tip_c)
         #save activity to db Events
         current_user.set_event(action='modify',post=post,item=item)
         db.session.commit()
 
-        return redirect(url_for('.post', id=tip_c.post_id)) 
+        return redirect(url_for('.post', id=post_id))
     
     form.tips.data = tip_c.tips
     form.order.data = tip_c.order
@@ -1584,7 +1631,7 @@ def edit_article(id):
         article.figure = form.figure.data
         article.body = form.body.data
         
-        article.up_time()
+        article.renew()
         db.session.commit()
         
         return redirect(url_for('.article', id=id))

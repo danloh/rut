@@ -37,8 +37,8 @@
     &nbsp;&nbsp;||&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     {% endif %}
     
-    {% if post.update and post.timestamp != post.update  %}
-    Update:&nbsp;{{moment(post.update).format("MMM Do YYYY")}}
+    {% if post.renewal and post.timestamp != post.renewal  %}
+    Update:&nbsp;{{moment(post.renewal).format("MMM Do YYYY")}}
     &nbsp;&nbsp;|&nbsp;&nbsp;
     {% endif %}
 

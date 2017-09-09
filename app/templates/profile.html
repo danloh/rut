@@ -1,37 +1,13 @@
-{% extends "layout0.html" %}
-
+{% extends "layout1.html" %}
 {% block title %} {{user.nickname or user.name}} 's Profile {% endblock title %}
 
-{% block leftside %}
-<div>
-    <div>
-        <img src="{{user.avatar or url_for('static', filename='pic/profile.svg')}}" \
-         style="width:120px" alt="avatar">
-    </div>
-    <br>
-    <div>
-        <mark>About Me</mark><br>
-        {{user.about_me or ' no bio'}}
-        <br><br>
-        <mark>From</mark><br>
-        {{user.location or 'not add location yet' }}
-        <br><br>
-        {% if user.links %}
-        <mark>Link</mark><br>
-        <a href={{user.links}} target="_blank">link to me</a>
-        {% endif %}
-        <br><br>   
-        {% if current_user == user %}
-        <a href={{url_for('auth.edit_profile')}}>--Edit Profile--</a>
-        {% endif %}
-    </div>
-</div>
-{% endblock leftside %}
-
 {% block content %}
-<div>
-    <h3>{{user.nickname or user.name}}</h3>
-    <div class="text-right">
+<!--Show name -->
+<div class="row">
+    <div class="col-md-6 text-left">
+        <b style="font-size:x-large">{{user.nickname or user.name}}</b>
+    </div>
+    <div class="col-md-6 text-right">
         <a href={{url_for('main.following',id=user.id)}} target="_blank">
             {{user.followed.count()}}
         </a> &nbsp;Following&nbsp;
@@ -39,7 +15,7 @@
             {{user.followers.count()}}
         </a> &nbsp;Followers&nbsp;
         {% if user != current_user %}
-        <a id="fo" class="btn"> 
+        <a id="fo" class="btn btn-default"> 
         {% if current_user.is_following(user) %} 
             Unfollow 
         {% else %} 
@@ -69,10 +45,49 @@
         <!--script end-->
     </div>
 </div>
-<hr>
+<hr class="top" /> 
+
+<!--Show doing -->
+{% if count_2 > 0 %}
+<div id="doing">
+    <h4 class="bookmark">-- Working On --&nbsp;&nbsp;<b>({{count_2}})</b></h4>
+    <hr>
+    {% for item in doings %}
+        {% include '_show_item.html' %}
+    <hr>
+    {% endfor %}
+
+    <div class="text-right">
+        {% if count_2 > m %}
+        <a href={{url_for('main.moredoing',id=user.id)}} target="_blank">... More</a>
+        {% endif %}
+    </div>
+    <br>
+</div>
+{% endif %}
+
+<!--Show todo -->
+{% if count_1 > 0 %}
+<div id="todo">
+    <h4 class="bookmark">-- Scheduled --&nbsp;&nbsp;<b>({{count_1}})</b></h4>
+    <hr>
+    {% for item in todos %}
+        {% include '_show_item.html' %}
+    <hr>
+    {% endfor %}
+
+    <div class="text-right">
+        {% if count_1 > m %}
+        <a href={{url_for('main.moreschedule',id=user.id)}} target="_blank">... More</a>
+        {% endif %}
+    </div>
+    <br>
+</div>
+{% endif %}
+
 <!--Show list -->
-<div class="row">
-    <h4>-- Created --&nbsp;&nbsp;<b>({{post_count}})</b></h4>
+<div id="created">
+    <h4 class="bookmark">-- Created --&nbsp;&nbsp;<b>({{post_count}})</b></h4>
     <hr>
     {% for post in posts %}
         {% include '_post_list.html' %}
@@ -86,92 +101,34 @@
 
     <div class="text-right">
         {% if post_count > m %}
-        <a href={{url_for('main.morepost',id=user.id)}} target="_blank">More</a>
+        <a href={{url_for('main.morepost',id=user.id)}} target="_blank">... More</a>
         {% endif %}
     </div>
     <br>
 </div>
 
-<!--Show track-->
-<ul class="nav nav-tabs">
-    <li><a data-toggle="tab" href="#star">
-        Staring &nbsp;<b>({{star_count}})</b></a>
-    </li>
-    <li class="active"><a data-toggle="tab" href="#ing">
-        Working On &nbsp;<b>({{count_2}})</b></a>
-    </li>
-    <li><a data-toggle="tab" href="#todo">
-        Scheduled &nbsp;<b>({{count_1}})</b></a>
-    </li>
-    <li><a data-toggle="tab" href="#done">
-        Have Done &nbsp;<b>({{count_3}})</b></a>
-    </li>
-</ul>
-
-<div class="tab-content">
-
-    <div id="star" class="tab-pane fade">
-        <br>
-        {% for post in star_posts %}
+<!--Show staring -->
+{% if star_count > 0 %}
+<div id="staring">
+    <h4 class="bookmark">-- Staring --&nbsp;&nbsp;<b>({{star_count}})</b></h4>
+    <hr>
+    {% for post in star_posts %}
         {% include '_post_list.html' %}
-        {% endfor %}
+    {% endfor %}
 
-        <div class="text-right">
-            {% if star_count > m %}
-            <a href={{url_for('main.morestar',id=user.id)}} target="_blank">More</a>
-            {% endif %}
-        </div>
-
+    <div class="text-right">
+        {% if star_count > m %}
+        <a href={{url_for('main.morestar',id=user.id)}} target="_blank">... More</a>
+        {% endif %}
     </div>
-
-    <div id="ing" class="tab-pane fade in active">
-        <br>
-        {% for item in doings %}
-        {% include '_show_item.html' %}
-        <hr>
-        {% endfor %}
-
-        <div class="text-right">
-            {% if count_2 > m %}
-            <a href={{url_for('main.moredoing',id=user.id)}} target="_blank">More</a>
-            {% endif %}
-        </div>
-
-    </div>
-
-    <div id="todo" class="tab-pane fade">
-        <br>
-        {% for item in todos %}
-        {% include '_show_item.html' %}
-        <hr>
-        {% endfor %}
-
-        <div class="text-right">
-            {% if count_1 > m %}
-            <a href={{url_for('main.moreschedule',id=user.id)}} target="_blank">More</a>
-            {% endif %}
-        </div>
-    </div>
-
-    <div id="done" class="tab-pane fade">
-        <br>
-        {% for item in dones %}
-        {% include '_show_item.html' %}
-        <hr>
-        {% endfor %}
-
-        <div class="text-right">
-            {% if count_3 > m %}
-            <a href={{url_for('main.moredone',id=user.id)}} target="_blank">More</a>
-            {% endif %}
-        </div>
-    </div>
+    <br>
 </div>
+{% endif %}
 
 <!--Show reviews-->
-<div>
-    <br>
-    <h4>-- Reviews --&nbsp;&nbsp;<b>({{review_count}})</b></h4>
+{% if review_count > 0 %}
+<div id="review">
+    <h4 class="bookmark"> -- Reviews --&nbsp;&nbsp;<b>({{review_count}})</b></h4>
     <hr>
     {% for review in myreviews %}
     {% include '_review_list.html' %}
@@ -179,15 +136,47 @@
 
     <div class="text-right">
         {% if review_count > m %}
-        <a href={{url_for('main.morereview_u',id=user.id)}} target="_blank">More</a>
+        <a href={{url_for('main.morereview_u',id=user.id)}} target="_blank">... More</a>
         {% endif %}
     </div>
 </div>
+{% endif %}
+
+<!--Show done -->
+{% if count_3 > 0 %}
+<div id="done">
+    <h4 class="bookmark">-- Have Done --&nbsp;&nbsp;<b>({{count_3}})</b></h4>
+    <hr>
+    {% for item in dones %}
+        {% include '_show_item.html' %}
+    <hr>
+    {% endfor %}
+
+    <div class="text-right">
+        {% if count_3 > m %}
+        <a href={{url_for('main.moredone',id=user.id)}} target="_blank">... More</a>
+        {% endif %}
+    </div>
+    <br>
+</div>
+{% endif %}
 
 <!--Show comments-->
-<div>
-    <br>
-    <h4>-- Comments --&nbsp;&nbsp;<b>({{commt_count}})</b></h4>
+{% if commt_count > 0 %}
+<div id="comment">
+    <button id="showcomment" class="btn btn-default">
+        -- More Comments --&nbsp;&nbsp;<b>({{commt_count}})</b>
+    </button>
+    <script>
+    $(document).ready(function(){
+        $("#showcomment").click(function(){
+            $("#mycomments").toggle();
+        });
+    });
+    </script>
+</div>
+<br>
+<div id="mycomments" style="display:none">
     <hr>
     {% for commt in mycomments %}
     <div style="background-color:seashell">
@@ -249,18 +238,35 @@
         {% set commt_body = commt.body_html or commt.body %} 
         {{commt_body|safe}}
     </div>
-    <hr>
- 
+    <hr> 
     {% endfor %}
 
     <div class="text-right">
         {% if commt_count > m %}
-        <a href={{url_for('main.morecomment_u',id=user.id)}} target="_blank">More</a>
+        <a href={{url_for('main.morecomment_u',id=user.id)}} target="_blank">... More</a>
         {% endif %}
     </div>
 </div>
+{% endif %}
 
 {% endblock content %}
 
 {% block rightside %}
+<div>
+    <div class="row">
+        <div class="col-md-5 text-left"><img src="{{user.avatar or url_for('static', filename='pic/profile.svg')}}" style="width:120px" alt="avatar"></div>
+        <div class="col-md-7">
+            <br>
+            <b style="color:cadetblue"> From</b> &nbsp;{{user.location or 'Unknown' }}
+            <p> Joined: {{moment(user.timestamp).format("MMM YYYY")}}</p>
+            ~~ &nbsp;<a href={{user.links or url_for('auth.profile',id=user.id ,_anchor='created')}} target="_blank">... More ...</a>&nbsp; ~~
+        </div>
+    </div>
+    <br>
+    <div style="background-color:aliceblue; padding:4px;">
+        <b style="color:cadetblue"> About Me</b><br>
+        {{user.about_me or ' no bio yet'}}&nbsp; ... 
+        {% if current_user == user %}<a href={{url_for('auth.edit_profile')}}>edit</a>{% endif %}
+    </div>
+</div>
 {% endblock rightside %}

@@ -6,7 +6,8 @@
 
 {% block content %}
 <div>
-    <h4>Edit Readup List&nbsp;&nbsp;<a href={{url_for('main.post', id=post.id)}}>{{post.title|truncate(40)}}</a></h4>
+    <h4>Edit Readup List</h4>
+    <p>&nbsp;List: &nbsp;<a href={{url_for('main.goback_edit', id=post.id)}} title="Go back will give up edit">{{post.title|truncate(50)}}...</a></p>
 </div>
 <hr>
 <div>

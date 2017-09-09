@@ -2,8 +2,8 @@
 
 import random
 import re
-from datetime import datetime, date
-from flask import url_for, current_app, request
+from datetime import datetime
+from flask import url_for, current_app, request, flash
 from flask_sqlalchemy import SQLAlchemy 
 from flask_login import UserMixin, AnonymousUserMixin, current_user
 from markdown import markdown
@@ -225,9 +225,10 @@ class Posts(db.Model):
     tag_str = db.Column(db.String(256), default="42")
     timestamp = db.Column(db.DateTime, 
                           default=datetime.utcnow)
-    update = db.Column(db.DateTime, 
+    renewal = db.Column(db.DateTime, 
                           default=datetime.utcnow)
     editable = db.Column(db.String(32),default='Creator')
+    edit_start = db.Column(db.DateTime,default=None)
     disabled = db.Column(db.Boolean)
     vote = db.Column(db.Integer, default=0)
 
@@ -303,13 +304,13 @@ class Posts(db.Model):
                 tip_creator=tip_creator
             ) # refer to the relationship-backref var
             db.session.add(c)
-            # update the update timestamp
-            self.up_time()
+            # update the renew timestamp
+            self.renew()
             #save activity to db Events
-            current_user.set_event(action='update',post=self,item=item)
+            current_user.set_event(action='updates',post=self,item=item)
             #db.session.commit() #if need commit?
 
-    # set and change the order of items, ##maybe an issue here##
+    # set and change the order of items, ## ??maybe an issue here!!##
     def ordering(self,item,new_order):
         _c = self.items  # ie. a collect-object
         c_old = _c.filter_by(item_id=item.id).first()
@@ -353,9 +354,63 @@ class Posts(db.Model):
                     _tag.posts.append(self)  
                     db.session.add(_tag)
         #db.session.commit()
+    
+    #check if can be edited
+    @property
+    def uneditable(self):
+        contribute = self.contributors.filter_by(
+            user_id=current_user.id,
+            disabled=False
+        ).first()
+        if (current_user != self.creator and 
+                contribute is None and 
+                self.editable != 'Everyone'):
+            return True
+        else:
+            return False
 
-    def up_time(self):
-        self.update = datetime.utcnow()
+    # lock and unlock status in/after edit: a stopgap
+    def lock(self):
+        self.edit_start = datetime.utcnow()
+        db.session.add(self)
+        # set a value to indicate in editing
+        db.session.commit()
+    def unlock(self):
+        self.edit_start = None
+        db.session.add(self)
+        # reset eidt_start to None, after edit done
+        db.session.commit()
+    def force_unlock(self, start=None, timeout=2400): 
+        # sometime user forget submit, need to force unlock
+        start = start or self.edit_start
+        if start:
+            now = datetime.utcnow()
+            delta = now - start
+            if delta.seconds >= timeout:
+                self.unlock()
+    def check_locked(self):
+        # if eidt_start is not None, it is locked as editing
+        start = self.edit_start
+        if start:
+            #force_unlock firstly
+            self.force_unlock(start=start)
+            return bool(self.edit_start)
+        else:
+            return False
+    def mod_locked(self):
+        # GET to  render edit tpl
+        if request.method == "GET":
+            if self.check_locked():
+                flash('This Content is in Editing, to Avoid Conflict, Please Try later')
+                return True
+            # set edit_start as indict editing
+            self.lock()
+        # on_submit as edit done POST
+        if request.method == "POST":
+            self.unlock()
+
+    def renew(self):
+        self.renewal = datetime.utcnow()
         db.session.add(self)
         #db.session.commit()
 
@@ -382,7 +437,7 @@ class Posts(db.Model):
         _query = Posts.query
         m = current_app.config['POST_PER_PAGE']
 
-        posts_latest = _query.order_by(Posts.update.desc()).limit(m)
+        posts_latest = _query.order_by(Posts.renewal.desc()).limit(m)
         posts_popular = _query.order_by(Posts.vote.desc()).limit(m)
 
         posts_select = posts_latest.union(posts_popular).\
@@ -971,7 +1026,7 @@ class Users(UserMixin, db.Model):
     nickname = db.Column(db.String(64))
     location = db.Column(db.String(64))
     about_me = db.Column(db.Text)
-    links = db.Column(db.String(64))
+    links = db.Column(db.String(256))
     #record mission accomplished
     mission = db.Column(db.Integer, default=0)
     rank = db.Column(db.Integer, default=0)
@@ -1300,14 +1355,13 @@ class Events(db.Model):
     __table_name__ = "events"
     id = db.Column(db.Integer, primary_key=True)
     action = db.Column(db.String(32))
-    date = db.Column(db.Date, default=date.today)
     timestamp = db.Column(db.DateTime, 
                           default=datetime.utcnow)
 
     dict_action_content = {
         'create':'post',
         'alter':'post', #edit intro
-        'update':'post', #add item
+        'updates':'post', #add item
         'modify':'post', #edit tips
         'star':'post',
         'challenge':'post',
@@ -1365,7 +1419,7 @@ class Articles(db.Model):
     vote = db.Column(db.Integer,default=1)
     timestamp = db.Column(db.DateTime, 
                           default=datetime.utcnow)
-    update = db.Column(db.DateTime, 
+    renewal = db.Column(db.DateTime, 
                           default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
     
@@ -1380,8 +1434,8 @@ class Articles(db.Model):
         db.ForeignKey("columns.id")
     )
     
-    def up_time(self):
-        self.update = datetime.utcnow()
+    def renew(self):
+        self.renewal = datetime.utcnow()
         db.session.add(self)
         #db.session.commit()
 

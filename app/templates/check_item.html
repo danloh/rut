@@ -8,7 +8,7 @@
 <div>
     <h4>Fetch Item information before adding manually</h4>
     <p>for Readup List&nbsp;&nbsp;
-        <a href={{url_for('main.post', id=post.id)}}>{{post.title|truncate(50)}}</a>
+        <a href={{url_for('main.goback_edit', id=post.id)}} title="Go back will give up edit">{{post.title|truncate(50)}}</a>
     </p>
 </div>
 <hr>
@@ -29,7 +29,7 @@
     </script>
     <br>
     <h4>or You can 
-        <a href={{url_for('main.add_item',id=post.id)}}>
+        <a href={{url_for('main.check_to_add',id=post.id)}}>
             add the item information manually
         </a> 
     </h4>

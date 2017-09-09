@@ -29,8 +29,8 @@
 </div>
 <hr>
 <div class="text-right">
-    {% if article.update and article.update != article.timestamp  %}
-    <span>Update:&nbsp;{{moment(article.update).format("MMM Do YYYY")}}</span>
+    {% if article.renewal and article.renewal != article.timestamp  %}
+    <span>Update:&nbsp;{{moment(article.renewal).format("MMM Do YYYY")}}</span>
     {% endif %}
     
     {% if current_user == article.writer %}

@@ -16,13 +16,19 @@ div.flask-pagedown-preview h2 {
 }
 hr.colored {
     height: 1px;
-    border: 1px dotted darkorange;
+    border-top: 2px dotted darkorange;
 }
 hr.top {
     height: 1px;
-    margin: 0px 0px 2px 0px;
-    color: green;
-    background-color: green;
+    border-top: 2px dotted #EBD994;
+}
+.bookmark {
+    display: block;
+    font-size: 1.2em;
+    margin-top: 0.6em;
+    margin-bottom: 0.6em;
+    font-weight: bold;
+    color:green;
 }
 .grid-list {
     margin: 0px 0px 10px 0px;

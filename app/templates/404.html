@@ -1,8 +1,8 @@
-
 {% extends "layout0.html" %}
-
 {% block title %} 404 Error {% endblock title %}
-
 {% block content %}
- <h1>Page not Found</h1>
+<div class="text-center">
+    <h1 style="color:sienna">404 Page not Found</h1>
+    <h3><a href={{url_for('main.index')}}>Go to Home Page</a></h3>
+</div>
 {% endblock content %}

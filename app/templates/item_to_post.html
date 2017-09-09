@@ -13,10 +13,19 @@
 <div>
     <form class="form" method="POST">
         {{form.hidden_tag()}}  
-        {{wtf.form_field(form.selectlist)}}    
+        {{wtf.form_field(form.selectlist,id="selectedalist")}} 
         {{wtf.form_field(form.tips)}}
         {{wtf.form_field(form.submit)}}
     </form>
+    <!--script start-->
+    <script>
+    $(document).ready(function(){
+        $("#selectedalist").change(function(){
+            $.get('/lockselected/' + $("#selectedalist").val());
+        });
+    });
+    </script>
+    <!--script end-->
 </div>
 {% endblock content %}
 
