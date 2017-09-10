@@ -6,7 +6,7 @@
     <hr>
     <div>
         {% for tag in tags %}
-        <li><a href="{{url_for('main.tagcollect', id=tag.id)}}">{{tag.tag}}</a></li>
+        <li><a href="{{url_for('main.tag', id=tag.id)}}">{{tag.tag}}</a></li>
         {% endfor %}
         <br>
         <a href={{url_for('main.catagory')}}>...More</a>

@@ -4,7 +4,7 @@ import random
 import re
 from datetime import datetime
 from flask import url_for, current_app, request, flash
-from flask_sqlalchemy import SQLAlchemy 
+from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, AnonymousUserMixin, current_user
 from markdown import markdown
 import bleach
@@ -14,10 +14,10 @@ from .utils import split_str, str_to_dict, str_to_set
 
 # html_tags Whitelist for Bleach
 allowed_tags = ['a', 'abbr', 'b', 'blockquote', 'code', 'img',
-                'em', 'i', 'li', 'ol', 'ul', 'pre', 'strong', 
+                'em', 'i', 'li', 'ol', 'ul', 'pre', 'strong',
                 'h3', 'h4', 'h5', 'h6', 'hr', 'p']
 
-# simple n2n for Tags Posts 
+# simple n2n for Tags Posts
 tag_post = db.Table(
     'tag_post',
     db.Column(
@@ -27,7 +27,7 @@ tag_post = db.Table(
         'post_id', db.Integer, db.ForeignKey("posts.id")
     )
 )
-# simple n2n for Tags Items 
+# simple n2n for Tags Items
 tag_item = db.Table(
     'tag_item',
     db.Column(
@@ -37,7 +37,7 @@ tag_item = db.Table(
         'item_id', db.Integer, db.ForeignKey("items.id")
     )
 )
-# simple n2n for Tags Demands 
+# simple n2n for Tags Demands
 tag_demand = db.Table(
     'tag_demand',
     db.Column(
@@ -50,24 +50,24 @@ tag_demand = db.Table(
 
 
 # helper Model for n2n Posts collect Items
-class Collect(db.Model): 
-    __table_name__ = 'collect'   
-    id = db.Column(db.Integer, primary_key=True, 
-                   autoincrement=True)  
+class Collect(db.Model):
+    __table_name__ = 'collect'
+    id = db.Column(db.Integer, primary_key=True,
+                   autoincrement=True)
     item_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("items.id"), 
+        db.Integer,
+        db.ForeignKey("items.id"),
         primary_key=True)
     post_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("posts.id"), 
+        db.Integer,
+        db.ForeignKey("posts.id"),
         primary_key=True)
     order = db.Column(db.SmallInteger)   #item's order in post
     tips = db.Column(db.Text, nullable=False)
     tips_html = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
-    
+
     # n to 1 with Users
     tip_creator_id = db.Column(
         db.Integer, db.ForeignKey("users.id")
@@ -78,140 +78,140 @@ class Collect(db.Model):
         target.tips_html = bleach.linkify(bleach.clean(
             markdown(value, output_format='html'),
             tags=allowed_tags, strip=True))
-    
+
 db.event.listen(Collect.tips, 'set', Collect.on_changed_tips)
 
-# helper Model for n2n Posts with Users for star   
-class Star(db.Model): 
-    __table_name__ = 'star'   
+# helper Model for n2n Posts with Users for star
+class Star(db.Model):
+    __table_name__ = 'star'
     user_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("users.id"), 
+        db.Integer,
+        db.ForeignKey("users.id"),
         primary_key=True)
     post_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("posts.id"), 
+        db.Integer,
+        db.ForeignKey("posts.id"),
         primary_key=True)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
 
 # helper Model for n2n Posts with Users for challenge
-class Challenge(db.Model): 
-    __table_name__ = 'challenge'   
+class Challenge(db.Model):
+    __table_name__ = 'challenge'
     user_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("users.id"), 
+        db.Integer,
+        db.ForeignKey("users.id"),
         primary_key=True)
     post_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("posts.id"), 
+        db.Integer,
+        db.ForeignKey("posts.id"),
         primary_key=True)
     deadline = db.Column(db.Date)
     done = db.Column(db.Boolean)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
 
 # helper Model for n2n Posts co-Contribute
-class Contribute(db.Model): 
-    __table_name__ = 'contribute'   
-    id = db.Column(db.Integer, primary_key=True, 
-                   autoincrement=True) 
+class Contribute(db.Model):
+    __table_name__ = 'contribute'
+    id = db.Column(db.Integer, primary_key=True,
+                   autoincrement=True)
     user_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("users.id"), 
+        db.Integer,
+        db.ForeignKey("users.id"),
         primary_key=True)
     post_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("posts.id"), 
+        db.Integer,
+        db.ForeignKey("posts.id"),
         primary_key=True)
     disabled = db.Column(db.Boolean, default=True)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
 
-# helper Model for n2n Users flag Items     
-class Flag(db.Model): 
-    __table_name__ = 'flag'      
+# helper Model for n2n Users flag Items
+class Flag(db.Model):
+    __table_name__ = 'flag'
     item_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("items.id"), 
+        db.Integer,
+        db.ForeignKey("items.id"),
         primary_key=True)
     user_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("users.id"), 
+        db.Integer,
+        db.ForeignKey("users.id"),
         primary_key=True)
-    #flag label: read-1,reading-2,read-3                   
-    flag_label = db.Column(db.SmallInteger,default=0) 
-    timestamp = db.Column(db.DateTime, 
+    #flag label: read-1,reading-2,read-3
+    flag_label = db.Column(db.SmallInteger,default=0)
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
 
 # helper Model for n2n Users favirate Tags
-class Fav(db.Model): 
-    __table_name__ = 'fav'      
+class Fav(db.Model):
+    __table_name__ = 'fav'
     tag_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("tags.id"), 
+        db.Integer,
+        db.ForeignKey("tags.id"),
         primary_key=True)
     user_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("users.id"), 
+        db.Integer,
+        db.ForeignKey("users.id"),
         primary_key=True)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                         default=datetime.utcnow)
 
 # helper Model for n2n Items with Authors
 # item-bys : by-items
-class Byline(db.Model): 
-    __table_name__ = 'byline'   
+class Byline(db.Model):
+    __table_name__ = 'byline'
     item_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("items.id"), 
+        db.Integer,
+        db.ForeignKey("items.id"),
         primary_key=True)
     author_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("authors.id"), 
+        db.Integer,
+        db.ForeignKey("authors.id"),
         primary_key=True)
     contribution = db.Column(db.String(32), nullable=False)
 
 # helper for n2n Users vote Demands
-class Dvote(db.Model): 
-    __table_name__ = 'dvote'    
+class Dvote(db.Model):
+    __table_name__ = 'dvote'
     user_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("users.id"), 
+        db.Integer,
+        db.ForeignKey("users.id"),
         primary_key=True)
     demand_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey("demands.id"),
         primary_key=True)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                         default=datetime.utcnow)
-    
+
 # helper for n2n Users vote Reviews
 class Rvote(db.Model):
     __table_name__ = 'rvote'
     user_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("users.id"), 
-        primary_key=True)    
+        db.Integer,
+        db.ForeignKey("users.id"),
+        primary_key=True)
     review_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey("reviews.id"),
         primary_key=True)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                         default=datetime.utcnow)
 
 # helper Model for n2n Posts re Demands
-class Respon(db.Model): 
-    __table_name__ = 'respon'      
+class Respon(db.Model):
+    __table_name__ = 'respon'
     post_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("posts.id"), 
+        db.Integer,
+        db.ForeignKey("posts.id"),
         primary_key=True)
     demand_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("demands.id"), 
+        db.Integer,
+        db.ForeignKey("demands.id"),
         primary_key=True)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                         default=datetime.utcnow)
 
 class Posts(db.Model):
@@ -223,9 +223,9 @@ class Posts(db.Model):
     credential = db.Column(db.String(256))
     rating = db.Column(db.String(32))
     tag_str = db.Column(db.String(256), default="42")
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
-    renewal = db.Column(db.DateTime, 
+    renewal = db.Column(db.DateTime,
                           default=datetime.utcnow)
     editable = db.Column(db.String(32),default='Creator')
     edit_start = db.Column(db.DateTime,default=None)
@@ -234,65 +234,65 @@ class Posts(db.Model):
 
     # n to 1 with Users
     creator_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey("users.id")
     )
 
     # 1 to n with Comments
     comments = db.relationship(
-        'Comments', backref='post', lazy='dynamic') 
+        'Comments', backref='post', lazy='dynamic')
     # 1 to n with Events
     events = db.relationship(
-        'Events',backref='post',lazy='dynamic') 
-    
+        'Events',backref='post',lazy='dynamic')
+
     # n2n with Users for contributor
     contributors = db.relationship(
-        'Contribute',                          
+        'Contribute',
         foreign_keys=[Contribute.post_id],
         backref=db.backref('contribute_post',lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Users for star
     starers = db.relationship(
-        'Star',                          
+        'Star',
         foreign_keys=[Star.post_id],
         backref=db.backref('star_post',lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Users for challenge
     challengers = db.relationship(
-        'Challenge',                          
+        'Challenge',
         foreign_keys=[Challenge.post_id],
         backref=db.backref('challenge_post',lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Items
     items = db.relationship(
-        'Collect',                              
+        'Collect',
         foreign_keys=[Collect.post_id],
         backref=db.backref('post', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Demands
     demands = db.relationship(
-        'Respon',                              
+        'Respon',
         foreign_keys=[Respon.post_id],
         backref=db.backref('post', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-    
+
     # collect items into post
     def collected(self,item):
         """
         check if there is a record in Collect table,
-        record indicates post linking item 
+        record indicates post linking item
         return True or False
         """
-        return self.items.filter_by(item_id=item.id).first() is not None 
+        return self.items.filter_by(item_id=item.id).first() is not None
 
     def collecting(self, item, tips, tip_creator):
         """
-        collect item into post, 
+        collect item into post,
         ie. add a record into Collect table
         """
         if not self.collected(item):
@@ -318,22 +318,19 @@ class Posts(db.Model):
 
         if new_order == old_order:
             pass
-        else:            
+        else:
             if new_order > old_order:
-                for i in range(old_order+1,new_order+1):
-                    c = _c.filter_by(order=i).first()
-                    c.order = i-1
-                    db.session.add(c)
-            if new_order < old_order:                 
-                for i in range(new_order,old_order):
-                    c = _c.filter_by(order=i).first()
-                    c.order = i+1
-                    db.session.add(c)
+                _c.filter(Collect.order > old_order, Collect.order <= new_order).\
+                update({'order':Collect.order-1})
+            if new_order < old_order:
+                _c.filter(Collect.order < old_order, Collect.order >= new_order).\
+                update({'order':Collect.order+1})
+            
             c_old.order = new_order
             db.session.add(c_old)
             #db.session.commit()
-           
-    # add post tags to database        
+
+    # add post tags to database
     def tag_to_db(self):
         '''
         split the input tags to seperated tag,
@@ -348,13 +345,13 @@ class Posts(db.Model):
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
                     tag=Tags(tag=_tg)
-                    tag.posts.append(self)  
+                    tag.posts.append(self)
                     db.session.add(tag)
                 else:
-                    _tag.posts.append(self)  
+                    _tag.posts.append(self)
                     db.session.add(_tag)
         #db.session.commit()
-    
+
     #check if can be edited
     @property
     def uneditable(self):
@@ -362,8 +359,8 @@ class Posts(db.Model):
             user_id=current_user.id,
             disabled=False
         ).first()
-        if (current_user != self.creator and 
-                contribute is None and 
+        if (current_user != self.creator and
+                contribute is None and
                 self.editable != 'Everyone'):
             return True
         else:
@@ -380,7 +377,7 @@ class Posts(db.Model):
         db.session.add(self)
         # reset eidt_start to None, after edit done
         db.session.commit()
-    def force_unlock(self, start=None, timeout=2400): 
+    def force_unlock(self, start=None, timeout=2400):
         # sometime user forget submit, need to force unlock
         start = start or self.edit_start
         if start:
@@ -415,14 +412,14 @@ class Posts(db.Model):
         #db.session.commit()
 
     def cal_vote(self,n=None,m=None):
-        n = n or self.starers.count() 
+        n = n or self.starers.count()
         m = m or self.challengers.count() * 2
         self.vote = n+m
         db.session.add(self)
-        #db.session.commit() 
+        #db.session.commit()
 
-    # set logo cover of  post 
-    @property    
+    # set logo cover of  post
+    @property
     def post_cover(self):
         n = self.items.count()
         if n ==0:
@@ -478,26 +475,26 @@ class Items(db.Model):
     price = db.Column(db.String(128))
     details = db.Column(db.Text)
     itag_str = db.Column(db.String(512))
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
 
     # 1 to n with Comments
     comments = db.relationship(
-        'Comments',backref='item',lazy='dynamic') 
+        'Comments',backref='item',lazy='dynamic')
     # 1 to n with reviews
     reviews = db.relationship(
-        'Reviews',backref='item',lazy='dynamic') 
+        'Reviews',backref='item',lazy='dynamic')
     # 1 to n with Clips
     clips = db.relationship(
-        'Clips',backref='item',lazy='dynamic') 
+        'Clips',backref='item',lazy='dynamic')
     # 1 to n with Events
     events = db.relationship(
-        'Events',backref='item',lazy='dynamic') 
+        'Events',backref='item',lazy='dynamic')
 
     # n2n with Posts
     posts = db.relationship(
-        'Collect',                                   
+        'Collect',
         foreign_keys=[Collect.item_id],
         backref=db.backref('item', lazy='joined'),
         lazy='dynamic',
@@ -517,8 +514,8 @@ class Items(db.Model):
         lazy='dynamic',
         cascade='all, delete-orphan')
 
-    # set default item cover 
-    @property    
+    # set default item cover
+    @property
     def item_cover(self):
         if self.cover is None or not self.cover.strip():
             if self.cate == 'Online':
@@ -532,7 +529,7 @@ class Items(db.Model):
             if self.cate == 'Other':
                 return url_for('static', filename='pic/other.svg')
 
-    # add item tags to database        
+    # add item tags to database
     def itag_to_db(self):
         '''
         split the input tags to seperated tag,
@@ -548,10 +545,10 @@ class Items(db.Model):
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
                     tag=Tags(tag=_tg)
-                    tag.items.append(self)  
+                    tag.items.append(self)
                     db.session.add(tag)
                 elif _tag.items.filter_by(id=self.id).first() is None:
-                    _tag.items.append(self)  
+                    _tag.items.append(self)
                     db.session.add(_tag)
         #db.session.commit()
 
@@ -575,7 +572,7 @@ class Items(db.Model):
                 )
                 db.session.add(byline)
         #db.session.commit()
-    
+
     def __repr__(self):
         return '<Items %r>' % self.title
 
@@ -584,29 +581,29 @@ class Items(db.Model):
 class Clan(db.Model):
     __tablename__ = 'clan'
     parent_tag_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey('tags.id'),
         primary_key=True)
     child_tag_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey('tags.id'),
         primary_key=True)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
 
 class Tags(db.Model):
     __table_name__ = "tags"
     id = db.Column(db.Integer, primary_key=True)
-    tag = db.Column(db.String(128), nullable=False, unique=True)  
+    tag = db.Column(db.String(128), nullable=False, unique=True)
     descript = db.Column(db.String(512))
 
     # 1 to n with Events
     events = db.relationship(
-        'Events',backref='tag',lazy='dynamic') 
+        'Events',backref='tag',lazy='dynamic')
 
     # n2n with users
     favers = db.relationship(
-        'Fav',       
+        'Fav',
         foreign_keys=[Fav.tag_id],
         backref=db.backref('fav_tag',lazy='joined'),
         lazy='dynamic',
@@ -614,23 +611,23 @@ class Tags(db.Model):
 
     # simple n2n relationship with Posts
     posts = db.relationship(
-        'Posts',      
+        'Posts',
         secondary=tag_post,
         backref=db.backref('tags', lazy='joined'),
         lazy='dynamic')
     # simple n2n relationship with items
     items = db.relationship(
-        'Items',      
+        'Items',
         secondary=tag_item,
         backref=db.backref('itags', lazy='joined'),
         lazy='dynamic')
     # simple n2n relationship with demands
     demands = db.relationship(
-        'Demands',      
+        'Demands',
         secondary=tag_demand,
         backref=db.backref('dtags', lazy='joined'),
         lazy='dynamic')
-    
+
     # n2n with self
     parent_tags = db.relationship(
         'Clan',
@@ -644,7 +641,7 @@ class Tags(db.Model):
         backref=db.backref('parent_tag', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-    
+
     def parent_is(self, tag):
         return self.parent_tags.filter_by(
             parent_tag_id=tag.id).first() is not None
@@ -660,23 +657,23 @@ class Tags(db.Model):
     @cache.memoize()
     def get_tags():
         return Tags.query.order_by(db.func.rand()).limit(20).all()
-    
+
     def __repr__(self):
         return '<Tags %r>' % self.tag
 
 
-# helper Model for Reply comments 
+# helper Model for Reply comments
 class Reply(db.Model):
     __tablename__ = 'reply'
     parent_commt_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey('comments.id'),
         primary_key=True)
     child_commt_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey('comments.id'),
         primary_key=True)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
 
 class Comments(db.Model):
@@ -686,30 +683,30 @@ class Comments(db.Model):
     body = db.Column(db.Text, nullable=False)
     body_html = db.Column(db.Text)
     vote = db.Column(db.Integer,default=1)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
-    
+
     #1 to n with Events
     events = db.relationship(
-        'Events',backref='comment',lazy='dynamic') 
+        'Events',backref='comment',lazy='dynamic')
 
     # n to 1 with Users
     creator_id = db.Column(
         db.Integer, db.ForeignKey("users.id")
-    ) 
-    # n to 1 with Posts 
+    )
+    # n to 1 with Posts
     post_id = db.Column(
         db.Integer, db.ForeignKey("posts.id")
-    )  
+    )
     # n to 1 with Items
     item_id = db.Column(
         db.Integer, db.ForeignKey("items.id")
-    )  
+    )
     # n to 1 with Reviews
     review_id = db.Column(
         db.Integer, db.ForeignKey("reviews.id")
-    )  
+    )
     # n to 1 with demands
     demand_id = db.Column(
         db.Integer, db.ForeignKey("demands.id")
@@ -728,7 +725,7 @@ class Comments(db.Model):
         backref=db.backref('parent_commt', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-                                
+
     def reply(self, commt):
         r = Reply(parent_commt=self, child_commt=commt)
         db.session.add(r)
@@ -738,7 +735,7 @@ class Comments(db.Model):
     def on_changed_body(target, value, oldvalue, initiator):
         target.body_html = bleach.linkify(bleach.clean(
             markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True)) 
+            tags=allowed_tags, strip=True))
 
     def __repr__(self):
         return '<Coments %r>' % self.body
@@ -753,7 +750,7 @@ class Reviews(db.Model):
     body = db.Column(db.Text, nullable=False)
     body_html = db.Column(db.Text)
     vote = db.Column(db.Integer,default=1)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
 
@@ -762,12 +759,12 @@ class Reviews(db.Model):
         'Comments',backref='review',lazy='dynamic')
     # 1 to n with Events
     events = db.relationship(
-        'Events',backref='review',lazy='dynamic') 
-    
+        'Events',backref='review',lazy='dynamic')
+
     # n to 1 with Users
     creator_id = db.Column(
         db.Integer, db.ForeignKey("users.id")
-    )  
+    )
     # n to 1 with Items
     item_id = db.Column(
         db.Integer, db.ForeignKey("items.id")
@@ -775,7 +772,7 @@ class Reviews(db.Model):
 
     # n2n with Users for vote
     voters = db.relationship(
-        'Rvote',                              
+        'Rvote',
         foreign_keys=[Rvote.review_id],
         backref=db.backref('vote_review', lazy='joined'),
         lazy='dynamic',
@@ -785,8 +782,8 @@ class Reviews(db.Model):
     def on_changed_body(target, value, oldvalue, initiator):
         target.body_html = bleach.linkify(bleach.clean(
             markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True))    
-    
+            tags=allowed_tags, strip=True))
+
     def __repr__(self):
         return '<Reviews %r>' % self.heading
 
@@ -799,18 +796,18 @@ class Clips(db.Model):
     body = db.Column(db.Text, nullable=False)
     body_html = db.Column(db.Text)
     vote = db.Column(db.Integer,default=1)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
 
     # 1 to n with Events
     events = db.relationship(
-        'Events',backref='clip',lazy='dynamic') 
-    
+        'Events',backref='clip',lazy='dynamic')
+
     # n to 1   with Users
     creator_id = db.Column(
         db.Integer, db.ForeignKey("users.id")
-    )  
+    )
     # n to 1   with Items
     item_id = db.Column(
         db.Integer, db.ForeignKey("items.id")
@@ -820,8 +817,8 @@ class Clips(db.Model):
     def on_changed_body(target, value, oldvalue, initiator):
         target.body_html = bleach.linkify(bleach.clean(
             markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True)) 
-    
+            tags=allowed_tags, strip=True))
+
     def __repr__(self):
         return '<Clips %r>' % self.body
 
@@ -834,40 +831,40 @@ class Demands(db.Model):
     body = db.Column(db.Text, nullable=False)
     vote = db.Column(db.Integer,default=1)
     dtag_str = db.Column(db.String(512))
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
 
     # 1 to n with Comments
     comments = db.relationship(
-        'Comments',backref='demand',lazy='dynamic') 
+        'Comments',backref='demand',lazy='dynamic')
     # 1 to n with Events
     events = db.relationship(
-        'Events',backref='demand',lazy='dynamic') 
+        'Events',backref='demand',lazy='dynamic')
 
     # n to 1 relation with Users
     requestor_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey("users.id")
     )
 
     # n2n with Posts
     posts = db.relationship(
-        'Respon',                              
+        'Respon',
         foreign_keys=[Respon.demand_id],
         backref=db.backref('demand', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Users for vote
     voters = db.relationship(
-        'Dvote',                              
+        'Dvote',
         foreign_keys=[Dvote.demand_id],
         backref=db.backref('vote_demand', lazy='joined'),
         lazy='dynamic',
-        cascade='all, delete-orphan') 
+        cascade='all, delete-orphan')
 
     def dtag_to_db(self):
-      
+
         #_taglist = self.dtag_str.split(',') #
         _dtag_str = self.dtag_str
         _tagset = str_to_set(_dtag_str)
@@ -878,35 +875,35 @@ class Demands(db.Model):
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
                     tag=Tags(tag=_tg)
-                    tag.demands.append(self)  
+                    tag.demands.append(self)
                     db.session.add(tag)
                 else:
-                    _tag.demands.append(self)  
+                    _tag.demands.append(self)
                     db.session.add(_tag)
-        #db.session.commit() 
-    
+        #db.session.commit()
+
     def __repr__(self):
-        return '<Demands %r>' % self.body 
+        return '<Demands %r>' % self.body
 
 
 # helper Model for Messages n2n with self for dialog
 class Dialog(db.Model):
     __tablename__ = 'dialog'
     s_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey('messages.id'),
         primary_key=True)
     r_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey('messages.id'),
         primary_key=True)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                          default=datetime.utcnow)
 
 class Messages(db.Model):
     __table_name__ = "messages"
     id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.Text) # !! encrypt, to do 
+    content = db.Column(db.Text) # !! encrypt, to do
     status = db.Column(db.String(16)) #unread,read,s_del,r_del
 
     # n to 1 with Users for send and receive msg
@@ -965,23 +962,23 @@ class Roles(db.Model):
 
     # 1 to n with Users
     users = db.relationship(
-        'Users', backref='role', lazy='dynamic')  
+        'Users', backref='role', lazy='dynamic')
 
     # for add roles
     role_cases ={
         "limited":(Permission.SCFFFV, False),
-        "user":(Permission.SCFFFV | Permission.DEMAND | 
+        "user":(Permission.SCFFFV | Permission.DEMAND |
                 Permission.EDIT_ITEM | Permission.COMMENT |
-                Permission.POST | Permission.ADD_ITEM | 
-                Permission.REVIEW | Permission.ARTICLE, 
+                Permission.POST | Permission.ADD_ITEM |
+                Permission.REVIEW | Permission.ARTICLE,
                 True),
-        "moderator":(Permission.SCFFFV | Permission.DEMAND | 
+        "moderator":(Permission.SCFFFV | Permission.DEMAND |
                 Permission.EDIT_ITEM | Permission.COMMENT |
-                Permission.POST | Permission.ADD_ITEM | 
-                Permission.REVIEW | Permission.ARTICLE | 
+                Permission.POST | Permission.ADD_ITEM |
+                Permission.REVIEW | Permission.ARTICLE |
                 Permission.EDIT_POST | Permission.EDIT_TIPS |
-                Permission.MOD_CONTENT, False), 
-        "Admin":(0xffff, False)               
+                Permission.MOD_CONTENT, False),
+        "Admin":(0xffff, False)
     }
 
     @staticmethod
@@ -994,33 +991,33 @@ class Roles(db.Model):
             role.permissions = cases[r][0]
             role.default = cases[r][1]
             db.session.add(role)
-        db.session.commit()        
+        db.session.commit()
 
     def __repr__(self):
         return '<Roles %r>' % self.duty
 
-# helper Model for follow Users 
+# helper Model for follow Users
 class Follow(db.Model):
     __tablename__ = 'follow'
     follower_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey('users.id'),
         primary_key=True)
     followed_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey('users.id'),
         primary_key=True)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
 
 class Users(UserMixin, db.Model):
     __table_name__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-    auth_server = db.Column(db.String(32), nullable=False)      
-    auth_social_id = db.Column(db.String(64), nullable=False)   
-    name = db.Column(db.String(128), nullable=False)   
-    email = db.Column(db.String(128))   
-    avatar = db.Column(db.String(512))   
+    auth_server = db.Column(db.String(32), nullable=False)
+    auth_social_id = db.Column(db.String(64), nullable=False)
+    name = db.Column(db.String(128), nullable=False)
+    email = db.Column(db.String(128))
+    avatar = db.Column(db.String(512))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
     nickname = db.Column(db.String(64))
@@ -1034,36 +1031,36 @@ class Users(UserMixin, db.Model):
     # n to 1 with Roles
     role_id = db.Column(
         db.Integer, db.ForeignKey('roles.id')
-    )  
+    )
 
-    # 1 to n with Posts 
+    # 1 to n with Posts
     posts = db.relationship(
-        'Posts', backref='creator', lazy='dynamic')  
-    # 1 to n with Collect for Tips 
+        'Posts', backref='creator', lazy='dynamic')
+    # 1 to n with Collect for Tips
     tips = db.relationship(
-        'Collect', backref='tip_creator', lazy='dynamic')  
-    # 1 to n with Comments 
+        'Collect', backref='tip_creator', lazy='dynamic')
+    # 1 to n with Comments
     comments = db.relationship(
-        'Comments', backref='creator', lazy='dynamic')  
+        'Comments', backref='creator', lazy='dynamic')
     # 1 to n with Reviews
     reviews = db.relationship(
-        'Reviews', backref='creator', lazy='dynamic')   
+        'Reviews', backref='creator', lazy='dynamic')
     # 1 to n with Clips
     clips = db.relationship(
-        'Clips', backref='creator', lazy='dynamic')   
+        'Clips', backref='creator', lazy='dynamic')
     # 1 to n with Demands
     demands = db.relationship(
-        'Demands', backref='requestor', lazy='dynamic')  
-    # 1 to n with Events 
+        'Demands', backref='requestor', lazy='dynamic')
+    # 1 to n with Events
     events = db.relationship(
         'Events', backref='actor', lazy='dynamic')
-    # 1 to n with Articles 
+    # 1 to n with Articles
     articles = db.relationship(
         'Articles', backref='writer', lazy='dynamic')
     # 1 to n with Columns
     columns = db.relationship(
         'Columns', backref='host', lazy='dynamic')
-  
+
     # n2n with self for Messages
     # 1 to n with Messages for send
     send_messages = db.relationship(
@@ -1071,36 +1068,36 @@ class Users(UserMixin, db.Model):
         foreign_keys=[Messages.send_id],
         backref=db.backref('sender',lazy='joined'),
         lazy='dynamic',
-        cascade='all, delete-orphan') 
+        cascade='all, delete-orphan')
     # 1 to n with Messages for receive
     receive_messages = db.relationship(
         'Messages',
         foreign_keys=[Messages.receive_id],
         backref=db.backref('receiver',lazy='joined'),
         lazy='dynamic',
-        cascade='all, delete-orphan')  
+        cascade='all, delete-orphan')
     # n2n with Posts for contribute
     contribute_posts = db.relationship(
-        'Contribute',               
+        'Contribute',
         foreign_keys=[Contribute.user_id],
         backref=db.backref('contributor',lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Posts for star
     star_posts = db.relationship(
-        'Star',                         
+        'Star',
         foreign_keys=[Star.user_id],
         backref=db.backref('starer',lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Posts for challenge
     challenge_posts = db.relationship(
-        'Challenge',               
+        'Challenge',
         foreign_keys=[Challenge.user_id],
         backref=db.backref('challenger',lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-    # n2n with Items for flag 
+    # n2n with Items for flag
     flag_items = db.relationship(
         'Flag',
         foreign_keys=[Flag.user_id],
@@ -1131,19 +1128,19 @@ class Users(UserMixin, db.Model):
 
     # n2n with Demands for vote
     vote_demands = db.relationship(
-        'Dvote',                              
+        'Dvote',
         foreign_keys=[Dvote.user_id],
         backref=db.backref('voter', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Reviews for vote
     vote_reviews = db.relationship(
-        'Rvote',                              
+        'Rvote',
         foreign_keys=[Rvote.user_id],
         backref=db.backref('voter', lazy='joined'),
         lazy='dynamic',
-        cascade='all, delete-orphan')    
-    
+        cascade='all, delete-orphan')
+
     #init and set role
     def __init__(self, **kwargs):
         super(Users, self).__init__(**kwargs)
@@ -1188,7 +1185,7 @@ class Users(UserMixin, db.Model):
     def challenging(self, post):
         return self.challenge_posts.filter_by(
             post_id=post.id).first() is not None
-        
+
     #follow and unfollow user
     def follow(self, user):
         if not self.is_following(user):
@@ -1229,7 +1226,7 @@ class Users(UserMixin, db.Model):
             return "Working on"
         if fl.flag_label == 3:
             return "Have Done"
-    
+
     #fav and unfav a tag
     def fav(self, tag):
         if not self.faving(tag):
@@ -1244,7 +1241,7 @@ class Users(UserMixin, db.Model):
     def faving(self, tag):
         return self.fav_tags.filter_by(
             tag_id=tag.id).first() is not None
-    
+
     #save activities to db Events
     def set_event(self,action=None,post=None,item=None,comment=None,\
                        clip=None,review=None,demand=None,tag=None):
@@ -1264,7 +1261,7 @@ class Users(UserMixin, db.Model):
 
     def accomplished(self):
         pass
-    
+
     def cal_rank(self,p=None,t=None,r=None,a=None,c=None,d=None,m=None):
         m = m or self.mission*10
         p = p or self.posts.count()*5
@@ -1272,12 +1269,12 @@ class Users(UserMixin, db.Model):
         r = r or self.reviews.count()*5
         a = a or self.articles.count()*5
         c = c or self.clips.count()*2
-        d = d or self.demands.count() 
+        d = d or self.demands.count()
         self.rank = m+p+t+r+a+c+d
         db.session.add(self)
         #db.session.commit()
-    
-    #@cache.memoize(timeout=60*5)#cannot cache,due to n2n lazy opt? to tackle. 
+
+    #@cache.memoize(timeout=60*5)#cannot cache,due to n2n lazy opt? to tackle.
     def get_tag_set(self):
         # star posts' Tags
         tag_s = [p.star_post.tags for p in self.star_posts] #2D LIST
@@ -1290,7 +1287,7 @@ class Users(UserMixin, db.Model):
         #merge and unduplicated
         tag_all = sum(tag_s + tag_c + tag_fg, tag_fv)
         tag_set = set(tag_all)
-        
+
         return tag_set,tag_fv
 
     def __repr__(self):
@@ -1326,9 +1323,9 @@ login_manager.anonymous_user = AnonymousUser
 
 class Authors(db.Model):
     __table_name__ = "authors"
-    id = db.Column(db.Integer, primary_key=True)  
-    name = db.Column(db.String(128), unique=True, nullable=False) # uni maybe an issue  
-    photo = db.Column(db.String(256)) 
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), unique=True, nullable=False) # uni maybe an issue
+    photo = db.Column(db.String(256))
     link =  db.Column(db.String(256))
     nation = db.Column(db.String(64))
     language = db.Column(db.String(64))
@@ -1336,12 +1333,12 @@ class Authors(db.Model):
     birth = db.Column(db.Date)
     age = db.Column(db.String(8))
     about = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
 
     #n2n with items for byline
     items = db.relationship(
-        'Byline',                         
+        'Byline',
         foreign_keys=[Byline.author_id],
         backref=db.backref('by',lazy='joined'),
         lazy='dynamic',
@@ -1355,9 +1352,9 @@ class Events(db.Model):
     __table_name__ = "events"
     id = db.Column(db.Integer, primary_key=True)
     action = db.Column(db.String(32))
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
-
+    
     dict_action_content = {
         'create':'post',
         'alter':'post', #edit intro
@@ -1377,7 +1374,7 @@ class Events(db.Model):
         'working on':'item',
         'get done':'item'
     }
-    
+
     # n to 1 with Users and others for record activities
     #events - actor
     user_id =  db.Column(
@@ -1405,6 +1402,35 @@ class Events(db.Model):
         db.Integer, db.ForeignKey('tags.id')
     )
 
+    # get events , ##!! need to tacle some issue
+    @property
+    def action_content(self):
+        act = self.action
+        if act in ['create','alter','updates','update','modify','star','challenge']:
+            q=self.post
+            h=q.title if q else 'No title'
+            return ('post',q,h)
+        if act in ['edit','schedule','working on','get done']:
+            q=self.item
+            h=q.title if q else 'No title'
+            return ('item',q,h)
+        if act in ['add','endorse']:
+            q=self.review
+            h=q.heading if q else 'No title'
+            return ('review',q,h)
+        if act in ['fav','descript']:
+            q=self.tag
+            h=q.tag if q else 'No title'
+            return ('tag',q,h)
+        if act == 'request':
+            q=self.demand
+            h=q.body if q else 'No content'
+            return ('demand',q,h)
+        if act == 'excerpt':
+            q=self.clip
+            h=q.body if q else 'No content'
+            return ('myclips',current_user,h)
+
     def __repr__(self):
         return '<Events %r>' % (self.action + str(self.id))
 
@@ -1413,27 +1439,27 @@ class Articles(db.Model):
     __table_name__ = "articles"
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(256), nullable=False)
-    figure = db.Column(db.String(512)) 
+    figure = db.Column(db.String(512))
     body = db.Column(db.Text, nullable=False)
     body_html = db.Column(db.Text)
     vote = db.Column(db.Integer,default=1)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
-    renewal = db.Column(db.DateTime, 
+    renewal = db.Column(db.DateTime,
                           default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
-    
+
     # n to 1 with Users
     writer_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey("users.id")
     )
     # n to 1 with Columns
     column_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey("columns.id")
     )
-    
+
     def renew(self):
         self.renewal = datetime.utcnow()
         db.session.add(self)
@@ -1443,8 +1469,8 @@ class Articles(db.Model):
     def on_changed_body(target, value, oldvalue, initiator):
         target.body_html = bleach.linkify(bleach.clean(
             markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True)) 
-    
+            tags=allowed_tags, strip=True))
+
     def __repr__(self):
         return '<Articles %r>' % self.title
 
@@ -1456,21 +1482,21 @@ class Columns(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(256), nullable=False)
     intro = db.Column(db.Text)
-    figure = db.Column(db.String(512)) 
+    figure = db.Column(db.String(512))
     vote = db.Column(db.Integer,default=1)
-    timestamp = db.Column(db.DateTime, 
+    timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
-    
+
     # n to 1 with Users
     host_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey("users.id")
     )
 
-    # 1 to n with Articles 
+    # 1 to n with Articles
     articles = db.relationship(
         'Articles', backref='column', lazy='dynamic')
-        
+
     def __repr__(self):
         return '<Columns %r>' % self.title

@@ -281,9 +281,10 @@ def profile(id):
 @auth.route('/activity/<int:id>')
 def activity(id):
     user = Users.query.get_or_404(id) #user's id
-    pass
-
-
+    m = 10
+    evs = user.events.order_by(Events.timestamp.desc()).limit(m)
+    d_ev = {ev:ev.action_content for ev in evs}
+    return render_template('activity.html',user=user,d=d_ev)
 
 
 @auth.route('/editprofile', methods=['GET','POST'])

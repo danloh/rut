@@ -12,7 +12,7 @@
         <li class="list-group-item">
             <span class="badge">{{tag.posts.count()}}</span>
             <h3 class="list-group-item-heading" style="color:lightseagreen">{{tag.tag}}</h3><br>
-            <a class="list-group-item-text" href="{{url_for('main.tagcollect', id=tag.id)}}">
+            <a class="list-group-item-text" href="{{url_for('main.tag', id=tag.id)}}">
                 {{tag.descript or 'No More information, help add some description?'}}
             </a>
         </li>

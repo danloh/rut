@@ -816,7 +816,7 @@ def del_tips(id):
 
 
 @main.route('/tag/<int:id>')
-def tagcollect(id):
+def tag(id):
     # joined query should be here, per the tagname, return the lists
     _query = Tags.query 
     tag = _query.get_or_404(id)
@@ -832,7 +832,7 @@ def tagcollect(id):
 
     posts = tag.posts
     
-    return render_template('tagcollect.html',
+    return render_template('tag.html',
                            tag=tag, tags=tags, 
                            posts=posts, parent_tags=parent_tags)
 
@@ -862,7 +862,7 @@ def edit_tag(id):
         tag.parent(parent_tag)
         db.session.commit()
         
-        return redirect(url_for('.tagcollect', id=id))
+        return redirect(url_for('.tag', id=id))
     
     form.tag.data = tag.tag
     form.descript.data = tag.descript
