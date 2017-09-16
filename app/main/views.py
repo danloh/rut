@@ -125,7 +125,11 @@ def create(id=None):
 
 @main.route('/readuplist/<int:id>')
 def post(id):
-    post = Posts.query.get_or_404(id) 
+    post = Posts.query.get_or_404(id)
+
+    if post.disabled and current_user != post.creator:
+        return 'This Post was Disabled or Deleted'
+
     contribute = post.contributors.filter_by(
         user_id=current_user.id,
         disabled=False
@@ -399,10 +403,23 @@ def del_post(id):
                or The content is locked')
         abort(403)
     
-    db.session.delete(post)
+    post.disabled = True
+    db.session.add(post)
     db.session.commit()
 
     return redirect(url_for('.index'))
+
+@main.route('/recover/readuplist/<int:id>')
+@login_required
+def recover_post(id):
+    """recover Post by creator"""
+    post = Posts.query.get_or_404(id)  #post 's id
+
+    if current_user == post.creator and post.disabled:
+        post.disabled = False
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('.post',id=post.id))
 
 
 @main.route('/applycontributetolist/<int:id>')

@@ -33,7 +33,11 @@
 <!--list toolbar widget-->
 <div class="text-right" style="background-color:#f3f3f3">
     {% if current_user == post.creator %}
+    {% if post.disabled %}
+    <span><a href={{url_for('main.recover_post', id=post.id)}}>Recover</a></span>
+    {% else %}
     <span><a data-toggle="modal" href="#delpost">Delete</a></span>
+    {% endif %}
     &nbsp;&nbsp;||&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     {% endif %}
     

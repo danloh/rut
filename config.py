@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-basedir = os.path.abspath(os.path.dirname(__file__))
+#basedir = os.path.abspath(os.path.dirname(__file__))
 
 #base class for config
 class Config:
