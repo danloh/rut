@@ -7,7 +7,16 @@
 {% block content %}
 <div>
     <h4>Add Item to Readup List</h4>
-    <p>Add item&nbsp;<a href={{url_for('main.item', id=item.id)}}>{{item.title|truncate(50)}}</a>&nbsp;to a Selected list</p>
+    <p>Add item&nbsp;<a href={{url_for('main.item', id=item.id)}}>{{item.title|truncate(50)}}</a>&nbsp;to a Selected list. Or <button id="goback" class="btn-link">give up</button></p>
+    <!--script start-->
+    <script>
+    $(document).ready(function(){
+        $("#goback").click(function(){
+            window.open('/unlockselected/' + $("#selectedalist").val(),'_self');
+        });
+    });
+    </script>
+    <!--script end-->
 </div>
 <hr>
 <div>

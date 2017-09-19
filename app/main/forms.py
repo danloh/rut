@@ -121,9 +121,9 @@ class EditTipsForm(FlaskForm):
 
 class CheckItemForm(FlaskForm): 
     checker = StringField(
-        'URL or UID/ISBN-13 to Fetch Information of Item To-be-Added',
+        'URL to Fetch Item Information or UID/ISBN-13 to Check existing Item',
         validators = [DataRequired()],
-        render_kw={"placeholder":"Required, Please input a valid url or UID/ISBN-13"})
+        render_kw={"placeholder":"Required, Please input a valid URL or ISBN-13"})
     submit = SubmitField('Fetch')
 
 
@@ -156,10 +156,20 @@ class ItemForm(FlaskForm):
         render_kw={"placeholder":"Required; \nMarkdown Support, Preview Below"})
     submit = SubmitField('submit')
 
+class SelectDoneForm(FlaskForm):
+    selectdone = SelectField(
+        '*Select one of your have-done items to add to List',
+        validators = [DataRequired()],
+        coerce=int)
+    tips = PageDownField(
+        '*The Tips--Required : Tell Why You Add this Item', 
+        validators = [DataRequired()],
+        render_kw={"placeholder":"Required; \nMarkdown Support, Preview Below"})
+    submit = SubmitField('Submit')
+
 class SelectAddForm(FlaskForm):
-    
     selectlist = SelectField(
-        '*Select a Post You Will Add item',
+        '*Select a List You Will Add item to',
         validators = [DataRequired()],
         coerce=int)
     tips = PageDownField(

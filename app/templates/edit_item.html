@@ -2,12 +2,12 @@
 {% import "bootstrap/wtf.html" as wtf %}
 
 
-{% block title %} Add More Information for Item {% endblock title %}
+{% block title %} Add Information for Item {% endblock title %}
 
 {% block content %}
 <div>
-    <h4>Add More Information </h4>
-    <p>for Item&nbsp;&nbsp;<a href={{url_for('main.item', id=item.id)}}>{{item.title|truncate(50)}}</a></p>
+    <h4>Add Information </h4>
+    <p>{% if item %}for Item&nbsp;&nbsp;<a href={{url_for('main.item', id=item.id)}}>{{item.title|truncate(50)}}</a>{% else %}for new item{% endif %}</p>
 </div>
 <hr>
 <div>

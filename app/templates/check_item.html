@@ -2,14 +2,14 @@
 {% import "bootstrap/wtf.html" as wtf %}
 
 
-{% block title %} Check Item {% endblock title %}
+{% block title %} Fetch Item Info {% endblock title %}
 
 {% block content %}
 <div>
     <h4>Fetch Item information before adding manually</h4>
-    <p>for Readup List&nbsp;&nbsp;
-        <a href={{url_for('main.goback_edit', id=post.id)}} title="Go back will give up edit">{{post.title|truncate(50)}}</a>
-    </p>
+    {% if post %}
+    <p>for Readup List&nbsp;&nbsp;<a href={{url_for('main.goback_edit', id=post.id)}} title="Go back will give up edit">{{post.title|truncate(50)}}</a></p>
+    {% endif %}
 </div>
 <hr>
 <div>
@@ -28,17 +28,14 @@
     });
     </script>
     <br>
-    <h4>or You can 
-        <a href={{url_for('main.check_to_add',id=post.id)}}>
-            add the item information manually
-        </a> 
+    <h4>or You can
+        {% if post %}<a href={{url_for('main.check_to_add',id=post.id)}}> {% else %}<a href={{url_for('main.new_item')}}>{% endif %} add the item information manually</a>
     </h4>
 </div>
 <hr>
 <h5>Tips</h5>
 <p>
-1. Here you can input UID/ISBN-13 to query item information from database 
-or a valid url to fetch information via a spider;
+1. Here you can input ISBN-13 to query item information from database or a valid url to fetch information via a spider;
 <br>
 2. Support <b style="color:darkorange">ISBN-13</b> and <b style="color:darkorange">Amazon url</b> for Book. 
 Limited support <b style="color:orange">Coursera url, edx url</b>, 

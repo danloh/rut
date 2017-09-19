@@ -395,10 +395,10 @@ class Posts(db.Model):
         else:
             return False
     def mod_locked(self):
-        # GET to  render edit tpl
+        # GET: lock and  render edit tpl, POST: unlock
         if request.method == "GET":
             if self.check_locked():
-                flash('This Content is in Editing, to Avoid Conflict, Please Try later')
+                flash('This Content is in Editing, to Avoid Conflict, Please Try later, up to 40min')
                 return True
             # set edit_start as indict editing
             self.lock()
