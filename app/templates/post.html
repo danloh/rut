@@ -1,7 +1,6 @@
 {% extends 'layout1.html' %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-
 {% block title %} {{post.title}} {% endblock title %}
 
 {% block content %}
@@ -114,7 +113,6 @@
     });
     </script>
     <!--script end-->
-
 </div>
 <hr>
 <!--items included in list-->
@@ -145,10 +143,16 @@
         </div>   
     </div>
     {% endfor %}
-    <br>
-    <!--share widgets-->
-    {% include '_share.html' %}
 </div>
+<!--show epilog -->
+<div style="font-size:medium">
+    {% set post_epilog = post.epilog_html or post.epilog %}
+    {% if post_epilog %} {{post_epilog|safe}} {% endif %}
+    {% if display %} <a style="font-size:x-small" href={{url_for('main.edit_epilog',id=post.id)}}>...Edit Epilog</a> {% endif %}
+</div>
+<hr>
+<!--share widgets-->
+{% include '_share.html' %}
 <!--show comments -->
 <div>
     <a href={{url_for('main.add_post_comment',id=post.id)}}>Post your comment</a>
@@ -184,9 +188,6 @@
 </div>
 <!-- end Modal for delete list confirm -->
 
-<!--reserved-->
-<div>
-</div>
 {% endblock content %}
 
 {% block rightside %}
@@ -197,7 +198,7 @@
     <div class="panel-body">
         <blockquote>{{post.credential}}</blockquote>
         <hr>
-        <mark>More by the Creator</mark>
+        <mark>Also by the Creator</mark>
         <hr>
         {% for other in posts %}
         -- <a href={{url_for('main.post', id=other.id)}}>{{other.title|truncate(60)}}</a><br>

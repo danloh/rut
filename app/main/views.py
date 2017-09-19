@@ -7,7 +7,7 @@ from flask import g, render_template, redirect, url_for, current_app,\
 from flask_login import login_required, current_user
 from . import main
 from .forms import PostForm, ItemForm, EditItemForm, SelectAddForm,\
-                   TagForm, EditPostForm, EditTipsForm, CommentForm,\
+                   TagForm, EditPostForm, EpilogForm, EditTipsForm, CommentForm,\
                    TagStrForm, ClipForm, ArticleForm, SelectDoneForm,\
                    DeadlineForm, DemandForm, ReviewForm, CheckItemForm
 from .. import db
@@ -454,6 +454,27 @@ def goback_edit(id):
     post = Posts.query.get_or_404(id)
     post.unlock() ##!!
     return redirect(url_for('.post',id=id))
+
+@main.route('/editepilogforreaduplist/<int:id>',methods=['GET','POST'])
+@login_required
+def edit_epilog(id):
+    post = Posts.query.get_or_404(id)
+    if post.uneditable:
+        flash('You do not have the permission to edit this content')
+        abort(403)
+    #Should be locked during editing and unlock when POST submit
+    if post.editable != "Creator":
+        if post.mod_locked():
+            return redirect(url_for('.post',id=id))
+    form = EpilogForm()
+    if form.validate_on_submit():
+        post.epilog = form.epilog.data
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('.post',id=id))
+
+    form.epilog.data = post.epilog
+    return render_template('edit_epilog.html',form=form,post=post)
 
 
 @main.route('/del/readuplist/<int:id>')

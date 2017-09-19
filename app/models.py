@@ -223,6 +223,8 @@ class Posts(db.Model):
     credential = db.Column(db.String(256))
     rating = db.Column(db.String(32))
     tag_str = db.Column(db.String(256), default="42")
+    epilog = db.Column(db.Text)
+    epilog_html = db.Column(db.Text)
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
     renewal = db.Column(db.DateTime,
@@ -442,10 +444,15 @@ class Posts(db.Model):
 
         return posts_select
 
-
+    ## markdown to html
     @staticmethod
     def on_changed_intro(target, value, oldvalue, initiator):
         target.intro_html = bleach.linkify(bleach.clean(
+            markdown(value, output_format='html'),
+            tags=allowed_tags, strip=True))
+    @staticmethod
+    def on_changed_epilog(target, value, oldvalue, initiator):
+        target.epilog_html = bleach.linkify(bleach.clean(
             markdown(value, output_format='html'),
             tags=allowed_tags, strip=True))
 
@@ -453,7 +460,7 @@ class Posts(db.Model):
         return '<Posts %r>' % self.title
 
 db.event.listen(Posts.intro, 'set', Posts.on_changed_intro)
-
+db.event.listen(Posts.epilog, 'set', Posts.on_changed_epilog)
 
 class Items(db.Model):
     __table_name__ = 'items'

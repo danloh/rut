@@ -83,6 +83,12 @@ class PostForm(FlaskForm):
                  ('Everyone','Everyone')])
     submit = SubmitField('submit')
 
+class EpilogForm(FlaskForm):
+    epilog = PageDownField('Add/Edit Epilog for List',
+        validators = [DataRequired()],
+        render_kw={"placeholder":"Markdown Support, Preview Below"})
+    submit = SubmitField('Submit')
+
 class EditPostForm(FlaskForm):
     title = StringField(
         '*Title', 

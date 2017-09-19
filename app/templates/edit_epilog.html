@@ -1,25 +1,17 @@
 {% extends "layout0.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %} Post a Comment {% endblock title %}
+{% block title %} Edit Epilog for Readup List {% endblock title %}
 
 {% block content %}
 <div>
-    <h4>Post Your Comment</h4>
-    <p>
-        {% if mark %}
-        On item &nbsp; 
-        <a href={{url_for('main.item',id=onsth.id)}}>{{onsth.title|truncate(45)}}</a>
-        {% else %}
-        On Readup List &nbsp; 
-        <a href={{url_for('main.post',id=onsth.id)}}>{{onsth.title|truncate(45)}}</a>
-        {% endif %}
-    </p>
+    <h4>Edit Epilog</h4>
+    <p>For Readup List &nbsp; <a href={{url_for('main.goback_edit', id=post.id)}} title="Go back will give up edit">{{post.title|truncate(50)}}</a></p>
     <hr>
     <div>
         <form class="form" method="POST">
             {{form.hidden_tag()}}
-            {{wtf.form_field(form.body)}}
+            {{wtf.form_field(form.epilog)}}
             {{wtf.form_field(form.submit)}}
         </form>
     </div>
