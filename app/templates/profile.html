@@ -92,7 +92,7 @@
     {% for post in posts %}
         {% include '_post_list.html' %}
     {% else %}
-        <p>Have not created any Article.&nbsp;
+        <p>Have not created any List.&nbsp;
             {% if current_user == user %}
             Start to <a href="{{url_for('main.create')}}">Create Now</a>
             {% endif %}
@@ -259,14 +259,14 @@
             <br>
             <b style="color:cadetblue"> From</b> &nbsp;{{user.location or 'Unknown' }}
             <p> Joined: {{moment(user.timestamp).format("MMM YYYY")}}</p>
-            ~~ &nbsp;<a href={{user.links or url_for('auth.profile',id=user.id ,_anchor='created')}} target="_blank">... More ...</a>&nbsp; ~~
+            ~~ &nbsp;<a href={{user.links or url_for('main.profile',id=user.id ,_anchor='created')}} target="_blank">... More ...</a>&nbsp; ~~
         </div>
     </div>
     <br>
     <div style="background-color:aliceblue; padding:4px;">
         <b style="color:cadetblue"> About Me</b><br>
         {{user.about_me or ' no bio yet'}}&nbsp; ... 
-        {% if current_user == user %}<a href={{url_for('auth.edit_profile')}}>edit</a>{% endif %}
+        {% if current_user == user %}<a href={{url_for('main.edit_profile')}}>edit</a>{% endif %}
     </div>
 </div>
 {% endblock rightside %}

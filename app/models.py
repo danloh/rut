@@ -422,6 +422,7 @@ class Posts(db.Model):
 
     # set logo cover of  post
     @property
+    @cache.memoize()
     def post_cover(self):
         n = self.items.count()
         if n ==0:
@@ -990,7 +991,7 @@ class Roles(db.Model):
 
     @staticmethod
     def add_role(cases=role_cases):
-        '''receive a dict like role_cases, add role to db'''
+        """receive a dict like role_cases, add role to db"""
         for r in cases:
             role = Roles.query.filter_by(duty=r).first()
             if role is None:

@@ -8,7 +8,7 @@
     <div class="media-body">
         <div style="background-color:whitesmoke">
             <mark>{{loop.revindex}}</mark>&nbsp;|&nbsp;By 
-            <a href={{url_for('auth.profile', id=commt.creator.id)}}>
+            <a href={{url_for('main.profile', id=commt.creator.id)}}>
                 {{commt.creator.nickname or commt.creator.name}}
             </a> 
             {% if commt.post %}

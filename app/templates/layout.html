@@ -46,7 +46,7 @@
 					<a class="btn btn-success navbar-btn" href="{{url_for('main.create')}}">
 						<b style="color:white">Create Now</b>
 					</a>
-					<a class="btn navbar-btn" href="{{url_for('auth.profile',id=current_user.id)}}">
+					<a class="btn navbar-btn" href="{{url_for('main.profile',id=current_user.id)}}">
 						<img src="{{current_user.avatar or url_for('static', filename='pic/profile.svg')}}" \
 						style="width:24px;height:22px" alt="Profile" class="img-circle" \
 						title="{{current_user.nickname or current_user.name}}">
@@ -56,7 +56,7 @@
 					</button>
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 					<ul class="dropdown-menu" role="menu">
-						<li><a href={{url_for('auth.edit_profile')}}>Edit Profile</a></li>
+						<li><a href={{url_for('main.edit_profile')}}>Edit Profile</a></li>
 						<li class="divider"></li>
 						<li><a href={{url_for('auth.logout')}}>Logout</a></li>
 					</ul>
@@ -203,4 +203,3 @@
 	</body>
 
 </html>
-

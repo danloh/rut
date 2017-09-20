@@ -7,7 +7,7 @@
 
 <div>
     <h4>See More comments by 
-        <a href={{url_for('auth.profile', id=user.id)}}>{{user.nickname or user.name}}</a>
+        <a href={{url_for('main.profile', id=user.id)}}>{{user.nickname or user.name}}</a>
     </h4>
     <hr>
     {% set commts = comments %}

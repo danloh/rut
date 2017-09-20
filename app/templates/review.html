@@ -8,7 +8,7 @@
 
 <div>  
     <h3>{{review.heading}}</h3>
-    <p> Created by <a href={{url_for('auth.profile', id=review.creator.id)}}>
+    <p> Created by <a href={{url_for('main.profile', id=review.creator.id)}}>
         {{review.creator.nickname or review.creator.name}}</a>
         for item
         <a href={{url_for('main.item', id=review.item.id)}}>

@@ -5,11 +5,12 @@ import re
 from flask import g, render_template, redirect, url_for, current_app,\
                   request, session, flash, make_response, abort
 from flask_login import login_required, current_user
+from flask_sqlalchemy import get_debug_queries
 from . import main
 from .forms import PostForm, ItemForm, EditItemForm, SelectAddForm,\
                    TagForm, EditPostForm, EpilogForm, EditTipsForm, CommentForm,\
                    TagStrForm, ClipForm, ArticleForm, SelectDoneForm,\
-                   DeadlineForm, DemandForm, ReviewForm, CheckItemForm
+                   DeadlineForm, DemandForm, ReviewForm, CheckItemForm, EditProfileForm
 from .. import db
 from ..models import Posts, Items, Collect, Tags, Clan, Fav, tag_post, tag_item,\
                      Comments, Reviews, Clips, Demands, tag_demand, Reply,\
@@ -19,6 +20,16 @@ from ..models import Posts, Items, Collect, Tags, Clan, Fav, tag_post, tag_item,
 from ..decorators import admin_required, permission_required
 from ..utils import split_str, str_to_dict, str_to_set
 from ..bot import spider
+
+
+@main.after_app_request
+def after_request(response):
+    for query in get_debug_queries():
+        if query.duration >= current_app.config['SLOW_DB_QUERY_TIME']:
+            current_app.logger.warning(
+                'Slow query: %s\nParameters: %s\nDuration: %fs\nContext: %s\n'
+                % (query.statement, query.parameters, query.duration, query.context))
+    return response
 
 
 @main.route('/')
@@ -1422,7 +1433,7 @@ def del_comment(id):
         db.session.delete(commt)
         db.session.commit()
 
-    return redirect(url_for('auth.profile', id=user_id))
+    return redirect(url_for('main.profile', id=user_id))
 
 ## Moderate comments
 @main.route('/disablecomment/<int:id>')  
@@ -1697,10 +1708,10 @@ def follow(id):
         return redirect(url_for('.index'))
     if current_user.is_following(user):
         flash('You are already following this user.')
-        return redirect(url_for('auth.profile', id=id))
+        return redirect(url_for('main.profile', id=id))
     current_user.follow(user)
     db.session.commit()
-    return redirect(url_for('auth.profile', id=id))
+    return redirect(url_for('main.profile', id=id))
 
 @main.route('/unfollow/<id>')
 @login_required
@@ -1711,10 +1722,10 @@ def unfollow(id):
         return redirect(url_for('.index'))
     if not current_user.is_following(user):
         flash('You are not following this user.')
-        return redirect(url_for('auth.profile', id=id))
+        return redirect(url_for('main.profile', id=id))
     current_user.unfollow(user)
     db.session.commit()
-    return redirect(url_for('auth.profile', id=id))
+    return redirect(url_for('main.profile', id=id))
 
 ######################################################################
 #### start for follow Ajax ###########################################
@@ -1831,6 +1842,83 @@ def edit_article(id):
     form.body.data = article.body
 
     return render_template('write.html',form=form,article=article)
+
+
+@main.route('/profile/<id>')
+def profile(id):
+    user = Users.query.get_or_404(id)
+    m = current_app.config['ITEM_IN_PROFILE'] # the num for show more to paginate
+
+    #created list
+    post_query = user.posts.order_by(Posts.timestamp.desc())
+    post_count = post_query.count()
+    posts = post_query.limit(m)
+
+    #star lists
+    star_query = user.star_posts
+    star_count = star_query.count()
+    star_posts = [s.star_post for s in user.star_posts.limit(m)]
+    
+    # flag items
+    fl_items = user.flag_items
+    query_1 = fl_items.filter_by(flag_label=1)
+    count_1 = query_1.count()
+    query_2 = fl_items.filter_by(flag_label=2)
+    count_2 = query_2.count()
+    query_3 = fl_items.filter_by(flag_label=3)
+    count_3 = query_3.count()
+    todos = [i.flag_item for i in query_1.limit(m)]
+    doings = [i.flag_item for i in query_2.limit(m)]
+    dones = [i.flag_item for i in query_3.limit(m)]
+
+    # Reviews
+    review_query = user.reviews
+    review_count = review_query.count()
+    myreviews = review_query.limit(m)
+    
+    # comments
+    commt_query = user.comments
+    commt_count = commt_query.count()
+    mycomments = commt_query.limit(m)
+
+    return render_template('profile.html', m=m, user=user, 
+                count_1=count_1, count_2=count_2, count_3=count_3,
+                todos=todos, doings=doings, dones=dones, 
+                posts=posts, post_count=post_count,
+                star_posts=star_posts, star_count=star_count, 
+                mycomments=mycomments, commt_count=commt_count,
+                myreviews=myreviews, review_count=review_count)
+
+
+@main.route('/activity/<int:id>')
+def activity(id):
+    user = Users.query.get_or_404(id) #user's id
+    m = 10
+    evs = user.events.order_by(Events.timestamp.desc()).limit(m)
+    d_ev = {ev:ev.action_content for ev in evs}
+    return render_template('activity.html',user=user,d=d_ev)
+
+
+@main.route('/editprofile', methods=['GET','POST'])
+@login_required
+def edit_profile():
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        current_user.nickname = form.nickname.data
+        current_user.location = form.location.data
+        current_user.avatar = form.avatar.data
+        current_user.about_me = form.about.data
+        current_user.links = form.links.data
+        db.session.add(current_user)
+        db.session.commit()
+        flash('Your profile has been updated.')
+        return redirect(url_for('.profile', id=current_user.id))
+    form.nickname.data = current_user.nickname
+    form.location.data = current_user.location
+    form.avatar.data = current_user.avatar
+    form.about.data = current_user.about_me
+    form.links.data = current_user.links
+    return render_template('edit_profile.html', form=form)
 
 
 @main.route('/about')

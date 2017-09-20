@@ -1,7 +1,7 @@
 <!--include demand info in request-->
 <div class="text-left">
     Requested by 
-    <a href={{url_for('auth.profile', id=demand.requestor.id)}}>
+    <a href={{url_for('main.profile', id=demand.requestor.id)}}>
         {{demand.requestor.nickname or demand.requestor.name}}
     </a>   
 </div>

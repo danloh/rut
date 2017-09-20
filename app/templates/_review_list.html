@@ -9,7 +9,7 @@
         </h3>
         <div>
             <p style="background-color:whitesmoke">
-                By <a href={{url_for('auth.profile', id=review.creator.id)}}>
+                By <a href={{url_for('main.profile', id=review.creator.id)}}>
                     {{review.creator.nickname or review.creator.name}}
                 </a>
                 &nbsp;|&nbsp;{{moment(review.timestamp).format("MMM Do YYYY")}} 

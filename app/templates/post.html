@@ -17,7 +17,7 @@
         <span>&nbsp;&nbsp;<a href={{url_for('main.edit_tag_str',id=post.id)}}>Edit</a></span>
     </div>
     <h3>{{post.title}}</h3>
-    <p> Created by <a href={{url_for('auth.profile', id=post.creator.id)}}>
+    <p> Created by <a href={{url_for('main.profile', id=post.creator.id)}}>
         {{post.creator.nickname or post.creator.name}}</a> 
         &nbsp;|&nbsp;{{moment(post.timestamp).format("MMM Do YYYY")}}&nbsp;|&nbsp;
         including&nbsp; {{post.items.count()}}&nbsp; items
@@ -199,9 +199,10 @@
         <blockquote>{{post.credential}}</blockquote>
         <hr>
         <mark>Also by the Creator</mark>
-        <hr>
+        <br><br>
         {% for other in posts %}
         -- <a href={{url_for('main.post', id=other.id)}}>{{other.title|truncate(60)}}</a><br>
+        {% else %} No More
         {% endfor %}
 
         <div class="text-right">
@@ -239,7 +240,7 @@
     {% if contribute.disabled == False %}
     <div class="text-left">
         <span>   
-        <a href={{url_for('auth.profile', id=contribute.contributor.id)}}>
+        <a href={{url_for('main.profile', id=contribute.contributor.id)}}>
             {{ contribute.contributor.nickname or contribute.contributor.name }}
         </a>
         </span>   
@@ -258,7 +259,7 @@
     {% if contribute.disabled == True and current_user == post.creator %}
     <div>
         <span>   
-        <a href={{url_for('auth.profile', id=contribute.contributor.id)}}>
+        <a href={{url_for('main.profile', id=contribute.contributor.id)}}>
             {{ contribute.contributor.nickname or contribute.contributor.name }}
         </a>
         </span>

@@ -8,7 +8,7 @@
 
 <div>
     <h3>{{article.title}}</h3>
-    <p> By <a href={{url_for('auth.profile', id=article.writer.id)}}>
+    <p> By <a href={{url_for('main.profile', id=article.writer.id)}}>
         {{article.writer.nickname or article.writer.name}}</a>
         &nbsp;&nbsp;|&nbsp; 
         {{moment(article.timestamp).format("MMM Do YYYY")}}

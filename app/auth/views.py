@@ -4,11 +4,10 @@ from flask import g, render_template, redirect, request, session, url_for, flash
                   current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_oauthlib.client import OAuthException
+from config import Config as C
 from . import auth
 from .. import db, oauth, login_manager
-from config import Config as C
 from ..models import Users, Posts, Comments, Reviews, Clips, Messages, Dialog, Events 
-from .forms import EditProfileForm
 from ..safeurl import is_safe_url, get_redirect_target
 
 google = oauth.remote_app(
@@ -85,7 +84,7 @@ def set_user(server_name, me):
     ).first()
     if user is None:
         user = create_user(me, server_name)
-        return redirect(url_for('auth.edit_profile'))  #note!!
+        return redirect(url_for('main.edit_profile'))  #note!!
 
     login_user(user, remember=True)
     next_url = session.pop('next',None) or url_for('main.index')
@@ -114,7 +113,7 @@ def set_tw_user(server_name,resp):
         db.session.add(new_user)
         db.session.commit()
         login_user(new_user, remember=True)
-        return redirect(url_for('auth.edit_profile'))  #note!!
+        return redirect(url_for('main.edit_profile'))  #note!!
 
     login_user(user, remember=True)
     next_url = session.pop('next',None) or url_for('main.index')
@@ -230,80 +229,3 @@ def get_twitter_token():
 def logout():
     logout_user()
     return redirect(url_for('main.index'))  # note!!!
-
-
-@auth.route('/profile/<id>')
-def profile(id):
-    user = Users.query.get_or_404(id)
-    m = current_app.config['ITEM_IN_PROFILE'] # the num for show more to paginate
-
-    #created list
-    post_query = user.posts.order_by(Posts.timestamp.desc())
-    post_count = post_query.count()
-    posts = post_query.limit(m)
-
-    #star lists
-    star_query = user.star_posts
-    star_count = star_query.count()
-    star_posts = [s.star_post for s in user.star_posts.limit(m)]
-    
-    # flag items
-    fl_items = user.flag_items
-    query_1 = fl_items.filter_by(flag_label=1)
-    count_1 = query_1.count()
-    query_2 = fl_items.filter_by(flag_label=2)
-    count_2 = query_2.count()
-    query_3 = fl_items.filter_by(flag_label=3)
-    count_3 = query_3.count()
-    todos = [i.flag_item for i in query_1.limit(m)]
-    doings = [i.flag_item for i in query_2.limit(m)]
-    dones = [i.flag_item for i in query_3.limit(m)]
-
-    # Reviews
-    review_query = user.reviews
-    review_count = review_query.count()
-    myreviews = review_query.limit(m)
-    
-    # comments
-    commt_query = user.comments
-    commt_count = commt_query.count()
-    mycomments = commt_query.limit(m)
-
-    return render_template('profile.html', m=m, user=user, 
-                count_1=count_1, count_2=count_2, count_3=count_3,
-                todos=todos, doings=doings, dones=dones, 
-                posts=posts, post_count=post_count,
-                star_posts=star_posts, star_count=star_count, 
-                mycomments=mycomments, commt_count=commt_count,
-                myreviews=myreviews, review_count=review_count)
-
-
-@auth.route('/activity/<int:id>')
-def activity(id):
-    user = Users.query.get_or_404(id) #user's id
-    m = 10
-    evs = user.events.order_by(Events.timestamp.desc()).limit(m)
-    d_ev = {ev:ev.action_content for ev in evs}
-    return render_template('activity.html',user=user,d=d_ev)
-
-
-@auth.route('/editprofile', methods=['GET','POST'])
-@login_required
-def edit_profile():
-    form = EditProfileForm()
-    if form.validate_on_submit():
-        current_user.nickname = form.nickname.data
-        current_user.location = form.location.data
-        current_user.avatar = form.avatar.data
-        current_user.about_me = form.about.data
-        current_user.links = form.links.data
-        db.session.add(current_user)
-        db.session.commit()
-        flash('Your profile has been updated.')
-        return redirect(url_for('auth.profile', id=current_user.id))
-    form.nickname.data = current_user.nickname
-    form.location.data = current_user.location
-    form.avatar.data = current_user.avatar
-    form.about.data = current_user.about_me
-    form.links.data = current_user.links
-    return render_template('edit_profile.html', form=form)
