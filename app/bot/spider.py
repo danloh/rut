@@ -8,7 +8,6 @@ import lxml
 from bs4 import BeautifulSoup as bs
 from ..models import Items, Authors, Byline
 
-
 def random_uid():
     m=round(random.random()*10E8)
     uid = 'RUT'+str(m)
@@ -103,7 +102,7 @@ def parse_html_amazon(url):
     
     # init a dict to store info
     d = {}
-    d['res_url'] = url
+    d['res_url'] = url.split('/ref=')[0] #discard the ref part in amazon url
     if soup == "Error":
         return d
 
@@ -537,6 +536,3 @@ def start():
 
 if __name__ == "__main__":
     start()
-
-
-

@@ -233,6 +233,7 @@ class Posts(db.Model):
     edit_start = db.Column(db.DateTime,default=None)
     disabled = db.Column(db.Boolean)
     vote = db.Column(db.Integer, default=0)
+    refer = db.Column(db.String(32))  # to mark off some special list
 
     # n to 1 with Users
     creator_id = db.Column(

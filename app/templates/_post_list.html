@@ -1,4 +1,4 @@
-<!--include rulist list in-->
+<!--include list of readuplist in-->
 <div class="media">
     <div class="media-left media-middle">
         <img src="{{post.post_cover or url_for('static',filename='pic/dpc.svg')}}" class="media-object img-circle" style="width:80px; height:80px" alt="ListTheme">   
@@ -14,7 +14,7 @@
         <div>
             <a href={{url_for('main.post', id=post.id)}}>...more
             &nbsp;|&nbsp;including {{post.items.count()}} items
-            &nbsp;|&nbsp;by {{post.creator.nickname or post.creator.name}}
+            <!-- &nbsp;|&nbsp;by {{post.creator.nickname or post.creator.name}} -->
             </a>
         </div>    
     </div>

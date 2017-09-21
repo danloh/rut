@@ -1,5 +1,4 @@
 <!--include item info in-->
-
 <div class="row">
     <div class="col-md-3">
         {% set item_cover = item.cover or item.item_cover %}
@@ -11,12 +10,11 @@
                 {{item.title}}
             </a>
         </h4>
-        <p><mark>Included in</mark>&nbsp;:&nbsp;{{item.posts.count()}}<br>
-           <mark>Byline</mark>&nbsp;:&nbsp;{{item.author}}<br>
-           <mark>UID/ISBN</mark>&nbsp;:&nbsp;
-           <a {% block uidlink %}href={{url_for('main.item',id=item.id)}} {% endblock %}>
-               {{item.uid}}
-           </a>
+        <p>
+            <mark>Byline</mark>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;{{item.author}}<br>
+            <mark>Published</mark>&nbsp;:&nbsp;{{item.pub_date or '--' }}<br>
+            <mark>UID/ISBN</mark>&nbsp;:&nbsp;<a {% block uidlink %}href={{url_for('main.item',id=item.id)}} {% endblock %}>{{item.uid}}</a><br>
+            <mark>Included</mark>&nbsp;&nbsp;&nbsp;:&nbsp;{{item.posts.count()}}
         </p>
     </div>
     

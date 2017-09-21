@@ -6,6 +6,7 @@ from flask import g, render_template, redirect, url_for, current_app,\
                   request, session, flash, make_response, abort
 from flask_login import login_required, current_user
 from flask_sqlalchemy import get_debug_queries
+#from sqlalchemy import or_
 from . import main
 from .forms import PostForm, ItemForm, EditItemForm, SelectAddForm,\
                    TagForm, EditPostForm, EpilogForm, EditTipsForm, CommentForm,\
@@ -93,10 +94,30 @@ def collection():
                         pagination=pagination, tags=tag_fv[:20])
 
 
+@main.route('/famousrecommendation')
+def famous():
+    """recommendation from famous or experts"""
+    _query = Posts.query.filter(Posts.refer != None)
+    page = request.args.get('page', 1, type=int)
+    pagination = _query.order_by(Posts.renewal.desc()).\
+                        paginate(
+                            page,
+                            per_page=current_app.config['POST_PER_PAGE'],
+                            error_out=False
+                        )
+    posts = pagination.items
+    
+    tags = Tags.get_tags()
+
+    return render_template("famous.html",tags=tags,posts_ref=posts,
+                            pagination=pagination)
+
+
 @main.route('/create',methods=['GET','POST'])
 @main.route('/answer/<int:id>',methods=['GET','POST'])
+@main.route('/init/<string:ref>',methods=['GET','POST'])
 @login_required
-def create(id=None):
+def create(id=None,ref=None):
     """Create new Post or Answer a Request"""
     form = PostForm()
     if form.validate_on_submit():
@@ -109,6 +130,13 @@ def create(id=None):
             editable=form.editable.data,
             creator=current_user._get_current_object()
         )
+        # change for some special list
+        if ref:
+            post.editable = 'Everyone'
+            # add who recommend, tag in intro with ~~~
+            refr = form.intro.data.split('~~~')+[ref]
+            post.refer = refr[1].strip() or ref
+
         db.session.add(post)
 
         # link to demand if come from demand
@@ -194,13 +222,24 @@ def check_item(id):
     if form.validate_on_submit():
         checker = form.checker.data
         if reg_url.match(checker):
-            d = spider.parse_html(checker)
+            pure_url = checker.split('/ref=')[0] #for amazon url
+            # check if the url has been spidered, 
+            # if not, to spider
+            # if so,query item and add to post directly
+            lst = Items.query.filter(Items.res_url.in_((checker,pure_url))).all()
+            if lst:
+                item = lst[0]
+                return redirect(url_for('.item_to_post',item_id=item.id,post_id=id))
+            else:
+                d = spider.parse_html(checker)
+                session['d_pass'] = d       
+                return redirect(url_for('.add_item', id=id))
         else:
             uid=checker.replace('-','').replace(' ','')
             item=Items.query.filter_by(uid=uid).first()
-            d={}
+            #d={}
             if item is not None:
-                return redirect(url_for('.item_to_post',item_id=item.id,post_id=post.id))
+                return redirect(url_for('.item_to_post',item_id=item.id,post_id=id))
                 # d['title'] = item.title
                 # d['uid'] = item.uid
                 # d['res_url'] = item.res_url
@@ -211,10 +250,6 @@ def check_item(id):
                 flash("The item is not existing, You can put a URL then fetch info")
                 return redirect(url_for('.check_item', id=id))
 
-        session['d_pass'] = d        
-                
-        return redirect(url_for('.add_item', id=id))
-    
     return render_template('check_item.html',form=form,post=post)  
 
 @main.route('/checktoadditemfor/<int:id>')
@@ -406,9 +441,12 @@ def lock_select(id):
 @main.route('/unlockselected/<id>')  #in tpl
 @login_required
 def unlock_select(id):
-    post = Posts.query.get(int(id)) 
-    post.unlock() ## w/o submit,unlock, ### no permission control ,issue!!??
-    return redirect(url_for('.post', id=id))
+    if int(id)==0:
+        return redirect(url_for('.index'))
+    else:
+        post = Posts.query.get(int(id))
+        post.unlock() ## w/o submit,unlock, ### no permission control ,issue!!??
+        return redirect(url_for('.post', id=id))
 
 
 @main.route('/readuplist/edit/<int:id>',methods=['GET','POST'])
@@ -441,13 +479,20 @@ def edit_post(id):
         post.intro = form.intro.data
         post.rating = form.rating.data
         post.credential = form.credential.data
-        post.editable = form.editable.data
+        # keep some special list editable by everyone
+        if post.refer:
+            post.editable = 'Everyone'
+            # add/edit who recommend, tag in intro with ~~~
+            ref = form.intro.data.split('~~~')+['expert']
+            post.refer = ref[1].strip() or 'expert'
+        else:
+            post.editable = form.editable.data
         
         #update the renew timestamp
         post.renew()
         # save activity to db Events
         current_user.set_event(action='alter',post=post)
-        db.session.commit()    
+        db.session.commit()  
         
         return redirect(url_for('.post',id=id))
 
@@ -497,7 +542,8 @@ def del_post(id):
     if (current_user != post.creator or 
         post.starers.count() != 0 or 
         post.challengers.count() != 0 or 
-        post.contributors.count() != 0 or 
+        post.contributors.count() != 0 or
+        post.refer or 
         post.check_locked()):
         flash('You do not have the permissions to delete this content \
                or The content is locked')
@@ -817,16 +863,24 @@ def check_new_item():
     if form.validate_on_submit():
         checker = form.checker.data
         if reg_url.match(checker):
-            d = spider.parse_html(checker)
-            session['d_pass'] = d 
-            return redirect(url_for('.new_item'))
+            pure_url = checker.split('/ref=')[0] #for amazon url
+            # check if have been added
+            lst = Items.query.filter(Items.res_url.in_((checker,pure_url))).all()
+            if lst:
+                item = lst[0]
+                flash("The item has been added")
+                return redirect(url_for('.item',id=item.id))
+            else:
+                d = spider.parse_html(checker)
+                session['d_pass'] = d 
+                return redirect(url_for('.new_item'))
         else:
             uid=checker.replace('-','').replace(' ','')
             item=Items.query.filter_by(uid=uid).first()
             if item:
                 return redirect(url_for('.item',id=item.id))
             else:
-                flash("The item is not existing, You can add it: put a Valid Url like Amazon url then fetch info")
+                flash("The item is not existing, You can: put a Valid Url like Amazon url then fetch info")
                 return redirect(url_for('.check_new_item'))
 
     return render_template('check_item.html',form=form,post=None)
@@ -867,8 +921,8 @@ def new_item():
         #pop session
         session.pop('d_pass',None)
         
-        id=item.id
-        return redirect(url_for('.item', id=id))
+        flash("New Item added")
+        return redirect(url_for('.item', id=item.id))
     
     if d:
         _binding=d.get('binding')

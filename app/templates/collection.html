@@ -4,9 +4,7 @@
 
 {% block title %} Readup.Tips Collection - My Feeds {% endblock title %}
 
-{% block leftside %}
-{% include '_tag_side.html' %}
-{% endblock leftside %}
+{% block leftside %} {% include '_tag_side.html' %} {% endblock leftside %}
 
 {% block content %}
 
@@ -17,10 +15,9 @@
     <hr>
 </div>
 
-<div class="container-fluid">
+<div>
     {% for post in posts %}
     {% include '_post_list.html' %}
-
     {% endfor %}
 </div>
 
