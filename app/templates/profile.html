@@ -269,4 +269,7 @@
         {% if current_user == user %}<a href={{url_for('main.edit_profile')}}>edit</a>{% endif %}
     </div>
 </div>
+<hr>
+{% include 'activity.html' %}
+
 {% endblock rightside %}

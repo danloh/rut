@@ -133,6 +133,7 @@ def create(id=None,ref=None):
         # change for some special list
         if ref:
             post.editable = 'Everyone'
+            post.credential = '...Wiki-like collection'
             # add who recommend, tag in intro with ~~~
             refr = form.intro.data.split('~~~')+[ref]
             post.refer = refr[1].strip() or ref
@@ -482,6 +483,7 @@ def edit_post(id):
         # keep some special list editable by everyone
         if post.refer:
             post.editable = 'Everyone'
+            post.credential = '...Wiki-like collection'
             # add/edit who recommend, tag in intro with ~~~
             ref = form.intro.data.split('~~~')+['expert']
             post.refer = ref[1].strip() or 'expert'
@@ -1935,7 +1937,11 @@ def profile(id):
     commt_count = commt_query.count()
     mycomments = commt_query.limit(m)
 
-    return render_template('profile.html', m=m, user=user, 
+    # Activity
+    evs = user.events.order_by(Events.timestamp.desc()).limit(m)
+    d_ev = {ev:ev.action_content for ev in evs}
+
+    return render_template('profile.html', m=m, user=user, d=d_ev,
                 count_1=count_1, count_2=count_2, count_3=count_3,
                 todos=todos, doings=doings, dones=dones, 
                 posts=posts, post_count=post_count,

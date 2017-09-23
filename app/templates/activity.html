@@ -3,7 +3,7 @@
 <br>
 {% for ev, content in d.items() %}
 <div>
-    <b>{{ev.action|capitalize}}</b>&nbsp; 
+    {{ev.action|capitalize}}&nbsp; 
     <a href={{url_for('main.%s' % content[0], id=content[1].id)}}> {{content[2]|truncate(256)}}</a>
     <p style="color:darkolivegreen">{{moment(ev.timestamp).fromNow()}}</p>
 </div>
