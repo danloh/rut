@@ -1,8 +1,9 @@
 <!--include comments in-->
 <h4 style="color:cadetblue">What's happening .....</h4>
 <br>
-{% for ev, content in d.items() %}
+{% for ev in evs %}
 <div>
+    {% set content = ev.action_content %}
     {{ev.action|capitalize}}&nbsp; 
     <a href={{url_for('main.%s' % content[0], id=content[1].id)}}> {{content[2]|truncate(256)}}</a>
     <p style="color:darkolivegreen">{{moment(ev.timestamp).fromNow()}}</p>

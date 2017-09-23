@@ -2,7 +2,6 @@
 
 import random
 import re
-from collections import OrderedDict
 from flask import g, render_template, redirect, url_for, current_app,\
                   request, session, flash, make_response, abort
 from flask_login import login_required, current_user
@@ -1940,10 +1939,8 @@ def profile(id):
 
     # Activity
     evs = user.events.order_by(Events.timestamp.desc()).limit(m)
-    d_ev = {ev:ev.action_content for ev in evs}
-    od_ev = OrderedDict(d_ev) # 
 
-    return render_template('profile.html', m=m, user=user, d=od_ev,
+    return render_template('profile.html', m=m, user=user, evs=evs,
                 count_1=count_1, count_2=count_2, count_3=count_3,
                 todos=todos, doings=doings, dones=dones, 
                 posts=posts, post_count=post_count,
