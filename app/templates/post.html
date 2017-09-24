@@ -191,27 +191,26 @@
 
 {% block rightside %}
 
-<!-- about creator -->
+<!-- about creator credential -->
 <div class="panel panel-success">
     <div class="panel-heading">Creator's Credentials for Readup List</div>
-    <div class="panel-body">
-        <blockquote>{{post.credential}}</blockquote>
-        <hr>
-        <mark>Also by the Creator</mark>
-        <br><br>
-        {% for other in posts %}
-        -- <a href={{url_for('main.post', id=other.id)}}>{{other.title|truncate(60)}}</a><br>
-        {% else %} No More
-        {% endfor %}
-
-        <div class="text-right">
-            {% if posts_count > m %}
-            <a href={{url_for('main.morepost',id=post.creator.id)}} target="_blank"> -- More</a>
-            {% endif %}
-        </div>
+    <div class="panel-body"><p>{{post.credential or 'like sharing sth' }}</p></div>
+</div>
+<!-- show more_by -->
+{% if posts_count != 0  %}
+<div>
+    <mark>Also by the Creator</mark>
+    <br><br>
+    {% for other in posts %}
+    -- <a href={{url_for('main.post', id=other.id)}}>{{other.title|truncate(60)}}</a><br>
+    {% endfor %}
+    <div class="text-right">
+        {% if posts_count > m %}
+        <a href={{url_for('main.morepost',id=post.creator.id)}} target="_blank"> -- More</a>
+        {% endif %}
     </div>
 </div>
-
+{% endif %}
 <!-- link to demand -->
 {% if post.demands.count() > 0 %}
 <div>
@@ -236,11 +235,12 @@
     </div>
     <hr>
     {% for contribute in contributes %}
+    {% set contributor = contribute.contributor %}  
     {% if contribute.disabled == False %}
     <div class="text-left">
-        <span>   
-        <a href={{url_for('main.profile', id=contribute.contributor.id)}}>
-            {{ contribute.contributor.nickname or contribute.contributor.name }}
+        <span>
+        <a href={{url_for('main.profile', id=contributor.id)}}>
+            {{ contributor.nickname or contributor.name }}
         </a>
         </span>   
     {% if current_user == post.creator %}
@@ -258,8 +258,8 @@
     {% if contribute.disabled == True and current_user == post.creator %}
     <div>
         <span>   
-        <a href={{url_for('main.profile', id=contribute.contributor.id)}}>
-            {{ contribute.contributor.nickname or contribute.contributor.name }}
+        <a href={{url_for('main.profile', id=contributor.id)}}>
+            {{ contributor.nickname or contributor.name }}
         </a>
         </span>
         &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;

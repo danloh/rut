@@ -1324,6 +1324,9 @@ class AnonymousUser(AnonymousUserMixin):
         return False
     def flaging(self,item):
         return "Flag It"
+    @property
+    def followed(self):
+        return []
     def role(self):
         r = Roles(duty=None,permissions=0x0000)
         return r
@@ -1411,7 +1414,8 @@ class Events(db.Model):
         db.Integer, db.ForeignKey('tags.id')
     )
 
-    # get events , ##!! need to tacle some issue
+    # get events, ##need to tacle some issue #if del, the obj is None,error occur 
+    # warning: fragile!!
     @property
     def action_content(self):
         act = self.action
@@ -1438,7 +1442,7 @@ class Events(db.Model):
         if act == 'excerpt':
             q=self.clip
             h=q.body if q else 'No content'
-            return ('myclips',current_user,h)
+            return ('myclips',q.creator,h)
 
     def __repr__(self):
         return '<Events %r>' % (self.action + str(self.id))

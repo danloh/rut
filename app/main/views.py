@@ -35,12 +35,33 @@ def after_request(response):
 
 @main.route('/')
 def index():
-    """Get posts from func in Model. need to tackle the cache issue"""
-    posts_select = Posts.select_posts()
+    """Get posts from func in Model. need to tackle the cache issue
+    after logged-in, show your followeds' activity
+    """
     tags = Tags.get_tags()
+    
+    if current_user.is_authenticated:
+        q_late = Events.query.order_by(Events.timestamp.desc()).limit(8)
+        event_f = [f.followed.events for f in current_user.followed]
+        query = q_late.union(*event_f)
 
-    return render_template("index.html",tags =tags,
-                            posts_select=posts_select)
+        page = request.args.get('page', 1, type=int)
+        pagination = query.order_by(Events.timestamp.desc()).\
+                    paginate(
+                        page,
+                        per_page=current_app.config['POST_PER_PAGE'],
+                        error_out=False
+                    )
+        evs = pagination.items
+        posts_select = []
+    else:
+        pagination = None
+        evs = []
+        posts_select = Posts.select_posts()
+    
+    return render_template("index.html",tags =tags,ref=True,
+                            posts_select=posts_select,
+                            pagination=pagination,evs=evs)
 
 
 @main.route('/collection', methods=['GET','POST'])
@@ -174,7 +195,7 @@ def post(id):
         user_id=current_user.id,
         disabled=False
         ).first()
-
+    # more by the same creator
     posts_query = post.creator.posts.filter(Posts.id != id)
     m = current_app.config['COMMENT_PER_PAGE']
     posts = posts_query.limit(m) 
@@ -1940,7 +1961,7 @@ def profile(id):
     # Activity
     evs = user.events.order_by(Events.timestamp.desc()).limit(m)
 
-    return render_template('profile.html', m=m, user=user, evs=evs,
+    return render_template('profile.html',m=m,user=user,evs=evs,ref=False,
                 count_1=count_1, count_2=count_2, count_3=count_3,
                 todos=todos, doings=doings, dones=dones, 
                 posts=posts, post_count=post_count,
@@ -1952,10 +1973,9 @@ def profile(id):
 @main.route('/activity/<int:id>')
 def activity(id):
     user = Users.query.get_or_404(id) #user's id
-    m = 10
+    m=100
     evs = user.events.order_by(Events.timestamp.desc()).limit(m)
-    d_ev = {ev:ev.action_content for ev in evs}
-    return render_template('activity.html',user=user,d=d_ev)
+    return render_template('activity.html',user=user,evs=evs,ref=False)
 
 
 @main.route('/editprofile', methods=['GET','POST'])
