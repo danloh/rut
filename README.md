@@ -1,14 +1,14 @@
 ## RUT:  www.readup.tips
 A Service for sharing reading list to read up on sth, welcome to join 
 
-## To-dos
-1. A spider to simplify adding item info --> Done  
-2. Move to Vue.js as front end  
-3. Mobile App  
-4. Better discussion features   
-5. Better editor 
+## in developing V2.0
+1. Frontend: Vue, webpack
+2. Backend: Flask RESTful API  
+
 
 ## Changelog
+
+in developing V2.0
 
 #### Release  
 
