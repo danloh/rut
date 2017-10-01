@@ -40,7 +40,7 @@ def profile(length=25, profile_dir=None):
     """Start the application under the code profiler
     : run python manage.py profile
     """
-    p_dir = profile_dir or os.path.join(os.getcwd(),'log/prof/')
+    p_dir = profile_dir or os.path.join(os.getcwd(),'backend/log/prof/')
     from werkzeug.contrib.profiler import ProfilerMiddleware
     app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[length],
                                       profile_dir=p_dir)
