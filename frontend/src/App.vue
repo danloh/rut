@@ -1,23 +1,34 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <router-view></router-view>
+    <header class="header">
+      <nav class="inner">
+        <router-link to="/">
+            <b style="color:darkorange">Readup.Tips</b>
+        </router-link>
+        <router-link to="/challenge">
+          <b>Challenge</b>
+        </router-link>
+        <router-link to="/demand">
+          <b>Request</b>
+        </router-link>
+        <router-link to="/create">
+          <b style="color:white">Create Now</b>
+        </router-link>
+      </nav>
+    </header>
+    <div>
+      <router-view></router-view>
+    </div>
   </div>
 </template>
 
 <script>
+import store from './store'
+
 export default {
-  name: 'app'
+  name: 'app',
+  mounted () {
+    store.dispatch('VERIFY')  // check if logged-in
+  }
 }
 </script>
-
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>

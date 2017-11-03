@@ -152,7 +152,7 @@ def login(server_name):
                         'auth.twitter_authorized', 
                         next = get_redirect_target()
                         )    
-        return twitter.authorize(callback=callback_url)    
+        return twitter.authorize(callback=callback_url)   
     
 #Facebook
 @auth.route('/login/facebook_authorized')

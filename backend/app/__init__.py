@@ -10,6 +10,7 @@ from flask_oauthlib.client import OAuth
 from flask_login import LoginManager
 from flask_moment import Moment
 from flask_pagedown import PageDown
+from flask_cors import CORS
 
 from config import config 
 
@@ -26,6 +27,7 @@ oauth = OAuth()
 login_manager = LoginManager()
 login_manager.session_protection = 'strong'
 login_manager.login_view = 'auth.connect'
+cors = CORS()
 
 def create_app(config_name):
     app = Flask(__name__)
@@ -42,6 +44,7 @@ def create_app(config_name):
 
     oauth.init_app(app)
     login_manager.init_app(app)
+    cors.init_app(app)
 
     #load blueprints
     from .main import main as main_blueprint
@@ -49,6 +52,9 @@ def create_app(config_name):
 
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint)
+
+    from .api import rest as rest_blueprint
+    app.register_blueprint(rest_blueprint, url_prefix='/api')
 
     from .bot import bot as bot_blueprint
     app.register_blueprint(bot_blueprint)

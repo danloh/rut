@@ -73,6 +73,18 @@ class Collect(db.Model):
         db.Integer, db.ForeignKey("users.id")
     )
 
+    def to_dict(self):
+        item_dict = self.item.to_dict()
+        tip_dict = {
+            'id': self.id,
+            'order': self.order,
+            'postid': self.post_id,
+            'itemid': self.item_id,
+            'item': item_dict,
+            'tip': self.tips_html or self.tips
+        }
+        return tip_dict
+
     @staticmethod
     def on_changed_tips(target, value, oldvalue, initiator):
         target.tips_html = bleach.linkify(bleach.clean(
@@ -127,6 +139,16 @@ class Contribute(db.Model):
     disabled = db.Column(db.Boolean, default=True)
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
+    
+    def to_dict(self):
+        user_dict = self.contributor.to_dict()
+        contribute_dict = {
+            'id': self.id,
+            'postid': self.post_id,
+            'disabled': self.disabled,
+            'contributors': user_dict
+        }
+        return contribute_dict
 
 # helper Model for n2n Users flag Items
 class Flag(db.Model):
@@ -354,6 +376,15 @@ class Posts(db.Model):
                     _tag.posts.append(self)
                     db.session.add(_tag)
         #db.session.commit()
+    
+    # caculate the post score
+    @property
+    def score(self):
+        itemcount = self.items.count()
+        starcount = self.starers.count()
+        challengecount = self.challengers.count()
+        score = itemcount*2 + starcount * 5 + challengecount *10
+        return score
 
     #check if can be edited
     @property
@@ -445,6 +476,31 @@ class Posts(db.Model):
                        order_by(db.func.rand()).limit(m)
 
         return posts_select
+
+    def to_dict(self):
+        
+        creator = self.creator.to_dict()
+        contributors = [i.to_dict() for i in self.contributors]
+        tags = [t.to_dict() for t in self.tags]
+        post_dict = {
+            'id': self.id,
+            'title': self.title,
+            'intro': self.intro,
+            'credential': self.credential,
+            'epilog': self.epilog,
+            'createat': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            #'renewat': self.renewal.strftime('%Y-%m-%d %H:%M:%S'),
+            'score': self.score,
+            'itemcount': self.items.count(),
+            'starcount': self.starers.count(),
+            'challengecount': self.challengers.count(),
+            'cover': self.post_cover,
+            'creator': creator,
+            'contributors': contributors,
+            'tags': tags,
+            'link': '/readuplist/'+str(self.id)
+        }
+        return post_dict
 
     ## markdown to html
     @staticmethod
@@ -581,6 +637,22 @@ class Items(db.Model):
                 )
                 db.session.add(byline)
         #db.session.commit()
+    
+    def to_dict(self):
+        item_dict = {
+            'id': self.id,
+            'cate': self.cate,
+            'title': self.title,
+            'uid': self.uid,
+            'byline': self.author, 
+            'rutcount': self.posts.count(),
+            'cover': self.cover or self.item_cover,
+            'publisher': self.publisher,
+            'pubdate': self.pub_date,
+            'language': self.language,
+            'details': self.details
+        }
+        return item_dict
 
     def __repr__(self):
         return '<Items %r>' % self.title
@@ -667,6 +739,15 @@ class Tags(db.Model):
     def get_tags():
         return Tags.query.order_by(db.func.rand()).limit(20).all()
 
+    def to_dict(self):
+        tag_dict = {
+            'id': self.id,
+            'tagname': self.tag,
+            'descript': self.descript,
+            'url': '/tag/'+str(self.id)
+        }
+        return tag_dict
+
     def __repr__(self):
         return '<Tags %r>' % self.tag
 
@@ -746,6 +827,16 @@ class Comments(db.Model):
             markdown(value, output_format='html'),
             tags=allowed_tags, strip=True))
 
+    def to_dict(self):
+        comment_dict = {
+            'id': self.id,
+            'heading': self.heading,
+            'body': self.body_html or self.body,
+            'vote': self.vote,
+            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        return comment_dict
+
     def __repr__(self):
         return '<Coments %r>' % self.body
 
@@ -792,6 +883,16 @@ class Reviews(db.Model):
         target.body_html = bleach.linkify(bleach.clean(
             markdown(value, output_format='html'),
             tags=allowed_tags, strip=True))
+    
+    def to_dict(self):
+        review_dict = {
+            'id': self.id,
+            'heading': self.heading,
+            'body': self.body_html or self.body,
+            'vote':  self.vote,
+            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        return review_dict
 
     def __repr__(self):
         return '<Reviews %r>' % self.heading
@@ -827,6 +928,15 @@ class Clips(db.Model):
         target.body_html = bleach.linkify(bleach.clean(
             markdown(value, output_format='html'),
             tags=allowed_tags, strip=True))
+    
+    def to_dict(self):
+        clip_dict = {
+            'id': self.id,
+            'body': self.body_html or self.body,
+            'vote': self.vote,
+            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        return clip_dict
 
     def __repr__(self):
         return '<Clips %r>' % self.body
@@ -890,6 +1000,15 @@ class Demands(db.Model):
                     _tag.demands.append(self)
                     db.session.add(_tag)
         #db.session.commit()
+    
+    def to_dict(self):
+        demand_dict = {
+            'id': self.id,
+            'body': self.body,
+            'vote': self.vote,
+            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        return demand_dict
 
     def __repr__(self):
         return '<Demands %r>' % self.body
@@ -972,6 +1091,12 @@ class Roles(db.Model):
     # 1 to n with Users
     users = db.relationship(
         'Users', backref='role', lazy='dynamic')
+    
+    def to_dict(self):
+        role_dict = {
+            'duty': self.duty,
+            'permissions': self.permissions
+        }
 
     # for add roles
     role_cases ={
@@ -1298,6 +1423,18 @@ class Users(UserMixin, db.Model):
         tag_set = set(tag_all)
 
         return tag_set,tag_fv
+
+    def to_dict(self):
+        user_dict = {
+            'id': self.id,
+            'name': self.nickname or self.name,
+            'avatar': self.avatar,
+            'location': self.location,
+            'about': self.about_me,
+            'exlink': self.links,
+            'url': '/profile/'+str(self.id)
+        }
+        return user_dict
 
     def __repr__(self):
         return '<Users %r>' % (self.name + str(self.id))
