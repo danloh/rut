@@ -1,28 +1,29 @@
 <template>
-    <div class="item-view" v-if="rut">
-        <template v-if="rut">
-            <div class="item-view-header">
-                <h1>{{ rut.title }}</h1>
-                <p class="meta">
-                    Created by <router-link :to="'/user/' + rut.by">{{ rut.by }}</router-link>
-                    | {{ rut.time | timeAgo }} ago
-                    | including {{ rut.itemcount }} items
-                </p>
-            </div>
-            <div>
-                {{rut.intro}}
-            </div>
-            <div>
-                <tip v-for="tip in tips" :key="tip.order" :tip="tip"></tip>
-            </div>
-            <div>
-                {{rut.epilog}}
-            </div>
-            <div>
-                <router-link :to="'/rut/comment' + rut.id">Comment</router-link>
-            </div>
-        </template>
-    </div>
+  <div class="rut-view" v-if="rut">
+    <template v-if="rut">
+      <div class="item-view-header">
+        <h1>{{ rut.title }}</h1>
+        <p class="meta">
+          Created by <router-link :to="'/user/' + rut.by">{{ rut.by }}</router-link>
+          | {{ rut.time | timeAgo }} ago
+          | including {{ rut.itemcount }} items
+        </p>
+      </div>
+      <div>
+        {{rut.intro}}
+      </div>
+      <template v-for="tip in tips">
+        <item-sum v-if="tip.item" :item="tip.item" :key="tip.order"></item-sum>
+        {{tip.tip}}
+      </template>
+      <div>
+        {{rut.epilog}}
+      </div>
+      <div>
+        <router-link :to="'/rut/comment' + rut.id">Comment</router-link>
+      </div>
+    </template>
+  </div>
 </template>
 
 <script>
@@ -41,33 +42,23 @@ export default {
 
   computed: {
     tips () {
-      let r = this.rut;
-      return r? r.tips: null;
+      let r = this.rut
+      return r ? r.tips : null
     }
   },
 
   // Fetch rut when mounted on the client
-  beforeMount () {
+  mounted () {
     this.fetchRut()
   },
 
   methods: {
     fetchRut () {
       let param = {}
-      getRut(this.$route.params.rutid,param).then( (resp) => {
-        this.rut = resp.data;
-      });
+      getRut(this.$route.params.rutid, param).then((resp) => {
+        this.rut = resp.data
+      })
     }
-  }
-}
-// recursively fetch all descendent comments
-function fetchComments (store, item) {
-  if (item && item.kids) {
-    return store.dispatch('FETCH_ITEMS', {
-      ids: item.kids
-    }).then(() => Promise.all(item.kids.map(id => {
-      return fetchComments(store, store.state.items[id])
-    })))
   }
 }
 </script>

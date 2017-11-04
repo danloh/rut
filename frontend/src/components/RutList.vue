@@ -4,7 +4,7 @@
       <rut-sum v-for="rut in ruts" :key="rut.id" :rut="rut"></rut-sum>
     </div>
     <div class="news-list-nav">
-      <button v-if="getMore" @click="fetchRuts">more</button>
+      <button v-if="getmore" @click="fetchRuts">more</button>
       <a v-else class="disabled">more</a>
     </div>
   </div>
@@ -27,27 +27,26 @@ export default {
       total: 0,
       getprev: null,
       getmore: null,
-      page: 0 
+      page: 0
     }
   },
 
   methods: {
     fetchRuts () {
-      let usr = this.$store.state.user;
-      let param = { userid: usr? usr.id: '', page: this.page+1 };
+      let usr = this.$store.state.user
+      let param = { userid: usr ? usr.id : '', page: this.page + 1 }
       getRuts(param).then((resp) => {
-        this.ruts = this.ruts.concat(resp.data.ruts);
-        this.total += resp.data.total;
-        this.getprev = resp.data.prev;
-        this.getmore = resp.data.more;
-        this.page += 1;
-      });
+        this.ruts = this.ruts.concat(resp.data.ruts)
+        this.total += resp.data.total
+        this.getprev = resp.data.prev
+        this.getmore = resp.data.more
+        this.page += 1
+      })
     }
   },
 
-  beforeMount () {
+  mounted () {
     this.fetchRuts()
   }
 }
-
 </script>

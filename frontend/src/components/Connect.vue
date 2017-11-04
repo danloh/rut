@@ -23,7 +23,7 @@ export default {
   name: 'connect',
   data () {
     return {
-        nexturl: this.$store.state.nexturl
+      nexturl: this.$store.state.nexturl
     }
   }
 }

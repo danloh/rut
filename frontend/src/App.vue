@@ -12,7 +12,7 @@
           <b>Request</b>
         </router-link>
         <router-link to="/create">
-          <b style="color:white">Create Now</b>
+          <b>Create Now</b>
         </router-link>
       </nav>
     </header>

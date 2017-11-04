@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# rut is readup tips,included an item list and tips for each item
 
 import random
 import re
@@ -41,24 +42,23 @@ class User(Resource):
         else:
             return guser.to_dict()
     
-class Ruts(Resource):
+class Rutz(Resource):
 
     def get(self):
         # per he request ref: 
         # create,star,chalenge,contribute
         userid = request.args.get('userid','')
         ref = request.args.get('ref','random')
-
         if userid:
             user = Users.query.get_or_404(userid)
             if ref == 'create':
-                q = [user.posts]
+                q = [user.posts] # a query list
             elif ref == 'star':
-                q = [s.star_post for s in user.star_posts] # a query list
+                q = [s.star_post for s in user.star_posts] 
             elif ref == 'challenge':
-                q = [c.challenge_post for c in user.challenge_posts] # a query list
+                q = [c.challenge_post for c in user.challenge_posts] 
             elif ref == 'contribute':
-                q = [c.contribute_post for c in user.contribute_posts] # a query list
+                q = [c.contribute_post for c in user.contribute_posts] 
             else:
                 #get related tags set and fav tags, from cached Model-func
                 tag_set, tag_fv = user.get_tag_set()
@@ -70,10 +70,8 @@ class Ruts(Resource):
                     q.append(tag_obj.posts)
         else:
             q = [Posts.select_posts()]
-        
         q_rand = Posts.query.limit(0)
         query = q_rand.union(*q)
-
         #pagination 
         page = request.args.get('page', 1, type=int)
         pagination = query.order_by(Posts.timestamp.desc()).\
@@ -83,13 +81,24 @@ class Ruts(Resource):
                     error_out=False
                 )
         ruts = pagination.items
-        
         prev = None
         if pagination.has_prev:
-            prev = url_for('rest.ruts', userid=userid, ref=ref, page=page-1, _external=True)
+            prev = url_for(
+                'rest.ruts', 
+                userid=userid, 
+                ref=ref, 
+                page=page-1, 
+                _external=True
+            )
         more = None
         if pagination.has_next:
-            more = url_for('rest.ruts', userid=userid, ref=ref, page=page+1, _external=True)
+            more = url_for(
+                'rest.ruts', 
+                userid=userid, 
+                ref=ref, 
+                page=page+1, 
+                _external=True
+            )
         return {
             'ruts': [r.to_dict() for r in ruts],
             'prev': prev,
@@ -102,10 +111,21 @@ class Rut(Resource):
     def get(self,rutid):
         rut = Posts.query.get_or_404(rutid)
         rut_dict = rut.to_dict()
+        #attach tips and items included in rut 
         tips = [t.to_dict() for t in rut.items]
         rut_dict['tips'] = tips
         return rut_dict
 
+class Item(Resource):
+
+    def get(self,itemid):
+        item = Items.query.get_or_404(itemid)
+        item_dict = item.to_dict()
+        # attach review
+        reviews = [r.to_dict() for r in item.reviews]
+        item_dict['reviews'] = reviews
+        return item_dict
+       
 class Clipz(Resource):
 
     def get(self):
@@ -120,7 +140,6 @@ class Clipz(Resource):
             query = q.filter_by(item_id=itemid)
         else:
             query = q
-        
         #pagination 
         page = request.args.get('page', 1, type=int)
         pagination = query.order_by(Clips.timestamp.desc()).\
@@ -130,13 +149,24 @@ class Clipz(Resource):
                     error_out=False
                 )
         clips = pagination.items
-        
         prev = None
         if pagination.has_prev:
-            prev = url_for('rest.clipz', userid=userid, itemid=itemid, page=page-1, _external=True)
+            prev = url_for(
+                'rest.clipz', 
+                userid=userid, 
+                itemid=itemid, 
+                page=page-1, 
+                _external=True
+            )
         more = None
         if pagination.has_next:
-            more = url_for('rest.clipz', userid=userid, itemid=itemid, page=page+1, _external=True)
+            more = url_for(
+                'rest.clipz', 
+                userid=userid, 
+                itemid=itemid, 
+                page=page+1, 
+                _external=True
+            )
         return {
             'clips': [c.to_dict() for c in clips],
             'prev': prev,
