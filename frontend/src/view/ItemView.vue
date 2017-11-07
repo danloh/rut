@@ -5,7 +5,7 @@
       <div>
         {{item.details}}
       </div>
-      <review></review>
+      <review v-for="review in reviews" :key="review.id" :review="review"></review>
       <div>
         <router-link :to="'/item/comment' + item.id">Comment</router-link>
       </div>
@@ -28,6 +28,9 @@ export default {
   }),
 
   computed: {
+    reviews () {
+      return this.item.reviews
+    }
   },
 
   // Fetch item when mounted on the client
@@ -38,7 +41,7 @@ export default {
   methods: {
     fetchItem () {
       let param = {}
-      getItem(this.$route.params.itemid, param).then((resp) => {
+      getItem(this.$route.params.id, param).then((resp) => {
         this.item = resp.data
       })
     }

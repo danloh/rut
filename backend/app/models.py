@@ -892,6 +892,7 @@ class Reviews(db.Model):
         review_dict = {
             'id': self.id,
             'heading': self.heading,
+            'creator': self.creator.to_dict(),
             'body': self.body_html or self.body,
             'vote':  self.vote,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
@@ -927,21 +928,23 @@ class Clips(db.Model):
         db.Integer, db.ForeignKey("items.id")
     )
 
-    @staticmethod
-    def on_changed_body(target, value, oldvalue, initiator):
-        target.body_html = bleach.linkify(bleach.clean(
-            markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True))
-    
     def to_dict(self):
         clip_dict = {
             'id': self.id,
+            'creator': self.creator.to_dict(),
+            'fromitem': self.item.to_dict(),
             'body': self.body_html or self.body,
             'vote': self.vote,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         }
         return clip_dict
 
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        target.body_html = bleach.linkify(bleach.clean(
+            markdown(value, output_format='html'),
+            tags=allowed_tags, strip=True))
+    
     def __repr__(self):
         return '<Clips %r>' % self.body
 
@@ -1008,8 +1011,11 @@ class Demands(db.Model):
     def to_dict(self):
         demand_dict = {
             'id': self.id,
+            'requestor': self.requestor.to_dict(),
             'body': self.body,
             'vote': self.vote,
+            'answercount': self.post.count(),
+            'commentcount': self.comments.count(),
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         }
         return demand_dict

@@ -4,8 +4,8 @@
       <div class="item-view-header">
         <h1>{{ rut.title }}</h1>
         <p class="meta">
-          Created by <router-link :to="'/user/' + rut.by">{{ rut.by }}</router-link>
-          | {{ rut.time | timeAgo }} ago
+          Created by {{ rut.creator.name }}
+          | {{ rut.createat }}
           | including {{ rut.itemcount }} items
         </p>
       </div>
@@ -55,7 +55,7 @@ export default {
   methods: {
     fetchRut () {
       let param = {}
-      getRut(this.$route.params.rutid, param).then((resp) => {
+      getRut(this.$route.params.id, param).then((resp) => {
         this.rut = resp.data
       })
     }

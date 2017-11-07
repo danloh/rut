@@ -6,6 +6,8 @@ import store from '../store'
 Vue.use(Router)
 
 const router = new Router({
+  mode: 'history',
+  fallback: false,
   routes
 })
 

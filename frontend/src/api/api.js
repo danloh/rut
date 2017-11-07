@@ -24,9 +24,19 @@ const getItem = (itemid, params) => {
   return request(`${base}/item/${itemid}`, params)
 }
 
+const getClips = params => {
+  return request(`${base}/clips`, params)
+}
+
+const getDemands = params => {
+  return request(`${base}/demands`, params)
+}
+
 export {
   authUser,
   getRuts,
   getRut,
-  getItem
+  getItem,
+  getClips,
+  getDemands
 }

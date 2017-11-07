@@ -2,7 +2,7 @@
   <li class="news-item">
     <span class="cover">{{ item.cover }}</span>
     <span class="title">
-      <router-link to="'/item/' + item.id">{{ item.title }}</router-link>
+      <router-link :to="'/item/' + item.id">{{ item.title }}</router-link>
     </span>
     <br>
     <span>Byline: {{ item.byline }} </span>

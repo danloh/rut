@@ -17,9 +17,7 @@ import RutSum from './RutSum.vue'
 export default {
   name: 'rut-list',
 
-  components: {
-    RutSum
-  },
+  components: { RutSum },
 
   data () {
     return {

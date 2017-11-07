@@ -4,14 +4,14 @@
             <h4>Please login, You can Connect With:</h4>
         </div>
         <hr>
-        <div class="btn btn-group-vertical">
-            <a href="/login/Google/"+nexturl class="btn btn-lg btn-danger">
+        <div >
+            <a href="/login/Google/">
                 &nbsp;&nbsp;<b>Connect With Google</b>&nbsp;&nbsp;
             </a><br>
-            <a href="/login/Facebook/"+nexturl class="btn btn-lg btn-primary">
+            <a href="/login/Facebook/">
                 &nbsp;&nbsp;<b>Connect With Facebook</b>&nbsp;&nbsp;
             </a><br>
-            <a href="/login/Twitter/"+nexturl class="btn btn-lg btn-info">
+            <a href="/login/Twitter/">
                 &nbsp;&nbsp;<b>Connect With Twitter</b>&nbsp;&nbsp;
             </a>
         </div>

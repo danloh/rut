@@ -174,6 +174,47 @@ class Clipz(Resource):
             'total': pagination.total
         }
 
+class Demandz(Resource):
+
+    def get(self):
+        userid = request.args.get('userid','')
+        q = Demands.query
+        if userid:
+            query = q.filter_by(requestor_id=userid)
+        else:
+            query = q
+        #pagination 
+        page = request.args.get('page', 1, type=int)
+        pagination = query.order_by(Clips.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=PER_PAGE,
+                    error_out=False
+                )
+        demands = pagination.items
+        prev = None
+        if pagination.has_prev:
+            prev = url_for(
+                'rest.demandz', 
+                userid=userid, 
+                page=page-1, 
+                _external=True
+            )
+        more = None
+        if pagination.has_next:
+            more = url_for(
+                'rest.demandz', 
+                userid=userid, 
+                page=page+1, 
+                _external=True
+            )
+        return {
+            'clips': [d.to_dict() for d in demands],
+            'prev': prev,
+            'more': more,
+            'total': pagination.total
+        }
+
 
 
 
