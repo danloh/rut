@@ -837,7 +837,8 @@ class Comments(db.Model):
             'heading': self.heading,
             'body': self.body_html or self.body,
             'vote': self.vote,
-            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'children': [c.child_commt.to_dict() for c in self.child_commts]
         }
         return comment_dict
 
@@ -1477,6 +1478,8 @@ class AnonymousUser(AnonymousUserMixin):
     def role(self):
         r = Roles(duty=None,permissions=0x0000)
         return r
+    def to_dict(self):
+        return None
 login_manager.anonymous_user = AnonymousUser
 
 

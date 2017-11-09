@@ -11,7 +11,7 @@
             <a href="/login/Facebook/">
                 &nbsp;&nbsp;<b>Connect With Facebook</b>&nbsp;&nbsp;
             </a><br>
-            <a href="/login/Twitter/">
+            <a href="http://127.0.0.1:5000/login/Twitter">
                 &nbsp;&nbsp;<b>Connect With Twitter</b>&nbsp;&nbsp;
             </a>
         </div>

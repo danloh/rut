@@ -10,8 +10,8 @@ import ItemView from '../view/ItemView'
 
 // config routes
 let routes = [
-    { path: '/', component: Home, name: 'Home' },
-    { path: '/challenge', component: Challenge, name: 'Challenge' },
+    { path: '/', component: Home, name: 'Home', meta: {auth: true} },
+    { path: '/challenge', component: Challenge, name: 'Challenge', meta: {auth: true} },
     { path: '/demand', component: Demands, name: 'Demands' },
     { path: '/connect', component: Connect, name: 'Connect' },
     { path: '/create', component: Create, name: 'Create' },

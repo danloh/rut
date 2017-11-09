@@ -28,7 +28,7 @@ from ..bot import spider
 PER_PAGE = 20
 
 class User(Resource):
-    method_decorators = [login_required]
+    #method_decorators = [login_required]
 
     def get(self):
         guser = current_user
@@ -214,6 +214,57 @@ class Demandz(Resource):
             'more': more,
             'total': pagination.total
         }
+
+class Commentz(Resource):
+
+    def get(self):
+        rid = request.args.get('rid','')
+        ref = request.args.get('ref','')
+        q = Comments.query
+        if ref == 'creator':
+            query = q.filter_by(creator_id=rid)
+        if ref == 'post':
+            query = q.filter_by(post_id=rid)
+        if ref == 'item':
+            query = q.filter_by(item_id=rid)
+        if ref == 'demand':
+            query = q.filter_by(demand_id=rid)
+        if ref == 'review':
+            query = q.filter_by(review_id=rid)
+        #pagination 
+        page = request.args.get('page', 1, type=int)
+        pagination = query.order_by(Comments.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=PER_PAGE,
+                    error_out=False
+                )
+        comments = pagination.items
+        prev = None
+        if pagination.has_prev:
+            prev = url_for(
+                'rest.commentz',
+                rid=rid,
+                ref=ref,
+                page=page-1, 
+                _external=True
+            )
+        more = None
+        if pagination.has_next:
+            more = url_for(
+                'rest.commentz', 
+                rid=rid,
+                ref=ref,
+                page=page+1, 
+                _external=True
+            )
+        return {
+            'comments': [c.to_dict() for c in comments],
+            'prev': prev,
+            'more': more,
+            'total': pagination.total
+        }
+
 
 
 
