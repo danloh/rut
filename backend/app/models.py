@@ -1456,6 +1456,12 @@ class AnonymousUser(AnonymousUserMixin):
     def id(self):
         id = -1
         return id
+    @property
+    def nickname(self):
+        return None
+    @property
+    def name(self):
+        return None
     def can(self, permissions):
         return False
     def is_administrator(self):

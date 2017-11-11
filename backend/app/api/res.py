@@ -29,23 +29,22 @@ PER_PAGE = 20
 
 class User(Resource):
     #method_decorators = [login_required]
-
     def get(self):
-        guser = current_user
+        guser = g.user
         ref = request.args.get('ref','actived')
         if ref == 'verify':
-            user = {
+            user_dict = {
                 'userid': guser.id,
                 'username': guser.nickname or guser.name
             }
-            return user
+            return user_dict
         else:
             return guser.to_dict()
     
 class Rutz(Resource):
 
     def get(self):
-        # per he request ref: 
+        # per the request ref: 
         # create,star,chalenge,contribute
         userid = request.args.get('userid','')
         ref = request.args.get('ref','random')

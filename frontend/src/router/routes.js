@@ -9,7 +9,7 @@ import Create from '../components/Create'
 import ItemView from '../view/ItemView'
 
 // config routes
-let routes = [
+const routes = [
     { path: '/', component: Home, name: 'Home', meta: {auth: true} },
     { path: '/challenge', component: Challenge, name: 'Challenge', meta: {auth: true} },
     { path: '/demand', component: Demands, name: 'Demands' },

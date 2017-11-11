@@ -1,8 +1,7 @@
 // import Vue from 'vue'
 
 export default {
-
-  MOD_USER (state, userobj) {
+  MOD_USER: (state, userobj) => {
     state.user = userobj
   },
 

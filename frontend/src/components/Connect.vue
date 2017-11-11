@@ -25,6 +25,11 @@ export default {
     return {
       nexturl: this.$store.state.nexturl
     }
+  },
+
+  methods: {
+    authTwitter: () => {
+    }
   }
 }
 </script>

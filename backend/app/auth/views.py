@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import g, render_template, redirect, request, session, url_for, flash,\
-                  current_app
+                  current_app, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_oauthlib.client import OAuthException
 from config import Config as C
@@ -49,17 +49,15 @@ twitter = oauth.remote_app(
 def load_user(id):
     return Users.query.get(int(id))
 
-@auth.before_request
-def get_current_user():
+@auth.before_app_request
+def before_request():
     g.user = current_user
 
 def create_user(me, auth_server_name):  
     if auth_server_name == 'Facebook':
         avatar_url = me.data['picture']['data']['url']
-    
     elif auth_server_name == 'Google':
         avatar_url = me.data['picture']
-    
     else:
         pass
     
@@ -88,7 +86,6 @@ def set_user(server_name, me):
 
     login_user(user, remember=True)
     next_url = session.pop('next',None) or url_for('main.index')
-    #session.pop('next',None)
     return redirect(next_url)  #note!!
 
 
@@ -113,12 +110,16 @@ def set_tw_user(server_name,resp):
         db.session.add(new_user)
         db.session.commit()
         login_user(new_user, remember=True)
-        return redirect(url_for('main.edit_profile'))  #note!!
+        #return redirect(url_for('main.edit_profile'))
+        g.user = current_user
+        user_dict = new_user.to_dict()
+        return jsonify(user_dict)
 
     login_user(user, remember=True)
     next_url = session.pop('next',None) or url_for('main.index')
-    #session.pop('next',None)
-    return redirect(next_url) 
+    #return redirect(next_url)
+    user_dict = user.to_dict()
+    return jsonify(user_dict)
 
 @auth.route('/connect')
 def connect():

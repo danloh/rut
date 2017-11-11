@@ -9,7 +9,7 @@ const request = (url, options = {}, method = 'get') => {
 }
 
 const authUser = params => {
-  return request(`${base}/user`, params)
+  return request('http://127.0.0.1:5000/api/user', params)  // why cannot be frontend url?
 }
 
 const getRuts = params => {
