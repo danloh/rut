@@ -11,12 +11,12 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
   state: {
     user: null,
+    token: '',
     nexturl: ''
   },
   actions,
   mutations,
   getters,
-
   modules: {}
 })
 

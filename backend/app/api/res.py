@@ -10,10 +10,6 @@ from flask_restful import abort
 from flask_sqlalchemy import get_debug_queries
 #from sqlalchemy import or_
 from . import api, Resource
-from .forms import PostForm, ItemForm, EditItemForm, SelectAddForm,\
-                   TagForm, EditPostForm, EpilogForm, EditTipsForm, CommentForm,\
-                   TagStrForm, ClipForm, ArticleForm, SelectDoneForm,\
-                   DeadlineForm, DemandForm, ReviewForm, CheckItemForm, EditProfileForm
 from .. import db
 from ..models import Posts, Items, Collect, Tags, Clan, Fav, tag_post, tag_item,\
                      Comments, Reviews, Clips, Demands, tag_demand, Reply,\
@@ -30,7 +26,7 @@ PER_PAGE = 20
 class User(Resource):
     #method_decorators = [login_required]
     def get(self):
-        guser = g.user
+        guser = current_user
         ref = request.args.get('ref','actived')
         if ref == 'verify':
             user_dict = {

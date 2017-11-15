@@ -5,6 +5,10 @@ import re
 from datetime import datetime
 from flask import url_for, current_app, request, flash
 from flask_sqlalchemy import SQLAlchemy
+from flask_httpauth import HTTPBasicAuth
+from passlib.apps import custom_app_context as pwd_context
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                          as Serializer, BadSignature, SignatureExpired)
 from flask_login import UserMixin, AnonymousUserMixin, current_user
 from markdown import markdown
 import bleach
@@ -1160,8 +1164,10 @@ class Users(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     auth_server = db.Column(db.String(32), nullable=False)
     auth_social_id = db.Column(db.String(64), nullable=False)
-    name = db.Column(db.String(128), nullable=False)
+    name = db.Column(db.String(128), unique=True, nullable=False)
     email = db.Column(db.String(128))
+    password_hash = db.Column(db.String(128))
+    confirmed = db.Column(db.Boolean, default=False)
     avatar = db.Column(db.String(512))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
@@ -1295,6 +1301,30 @@ class Users(UserMixin, db.Model):
                            first()
             if self.role is None:
                 self.role = Roles.query.filter_by(default=True).first()
+    
+    # password hashing and token
+    def hash_password(self, password):
+        self.password_hash = pwd_context.encrypt(password)
+
+    def verify_password(self, password):
+        return pwd_context.verify(password, self.password_hash)
+
+    def generate_auth_token(self, expiration=600):
+        s = Serializer(current_app.config['SECRET_KEY'], expires_in=expiration)
+        return s.dumps({'id': self.id})
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            return None    # valid token, but expired
+        except BadSignature:
+            return None    # invalid token
+        user = Users.query.get(data['id'])
+        return user
+    
 
     #check the user's permission
     def can(self,permission):

@@ -11,14 +11,16 @@
             <a href="/login/Facebook/">
                 &nbsp;&nbsp;<b>Connect With Facebook</b>&nbsp;&nbsp;
             </a><br>
-            <a href="http://127.0.0.1:5000/login/Twitter">
+            <button @click="authTwitter">
                 &nbsp;&nbsp;<b>Connect With Twitter</b>&nbsp;&nbsp;
-            </a>
+            </button>
         </div>
     </div>
 </template>
 
 <script>
+import { auth } from '../api/api'
+
 export default {
   name: 'connect',
   data () {
@@ -28,7 +30,11 @@ export default {
   },
 
   methods: {
-    authTwitter: () => {
+    authTwitter () {
+      return auth('Twitter').then((resp) => {
+        this.$store.state.user = resp.data
+        this.$root.router.push('/')
+      })
     }
   }
 }

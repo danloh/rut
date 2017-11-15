@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import { getRuts } from '../api/api'
+// import { getRuts } from '../api/api'
 import RutSum from './RutSum.vue'
 
 export default {
@@ -33,7 +33,7 @@ export default {
     fetchRuts () {
       let usr = this.$store.state.user
       let param = { userid: usr ? usr.id : '', page: this.page + 1 }
-      getRuts(param).then((resp) => {
+      this.$axios.get('api/ruts', param).then((resp) => {
         this.ruts = this.ruts.concat(resp.data.ruts)
         this.total += resp.data.total
         this.getprev = resp.data.prev
