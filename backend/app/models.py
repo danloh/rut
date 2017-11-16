@@ -1019,7 +1019,7 @@ class Demands(db.Model):
             'requestor': self.requestor.to_dict(),
             'body': self.body,
             'vote': self.vote,
-            'answercount': self.post.count(),
+            'answercount': self.posts.count(),
             'commentcount': self.comments.count(),
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         }
@@ -1325,7 +1325,6 @@ class Users(UserMixin, db.Model):
         user = Users.query.get(data['id'])
         return user
     
-
     #check the user's permission
     def can(self,permission):
         return self.role is not None and \

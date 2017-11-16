@@ -26,7 +26,7 @@ PER_PAGE = 20
 class User(Resource):
     #method_decorators = [login_required]
     def get(self):
-        guser = current_user
+        guser = current_user #Users.query.get(4)
         ref = request.args.get('ref','actived')
         if ref == 'verify':
             user_dict = {

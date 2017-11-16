@@ -22,7 +22,7 @@ const login = () => {
 }
 
 const authUser = params => {
-  return request('http://127.0.0.1:5000/api/user', params)  // why cannot be frontend url?
+  return request(`${base}/user`, params)  // why cannot be frontend url?
 }
 
 const auth = (servername, params) => {

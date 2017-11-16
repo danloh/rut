@@ -5,6 +5,8 @@ from flask import Blueprint, redirect, url_for, request, g, jsonify
 from flask_login import login_required, current_user
 from flask_restful import Api, Resource
 from flask_httpauth import HTTPBasicAuth
+from .. import db
+from ..models import Users
 
 rest = Blueprint('rest', __name__)
 api = Api(rest)
@@ -13,8 +15,8 @@ auth = HTTPBasicAuth()
 
 from . import res
 
-api.add_resource(res.User, '/user')
-api.add_resource(res.Rutz, '/ruts')
+#api.add_resource(res.User, '/user')
+#api.add_resource(res.Rutz, '/ruts')
 api.add_resource(res.Rut, '/rut/<int:rutid>')
 api.add_resource(res.Clipz, '/clips')
 api.add_resource(res.Demandz, '/demands')
@@ -30,7 +32,11 @@ def register():
         abort(400) # missing arguments
     if Users.query.filter_by(name = username).first() is not None:
         abort(400) # existing user
-    user = Users(name = username)
+    user = Users(
+        name = username,
+        auth_server = "Registered",
+        auth_social_id = "00001"
+    )
     user.hash_password(password)
     db.session.add(user)
     db.session.commit()
@@ -39,21 +45,96 @@ def register():
 @auth.verify_password
 def verify_password(username_or_token, password):
     if request.path == "/api/login":
-        user = Users.query.filter_by(username=username_or_token).first()
+        user = Users.query.filter_by(name=username_or_token).first()
         if not user or not user.verify_password(password):
             return False
     else:
         user = Users.verify_auth_token(username_or_token)
         if not user:
-            return False    
-    g.user = user   
+            return False
+    g.user = user
     return True
 
 @rest.route('/login')
 @auth.login_required
 def get_auth_token():
     token = g.user.generate_auth_token()
-    return jsonify(token)
+    return jsonify({
+        'token': token.decode('ascii'),
+        'user': g.user.to_dict()
+    })
+
+@rest.route('/user')
+@auth.login_required
+def get_user():
+    guser = g.user
+    ref = request.args.get('ref','actived')
+    if ref == 'verify':
+        user_dict = {
+            'id': guser.id,
+            'username': guser.nickname or guser.name
+        }
+        return jsonify(user_dict)
+    else:
+        return jsonify(guser.to_dict())
+
+@rest.route('/ruts')
+@auth.login_required
+def get_ruts():
+    user = g.user
+    ref = request.args.get('ref','random')
+    if ref == 'create':
+        q = [user.posts] # a query list
+    elif ref == 'star':
+        q = [s.star_post for s in user.star_posts]
+    elif ref == 'challenge':
+        q = [c.challenge_post for c in user.challenge_posts]
+    elif ref == 'contribute':
+        q = [c.contribute_post for c in user.contribute_posts]
+    else:
+        #get related tags set and fav tags, from cached Model-func
+        tag_set, tag_fv = user.get_tag_set()
+        # get followed posts queries
+        post_fo = [f.followed.posts for f in user.followed]
+        #list the queries, followed _posts as init 
+        q = post_fo
+        for tag_obj in tag_set:
+            q.append(tag_obj.posts)
+    q_rand = Posts.query.limit(0)
+    query = q_rand.union(*q)
+    #pagination 
+    page = request.args.get('page', 1, type=int)
+    pagination = query.order_by(Posts.timestamp.desc()).\
+            paginate(
+                page,
+                per_page=PER_PAGE,
+                error_out=False
+            )
+    ruts = pagination.items
+    prev = None
+    if pagination.has_prev:
+        prev = url_for(
+            'rest.ruts', 
+            userid=userid, 
+            ref=ref, 
+            page=page-1, 
+            _external=True
+        )
+    more = None
+    if pagination.has_next:
+        more = url_for(
+            'rest.ruts', 
+            userid=userid, 
+            ref=ref, 
+            page=page+1, 
+            _external=True
+        )
+    return jsonify({
+        'ruts': [r.to_dict() for r in ruts],
+        'prev': prev,
+        'more': more,
+        'total': pagination.total
+    })
 
 # @rest.route('/auth/<servername>')
 # def auth(servername):

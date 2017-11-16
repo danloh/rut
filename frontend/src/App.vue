@@ -23,12 +23,12 @@
 </template>
 
 <script>
-import store from './store'
+// import store from './store'
 
 export default {
   name: 'app',
   mounted () {
-    store.dispatch('VERIFY')  // check if logged-in
+    // store.dispatch('VERIFY')  // check if logged-in
   }
 }
 </script>

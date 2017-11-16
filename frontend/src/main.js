@@ -25,9 +25,10 @@ router.beforeEach((to, from, next) => {
     let localToken = localStorage.token
     if (localToken) {
       axios.default.auth = {
-        username: store.state.token,
-        password: store.state.token
+        username: localToken,
+        password: localToken
       }
+      store.commit('SET_TOKEN', localToken)
       next()
     } else {
       next({path: '/login'})
