@@ -25,7 +25,7 @@ const router = new Router({
     { path: '/challenge', component: Challenge, name: 'Challenge', meta: {auth: true} },
     { path: '/demand', component: Demands, name: 'Demands' },
     { path: '/connect', component: Connect, name: 'Connect' },
-    { path: '/create', component: Create, name: 'Create' },
+    { path: '/create', component: Create, name: 'Create', meta: {auth: true} },
     { path: '/profile/:id', component: Profile, name: 'Profile' },
     { path: '/readuplist/:id', component: RutView, name: 'Rutview' },
     { path: '/item/:id', component: ItemView, name: 'Itemview' }

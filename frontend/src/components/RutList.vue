@@ -1,9 +1,9 @@
 <template>
-  <div class="list-view">
+  <div>
     <div class="rut-list">
       <rut-sum v-for="rut in ruts" :key="rut.id" :rut="rut"></rut-sum>
     </div>
-    <div class="news-list-nav">
+    <div>
       <button v-if="getmore" @click="fetchRuts">more</button>
       <a v-else class="disabled">more</a>
     </div>
@@ -33,6 +33,10 @@ export default {
     fetchRuts () {
       let usr = this.$store.state.user
       let param = { userid: usr ? usr.id : '', page: this.page + 1 }
+      // this.$axios.defaults.auth = {
+      //   username: this.$store.state.token,
+      //   password: this.$store.state.token
+      // }
       this.$axios.get('api/ruts', param).then((resp) => {
         this.ruts = this.ruts.concat(resp.data.ruts)
         this.total += resp.data.total
@@ -48,3 +52,17 @@ export default {
   }
 }
 </script>
+
+<style lang="stylus">
+.rut-list
+  position absolute
+  margin 30px 0
+  width 100%
+  ul
+    padding 0
+    margin 0
+@media (max-width 600px)
+  .news-list
+    margin 10px 0
+
+</style>

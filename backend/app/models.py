@@ -1309,7 +1309,7 @@ class Users(UserMixin, db.Model):
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
 
-    def generate_auth_token(self, expiration=600):
+    def generate_auth_token(self, expiration=60000):
         s = Serializer(current_app.config['SECRET_KEY'], expires_in=expiration)
         return s.dumps({'id': self.id})
 
@@ -1319,9 +1319,9 @@ class Users(UserMixin, db.Model):
         try:
             data = s.loads(token)
         except SignatureExpired:
-            return None    # valid token, but expired
+            return None #'valid token expired' # None #    # valid token, but expired
         except BadSignature:
-            return None    # invalid token
+            return None #'invalid token' #None    # invalid token
         user = Users.query.get(data['id'])
         return user
     

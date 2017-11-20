@@ -8,7 +8,7 @@
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="onReg('regForm', regForm)">Sign Up</el-button>
-      <el-button @click="resetForm('loginForm')">Reset</el-button>
+      <el-button @click="resetForm('regForm')">Reset</el-button>
     </el-form-item>
   </el-form>
 </template>

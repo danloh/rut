@@ -18,13 +18,33 @@ axios.defaults.auth = {
   password: ''
 }
 
+// axios.interceptors.request.use((config) => {
+//   console.log(config)
+//   return config
+// }, (error) => {
+//   return Promise.reject(error)
+// })
+
+axios.interceptors.response.use((response) => {
+  return response
+}, (error) => {
+  if (error.response) {
+    switch (error.response.status) {
+      case 401:
+        store.commit('DEL_TOKEN')
+        router.push('/login')
+    }
+  }
+  return Promise.reject(error.response.data)
+})
+
 // config router
-// check auth when login required( define in meta)
+// check auth when login required( define in meta
 router.beforeEach((to, from, next) => {
   if (to.meta.auth) {
     let localToken = localStorage.token
     if (localToken) {
-      axios.default.auth = {
+      axios.defaults.auth = {
         username: localToken,
         password: localToken
       }

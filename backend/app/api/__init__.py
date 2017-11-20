@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 from flask_restful import Api, Resource
 from flask_httpauth import HTTPBasicAuth
 from .. import db
-from ..models import Users
+from ..models import *
 
 rest = Blueprint('rest', __name__)
 api = Api(rest)
@@ -14,6 +14,8 @@ api = Api(rest)
 auth = HTTPBasicAuth()
 
 from . import res
+
+PER_PAGE = 20
 
 #api.add_resource(res.User, '/user')
 #api.add_resource(res.Rutz, '/ruts')
@@ -100,7 +102,7 @@ def get_ruts():
         q = post_fo
         for tag_obj in tag_set:
             q.append(tag_obj.posts)
-    q_rand = Posts.query.limit(0)
+    q_rand = Posts.query.limit(5)
     query = q_rand.union(*q)
     #pagination 
     page = request.args.get('page', 1, type=int)
@@ -135,6 +137,23 @@ def get_ruts():
         'more': more,
         'total': pagination.total
     })
+
+@rest.route('/create')
+@auth.login_required
+def new_rut():
+    post = Posts(
+        creator = g.user,
+        title = request.json.get('title'),
+        intro = request.json.get('intro'),
+        tag_str = request.json.get('tag'),
+        rating = request.json.get('rating'),
+        credential = request.json.get('credential'),
+        editable = request.json.get('editable')
+    )
+    db.session.add(post)
+    post.tag_to_db()
+    db.session.commit()
+    return jsonify(post.to_dict())
 
 # @rest.route('/auth/<servername>')
 # def auth(servername):
