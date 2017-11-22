@@ -1,6 +1,6 @@
 <template>
   <div>
-    <rut-list></rut-list>
+    <rut-list :ruts="rutlist" @loadmore="loadmoreRuts"></rut-list>
   </div>
 </template>
 
@@ -10,20 +10,29 @@ import RutList from '../components/RutList.vue'
 
 export default {
   name: 'home',
-
   components: {
     RutList
   },
-
-  data () {
-    return {
+  computed: {
+    rutz () {
+      return this.$store.state.rutz
+    },
+    rutlist () {
+      return this.rutz.list
+    },
+    nextPageParams () {
+      return {
+        page: this.rutz.page + 1
+      }
     }
   },
-
-  computed: {
-  },
-
   methods: {
+    loadmoreRuts () {
+      this.$store.dispatch('getRuts', this.nextPageParams)
+    }
+  },
+  mounted () {
+    this.$store.dispatch('getRuts')
   }
 }
 </script>

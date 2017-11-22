@@ -59,6 +59,7 @@ router.beforeEach((to, from, next) => {
 })
 
 Vue.prototype.$axios = axios
+export default axios
 
 new Vue({
   router,
