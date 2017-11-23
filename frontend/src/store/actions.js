@@ -24,7 +24,16 @@ export default {
     return axios.get('api/ruts', param)
     .then((resp) => {
       const notFirstPage = param.page && param.page > 1
-      const muta = `rut/${notFirstPage ? 'ADD' : 'SET'}_RUTS`
+      const muta = `${notFirstPage ? 'ADD' : 'SET'}_RUTS`
+      commit(muta, resp.data)
+    })
+  },
+
+  getClip: ({commit, state}, param = {}) => {
+    return axios.get('api/clips', param)
+    .then(resp => {
+      const notFirstPage = param.page && param.page > 1
+      const muta = `${notFirstPage ? 'ADD' : 'SET'}_CLIPS`
       commit(muta, resp.data)
       return Promise.resolve(resp.data)
     })

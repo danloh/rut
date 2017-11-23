@@ -15,12 +15,12 @@ auth = HTTPBasicAuth()
 
 from . import res
 
-PER_PAGE = 20
+PER_PAGE = 2
 
 #api.add_resource(res.User, '/user')
 #api.add_resource(res.Rutz, '/ruts')
 api.add_resource(res.Rut, '/rut/<int:rutid>')
-api.add_resource(res.Clipz, '/clips')
+#api.add_resource(res.Clipz, '/clips')
 api.add_resource(res.Demandz, '/demands')
 api.add_resource(res.Item, '/item/<int:itemid>')
 api.add_resource(res.Commentz, '/comments')
@@ -102,10 +102,10 @@ def get_ruts():
         q = post_fo
         for tag_obj in tag_set:
             q.append(tag_obj.posts)
-    q_rand = Posts.query.limit(5)
+    q_rand = Posts.query.limit(30)
     query = q_rand.union(*q)
     #pagination 
-    page = request.args.get('page', 1, type=int)
+    page = request.values.get('page', 1, type=int)
     pagination = query.order_by(Posts.timestamp.desc()).\
             paginate(
                 page,
@@ -116,8 +116,7 @@ def get_ruts():
     prev = None
     if pagination.has_prev:
         prev = url_for(
-            'rest.ruts', 
-            userid=userid, 
+            'rest.get_ruts', 
             ref=ref, 
             page=page-1, 
             _external=True
@@ -125,8 +124,7 @@ def get_ruts():
     more = None
     if pagination.has_next:
         more = url_for(
-            'rest.ruts', 
-            userid=userid, 
+            'rest.get_ruts', 
             ref=ref, 
             page=page+1, 
             _external=True
@@ -155,7 +153,54 @@ def new_rut():
     db.session.commit()
     return jsonify(post.to_dict())
 
-# @rest.route('/auth/<servername>')
-# def auth(servername):
-#     #from ..auth.views import login
-#     return redirect(url_for('auth.login', server_name=servername))
+@rest.route('/clips')
+@auth.login_required
+def get_clips():
+    user = g.user
+    userid = request.args.get('userid','')
+    itemid = request.args.get('itemid','')
+    ref = request.args.get('ref','')
+    q = Clips.query
+    if userid and itemid:
+        query =q.filter_by(creator_id=userid,item_id=itemid)
+    elif userid:
+        query = q.filter_by(creator_id=userid)
+    elif itemid:
+        query = q.filter_by(item_id=itemid)
+    elif ref == "All":
+        query = q.filter(creator_id != user.id)
+    else:
+        query = q.filter_by(creator_id=user.id)
+    #pagination 
+    page = request.args.get('page', 1, type=int)
+    pagination = query.order_by(Clips.timestamp.desc()).\
+            paginate(
+                page,
+                per_page=PER_PAGE,
+                error_out=False
+            )
+    clips = pagination.items
+    prev = None
+    if pagination.has_prev:
+        prev = url_for(
+            'rest.clipz', 
+            userid=userid, 
+            itemid=itemid, 
+            page=page-1, 
+            _external=True
+        )
+    more = None
+    if pagination.has_next:
+        more = url_for(
+            'rest.clipz', 
+            userid=userid, 
+            itemid=itemid, 
+            page=page+1, 
+            _external=True
+        )
+    return jsonify({
+        'clips': [c.to_dict() for c in clips],
+        'prev': prev,
+        'more': more,
+        'total': pagination.total
+    })

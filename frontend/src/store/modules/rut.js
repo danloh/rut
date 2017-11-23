@@ -14,7 +14,7 @@ const state = {
 
 // getters
 const getters = {
-  rutlist: state => state.rutz.list,
+  rutlist: state => state.rutz,
   rutdetail: state => state.rutdetail
 }
 
@@ -31,7 +31,7 @@ const mutations = {
   ADD_RUTS (state, data) {
     let ruts = state.rutz.list.ruts
     ruts.push.apply(ruts, data.ruts)
-    state.page += 1
+    state.rutz.page += 1
     state.rutz.list.more = data.more
   }
 }

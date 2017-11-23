@@ -1,44 +1,20 @@
+// to do  nested route-view
 <template>
   <div class="list-view">
+    <router-link to="/challenge/allclip">All Clips</router-link>
     <div class="clip-list">
-      <clip v-for="clip in clips" :key="clip.id" :clip="clip"></clip>
+      <router-view></router-view>
     </div>
   </div>
 </template>
 
 <script>
-import { getClips } from '../api/api'
-import Clip from '../components/Clip.vue'
+import ClipList from '../components/ClipList.vue'
 
 export default {
   name: 'challenge',
-  components: { Clip },
-
-  data () {
-    return {
-      clips: [],
-      total: 0,
-      getprev: null,
-      getmore: null,
-      page: 0
-    }
-  },
-
-  methods: {
-    fetchClips () {
-      let param = {}
-      getClips(param).then((resp) => {
-        this.clips = this.clips.concat(resp.data.clips)
-        this.total += resp.data.total
-        this.getprev = resp.data.prev
-        this.getmore = resp.data.more
-        this.page += 1
-      })
-    }
-  },
-
-  mounted () {
-    this.fetchClips()
+  components: { ClipList },
+  computed: {
   }
 }
 </script>

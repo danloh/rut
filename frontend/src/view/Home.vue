@@ -1,6 +1,6 @@
 <template>
   <div>
-    <rut-list :ruts="rutlist" @loadmore="loadmoreRuts"></rut-list>
+    <rut-list :rutlist="rutlist" @loadmore="loadmoreRuts"></rut-list>
   </div>
 </template>
 
@@ -15,7 +15,7 @@ export default {
   },
   computed: {
     rutz () {
-      return this.$store.state.rutz
+      return this.$store.state.rut.rutz
     },
     rutlist () {
       return this.rutz.list
