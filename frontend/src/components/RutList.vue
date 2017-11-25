@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="rut-list">
-      <rut-sum v-for="rut in rutlist.ruts" :key="rut.id" :rut="rut"></rut-sum>
+      <rut-sum v-for="rut in rutlist" :key="rut.id" :rut="rut"></rut-sum>
     </div>
     <div>
       <button @click="$emit('loadmore')" :disabled="!hasMore">More</button>
@@ -11,14 +11,21 @@
 
 <script>
 import RutSum from './RutSum.vue'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'rut-list',
   props: ['rutlist'],
   components: { RutSum },
   computed: {
+    ...mapGetters([
+      'currentPage',
+      'maxPage',
+      'perPage',
+      'rutdetail'
+    ]),
     hasMore () {
-      return this.rutlist.more !== null
+      return this.currentPage < this.maxPage
     }
   }
 }

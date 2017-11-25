@@ -103,37 +103,13 @@ def get_ruts():
         for tag_obj in tag_set:
             q.append(tag_obj.posts)
     q_rand = Posts.query.limit(30)
-    query = q_rand.union(*q)
-    #pagination 
-    page = request.values.get('page', 1, type=int)
-    pagination = query.order_by(Posts.timestamp.desc()).\
-            paginate(
-                page,
-                per_page=PER_PAGE,
-                error_out=False
-            )
-    ruts = pagination.items
-    prev = None
-    if pagination.has_prev:
-        prev = url_for(
-            'rest.get_ruts', 
-            ref=ref, 
-            page=page-1, 
-            _external=True
-        )
-    more = None
-    if pagination.has_next:
-        more = url_for(
-            'rest.get_ruts', 
-            ref=ref, 
-            page=page+1, 
-            _external=True
-        )
+    ruts = query = q_rand.union(*q)
+    
     return jsonify({
         'ruts': [r.to_dict() for r in ruts],
-        'prev': prev,
-        'more': more,
-        'total': pagination.total
+        'prev': None,
+        'more': None,
+        'total': ruts.count()
     })
 
 @rest.route('/create')
@@ -183,7 +159,7 @@ def get_clips():
     prev = None
     if pagination.has_prev:
         prev = url_for(
-            'rest.clipz', 
+            'rest.get_clips', 
             userid=userid, 
             itemid=itemid, 
             page=page-1, 
@@ -192,9 +168,9 @@ def get_clips():
     more = None
     if pagination.has_next:
         more = url_for(
-            'rest.clipz', 
-            userid=userid, 
-            itemid=itemid, 
+            'rest.get_clips', 
+            userid=userid,
+            itemid=itemid,
             page=page+1, 
             _external=True
         )

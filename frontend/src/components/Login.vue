@@ -1,15 +1,18 @@
 <template>
-  <el-form :model="loginForm" :rules="rules" ref="loginForm" label-width="100px">
-    <el-form-item label="Username" prop="username">
-      <el-input v-model="loginForm.username"></el-input>
-    </el-form-item>
-    <el-form-item label="Password" prop="password">
-      <el-input v-model="loginForm.password"></el-input>
-    </el-form-item>
-    <el-form-item>
-      <el-button type="primary" @click="onLogin('loginForm', loginForm)">Log in</el-button>
-    </el-form-item>
-  </el-form>
+  <el-row><el-col :span="8" :offset="8"><div>
+    <el-form class="card-box" :model="loginForm" :rules="rules" ref="loginForm">
+      <h3>Please Log in</h3>
+      <el-form-item label="Username" prop="username">
+        <el-input v-model="loginForm.username" placeholder="Username"></el-input>
+      </el-form-item>
+      <el-form-item label="Password" prop="password">
+        <el-input :type="pwdType" v-model="loginForm.password" placeholder="Password"></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="onLogin('loginForm', loginForm)">Log in</el-button>
+      </el-form-item>
+    </el-form>
+  </div></el-col></el-row>
 </template>
 <script>
 export default {
@@ -21,13 +24,10 @@ export default {
         password: ''
       },
       rules: {
-        username: [
-          { required: true, message: 'Please enter username', trigger: 'blur' }
-        ],
-        password: [
-          { required: true, message: 'Please enter password', trigger: 'blur' }
-        ]
-      }
+        username: [{ required: true, message: 'Please enter username', trigger: 'blur' }],
+        password: [{ required: true, message: 'Please enter password', trigger: 'blur' }]
+      },
+      pwdType: 'password'
     }
   },
   methods: {

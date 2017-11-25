@@ -1,3 +1,5 @@
+import axios from '@/main'
+
 // initial state
 const state = {
   clipz: {
@@ -18,6 +20,15 @@ const getters = {
 
 // actions
 const actions = {
+  getClip: ({commit, state}, param = {}) => {
+    return axios.get('api/clips', param)
+    .then(resp => {
+      const notFirstPage = param.page && param.page > 1
+      const muta = `${notFirstPage ? 'ADD' : 'SET'}_CLIPS`
+      commit(muta, resp.data)
+      return Promise.resolve(resp.data)
+    })
+  }
 }
 
 // mutations

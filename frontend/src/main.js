@@ -17,14 +17,16 @@ axios.defaults.auth = {
   username: '',
   password: ''
 }
-
-// axios.interceptors.request.use((config) => {
-//   console.log(config)
-//   return config
-// }, (error) => {
-//   return Promise.reject(error)
-// })
-
+// Request interceptor
+axios.interceptors.request.use((config) => {
+  if (store.state.token) {
+    config.headers['X-Token'] = store.state.token
+  }
+  return config
+}, (error) => {
+  return Promise.reject(error)
+})
+// Response interceptor
 axios.interceptors.response.use((response) => {
   return response
 }, (error) => {

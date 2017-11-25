@@ -34,7 +34,7 @@ const router = new Router({
       meta: {auth: true},
       children: [
         { path: '', name: 'Myclip', component: createClipList() },
-        { path: '/allclip', name: 'Allclip', component: createClipList('allclip', {ref: 'All'}) }
+        { path: 'allclip', name: 'Allclip', component: createClipList('allclip', {ref: 'All'}) }
       ]
     }
   ]

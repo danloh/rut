@@ -1468,6 +1468,7 @@ class Users(UserMixin, db.Model):
         user_dict = {
             'id': self.id,
             'name': self.nickname or self.name,
+            'role': self.role.duty,
             'avatar': self.avatar,
             'location': self.location,
             'about': self.about_me,

@@ -10,7 +10,7 @@ import clip from './modules/clip'
 Vue.use(Vuex)
 
 const store = new Vuex.Store({
-  state: {
+  state: {  // only for auth user
     user: null,
     token: '',
     nexturl: ''

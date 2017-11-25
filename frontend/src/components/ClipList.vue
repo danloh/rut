@@ -1,7 +1,7 @@
 <template>
   <div class="list-view">
     <div class="clip-list">
-      <clip v-for="clip in cliplist" :key="clip.id" :clip="clip"></clip>
+      <clip v-for="clip in cliplist.clips" :key="clip.id" :clip="clip"></clip>
     </div>
     <div>
       <button @click="loadmoreClip" :disabled="!hasMore">More</button>
@@ -20,7 +20,7 @@ export default {
   components: { Clip },
   computed: {
     clipz () {
-      return this.$store.state.clipz
+      return this.$store.state.clip.clipz
     },
     cliplist () {
       return this.clipz.list
