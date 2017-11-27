@@ -14,10 +14,10 @@
         <router-link to="/create">
           <b>Create Now</b>
         </router-link>
-        <el-button type="primary" @click="onLogout">Log out</el-button>
+        <el-button class="rightmenu" @click="onLogout">Log out</el-button>
       </nav>
     </header>
-    <div>
+    <div class="view">
       <router-view></router-view>
     </div>
   </div>
@@ -57,12 +57,12 @@ a
   background-color #ff6600
   position fixed
   z-index 999
-  height 55px
+  height 50px
   top 0
   left 0
   right 0
   .inner
-    max-width 800px
+    max-width 960px
     box-sizing border-box
     margin 0px auto
     padding 15px 5px
@@ -82,27 +82,13 @@ a
       font-weight 400
     &:nth-child(6)
       margin-right 0
+  .rightmenu
+    margin 0
+    float right
 .view
-  max-width 800px
+  max-width 960px
+  width 90%
   margin 0 auto
   position relative
 
-.fade-enter-active, .fade-leave-active
-  transition all .2s ease
-
-.fade-enter, .fade-leave-active
-  opacity 0
-
-@media (max-width 860px)
-  .header .inner
-    padding 15px 30px
-
-@media (max-width 600px)
-  .header
-    .inner
-      padding 15px
-    a
-      margin-right 1em
-    .github
-      display none
 </style>

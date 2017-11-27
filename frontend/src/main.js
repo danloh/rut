@@ -45,12 +45,14 @@ axios.interceptors.response.use((response) => {
 router.beforeEach((to, from, next) => {
   if (to.meta.auth) {
     let localToken = localStorage.token
+    let localID = localStorage.userid
     if (localToken) {
       axios.defaults.auth = {
         username: localToken,
         password: localToken
       }
       store.commit('SET_TOKEN', localToken)
+      store.commit('SET_USER', localID)
       next()
     } else {
       next({path: '/login'})

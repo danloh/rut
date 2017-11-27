@@ -4,8 +4,9 @@
       <rut-sum v-for="rut in rutlist" :key="rut.id" :rut="rut"></rut-sum>
     </div>
     <div>
-      <button @click="$emit('loadmore')" :disabled="!hasMore">More</button>
+      <el-button @click="$emit('loadmore')" :disabled="!hasMore">More</el-button>
     </div>
+    <br>
   </div>
 </template>
 
@@ -33,14 +34,8 @@ export default {
 
 <style lang="stylus">
 .rut-list
-  position absolute
-  margin 30px 0
+  margin 10px 0
   width 100%
-  ul
-    padding 0
-    margin 0
-@media (max-width 600px)
-  .news-list
-    margin 10px 0
-
+  li
+    list-style-type none
 </style>
