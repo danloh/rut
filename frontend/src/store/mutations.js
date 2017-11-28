@@ -17,6 +17,7 @@ export default {
   DEL_TOKEN (state) {
     state.token = ''
     state.userid = ''
+    state.user = null
     localStorage.token = ''
     localStorage.userid = ''
   },

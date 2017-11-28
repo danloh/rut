@@ -14,7 +14,25 @@
         <router-link to="/create">
           <b>Create Now</b>
         </router-link>
-        <el-button class="rightmenu" @click="onLogout">Log out</el-button>
+        <div class="rightmenu">
+          <el-dropdown v-if="authed">
+            <el-button type="success" size="small">
+              <img class="profile" :src="avatar" alt="Avatar">
+              <i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>Profile</el-dropdown-item>
+              <el-dropdown-item>Setting</el-dropdown-item>
+              <el-dropdown-item>
+                <el-button size="small" @click="onLogout">Log out</el-button>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+          <div class="login" v-else>
+            <router-link to="/register">Signup</router-link>
+            <router-link to="/login">Login</router-link>
+          </div>
+        </div>
       </nav>
     </header>
     <div class="view">
@@ -25,12 +43,25 @@
 
 <script>
 // import store from './store'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'app',
+  computed: {
+    ...mapGetters([
+      'currentUser'
+    ]),
+    authed () {
+      return this.currentUser !== null
+    },
+    avatar () {
+      return this.currentUser.avatar
+    }
+  },
   methods: {
     onLogout () {
       this.$store.commit('DEL_TOKEN')
+      this.$router.push('/')
     }
   },
   beforeDestroy () {
@@ -85,6 +116,14 @@ a
   .rightmenu
     margin 0
     float right
+    .profile
+      width 14px
+      height 14px
+    .login
+      a
+        color green
+        font-size 1.0em
+        font-weight 700
 .view
   max-width 960px
   width 90%

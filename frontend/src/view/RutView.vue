@@ -1,65 +1,91 @@
 <template>
-  <div class="rut-view" v-if="rut">
-    <template v-if="rut">
-      <div class="item-view-header">
-        <h1>{{ rut.title }}</h1>
-        <p class="meta">
-          Created by {{ rut.creator.name }}
-          | {{ rut.createat }}
-          | including {{ rut.itemcount }} items
-        </p>
-      </div>
-      <div>
-        {{rut.intro}}
-      </div>
-      <template v-for="tip in tips">
-        <item-sum v-if="tip.item" :item="tip.item" :key="tip.order"></item-sum>
-        {{tip.tip}}
-      </template>
-      <div>
-        {{rut.epilog}}
-      </div>
-      <div>
-        <router-link :to="'/rut/comment' + rut.id">Comment</router-link>
-      </div>
-    </template>
+  <div class="rutview">
+    <div>
+      <span class="tag" v-for="tag in tags" :key="tag.id">
+        <router-link :to="'/tag/' + tag.id">{{tag.tagname}}</router-link>
+      </span>
+    </div>
+    <div>
+      <h2>{{ arut.title }}</h2>
+      <p class="meta">
+        Created by {{ arut.creator.name }}
+        | {{ arut.createat }}
+        | including {{ arut.itemcount }} items
+      </p>
+    </div>
+    <div class="intro" v-html="arut.intro"></div>
+    <div class="toolbar">
+      <el-button type="success" size="mini" plain>Star {{arut.starcount}}</el-button>
+      <el-button type="success" size="mini" plain>Challenge {{arut.challengecount}}</el-button>
+    </div>
+    <div class="itemtip" v-for="tip in tips" :key="tip.order">
+      <item-sum class="itemsum" :item="tip.item"></item-sum>
+      <div class="tip" v-html="tip.tip"></div>
+    </div>
+    <div class="epilog">
+      {{arut.epilog}}
+    </div>
+    <div class="comment">
+      <router-link :to="'/rut/comment' + arut.id">Comment</router-link>
+    </div>
   </div>
 </template>
 
 <script>
-import { getRut } from '../api/api'
 import Spinner from '../components/Spinner.vue'
 import ItemSum from '../components/ItemSum.vue'
 import Comment from '../components/Comment.vue'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'rut-view',
   components: { ItemSum, Spinner, Comment },
-
   data: () => ({
-    rut: null
   }),
-
   computed: {
+    ...mapGetters({
+      arut: 'rutDetail'
+    }),
     tips () {
-      let r = this.rut
-      return r ? r.tips : null
+      return this.arut.tips
+    },
+    tags () {
+      return this.arut.tags
     }
   },
-
-  // Fetch rut when mounted on the client
   mounted () {
-    this.fetchRut()
-  },
-
-  methods: {
-    fetchRut () {
-      let param = {}
-      getRut(this.$route.params.id, param).then((resp) => {
-        this.rut = resp.data
-      })
-    }
+    let rutid = this.$route.params.id
+    this.$store.dispatch('getRut', rutid)
   }
 }
 </script>
+
+<style lang="stylus" scoped>
+$bgcolor = #f6f6f1
+.meta 
+  color green
+.intro
+  background-color $bgcolor
+  padding 10px
+.itemtip
+  background-color $bgcolor
+  .itemsum
+    top 5px
+    margin 5px
+  .tip
+    padding 10px
+.tag
+  display inline-blcok
+  padding-right 10px
+  border-radius 100px
+  a
+    color green
+    background-color #eef4fa
+    font-size 1.2em
+    font-weight 700
+.toolbar
+  display flex
+  align-items center
+  justify-content flex-end
+</style>
 
