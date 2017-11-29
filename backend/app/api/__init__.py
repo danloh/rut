@@ -180,15 +180,3 @@ def get_clips():
         'more': more,
         'total': pagination.total
     })
-
-@rest.route('/tag')
-def get_tag_ruts():
-    tagid = request.args.get('tagid','')
-    tag = Tags.query.get_or_404(tagid)
-    tagruts = [p.to_dict() for p in tag.posts]
-    return jsonify({
-        'tagid': tag.id,
-        'tagname': tag.tag,
-        'descript': tag.descript,
-        'tagruts': tagruts
-    })

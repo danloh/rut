@@ -101,16 +101,19 @@ class Rutz(Resource):
             'total': pagination.total
         }
 
-class Rut(Resource):
+class Rut(Resource):  #
     def get(self,rutid):
         rut = Posts.query.get_or_404(rutid)
         rut_dict = rut.to_dict()
         #attach tips and items included in rut 
-        tips = [t.to_dict() for t in rut.items]
-        rut_dict['tips'] = tips
+        tips = [t.to_dict() for t in rut.items]  # in Collect model
+        # sort tips per order-key in collect-dict
+        from operator import itemgetter
+        order_tips = sorted(tips, key=itemgetter('order'))
+        rut_dict['tips'] = order_tips
         return rut_dict
 
-class Tag(Resource):
+class Tag(Resource):  #
     def get(self,tagid):
         tag = Tags.query.get_or_404(tagid)
         tag_dict = tag.to_dict()

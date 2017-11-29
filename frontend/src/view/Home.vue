@@ -59,9 +59,9 @@ export default {
     background-color white
     .lefttitle
       background-color #e5ebe4
-      padding 5px 10px
+      padding 10px 15px
     .leftbody
-      padding 5px 10px
+      padding 5px 20px
   .rutlist
     padding auto
 </style>

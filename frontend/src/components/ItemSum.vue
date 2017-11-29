@@ -5,7 +5,7 @@
     </div>
     <div class="info">
       <span class="title">
-        <router-link :to="'/item/' + item.id">{{ item.title }}</router-link>
+        {{item.cate}} <router-link :to="'/item/' + item.id">{{ item.title }}</router-link>
       </span><br>
       <span><b>Byline:</b> {{ item.byline }} </span><br>
       <span><b>Published:</b> {{ item.publisher }} | {{ item.pubdate }} </span><br>
@@ -46,10 +46,9 @@ export default {
 .itemsum
   background-color #fff
   min-height 180px
-  padding 20px 30px 20px 580px
+  padding 10px 100px 10px 140px
   border-bottom 1px solid #eee
   position relative
-  line-height 20px
   .thumb
     width 120px
     height 160px
@@ -57,19 +56,17 @@ export default {
     top 10px
     left 2px
   .info
-    position absolute
-    top 10px
-    left 150px
-    width 420px
+    font-size 0.9em
     .title
       font-size 1.2em
       font-weight 700
       a
-        color #828282
         &:hover
           color lightblue
-    .operate
-      padding auto
+  .operate
+    position absolute
+    top 10px
+    right 2px
 li
   list-style-type none
 </style>

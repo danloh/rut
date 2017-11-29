@@ -80,8 +80,8 @@ class Collect(db.Model):
     def to_dict(self):
         item_dict = self.item.to_dict()
         tip_dict = {
-            'id': self.id,
             'order': self.order,
+            'cid': self.id,
             'postid': self.post_id,
             'itemid': self.item_id,
             'item': item_dict,

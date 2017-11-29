@@ -3,7 +3,7 @@
     <header class="header">
       <nav class="inner">
         <router-link to="/">
-            <b style="color:darkorange; text-decoration:none">Readup.Tips</b>
+            <b style="color:darkorange; font-size:1.6em">Readup.Tips</b>
         </router-link>
         <router-link to="/challenge">
           <b>Challenge</b>
@@ -73,7 +73,8 @@ export default {
 <style lang="stylus">
 body
   font-family -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-  font-size 15px
+  font-size 16px
+  line-height 1.6em
   background-color lighten(#eceef1, 30%)
   margin 0
   padding-top 55px
@@ -81,7 +82,7 @@ body
   overflow-y scroll
 
 a
-  color #34495e
+  color #337ab7
   text-decoration none
 
 .header
@@ -104,7 +105,7 @@ a
     vertical-align middle
     font-weight 600
     letter-spacing .075em
-    margin-right 1.2em
+    margin-right 1.0em
     &:hover
       color darkgreen
     &.router-link-active
@@ -126,5 +127,4 @@ a
   width 90%
   margin 0 auto
   position relative
-
 </style>
