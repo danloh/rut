@@ -1,16 +1,10 @@
-import axios from 'axios'
+import axios from '@/main'
 
 let base = '/api'
-
-axios.defaults.auth = {
-  username: '',
-  password: ''
-}
-
 const request = (url, options = {}, method = 'get') => {
   let key = ~['delete', 'get', 'head'].indexOf(method) ? 'params' : 'data'
-  return axios(Object.assign({'url': url, 'method': method, 'validateStatus': false}, {[key]: options})).then(
-        res => res)
+  return axios(Object.assign({'url': url, 'method': method, 'validateStatus': false}, {[key]: options}))
+  .then(res => res)
 }
 
 const register = data => {
@@ -29,12 +23,16 @@ const auth = (servername, params) => {
   return request(`${base}/auth/${servername}`, params)
 }
 
-const getRuts = params => {
+const fetchRuts = params => {
   return request(`${base}/ruts`, params)
 }
 
-const getRut = (rutid, params) => {
+const fetchRut = (rutid, params) => { // !!
   return request(`${base}/rut/${rutid}`, params)
+}
+
+const fetchTag = (tagid, params) => { // !!
+  return request(`${base}/tag/${tagid}`, params)
 }
 
 const getItem = (itemid, params) => {
@@ -55,8 +53,9 @@ export {
   login,
   auth,
   authUser,
-  getRuts,
-  getRut,
+  fetchRuts,
+  fetchRut,
+  fetchTag,
   getItem,
   getClips,
   getDemands

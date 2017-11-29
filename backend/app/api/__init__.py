@@ -19,11 +19,12 @@ PER_PAGE = 2
 
 #api.add_resource(res.User, '/user')
 #api.add_resource(res.Rutz, '/ruts')
-api.add_resource(res.Rut, '/rut/<int:rutid>')
+api.add_resource(res.Rut, '/rut/<int:rutid>')  #
+api.add_resource(res.Tag, '/tag/<int:tagid>')  #
 #api.add_resource(res.Clipz, '/clips')
-api.add_resource(res.Demandz, '/demands')
-api.add_resource(res.Item, '/item/<int:itemid>')
-api.add_resource(res.Commentz, '/comments')
+#api.add_resource(res.Demandz, '/demands')
+#api.add_resource(res.Item, '/item/<int:itemid>')
+#api.add_resource(res.Commentz, '/comments')
 
 # for user authentication
 @rest.route('/register', methods = ['POST'])
@@ -85,6 +86,8 @@ def get_user():
 def get_ruts():
     user = g.user
     ref = request.args.get('ref','random')
+    #get related tags set and fav tags
+    tag_set, tag_fv = user.get_tag_set()
     if ref == 'create':
         q = [user.posts] # a query list
     elif ref == 'star':
@@ -94,22 +97,19 @@ def get_ruts():
     elif ref == 'contribute':
         q = [c.contribute_post for c in user.contribute_posts]
     else:
-        #get related tags set and fav tags, from cached Model-func
-        tag_set, tag_fv = user.get_tag_set()
         # get followed posts queries
         post_fo = [f.followed.posts for f in user.followed]
         #list the queries, followed _posts as init 
         q = post_fo
         for tag_obj in tag_set:
             q.append(tag_obj.posts)
-    q_rand = Posts.query.limit(30)
+    q_rand = Posts.query.limit(0)
     ruts = query = q_rand.union(*q)
     
-    return jsonify({
+    return jsonify({  # need to optimize
         'ruts': [r.to_dict() for r in ruts],
-        'prev': None,
-        'more': None,
-        'total': ruts.count()
+        'total': ruts.count(),
+        'tags': [{'tagid': t.id,'tagname': t.tag} for t in tag_set]   
     })
 
 @rest.route('/create')
@@ -179,4 +179,16 @@ def get_clips():
         'prev': prev,
         'more': more,
         'total': pagination.total
+    })
+
+@rest.route('/tag')
+def get_tag_ruts():
+    tagid = request.args.get('tagid','')
+    tag = Tags.query.get_or_404(tagid)
+    tagruts = [p.to_dict() for p in tag.posts]
+    return jsonify({
+        'tagid': tag.id,
+        'tagname': tag.tag,
+        'descript': tag.descript,
+        'tagruts': tagruts
     })

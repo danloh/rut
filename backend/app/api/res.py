@@ -102,7 +102,6 @@ class Rutz(Resource):
         }
 
 class Rut(Resource):
-
     def get(self,rutid):
         rut = Posts.query.get_or_404(rutid)
         rut_dict = rut.to_dict()
@@ -110,6 +109,26 @@ class Rut(Resource):
         tips = [t.to_dict() for t in rut.items]
         rut_dict['tips'] = tips
         return rut_dict
+
+class Tag(Resource):
+    def get(self,tagid):
+        tag = Tags.query.get_or_404(tagid)
+        tag_dict = tag.to_dict()
+        #attach ruts included in tag 
+        tagruts = [p.to_dict() for p in tag.posts]
+        tag_dict['ruts'] = tagruts
+        tag_dict['total'] = len(tagruts)
+        # related tags
+        parent_tags = [t.parent_tag for t in tag.parent_tags.\
+                    order_by(db.func.rand()).limit(5)]
+        tags = parent_tags
+        for tg in parent_tags:
+            child_tags = [t.child_tag for t in Clan.query.\
+                    filter_by(parent_tag_id=tg.id).\
+                    order_by(db.func.rand()).limit(5)]
+            tags += child_tags   
+        tag_dict['tags'] = [{'tagid': t.id,'tagname': t.tag} for t in tags] 
+        return tag_dict
 
 class Item(Resource):
 

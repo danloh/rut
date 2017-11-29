@@ -3,7 +3,7 @@
     <header class="header">
       <nav class="inner">
         <router-link to="/">
-            <b style="color:darkorange">Readup.Tips</b>
+            <b style="color:darkorange; text-decoration:none">Readup.Tips</b>
         </router-link>
         <router-link to="/challenge">
           <b>Challenge</b>
@@ -85,7 +85,7 @@ a
   text-decoration none
 
 .header
-  background-color #ff6600
+  background-color #fafafa
   position fixed
   z-index 999
   height 50px
@@ -98,21 +98,18 @@ a
     margin 0px auto
     padding 15px 5px
   a
-    color rgba(255, 255, 255, .8)
+    color grey
     line-height 24px
-    transition color .15s ease
     display inline-block
     vertical-align middle
-    font-weight 300
+    font-weight 600
     letter-spacing .075em
-    margin-right 1.8em
+    margin-right 1.2em
     &:hover
-      color #fff
+      color darkgreen
     &.router-link-active
-      color #fff
-      font-weight 400
-    &:nth-child(6)
-      margin-right 0
+      color darkgreen
+      font-weight 800
   .rightmenu
     margin 0
     float right

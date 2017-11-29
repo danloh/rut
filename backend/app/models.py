@@ -752,7 +752,7 @@ class Tags(db.Model):
             'id': self.id,
             'tagname': self.tag,
             'descript': self.descript,
-            'url': '/tag/'+str(self.id)
+            'favcount': self.favers.count()
         }
         return tag_dict
 

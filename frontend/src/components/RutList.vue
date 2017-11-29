@@ -22,8 +22,7 @@ export default {
     ...mapGetters([
       'currentPage',
       'maxPage',
-      'perPage',
-      'rutdetail'
+      'perPage'
     ]),
     hasMore () {
       return this.currentPage < this.maxPage

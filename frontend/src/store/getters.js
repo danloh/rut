@@ -6,7 +6,10 @@ const getters = {
   currentRuts: state => state.rut.currentRuts,
   maxPage: state => state.rut.maxPage,
   perPage: state => state.rut.perPage,
-  rutDetail: state => state.rut.rutDetail
+  allTags: state => state.rut.allTags,
+  showTags: state => state.rut.showTags,
+  rutDetail: state => state.rut.rutDetail,
+  tagDetail: state => state.rut.tagDetail
 }
 
 export default getters

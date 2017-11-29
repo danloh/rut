@@ -14,7 +14,7 @@
     </div>
     <div class="operate">
       <el-dropdown>
-        <el-button type="primary" size="mini" plain>Flag it<i class="el-icon-arrow-down el-icon--right"></i></el-button>
+        <el-button type="primary" size="mini" plain>{{flagAction}}<i class="el-icon-arrow-down el-icon--right"></i></el-button>
         <el-dropdown-menu slot="dropdown">
           <el-dropdown-item>Schedule</el-dropdown-item>
           <el-dropdown-item>Working On</el-dropdown-item>
@@ -29,6 +29,11 @@
 export default {
   name: 'item-sum',
   props: ['item'],
+  data () {
+    return {
+      flagAction: 'Flag it'
+    }
+  },
   computed: {
     cover () {
       return this.item.cover
