@@ -1,7 +1,7 @@
 <template>
   <div class="homepage">
     <div class="homeside">
-      <h4 class="lefttitle">Feed</h4>
+      <h4 class="lefttitle">Top Topics</h4>
       <div class="leftbody" v-for="tag in showTags" :key="tag.tagid">
         <router-link :to="'/tag/' + tag.tagid">{{tag.tagname}}</router-link>
       </div>

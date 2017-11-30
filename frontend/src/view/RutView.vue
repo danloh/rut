@@ -16,15 +16,18 @@
       </div>
       <div class="intro" v-html="arut.intro"></div>
       <div class="toolbar">
-        <el-button type="success" size="mini" plain>{{starAction}} {{arut.starcount}}</el-button>
-        <el-button type="success" size="mini" plain>{{challengeAction}} {{arut.challengecount}}</el-button>
+        <el-button type="info" size="mini" plain v-if="canEdit">...Edit...</el-button>
+        <el-button type="info" size="mini" plain v-if="canEdit">...Add Item...</el-button>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <el-button type="success" size="mini" plain><b>{{starAction}} {{arut.starcount}}</b></el-button>
+        <el-button type="warning" size="mini" plain><b>{{challengeAction}} {{arut.challengecount}}</b></el-button>
       </div>
       <div class="itemtip" v-for="tip in tips" :key="tip.order">
         <item-sum class="itemsum" :item="tip.item"></item-sum>
         <div class="tip" v-html="tip.tip"></div>
       </div>
       <div class="epilog">
-        {{arut.epilog}}
+        {{arut.epilog}} <el-button type="text" v-if="canEdit">...Edit Epilog</el-button>
       </div>
       <div class="comment">
         <router-link :to="'/rut/comment' + arut.id">Comment</router-link>
@@ -67,6 +70,10 @@ export default {
     },
     credential () {
       return this.arut.credential
+    },
+    canEdit () {
+      return true // this.creator.id === this.$store.state.userid ||
+      // this.arut.editable === 'Everyone'
     }
   },
   mounted () {

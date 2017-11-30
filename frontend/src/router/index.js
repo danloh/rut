@@ -35,8 +35,9 @@ const router = new Router({
       component: Challenge,
       meta: {auth: true},
       children: [
-        { path: '', name: 'Myclip', component: createClipList() },
-        { path: 'allclip', name: 'Allclip', component: createClipList('allclip', {ref: 'All'}) }
+        { path: '', name: 'defaultclip', redirect: 'myclip' },
+        { path: 'myclip', name: 'Myclip', component: createClipList(), meta: {auth: true} },
+        { path: 'allclip', name: 'Allclip', component: createClipList('allclip', {ref: 'All'}), meta: {auth: true} }
       ]
     }
   ]

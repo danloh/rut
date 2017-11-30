@@ -119,6 +119,7 @@ class Tag(Resource):  #
         tag_dict = tag.to_dict()
         #attach ruts included in tag 
         tagruts = [p.to_dict() for p in tag.posts]
+        tagruts.reverse()  # as order_by, which is faster?
         tag_dict['ruts'] = tagruts
         tag_dict['total'] = len(tagruts)
         # related tags

@@ -4,7 +4,7 @@
       <rut-sum v-for="rut in rutlist" :key="rut.id" :rut="rut"></rut-sum>
     </div>
     <div>
-      <el-button @click="$emit('loadmore')" :disabled="!hasMore">More</el-button>
+      <el-button class="blockbtn" @click="$emit('loadmore')" :disabled="!hasMore">More</el-button>
     </div>
     <br>
   </div>

@@ -1,32 +1,32 @@
-import axios from '@/main'
+// import axios from '@/main'
+import {
+  fetchClips,
+  newClip
+} from '@/api/api'
 
 // initial state
+const perPage = 5
 const state = {
-  clipz: {
-    list: {
-      clips: [],
-      prev: null,
-      more: null,
-      total: 0
-    },  // get from api
-    page: 0
-  }
-}
-
-// getters
-const getters = {
-  cliplist: state => state.clipz.list
+  allClips: [],
+  totalClips: 0,
+  currentP: 0,
+  currentClips: [],
+  maxP: 0,
+  perP: perPage
 }
 
 // actions
 const actions = {
-  getClip: ({commit, state}, param = {}) => {
-    return axios.get('api/clips', param)
+  getClips: ({commit, state}, params = {}) => {
+    return fetchClips(params)
     .then(resp => {
-      const notFirstPage = param.page && param.page > 1
-      const muta = `${notFirstPage ? 'ADD' : 'SET'}_CLIPS`
-      commit(muta, resp.data)
-      return Promise.resolve(resp.data)
+      commit('SET_CLIPS', resp.data)
+    })
+  },
+  postClip: ({commit, state}, params = {}) => {
+    return newClip(params)
+    .then(resp => {
+      commit('ADD_CLIP', resp.data)
     })
   }
 }
@@ -34,20 +34,27 @@ const actions = {
 // mutations
 const mutations = {
   SET_CLIPS (state, data) {
-    state.clipz.list = data
-    state.clipz.page = 1
+    state.allClips = data.clips
+    state.totalClips = data.total
+    state.currentP = 1
+    state.maxP = Math.ceil(data.total / perPage)
+    let sliced = data.clips.slice(0, perPage)
+    state.currentClips = sliced
   },
-  ADD_CLIPS (state, data) {
-    let clips = state.clipz.list.clips
-    clips.push.apply(clips, data.clips)
-    state.page += 1
-    state.clipz.list.more = data.more
+  ADD_CLIPS (state, page) {
+    let start = page * perPage
+    let end = start + perPage
+    let nextClips = state.allClips.slice(start, end)
+    state.currentP += 1
+    state.currentClips.push(...nextClips)
+  },
+  ADD_CLIP (state, data) {
+    state.currentClips.unshift(data)
   }
 }
 
 export default {
   state,
-  getters,
   actions,
   mutations
 }

@@ -83,34 +83,69 @@ def get_user():
 
 @rest.route('/ruts')
 @auth.login_required
-def get_ruts():
+def get_ruts():            ##!! to be optimized
     user = g.user
     ref = request.args.get('ref','random')
     #get related tags set and fav tags
     tag_set, tag_fv = user.get_tag_set()
-    if ref == 'create':
-        q = [user.posts] # a query list
-    elif ref == 'star':
-        q = [s.star_post for s in user.star_posts]
-    elif ref == 'challenge':
-        q = [c.challenge_post for c in user.challenge_posts]
-    elif ref == 'contribute':
-        q = [c.contribute_post for c in user.contribute_posts]
-    else:
-        # get followed posts queries
-        post_fo = [f.followed.posts for f in user.followed]
-        #list the queries, followed _posts as init 
-        q = post_fo
-        for tag_obj in tag_set:
-            q.append(tag_obj.posts)
+    # get followed posts queries
+    post_fo = [f.followed.posts for f in user.followed]
+    #list the queries, followed _posts as init 
+    q = post_fo
+    for tag_obj in tag_set:
+        q.append(tag_obj.posts)
     q_rand = Posts.query.limit(0)
-    ruts = query = q_rand.union(*q)
-    
+    query = q_rand.union(*q)
+    ruts = query.order_by(Posts.timestamp.desc())  # other way,list reverse
     return jsonify({  # need to optimize
         'ruts': [r.to_dict() for r in ruts],
         'total': ruts.count(),
-        'tags': [{'tagid': t.id,'tagname': t.tag} for t in tag_set]   
+        'tags': [{'tagid': t.id,'tagname': t.tag} for t in tag_set] 
     })
+
+@rest.route('/challengeruts')
+@auth.login_required
+def get_challege_ruts():
+    user = g.user
+    ref = request.args.get('ref','') # for current challenge
+    if ref:
+        challenge_rut = user.challenge_posts.first()
+        try:
+            rut = challenge_rut.challenge_post
+            deadline = challenge_rut.deadline
+            rut_dict = rut.to_dict()
+            items = [t.item.to_dict() for t in rut.items]
+            return jsonify({
+                'ruts': [rut_dict],
+                'total': 1,
+                'tags': [],
+                'items': items,
+                'deadline': deadline
+            })
+        except:
+            return jsonify({
+                'ruts': [],
+                'total': 0,
+                'tags': []
+            })
+    q = [c.challenge_post for c in user.challenge_posts]
+    q_rand = Posts.query.limit(0)  ##???
+    query = q_rand.union(*q)
+    ruts = query.order_by(Posts.timestamp.desc())  # other way,list reverse
+    return jsonify({
+        'ruts': [r.to_dict() for r in ruts],
+        'total': ruts.count(),
+        'tags': []
+    })
+
+    # if ref == 'create':
+    #     q = [user.posts] # a query list
+    # elif ref == 'star':
+    #     q = [s.star_post for s in user.star_posts]
+   
+    # elif ref == 'contribute':
+    #     q = [c.contribute_post for c in user.contribute_posts]
+    # else:
 
 @rest.route('/create')
 @auth.login_required
@@ -144,39 +179,23 @@ def get_clips():
     elif itemid:
         query = q.filter_by(item_id=itemid)
     elif ref == "All":
-        query = q.filter(creator_id != user.id)
+        query = q.filter(Clips.creator != user)
     else:
         query = q.filter_by(creator_id=user.id)
-    #pagination 
-    page = request.args.get('page', 1, type=int)
-    pagination = query.order_by(Clips.timestamp.desc()).\
-            paginate(
-                page,
-                per_page=PER_PAGE,
-                error_out=False
-            )
-    clips = pagination.items
-    prev = None
-    if pagination.has_prev:
-        prev = url_for(
-            'rest.get_clips', 
-            userid=userid, 
-            itemid=itemid, 
-            page=page-1, 
-            _external=True
-        )
-    more = None
-    if pagination.has_next:
-        more = url_for(
-            'rest.get_clips', 
-            userid=userid,
-            itemid=itemid,
-            page=page+1, 
-            _external=True
-        )
+    order_query = query.order_by(Clips.timestamp.desc()) # or reverse list
     return jsonify({
-        'clips': [c.to_dict() for c in clips],
-        'prev': prev,
-        'more': more,
-        'total': pagination.total
+        'clips': [c.to_dict() for c in order_query],
+        'total': query.count()
     })
+
+@rest.route('/newclip', methods=['POST'])
+@auth.login_required
+def new_clip():
+    clip = Clips(
+        creator = g.user,
+        body = request.json.get('clip'),
+        item = Items.query.get(1)  # for test currently
+    )
+    db.session.add(clip)
+    db.session.commit()
+    return jsonify(clip.to_dict())

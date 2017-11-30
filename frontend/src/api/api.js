@@ -27,6 +27,10 @@ const fetchRuts = params => {
   return request(`${base}/ruts`, params)
 }
 
+const fetchChallengeRuts = params => {
+  return request(`${base}/challengeruts`, params)
+}
+
 const fetchRut = (rutid, params) => { // !!
   return request(`${base}/rut/${rutid}`, params)
 }
@@ -39,8 +43,12 @@ const getItem = (itemid, params) => {
   return request(`${base}/item/${itemid}`, params)
 }
 
-const getClips = params => {
+const fetchClips = params => {
   return request(`${base}/clips`, params)
+}
+
+const newClip = params => {
+  return request(`${base}/newclip`, params, 'post')
 }
 
 const getDemands = params => {
@@ -54,9 +62,11 @@ export {
   auth,
   authUser,
   fetchRuts,
+  fetchChallengeRuts,
   fetchRut,
   fetchTag,
   getItem,
-  getClips,
-  getDemands
+  fetchClips,
+  getDemands,
+  newClip
 }

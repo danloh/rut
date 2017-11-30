@@ -1,6 +1,7 @@
 // import axios from '@/main'
 import {
   fetchRuts,
+  fetchChallengeRuts,
   fetchRut,
   fetchTag
 } from '@/api/api'
@@ -9,6 +10,7 @@ import {
 const perPage = 15
 const state = {
   allRuts: [],
+  totalRuts: 0,
   currentPage: 0,
   currentRuts: [],
   maxPage: 0,
@@ -25,6 +27,17 @@ const actions = {
     return fetchRuts(param)
     .then(resp => {
       commit('SET_RUTS', resp.data)
+    })
+  },
+  getChallengeRuts: ({commit, state}, param = {}) => {
+    return new Promise((resolve, reject) => {   // use case of Promise !!
+      fetchChallengeRuts(param)
+      .then(resp => {
+        commit('SET_RUTS', resp.data)
+        resolve(resp)
+      }).catch(error => {
+        reject(error)
+      })
     })
   },
   getRut: ({commit, state}, rutid, param = {}) => {
@@ -46,6 +59,7 @@ const actions = {
 const mutations = {
   SET_RUTS (state, data) {
     state.allRuts = data.ruts
+    state.totalRuts = data.total
     state.currentPage = 1
     state.maxPage = Math.ceil(data.total / perPage)
     let sliced = data.ruts.slice(0, perPage)

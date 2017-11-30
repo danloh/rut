@@ -1,16 +1,17 @@
 <template>
-  <div class="list-view">
+  <div class="cliplist">
     <div class="clip-list">
-      <clip v-for="clip in cliplist.clips" :key="clip.id" :clip="clip"></clip>
+      <clip v-for="clip in currentClips" :key="clip.id" :clip="clip"></clip>
     </div>
     <div>
-      <button @click="loadmoreClip" :disabled="!hasMore">More</button>
+      <el-button class="blockbtn" @click="loadmoreClip" :disabled="!hasMore">More</el-button>
     </div>
   </div>
 </template>
 
 <script>
 import Clip from '../components/Clip.vue'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'clip-list',
@@ -19,28 +20,25 @@ export default {
   },
   components: { Clip },
   computed: {
-    clipz () {
-      return this.$store.state.clip.clipz
-    },
-    cliplist () {
-      return this.clipz.list
-    },
-    nextPageParams () {
-      return {
-        page: this.clipz.page + 1
-      }
-    },
+    ...mapGetters([
+      'allClips',
+      'totalClips',
+      'currentP',
+      'currentClips',
+      'maxP',
+      'perP'
+    ]),
     hasMore () {
-      return this.cliplist.more !== null
+      return this.currentP < this.maxP
     }
   },
   methods: {
     loadmoreClip () {
-      this.$store.dispatch('getClip', Object.assign(this.param, this.nextPageParams))
+      this.$store.commit('ADD_CLIPS', this.currentP)
     }
   },
-  beforeMount () {
-    this.$store.dispatch('getClip', this.param)
+  mounted () {
+    this.$store.dispatch('getClips', this.param)
   }
 }
 </script>

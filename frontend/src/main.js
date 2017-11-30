@@ -5,11 +5,17 @@ import axios from 'axios'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import locale from 'element-ui/lib/locale/lang/en'
+import ProgressBar from './components/ProgressBar.vue'
 import App from './App'
 import router from './router'
 import store from './store'
 
+// UI + en
 Vue.use(ElementUI, { locale })
+// progress bar, reder off-document and append afterwards
+const bar = Vue.prototype.$bar = new Vue(ProgressBar).$mount()
+document.body.appendChild(bar.$el)
+
 Vue.config.productionTip = false
 
 // config axios
@@ -43,6 +49,7 @@ axios.interceptors.response.use((response) => {
 // config router
 // check auth when login required( define in meta
 router.beforeEach((to, from, next) => {
+  bar.start()
   if (to.meta.auth) {
     let localToken = localStorage.token
     let localID = localStorage.userid
@@ -54,11 +61,13 @@ router.beforeEach((to, from, next) => {
       store.commit('SET_TOKEN', localToken)
       store.commit('SET_USER', localID)
       next()
+      bar.finish()
     } else {
       next({path: '/login'})
     }
   } else {
     next()
+    bar.finish()
   }
 })
 

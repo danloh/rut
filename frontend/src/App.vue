@@ -97,7 +97,7 @@ a
     max-width 960px
     box-sizing border-box
     margin 0px auto
-    padding 15px 5px
+    padding 15px 0px
   a
     color grey
     line-height 24px
@@ -105,14 +105,13 @@ a
     vertical-align middle
     font-weight 600
     letter-spacing .075em
-    margin-right 1.0em
+    margin-right 0.85em
     &:hover
       color darkgreen
     &.router-link-active
-      color darkgreen
+      color green
       font-weight 800
   .rightmenu
-    margin 0
     float right
     .profile
       width 14px
@@ -122,6 +121,10 @@ a
         color green
         font-size 1.0em
         font-weight 700
+.blockbtn
+  display block
+  width 100%
+  text-align center
 .view
   max-width 960px
   width 90%

@@ -500,6 +500,7 @@ class Posts(db.Model):
             'challengecount': self.challengers.count(),
             'commentcount': self.comments.count(),
             'cover': self.post_cover,
+            'editable': self.editable,
             'creator': creator,
             'contributors': contributors,
             'tags': tags,
