@@ -6,9 +6,12 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import locale from 'element-ui/lib/locale/lang/en'
 import ProgressBar from './components/ProgressBar.vue'
+import titleMixin from './util/title'
 import App from './App'
 import router from './router'
 import store from './store'
+
+Vue.config.productionTip = false
 
 // UI + en
 Vue.use(ElementUI, { locale })
@@ -16,7 +19,8 @@ Vue.use(ElementUI, { locale })
 const bar = Vue.prototype.$bar = new Vue(ProgressBar).$mount()
 document.body.appendChild(bar.$el)
 
-Vue.config.productionTip = false
+// mixin title handler
+Vue.mixin(titleMixin)
 
 // config axios
 axios.defaults.auth = {
@@ -47,7 +51,7 @@ axios.interceptors.response.use((response) => {
 })
 
 // config router
-// check auth when login required( define in meta
+// check auth when login required( define in meta // need to tackle some issue!!
 router.beforeEach((to, from, next) => {
   bar.start()
   if (to.meta.auth) {

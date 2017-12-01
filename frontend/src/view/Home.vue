@@ -18,6 +18,7 @@ import { mapGetters } from 'vuex'
 
 export default {
   name: 'home',
+  title: 'Home',
   components: {
     RutList
   },

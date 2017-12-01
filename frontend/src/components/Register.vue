@@ -14,7 +14,8 @@
 </template>
 <script>
 export default {
-  name: 'login',
+  name: 'register',
+  title: 'Register',
   data () {
     return {
       regForm: {

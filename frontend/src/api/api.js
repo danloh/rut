@@ -51,8 +51,12 @@ const newClip = params => {
   return request(`${base}/newclip`, params, 'post')
 }
 
-const getDemands = params => {
+const fetchDemands = (params) => {
   return request(`${base}/demands`, params)
+}
+
+const newDemand = params => {
+  return request(`${base}/newdemand`, params, 'post')
 }
 
 export {
@@ -67,6 +71,7 @@ export {
   fetchTag,
   getItem,
   fetchClips,
-  getDemands,
-  newClip
+  fetchDemands,
+  newClip,
+  newDemand
 }

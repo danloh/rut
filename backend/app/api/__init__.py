@@ -10,7 +10,6 @@ from ..models import *
 
 rest = Blueprint('rest', __name__)
 api = Api(rest)
-
 auth = HTTPBasicAuth()
 
 from . import res
@@ -22,7 +21,7 @@ PER_PAGE = 2
 api.add_resource(res.Rut, '/rut/<int:rutid>')  #
 api.add_resource(res.Tag, '/tag/<int:tagid>')  #
 #api.add_resource(res.Clipz, '/clips')
-#api.add_resource(res.Demandz, '/demands')
+#api.add_resource(res.Demandz, '/demands', '/demands/<userid>', '/demands/<ref>/<userid>')
 #api.add_resource(res.Item, '/item/<int:itemid>')
 #api.add_resource(res.Commentz, '/comments')
 
@@ -147,7 +146,7 @@ def get_challege_ruts():
     #     q = [c.contribute_post for c in user.contribute_posts]
     # else:
 
-@rest.route('/create')
+@rest.route('/create', methods=['POST'])
 @auth.login_required
 def new_rut():
     post = Posts(
@@ -199,3 +198,36 @@ def new_clip():
     db.session.add(clip)
     db.session.commit()
     return jsonify(clip.to_dict())
+
+@rest.route('/demands')
+def get_demands():
+    query = q = Demands.query
+    userid = request.args.get('userid','')
+    ref = request.args.get('type','popular')
+    if userid:
+        query = q.filter_by(requestor_id=int(userid))
+    if ref == "new":
+        demands = query.order_by(Demands.timestamp.desc())
+    else:
+        demands = query.order_by(Demands.vote.desc())
+    demand_dict = {
+        'demands': [d.to_dict() for d in demands],
+        'total': demands.count()
+    }
+    return jsonify(demand_dict)
+
+@rest.route('/newdemand', methods=['POST'])
+@auth.login_required
+def new_demand():
+    sp = request.json.get('demand').split('#') + ['42']
+    body = sp[0]
+    tag_str = sp[1]
+    demand = Demands(
+        requestor = g.user,
+        body = body,
+        dtag_str = tag_str
+    )
+    db.session.add(demand)
+    demand.dtag_to_db()
+    db.session.commit()
+    return jsonify(demand.to_dict())

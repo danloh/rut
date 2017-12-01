@@ -21,12 +21,13 @@ import Comment from '../components/Comment.vue'
 
 export default {
   name: 'item-view',
+  title () {
+    return this.item.title
+  },
   components: { ItemSum, Review, Comment },
-
   data: () => ({
     item: null
   }),
-
   computed: {
     reviews () {
       return this.item.reviews

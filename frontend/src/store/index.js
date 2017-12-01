@@ -6,6 +6,7 @@ import getters from './getters'
 import rut from './modules/rut'
 import item from './modules/item'
 import clip from './modules/clip'
+import demand from './modules/demand'
 
 Vue.use(Vuex)
 
@@ -22,7 +23,8 @@ const store = new Vuex.Store({
   modules: {
     rut,
     item,
-    clip
+    clip,
+    demand
   }
 })
 

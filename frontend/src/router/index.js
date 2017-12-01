@@ -16,6 +16,7 @@ import Connect from '../components/Connect'
 import Create from '../components/Create'
 import ItemView from '../view/ItemView'
 import createClipList from '../components/CreateClipList'
+import createDemandList from '@/components/CreateDemandList'
 
 const router = new Router({
   mode: 'history',
@@ -29,8 +30,15 @@ const router = new Router({
     { path: '/create', component: Create, name: 'Create', meta: {auth: true} },
     { path: '/readuplist/:id', component: RutView, name: 'Rutview' },
     { path: '/tag/:id', component: TagView, name: 'Tag' },
-    { path: '/demand', component: Demands, name: 'Demands' },
     { path: '/item/:id', component: ItemView, name: 'Itemview' },
+    { path: '/demand',
+      component: Demands,
+      children: [
+        { path: '', name: 'defaultdemand', redirect: 'popular' },
+        { path: 'popular', name: 'populardemand', component: createDemandList() },
+        { path: 'new', name: 'newestdemand', component: createDemandList('new') }
+      ]
+    },
     { path: '/challenge',
       component: Challenge,
       meta: {auth: true},

@@ -1,11 +1,11 @@
 <template>
   <li class="clipmain">
+    <div class="clipbody" v-html="clip.body"></div>
     <p class="meta">
-      <router-link :to="'/profile/' + creator.id">{{ creator.name }}</router-link>
       From <router-link :to="'/item/' + fromitem.id">{{ fromitem.title }}</router-link>
+      via <router-link :to="'/profile/' + creator.id">{{ creator.name }}</router-link>
       | {{ clip.timestamp }}
     </p>
-    <div class="clipbody" v-html="clip.body"></div>
   </li>
 </template>
 
@@ -27,16 +27,17 @@ export default {
 <style lang="stylus" scoped>
 .clipmain
   background-color lighten(#f6f6f1, 50%)
-  min-height 40px
   padding 10px
-  border-bottom 2px solid #eee
+  border-bottom 1px dotted #e09015
   position relative
   .meta
-    font-size .85em
+    font-size .75em
+    text-align right
   .clipbody
     background-color #f6f6f1
     padding 10px
-    font-size 1.05em
+    font-size 1.15em
+    color #0192b5
 li
   list-style-type none
 </style>

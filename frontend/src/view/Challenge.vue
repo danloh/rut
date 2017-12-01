@@ -39,6 +39,7 @@ import { mapGetters } from 'vuex'
 
 export default {
   name: 'challenge',
+  title: 'Challenge To Reading Anything',
   components: { ClipList },
   data () {
     return {
@@ -105,7 +106,7 @@ export default {
     top 10px
     right 0
     width 270px
-    background-color #e5ebe4
+    background-color #f0f3f0
     padding 5px
     .right-title
       padding 2px 5px

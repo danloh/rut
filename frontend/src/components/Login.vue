@@ -2,10 +2,10 @@
   <el-row><el-col :span="8" :offset="8"><div>
     <el-form class="card-box" :model="loginForm" :rules="rules" ref="loginForm">
       <h3>Please Log in</h3>
-      <el-form-item label="Username" prop="username">
+      <el-form-item prop="username">
         <el-input v-model="loginForm.username" placeholder="Username"></el-input>
       </el-form-item>
-      <el-form-item label="Password" prop="password">
+      <el-form-item prop="password">
         <el-input :type="pwdType" v-model="loginForm.password" placeholder="Password"></el-input>
       </el-form-item>
       <el-form-item>
@@ -17,6 +17,7 @@
 <script>
 export default {
   name: 'login',
+  title: 'Log in',
   data () {
     return {
       loginForm: {

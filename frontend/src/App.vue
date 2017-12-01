@@ -77,7 +77,7 @@ body
   line-height 1.6em
   background-color lighten(#eceef1, 30%)
   margin 0
-  padding-top 55px
+  padding-top 42px
   color #34495e
   overflow-y scroll
 
@@ -89,7 +89,7 @@ a
   background-color #fafafa
   position fixed
   z-index 999
-  height 50px
+  height 40px
   top 0
   left 0
   right 0
@@ -97,7 +97,7 @@ a
     max-width 960px
     box-sizing border-box
     margin 0px auto
-    padding 15px 0px
+    padding 8px 0px
   a
     color grey
     line-height 24px

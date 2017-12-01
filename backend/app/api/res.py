@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # rut is readup tips,included an item list and tips for each item
+# here are the resource w/o auth needed 
 
 import random
 import re
@@ -193,44 +194,17 @@ class Clipz(Resource):
         }
 
 class Demandz(Resource):
-
-    def get(self):
-        userid = request.args.get('userid','')
-        q = Demands.query
+    def get(self, userid=None, ref=None):
+        query = q = Demands.query
         if userid:
-            query = q.filter_by(requestor_id=userid)
+            query = q.filter_by(requestor_id=int(userid))
+        if ref == "new":
+            demands = query.order_by(Demands.timestamp.desc())
         else:
-            query = q
-        #pagination 
-        page = request.args.get('page', 1, type=int)
-        pagination = query.order_by(Clips.timestamp.desc()).\
-                paginate(
-                    page,
-                    per_page=PER_PAGE,
-                    error_out=False
-                )
-        demands = pagination.items
-        prev = None
-        if pagination.has_prev:
-            prev = url_for(
-                'rest.demandz', 
-                userid=userid, 
-                page=page-1, 
-                _external=True
-            )
-        more = None
-        if pagination.has_next:
-            more = url_for(
-                'rest.demandz', 
-                userid=userid, 
-                page=page+1, 
-                _external=True
-            )
+            demands = query.order_by(Demands.vote.desc())
         return {
-            'clips': [d.to_dict() for d in demands],
-            'prev': prev,
-            'more': more,
-            'total': pagination.total
+            'demands': [d.to_dict() for d in demands],
+            'total': demands.count()
         }
 
 class Commentz(Resource):

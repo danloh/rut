@@ -43,6 +43,9 @@ export default {
       'tagDetail'
     ])
   },
+  title () {
+    return this.tagDetail.tagname
+  },
   methods: {
     loadmoreRuts () {
       this.$store.commit('ADD_RUTS', this.currentPage)

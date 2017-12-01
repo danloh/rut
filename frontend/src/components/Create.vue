@@ -1,38 +1,43 @@
 <template>
-  <el-form :model="createForm" :rules="rules" ref="createForm" label-width="100px">
-    <el-form-item label="Title" prop="title">
-      <el-input v-model="createForm.title"></el-input>
-    </el-form-item>
-    <el-form-item label="Preface" prop="intro">
-      <el-input v-model="createForm.intro"></el-input>
-    </el-form-item>
-    <el-form-item label="Tag" prop="tag">
-      <el-input v-model="createForm.tag"></el-input>
-    </el-form-item>
-    <el-form-item label="Rating" prop="rating">
-      <el-select v-model="createForm.rating">
-        <el-option v-for="r in ratings" :key="r.value" :label="r.label" :value="r.value"></el-option>
-      </el-select>
-    </el-form-item>
-    <el-form-item label="Credential" prop="credential">
-      <el-input v-model="createForm.credential"></el-input>
-    </el-form-item>
-    <el-form-item label="Who Can Edit?" prop="editable">
-      <el-radio-group v-model="createForm.editable">
-        <el-radio-button label="Creator"></el-radio-button>
-        <el-radio-button label="Contributors"></el-radio-button>
-        <el-radio-button label="Everyone"></el-radio-button>
-      </el-radio-group>
-    </el-form-item>
-    <el-form-item>
-      <el-button type="primary" @click="onCreate('createForm', createForm)">Create New</el-button>
-      <el-button @click="resetForm('createForm')">Reset</el-button>
-    </el-form-item>
-  </el-form>
+  <div class="create-page">
+    <h3 class="title">Create New Readup Tips</h3>
+    <el-form class="create-form" :model="createForm" :rules="rules" ref="createForm" label-width="120px" size="mini">
+      <el-form-item label="Title" prop="title">
+        <el-input v-model="createForm.title"></el-input>
+      </el-form-item>
+      <el-form-item label="Preface" prop="intro">
+        <el-input type="textarea" v-model="createForm.intro"></el-input>
+      </el-form-item>
+      <el-form-item label="Tag" prop="tag">
+        <el-input v-model="createForm.tag"></el-input>
+      </el-form-item>
+      <el-form-item label="Rating" prop="rating">
+        <el-select v-model="createForm.rating">
+          <el-option v-for="r in ratings" :key="r.value" :label="r.label" :value="r.value"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="Credential" prop="credential">
+        <el-input v-model="createForm.credential"></el-input>
+      </el-form-item>
+      <el-form-item label="Who Can Edit?" prop="editable">
+        <el-radio-group v-model="createForm.editable">
+          <el-radio-button label="Creator"></el-radio-button>
+          <el-radio-button label="Contributors"></el-radio-button>
+          <el-radio-button label="Everyone"></el-radio-button>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="success" size="medium" @click="onCreate('createForm', createForm)">Create New Then Add Item Later</el-button>
+        <!-- <el-button @click="resetForm('createForm')">Reset</el-button> -->
+      </el-form-item>
+    </el-form>
+  </div>
 </template>
+
 <script>
 export default {
   name: 'create',
+  title: 'Create New',
   data () {
     return {
       createForm: {
@@ -77,6 +82,10 @@ export default {
             let id = resp.data.id
             // this.$store.commit('SET_', data)
             this.$router.push(`/readuplist/${id}`)
+            this.$message({
+              showClose: true,
+              message: 'Have Created a New tips, Now you can add item to it'
+            })
           }).catch(error => {
             this.$message.error(error.status) // elementui
           })
@@ -92,3 +101,15 @@ export default {
   }
 }
 </script>
+
+<style lang="stylus" scoped>
+.create-page
+  padding 10px 120px 10px 80px
+  position relative
+  .create-form
+    padding 20px
+    border 1px dotted #689f38
+  .title
+    text-align center
+    margin-bottom 20px
+</style>

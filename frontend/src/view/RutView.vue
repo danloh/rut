@@ -76,7 +76,10 @@ export default {
       // this.arut.editable === 'Everyone'
     }
   },
-  mounted () {
+  title () {
+    return this.arut.title
+  },
+  beforeMount () {
     let rutid = this.$route.params.id
     this.$store.dispatch('getRut', rutid)
   }

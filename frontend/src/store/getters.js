@@ -18,7 +18,14 @@ const getters = {
   currentP: state => state.clip.currentP,
   currentClips: state => state.clip.currentClips,
   maxP: state => state.clip.maxP,
-  perP: state => state.clip.perP
+  perP: state => state.clip.perP,
+  // Demand
+  allDemands: state => state.demand.allDemands,
+  totalDemands: state => state.demand.totalDemands,
+  currentD: state => state.demand.currentD,
+  currentDemands: state => state.demand.currentDemands,
+  maxD: state => state.demand.maxD,
+  perD: state => state.demand.perD
 }
 
 export default getters
