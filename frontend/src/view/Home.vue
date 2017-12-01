@@ -51,11 +51,11 @@ export default {
 
 <style lang="stylus" scoped>
 .homepage
-  padding-left 230px
+  padding 10px 230px 10px 0px
   position relative
   .homeside
     position absolute
-    left 0
+    right 0
     width 220px
     background-color white
     .lefttitle

@@ -33,7 +33,6 @@ export default {
 
 <style lang="stylus">
 .rut-list
-  margin 10px 0
   width 100%
   li
     list-style-type none

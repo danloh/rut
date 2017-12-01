@@ -1,12 +1,12 @@
 <template>
-  <div class="rutpage">
+  <div class="rutpage" :key="arut.id">
     <div class="rutview">
-      <div>
+      <div class="tagbar">
         <span class="tag" v-for="tag in tags" :key="tag.id">
           <router-link :to="'/tag/' + tag.id">{{tag.tagname}}</router-link>
         </span>
       </div>
-      <div>
+      <div class="title">
         <h3>{{ arut.title }}</h3>
         <p class="meta">
           By <router-link :to="'/profile/' + creator.id">{{ creator.name }}</router-link>
@@ -89,15 +89,16 @@ export default {
 <style lang="stylus" scoped>
 $bgcolor = #f6f6f1
 .rutpage
-  padding-left 700px
+  padding 10px 250px 10px 0px
   position relative
   .rutview
-    position absolute
-    left 0
-    width 680px
-    .meta 
-      color green
-      font-size 0.8em
+    background-color lighten(#eceef1, 50%)
+    padding auto
+    .title
+      padding 0 10px
+      .meta 
+        color green
+        font-size 0.8em
     .intro
       background-color $bgcolor
       padding 10px
@@ -114,24 +115,28 @@ $bgcolor = #f6f6f1
       padding 10px
       margin-top 5px
       border-top 1px dotted orange
-    .tag
+    .tagbar
       display inline-blcok
-      padding-right 10px
-      border-radius 100px
-      a
-        color green
-        background-color #eef4fa
-        font-size 0.85em
-        font-weight 700
+      .tag
+        padding-left 10px
+        a
+          color green
+          background-color #eef4fa
+          font-size 0.85em
+          font-weight 700
     .toolbar
       display flex
       align-items center
       justify-content flex-end
   .rutside
     background-color #f5f9f5
+    position absolute
+    right 0
+    top 10px
+    width 240px
     .sidetitle
       background-color #dff0d8
-      padding 15px 10px
+      padding 10px
       color #3c763d
     .sidebody
       padding 0 10px

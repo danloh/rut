@@ -9,7 +9,7 @@
     <div class="tagmeta">
       <h4><b>{{ tagDetail.tagname}}</b></h4>
       <p>{{ tagDetail.descript}} <el-button type="text">...Edit Description</el-button></p>
-      <el-button type="success" size="mini" plain>{{action}} {{tagDetail.favcount}}</el-button>
+      <el-button class="fbtn" type="success" size="mini" plain>{{action}} {{tagDetail.favcount}}</el-button>
     </div>
     <div class="rutlist">
       <rut-list :rutlist="currentRuts" @loadmore="loadmoreRuts"></rut-list>
@@ -69,11 +69,11 @@ export default {
 
 <style lang="stylus" scoped>
 .tagpage
-  padding-left 230px
+  padding 10px 230px 10px 0px
   position relative
   .tagside
     position absolute
-    left 0
+    right 0
     width 220px
     background-color white
     .lefttitle
@@ -84,7 +84,13 @@ export default {
   .tagmeta
     background-color white
     min-height: 40px
-    padding 5px
+    padding 5px 10px
+    margin-bottom 5px
+    position relative
+    .fbtn
+      position absolute
+      top 10px
+      right 5px
   .rutlist
     padding auto
 </style>

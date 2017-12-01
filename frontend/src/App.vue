@@ -38,6 +38,12 @@
     <div class="view">
       <router-view></router-view>
     </div>
+    <footer class="bottom">
+      ©Readup.Tips - Since 2017
+      <!-- | <router-link to="/about">About</router-link>
+      | <router-link to="/terms">Terms</router-link>
+      | <router-link to="/help">Help</router-link> | -->
+    </footer>
   </div>
 </template>
 
@@ -130,4 +136,10 @@ a
   width 90%
   margin 0 auto
   position relative
+.bottom
+  max-width 960px
+  box-sizing border-box
+  margin 5px auto
+  padding 8px 0px
+  font-size 0.75em
 </style>

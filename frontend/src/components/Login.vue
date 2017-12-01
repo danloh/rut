@@ -1,7 +1,7 @@
 <template>
-  <el-row><el-col :span="8" :offset="8"><div>
-    <el-form class="card-box" :model="loginForm" :rules="rules" ref="loginForm">
-      <h3>Please Log in</h3>
+  <div class="login-page">
+    <h3 class="title">Please Log in</h3>
+    <el-form class="login-form" :model="loginForm" :rules="rules" ref="loginForm">
       <el-form-item prop="username">
         <el-input v-model="loginForm.username" placeholder="Username"></el-input>
       </el-form-item>
@@ -9,11 +9,13 @@
         <el-input :type="pwdType" v-model="loginForm.password" placeholder="Password"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="onLogin('loginForm', loginForm)">Log in</el-button>
+        <el-button class="blockbtn" type="primary" @click="onLogin('loginForm', loginForm)">Log in</el-button>
       </el-form-item>
+      <router-link :to="'/register'"> or Sign Up</router-link>
     </el-form>
-  </div></el-col></el-row>
+  </div>
 </template>
+
 <script>
 export default {
   name: 'login',
@@ -56,3 +58,15 @@ export default {
   }
 }
 </script>
+
+<style lang="stylus" scoped>
+.login-page
+  padding 10px 250px 10px 250px
+  position relative
+  .login-form
+    padding 20px
+    border 1px dotted #689f38
+  .title
+    text-align center
+    margin-bottom 20px
+</style>
