@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import Spinner from '@/components/Spinner.vue'
+import Spinner from '@/components/Misc/Spinner.vue'
 import ItemSum from '@/components/Item/ItemSum.vue'
 import Comment from '@/components/Comment.vue'
 import { mapGetters } from 'vuex'

@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import ClipList from '../components/ClipList.vue'
+import ClipList from '@/components/Challenge/ClipList.vue'
 import { mapGetters } from 'vuex'
 
 export default {

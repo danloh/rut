@@ -9,7 +9,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import Demand from '../components/Demand.vue'
+import Demand from './Demand.vue'
 
 export default {
   name: 'demand-list',

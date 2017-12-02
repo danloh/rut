@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import Clip from '../components/Clip.vue'
+import Clip from './Clip.vue'
 import { mapGetters } from 'vuex'
 
 export default {

@@ -85,6 +85,5 @@ export default {
       .in-item
         padding 2px 5px
         font-size 0.85em
-        line-height 0.8em
 </style>
 

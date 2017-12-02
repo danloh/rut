@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import RutList from '../components/RutList.vue'
+import RutList from '@/components/Rut/RutList.vue'
 import { mapGetters } from 'vuex'
 
 export default {

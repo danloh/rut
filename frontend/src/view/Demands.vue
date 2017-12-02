@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import DemandList from '../components/DemandList.vue'
+import DemandList from '@/components/Demand/DemandList.vue'
 // import { mapGetters } from 'vuex'
 
 export default {
