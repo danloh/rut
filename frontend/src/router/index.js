@@ -17,6 +17,7 @@ import Create from '../components/Create'
 import ItemView from '../view/ItemView'
 import createClipList from '../components/CreateClipList'
 import createDemandList from '@/components/CreateDemandList'
+import createReviewList from '@/components/Item/CreateReviewList'
 
 const router = new Router({
   mode: 'history',
@@ -30,7 +31,14 @@ const router = new Router({
     { path: '/create', component: Create, name: 'Create', meta: {auth: true} },
     { path: '/readuplist/:id', component: RutView, name: 'Rutview' },
     { path: '/tag/:id', component: TagView, name: 'Tag' },
-    { path: '/item/:id', component: ItemView, name: 'Itemview' },
+    { path: '/item/:id',
+      component: ItemView,
+      children: [
+        { path: '', name: 'defaultreview', redirect: 'hotreview' },
+        { path: 'hotreview', name: 'hotreview', component: createReviewList('hot') },
+        { path: 'newreview', name: 'newreview', component: createReviewList('new') }
+      ]
+    },
     { path: '/demand',
       component: Demands,
       children: [

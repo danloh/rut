@@ -1,6 +1,6 @@
 <template>
   <div class="demand-page">
-    <div class="demand-view">
+    <div class="demand-main">
       <div>
         <el-form :model="demandForm" :rules="rules" ref="demandForm">
           <el-form-item prop="demand">
@@ -66,7 +66,7 @@ export default {
 .demand-page
   padding 10px 200px 10px 0px
   position relative
-  .demand-view
+  .demand-main
     padding auto
     .submenu
       margin-bottom 5px

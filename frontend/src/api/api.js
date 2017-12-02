@@ -39,7 +39,7 @@ const fetchTag = (tagid, params) => { // !!
   return request(`${base}/tag/${tagid}`, params)
 }
 
-const getItem = (itemid, params) => {
+const fetchItem = (itemid, params) => {
   return request(`${base}/item/${itemid}`, params)
 }
 
@@ -69,7 +69,7 @@ export {
   fetchChallengeRuts,
   fetchRut,
   fetchTag,
-  getItem,
+  fetchItem,
   fetchClips,
   fetchDemands,
   newClip,

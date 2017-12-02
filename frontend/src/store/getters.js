@@ -25,7 +25,14 @@ const getters = {
   currentD: state => state.demand.currentD,
   currentDemands: state => state.demand.currentDemands,
   maxD: state => state.demand.maxD,
-  perD: state => state.demand.perD
+  perD: state => state.demand.perD,
+  // item & reviews
+  currentItem: state => state.item.currentItem,
+  allReviews: state => state.item.allReviews,
+  currentReviews: state => state.item.currentReviews,
+  currentR: state => state.item.currentR,
+  maxR: state => state.item.maxR,
+  inRuts: state => state.item.inRuts
 }
 
 export default getters

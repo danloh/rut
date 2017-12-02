@@ -21,86 +21,7 @@ from ..decorators import admin_required, permission_required
 from ..utils import split_str, str_to_dict, str_to_set
 from ..bot import spider
 
-
 PER_PAGE = 20
-
-class User(Resource):
-    #method_decorators = [login_required]
-    def get(self):
-        guser = current_user #Users.query.get(4)
-        ref = request.args.get('ref','actived')
-        if ref == 'verify':
-            user_dict = {
-                'userid': guser.id,
-                'username': guser.nickname or guser.name
-            }
-            return user_dict
-        else:
-            return guser.to_dict()
-    
-class Rutz(Resource):
-
-    def get(self):
-        # per the request ref: 
-        # create,star,chalenge,contribute
-        userid = request.args.get('userid','')
-        ref = request.args.get('ref','random')
-        if userid:
-            user = Users.query.get_or_404(userid)
-            if ref == 'create':
-                q = [user.posts] # a query list
-            elif ref == 'star':
-                q = [s.star_post for s in user.star_posts] 
-            elif ref == 'challenge':
-                q = [c.challenge_post for c in user.challenge_posts] 
-            elif ref == 'contribute':
-                q = [c.contribute_post for c in user.contribute_posts] 
-            else:
-                #get related tags set and fav tags, from cached Model-func
-                tag_set, tag_fv = user.get_tag_set()
-                # get followed posts queries
-                post_fo = [f.followed.posts for f in current_user.followed]
-                #list the queries, followed _posts as init 
-                q = post_fo
-                for tag_obj in tag_set:
-                    q.append(tag_obj.posts)
-        else:
-            q = [Posts.select_posts()]
-        q_rand = Posts.query.limit(0)
-        query = q_rand.union(*q)
-        #pagination 
-        page = request.args.get('page', 1, type=int)
-        pagination = query.order_by(Posts.timestamp.desc()).\
-                paginate(
-                    page,
-                    per_page=PER_PAGE,
-                    error_out=False
-                )
-        ruts = pagination.items
-        prev = None
-        if pagination.has_prev:
-            prev = url_for(
-                'rest.ruts', 
-                userid=userid, 
-                ref=ref, 
-                page=page-1, 
-                _external=True
-            )
-        more = None
-        if pagination.has_next:
-            more = url_for(
-                'rest.ruts', 
-                userid=userid, 
-                ref=ref, 
-                page=page+1, 
-                _external=True
-            )
-        return {
-            'ruts': [r.to_dict() for r in ruts],
-            'prev': prev,
-            'more': more,
-            'total': pagination.total
-        }
 
 class Rut(Resource):  #
     def get(self,rutid):
@@ -136,15 +57,24 @@ class Tag(Resource):  #
         return tag_dict
 
 class Item(Resource):
-
     def get(self,itemid):
         item = Items.query.get_or_404(itemid)
         item_dict = item.to_dict()
-        # attach review
-        reviews = [r.to_dict() for r in item.reviews]
-        item_dict['reviews'] = reviews
+        # attach reviews
+        reviews = item.reviews
+        hotreviews = reviews.order_by(Reviews.vote.desc())
+        newreviews = reviews.order_by(Reviews.timestamp.desc()).limit(15)
+        hot_reviews = [r.to_dict() for r in hotreviews]
+        new_reviews = [r.to_dict() for r in newreviews]
+        item_dict['hotreviews'] = hot_reviews
+        item_dict['newreviews'] = new_reviews
+        # attach included ruts
+        ruts = [c.post for c in item.posts.order_by(Collect.timestamp.desc())]
+        included_ruts = [{'id':r.id, 'title': r.title} for r in ruts]
+        item_dict['inruts'] = included_ruts
         return item_dict
-       
+
+
 class Clipz(Resource):
 
     def get(self):
@@ -257,17 +187,81 @@ class Commentz(Resource):
             'total': pagination.total
         }
 
+class User(Resource):
+    #method_decorators = [login_required]
+    def get(self):
+        guser = current_user #Users.query.get(4)
+        ref = request.args.get('ref','actived')
+        if ref == 'verify':
+            user_dict = {
+                'userid': guser.id,
+                'username': guser.nickname or guser.name
+            }
+            return user_dict
+        else:
+            return guser.to_dict()
+    
+class Rutz(Resource):
 
-
-
-
-
-
-
-
-
-
-
-
-
+    def get(self):
+        # per the request ref: 
+        # create,star,chalenge,contribute
+        userid = request.args.get('userid','')
+        ref = request.args.get('ref','random')
+        if userid:
+            user = Users.query.get_or_404(userid)
+            if ref == 'create':
+                q = [user.posts] # a query list
+            elif ref == 'star':
+                q = [s.star_post for s in user.star_posts] 
+            elif ref == 'challenge':
+                q = [c.challenge_post for c in user.challenge_posts] 
+            elif ref == 'contribute':
+                q = [c.contribute_post for c in user.contribute_posts] 
+            else:
+                #get related tags set and fav tags, from cached Model-func
+                tag_set, tag_fv = user.get_tag_set()
+                # get followed posts queries
+                post_fo = [f.followed.posts for f in current_user.followed]
+                #list the queries, followed _posts as init 
+                q = post_fo
+                for tag_obj in tag_set:
+                    q.append(tag_obj.posts)
+        else:
+            q = [Posts.select_posts()]
+        q_rand = Posts.query.limit(0)
+        query = q_rand.union(*q)
+        #pagination 
+        page = request.args.get('page', 1, type=int)
+        pagination = query.order_by(Posts.timestamp.desc()).\
+                paginate(
+                    page,
+                    per_page=PER_PAGE,
+                    error_out=False
+                )
+        ruts = pagination.items
+        prev = None
+        if pagination.has_prev:
+            prev = url_for(
+                'rest.ruts', 
+                userid=userid, 
+                ref=ref, 
+                page=page-1, 
+                _external=True
+            )
+        more = None
+        if pagination.has_next:
+            more = url_for(
+                'rest.ruts', 
+                userid=userid, 
+                ref=ref, 
+                page=page+1, 
+                _external=True
+            )
+        return {
+            'ruts': [r.to_dict() for r in ruts],
+            'prev': prev,
+            'more': more,
+            'total': pagination.total
+        }
 

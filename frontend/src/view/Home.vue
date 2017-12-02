@@ -1,13 +1,13 @@
 <template>
   <div class="homepage">
-    <div class="homeside">
-      <h4 class="lefttitle">Top Topics</h4>
-      <div class="leftbody" v-for="tag in showTags" :key="tag.tagid">
-        <router-link :to="'/tag/' + tag.tagid">{{tag.tagname}}</router-link>
-      </div>
-    </div>
     <div class="rutlist">
       <rut-list :rutlist="currentRuts" @loadmore="loadmoreRuts"></rut-list>
+    </div>
+    <div class="homeside">
+      <h4 class="righttitle">Top Topics</h4>
+      <div class="rightbody" v-for="tag in showTags" :key="tag.tagid">
+        <router-link :to="'/tag/' + tag.tagid">{{tag.tagname}}</router-link>
+      </div>
     </div>
   </div>
 </template>
@@ -53,16 +53,17 @@ export default {
 .homepage
   padding 10px 230px 10px 0px
   position relative
+  .rutlist
+    padding auto
   .homeside
     position absolute
+    top 10px
     right 0
     width 220px
     background-color white
-    .lefttitle
+    .righttitle
       background-color #e5ebe4
       padding 10px 15px
-    .leftbody
+    .rightbody
       padding 5px 20px
-  .rutlist
-    padding auto
 </style>

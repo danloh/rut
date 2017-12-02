@@ -1,12 +1,12 @@
 <template>
-  <li class="clipmain">
+  <div class="clipmain">
     <div class="clipbody" v-html="clip.body"></div>
     <p class="meta">
       From <router-link :to="'/item/' + fromitem.id">{{ fromitem.title }}</router-link>
       via <router-link :to="'/profile/' + creator.id">{{ creator.name }}</router-link>
       | {{ clip.timestamp }}
     </p>
-  </li>
+  </div>
 </template>
 
 <script>

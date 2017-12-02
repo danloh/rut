@@ -16,7 +16,7 @@ export default {
   components: { Demand },
   props: {
     type: String,
-    default: 'popular'  // popular or new
+    default: 'popular'  // popular or new, may can be deleted
   },
   computed: {
     ...mapGetters([

@@ -34,16 +34,16 @@
       </div>
     </div>
     <div class="rutside">
-      <h5 class="sidetitle">Creator's Credential</h5>
+      <p class="sidetitle">Creator's Credential</p>
       <p class="sidebody" v-html="credential"></p>
     </div>
   </div>
 </template>
 
 <script>
-import Spinner from '../components/Spinner.vue'
-import ItemSum from '../components/ItemSum.vue'
-import Comment from '../components/Comment.vue'
+import Spinner from '@/components/Spinner.vue'
+import ItemSum from '@/components/Item/ItemSum.vue'
+import Comment from '@/components/Comment.vue'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -87,7 +87,7 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-$bgcolor = #f6f6f1
+$bgcolor = lighten(#f6f6f1, 50%)
 .rutpage
   padding 10px 250px 10px 0px
   position relative

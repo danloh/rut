@@ -659,6 +659,7 @@ class Items(db.Model):
             'publisher': self.publisher,
             'pubdate': self.pub_date,
             'language': self.language,
+            'resurl': self.res_url,
             'details': self.details
         }
         return item_dict

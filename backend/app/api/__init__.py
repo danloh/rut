@@ -13,19 +13,12 @@ api = Api(rest)
 auth = HTTPBasicAuth()
 
 from . import res
-
-PER_PAGE = 2
-
-#api.add_resource(res.User, '/user')
-#api.add_resource(res.Rutz, '/ruts')
-api.add_resource(res.Rut, '/rut/<int:rutid>')  #
-api.add_resource(res.Tag, '/tag/<int:tagid>')  #
-#api.add_resource(res.Clipz, '/clips')
-#api.add_resource(res.Demandz, '/demands', '/demands/<userid>', '/demands/<ref>/<userid>')
-#api.add_resource(res.Item, '/item/<int:itemid>')
+api.add_resource(res.Rut, '/rut/<int:rutid>')
+api.add_resource(res.Tag, '/tag/<int:tagid>')
+api.add_resource(res.Item, '/item/<int:itemid>')
 #api.add_resource(res.Commentz, '/comments')
 
-# for user authentication
+# for user authentication NEEDED
 @rest.route('/register', methods = ['POST'])
 def register():
     username = request.json.get('username')
