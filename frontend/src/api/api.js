@@ -35,8 +35,8 @@ const fetchChallengeRut = params => {
   return request(`${base}/challengerut`, params)
 }
 
-const fetchProfileRuts = (action, params) => {  // act: created, challenge, star
-  return request(`${base}/${action}/ruts`, params)
+const fetchProfileRuts = (action, userid, params) => {  // act: created, challenge, star
+  return request(`${base}/${userid}/${action}/ruts`, params)
 }
 
 const fetchRut = (rutid, params) => { // !!
@@ -51,8 +51,8 @@ const fetchItem = (itemid, params) => {
   return request(`${base}/item/${itemid}`, params)
 }
 
-const fetchItems = (flag, params) => {
-  return request(`${base}/items/${flag}`, params)
+const fetchProfileItems = (flag, userid, params) => {
+  return request(`${base}/${userid}/${flag}/items`, params)
 }
 
 const fetchClips = params => {
@@ -84,7 +84,7 @@ export {
   fetchRut,
   fetchTag,
   fetchItem,
-  fetchItems,
+  fetchProfileItems,
   fetchClips,
   fetchDemands,
   newClip,

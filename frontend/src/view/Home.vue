@@ -1,7 +1,10 @@
 <template>
   <div class="homepage">
+    <spinner :show="loading"></spinner>
     <div class="rutlist">
-      <rut-list :rutlist="currentRuts" @loadmore="loadmoreRuts"></rut-list>
+      <keep-alive>
+        <rut-list :rutlist="currentRuts" @loadmore="loadmoreRuts"></rut-list>
+      </keep-alive>
     </div>
     <div class="homeside">
       <h4 class="righttitle">Top Topics</h4>
@@ -13,6 +16,7 @@
 </template>
 
 <script>
+import Spinner from '@/components/Misc/Spinner.vue'
 import RutList from '@/components/Rut/RutList.vue'
 import { mapGetters } from 'vuex'
 
@@ -20,8 +24,11 @@ export default {
   name: 'home',
   title: 'Home',
   components: {
-    RutList
+    RutList, Spinner
   },
+  data: () => ({
+    loading: true
+  }),
   computed: {
     ...mapGetters([
       'allRuts',
@@ -44,7 +51,11 @@ export default {
     }
   },
   mounted () {
+    this.loading = true
     this.$store.dispatch('getRuts')
+    .then(() => {
+      this.loading = false
+    })
   }
 }
 </script>

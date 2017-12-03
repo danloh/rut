@@ -92,7 +92,7 @@ def get_ruts():            ##!! to be optimized
     q = post_fo
     for tag_obj in tag_set:
         q.append(tag_obj.posts)
-    q_rand = Posts.query.limit(0)
+    q_rand = Posts.query.order_by(db.func.rand()).limit(10) # !! need to optimize
     query = q_rand.union(*q)
     ruts = query.order_by(Posts.timestamp.desc())  # other way,list reverse
     return jsonify({  # need to optimize
@@ -105,7 +105,6 @@ def get_ruts():            ##!! to be optimized
 @auth.login_required
 def get_challege_rut():
     user = g.user
-    #ref = request.args.get('ref','') # for current challenge
     challenge_rut = user.challenge_posts.first()
     try:
         rut = challenge_rut.challenge_post
@@ -126,9 +125,8 @@ def get_challege_rut():
             'tags': []
         })
 
-@rest.route('/created/ruts')
-def get_created_ruts():
-    userid = request.args.get('userid','')
+@rest.route('/<int:userid>/created/ruts')
+def get_created_ruts(userid):
     user = Users.query.get_or_404(int(userid))
     ruts = user.posts.order_by(Posts.timestamp.desc())
     return jsonify({
@@ -137,9 +135,8 @@ def get_created_ruts():
         'tags': []
     })
 
-@rest.route('/star/ruts')
-def get_star_ruts():
-    userid = request.args.get('userid','')
+@rest.route('/<int:userid>/star/ruts')
+def get_star_ruts(userid):
     user = Users.query.get_or_404(userid)
     ruts = [s.star_post for s in user.star_posts]
     ruts.reverse()
@@ -149,9 +146,8 @@ def get_star_ruts():
         'tags': []
     })
 
-@rest.route('/challenge/ruts')
-def get_challege_ruts():
-    userid = request.args.get('userid','')
+@rest.route('/<int:userid>/challenge/ruts')
+def get_challege_ruts(userid):
     user = Users.query.get_or_404(userid)
     ruts = [c.challenge_post for c in user.challenge_posts]
     ruts.reverse()  # other way,list reverse
@@ -181,9 +177,8 @@ def new_rut():
     db.session.commit()
     return jsonify(post.to_dict())
 
-@rest.route('/items/doing')
-def get_doing_items():
-    userid = request.args.get('userid','')
+@rest.route('/<int:userid>/doing/items')
+def get_doing_items(userid):
     user = Users.query.get_or_404(userid)
     flags = user.flag_items.filter_by(flag_label=2)
     items = [d.flag_item for d in flags ]
@@ -193,9 +188,8 @@ def get_doing_items():
         'total': len(items)
     })
 
-@rest.route('/items/todo')
-def get_todo_items():
-    userid = request.args.get('userid','')
+@rest.route('/<int:userid>/todo/items')
+def get_todo_items(userid):
     user = Users.query.get_or_404(userid)
     flags = user.flag_items.filter_by(flag_label=1)
     items = [d.flag_item for d in flags ]
@@ -205,9 +199,8 @@ def get_todo_items():
         'total': len(items)
     })
 
-@rest.route('/items/done')
-def get_done_items():
-    userid = request.args.get('userid','')
+@rest.route('/<int:userid>/done/items')
+def get_done_items(userid):
     user = Users.query.get_or_404(userid)
     flags = user.flag_items.filter_by(flag_label=3)
     items = [d.flag_item for d in flags ]

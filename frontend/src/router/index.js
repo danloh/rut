@@ -21,9 +21,20 @@ import createReviewList from '@/components/Item/CreateReviewList'
 import createProfileRuts from '@/components/Profile/CreateProfileRuts'
 import createProfileItems from '@/components/Profile/CreateProfileItems'
 
+// for go back / forward scrollBehavior
+const scrollBehavior = (to, from, savedPosition) => {
+  if (savedPosition) {
+    return savedPosition
+  } else {
+    const position = {x: 0, y: 0}
+    return position
+  }
+}
+
 const router = new Router({
   mode: 'history',
   fallback: false,
+  scrollBehavior, // : () => ({y: 0}),
   routes: [
     { path: '/', component: Home, name: 'Home', meta: {auth: true} },
     { path: '/register', component: Register, name: 'Register' },

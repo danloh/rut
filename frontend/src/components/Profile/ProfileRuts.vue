@@ -34,8 +34,8 @@ export default {
   },
   mounted () {
     let action = this.action
-    let param = {'userid': this.$route.params.id}
-    let params = {'action': action, 'param': param}
+    let userid = this.$route.params.id
+    let params = {'action': action, 'userid': userid}
     this.$store.dispatch('getProfileRuts', params)
   }
 }

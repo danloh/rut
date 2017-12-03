@@ -1,6 +1,6 @@
 import {
   fetchItem,
-  fetchItems
+  fetchProfileItems
 } from '@/api/api'
 
 // initial state
@@ -27,7 +27,7 @@ const actions = {
     })
   },
   getItems: ({state, commit}, params) => {
-    return fetchItems(params['flag'], params['param'])
+    return fetchProfileItems(params['flag'], params['userid'])
     .then(resp => {
       commit('SET_ITEMS', resp.data)
     })

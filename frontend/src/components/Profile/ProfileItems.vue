@@ -33,8 +33,8 @@ export default {
   },
   mounted () {
     let flag = this.flag
-    let param = {'userid': this.$route.params.id}
-    let params = {'flag': flag, 'param': param}
+    let userid = this.$route.params.id
+    let params = {'flag': flag, 'userid': userid}
     this.$store.dispatch('getItems', params)
   }
 }
