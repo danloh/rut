@@ -2,15 +2,15 @@
   <div class="rutpage" :key="arut.id">
     <div class="rutview">
       <div class="tagbar">
-        <span class="tag" v-for="tag in tags" :key="tag.id">
+        <span class="tag" v-for="(tag, index) in tags" :key="index">
           <router-link :to="'/tag/' + tag.id">{{tag.tagname}}</router-link>
         </span>
       </div>
       <div class="title">
-        <h3>{{ arut.title }}</h3>
+        <h2>{{ arut.title }}</h2>
         <p class="meta">
           By <router-link :to="'/profile/' + creator.id">{{ creator.name }}</router-link>
-          | {{ arut.createat }}
+          | {{ arut.createat | toLocal }}
           | including {{ arut.itemcount }} items
         </p>
       </div>
@@ -20,7 +20,7 @@
         <el-button type="info" size="mini" plain v-if="canEdit">...Add Item...</el-button>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <el-button type="success" size="mini" plain><b>{{starAction}} {{arut.starcount}}</b></el-button>
-        <el-button type="warning" size="mini" plain><b>{{challengeAction}} {{arut.challengecount}}</b></el-button>
+        <el-button type="success" size="mini" plain><b>{{challengeAction}} {{arut.challengecount}}</b></el-button>
       </div>
       <div class="itemtip" v-for="tip in tips" :key="tip.order">
         <item-sum class="itemsum" :item="tip.item"></item-sum>
@@ -35,7 +35,7 @@
     </div>
     <div class="rutside">
       <p class="sidetitle">Creator's Credential</p>
-      <p class="sidebody" v-html="credential"></p>
+      <div class="sidebody" v-html="credential"></div>
     </div>
   </div>
 </template>
@@ -97,12 +97,12 @@ $bgcolor = lighten(#f6f6f1, 50%)
     .title
       padding 0 10px
       .meta 
-        color green
+        color #828282
         font-size 0.8em
     .intro
       background-color $bgcolor
       padding 10px
-      border-bottom 1px dotted orange
+      border-bottom 1px dotted #f3bc59
     .itemtip
       background-color $bgcolor
       .itemsum

@@ -3,7 +3,7 @@
     <div class="demand-main">
       <div>
         <el-form :model="demandForm" :rules="rules" ref="demandForm">
-          <el-form-item prop="demand">
+          <el-form-item prop="demand" style="margin-bottom:8px">
             <el-input v-model="demandForm.demand" placeholder="Request something, Support #hashtag"></el-input>
           </el-form-item>
           <el-form-item>
@@ -25,13 +25,9 @@
 </template>
 
 <script>
-import DemandList from '@/components/Demand/DemandList.vue'
-// import { mapGetters } from 'vuex'
-
 export default {
   name: 'demands',
   title: 'Request',
-  components: { DemandList },
   data () {
     return {
       demandForm: {

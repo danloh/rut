@@ -1,7 +1,8 @@
 // import axios from '@/main'
 import {
   fetchRuts,
-  fetchChallengeRuts,
+  fetchProfileRuts,
+  fetchChallengeRut,
   fetchRut,
   fetchTag
 } from '@/api/api'
@@ -29,9 +30,15 @@ const actions = {
       commit('SET_RUTS', resp.data)
     })
   },
-  getChallengeRuts: ({commit, state}, param = {}) => {
+  getProfileRuts: ({commit, state}, params = {}) => { // action: up to 2 args
+    return fetchProfileRuts(params['action'], params['param'])
+    .then(resp => {
+      commit('SET_RUTS', resp.data)
+    })
+  },
+  getChallengeRut: ({commit, state}, param = {}) => {
     return new Promise((resolve, reject) => {   // use case of Promise !!
-      fetchChallengeRuts(param)
+      fetchChallengeRut(param)
       .then(resp => {
         commit('SET_RUTS', resp.data)
         resolve(resp)

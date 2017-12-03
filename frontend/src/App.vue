@@ -3,7 +3,7 @@
     <header class="header">
       <nav class="inner">
         <router-link to="/">
-            <b style="color:darkorange; font-size:1.6em">Readup.Tips</b>
+            <b style="color:darkorange;font-size:1.6em;letter-spacing:0.0005em">Readup.Tips</b>
         </router-link>
         <router-link to="/challenge">
           <b>Challenge</b>
@@ -90,6 +90,12 @@ body
 a
   color #337ab7
   text-decoration none
+
+h2, h3, h4
+  margin 8px 0
+
+p
+  margin 5px 0
 
 .header
   background-color #fafafa

@@ -7,6 +7,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 import locale from 'element-ui/lib/locale/lang/en'
 import ProgressBar from './components/Misc/ProgressBar.vue'
 import titleMixin from './util/title'
+import * as filters from './util/filters'
 import App from './App'
 import router from './router'
 import store from './store'
@@ -22,7 +23,13 @@ document.body.appendChild(bar.$el)
 // mixin title handler
 Vue.mixin(titleMixin)
 
+// register global utility filters.
+Object.keys(filters).forEach(key => {
+  Vue.filter(key, filters[key])
+})
+
 // config axios
+// defaul auth
 axios.defaults.auth = {
   username: '',
   password: ''

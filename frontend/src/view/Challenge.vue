@@ -3,7 +3,7 @@
     <div class="challenge-view">
       <div>
         <el-form :model="clipForm" :rules="rules" ref="clipForm">
-          <el-form-item prop="clip">
+          <el-form-item prop="clip" style="margin-bottom:8px">
             <el-input type="textarea" v-model="clipForm.clip" placeholder="excerpt something"></el-input>
           </el-form-item>
           <el-form-item>
@@ -21,13 +21,15 @@
     </div>
     <div class="challenge-side" v-if="challengeRut">
       <div class="right-title">
-        <h4><b>Working on Challenge:</b></h4>
+        <b>Working on Challenge:</b>
+        <br>
         <router-link :to="'/readuplist/' + challengeRut.id"> {{ challengeRut.title }}</router-link>
-        <p>Due Date: {{dueDate}} <el-button type="text">..Set</el-button></p>
+        <br>
+        <span>Due Date: {{dueDate}} <el-button type="text">..Set</el-button></span>
       </div>
-      <b>including:</b>
+      <b> Including Items:</b>
       <p class="right-item" v-for="item in items" :key="item.id" :item="item">
-        ~{{item.cate}} <router-link :to="'/item/' + item.id"> {{ item.title }}</router-link>
+        ~{{item.cate}} <router-link :to="'/item/' + item.id" :title="item.title"> {{ item.title.slice(0, 60) }}...</router-link>
       </p>
     </div>
   </div>
@@ -75,8 +77,7 @@ export default {
     }
   },
   mounted () {
-    let param = {'ref': 'working'}
-    this.$store.dispatch('getChallengeRuts', param)
+    this.$store.dispatch('getChallengeRut')
     .then(resp => {
       this.items = resp.data.items
       this.dueDate = resp.data.deadline
@@ -109,9 +110,9 @@ export default {
     background-color #f0f3f0
     padding 5px
     .right-title
-      padding 2px 5px
+      padding 0px 5px
     .right-item
-      padding 2px 5px
-      font-size 0.8em
+      padding 0px 5px
+      font-size 0.85em
       background-color white
 </style>

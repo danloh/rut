@@ -18,6 +18,8 @@ import ItemView from '@/view/ItemView'
 import createClipList from '@/components/Challenge/CreateClipList'
 import createDemandList from '@/components/Demand/CreateDemandList'
 import createReviewList from '@/components/Item/CreateReviewList'
+import createProfileRuts from '@/components/Profile/CreateProfileRuts'
+import createProfileItems from '@/components/Profile/CreateProfileItems'
 
 const router = new Router({
   mode: 'history',
@@ -27,7 +29,6 @@ const router = new Router({
     { path: '/register', component: Register, name: 'Register' },
     { path: '/login', component: Login, name: 'Login' },
     { path: '/connect', component: Connect, name: 'Connect' },
-    { path: '/profile/:id', component: Profile, name: 'Profile' },
     { path: '/create', component: Create, name: 'Create', meta: {auth: true} },
     { path: '/readuplist/:id', component: RutView, name: 'Rutview' },
     { path: '/tag/:id', component: TagView, name: 'Tag' },
@@ -54,6 +55,18 @@ const router = new Router({
         { path: '', name: 'defaultclip', redirect: 'myclip' },
         { path: 'myclip', name: 'Myclip', component: createClipList(), meta: {auth: true} },
         { path: 'allclip', name: 'Allclip', component: createClipList('allclip', {ref: 'All'}), meta: {auth: true} }
+      ]
+    },
+    { path: '/profile/:id',
+      component: Profile,
+      children: [
+        { path: '', name: 'defaultPruts', redirect: 'created' },
+        { path: 'created', name: 'CreatedRuts', component: createProfileRuts('created') },
+        { path: 'star', name: 'StarRuts', component: createProfileRuts('star') },
+        { path: 'challenge', name: 'ChallengeRuts', component: createProfileRuts('challenge') },
+        { path: 'working', name: 'WorkingItems', component: createProfileItems('doing') },
+        { path: 'scheduled', name: 'ScheduledItems', component: createProfileItems('todo') },
+        { path: 'havedone', name: 'DoneItems', component: createProfileItems('done') }
       ]
     }
   ]

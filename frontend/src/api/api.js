@@ -2,7 +2,7 @@ import axios from '@/main'
 
 let base = '/api'
 const request = (url, options = {}, method = 'get') => {
-  let key = ~['delete', 'get', 'head'].indexOf(method) ? 'params' : 'data'
+  let key = ~['delete', 'get', 'head'].indexOf(method) ? 'params' : 'data' // bitwise NOT: ~N -> -(N+1)
   return axios(Object.assign({'url': url, 'method': method, 'validateStatus': false}, {[key]: options}))
   .then(res => res)
 }
@@ -23,12 +23,20 @@ const auth = (servername, params) => {
   return request(`${base}/auth/${servername}`, params)
 }
 
+const fetchUser = (id, params) => {
+  return request(`${base}/user/${id}`, params)
+}
+
 const fetchRuts = params => {
   return request(`${base}/ruts`, params)
 }
 
-const fetchChallengeRuts = params => {
-  return request(`${base}/challengeruts`, params)
+const fetchChallengeRut = params => {
+  return request(`${base}/challengerut`, params)
+}
+
+const fetchProfileRuts = (action, params) => {  // act: created, challenge, star
+  return request(`${base}/${action}/ruts`, params)
 }
 
 const fetchRut = (rutid, params) => { // !!
@@ -41,6 +49,10 @@ const fetchTag = (tagid, params) => { // !!
 
 const fetchItem = (itemid, params) => {
   return request(`${base}/item/${itemid}`, params)
+}
+
+const fetchItems = (flag, params) => {
+  return request(`${base}/items/${flag}`, params)
 }
 
 const fetchClips = params => {
@@ -65,11 +77,14 @@ export {
   login,
   auth,
   authUser,
+  fetchUser,
   fetchRuts,
-  fetchChallengeRuts,
+  fetchChallengeRut,
+  fetchProfileRuts,
   fetchRut,
   fetchTag,
   fetchItem,
+  fetchItems,
   fetchClips,
   fetchDemands,
   newClip,

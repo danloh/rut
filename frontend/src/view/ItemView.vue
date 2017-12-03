@@ -2,9 +2,9 @@
   <div class="item-page">
     <div class="item-main">
       <item-sum :item="currentItem"></item-sum>
-      <el-button type="text">...Add More Information</el-button>
+      <div><b>More Details</b> &nbsp;&nbsp;&nbsp;<el-button type="text">...Add More</el-button></div>
       <div class="item-detail">
-        <p v-html="currentItem.details"></p>
+        <div v-html="currentItem.details">...</div>
       </div>
       <div class="submenu">
         <router-link :to="'/item/' + currentItem.id + '/hotreview'">Hot</router-link>
@@ -17,11 +17,10 @@
       </div>
     </div>
     <div class="item-side">
-      <!-- <div>About Author</div> -->
       <div class="include">
         <b class="in-title">Included in {{currentItem.rutcount}} Tips</b>
         <p class="in-item" v-for="rut in inRuts" :key="rut.id" :rut="rut">
-          ~ <router-link :to="'/readuplist/' + rut.id"> {{ rut.title }}</router-link>
+          ~ <router-link :to="'/readuplist/' + rut.id" :title="rut.title"> {{ rut.title.slice(0, 60) }}...</router-link>
         </p>
       </div>
     </div>
@@ -76,14 +75,15 @@ export default {
     right 0
     width 245px
     .include
-      margin-top 10px
+      margin-top 0px
       padding 5px
-      background-color white
+      background-color #f0f3f0
       .in-title
         padding 2px 5px
         color green
       .in-item
         padding 2px 5px
         font-size 0.85em
+        background-color white
 </style>
 

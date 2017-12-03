@@ -27,6 +27,9 @@ const getters = {
   maxD: state => state.demand.maxD,
   perD: state => state.demand.perD,
   // item & reviews
+  allItems: state => state.item.allItems,
+  totalItems: state => state.item.totalItems,
+  currentItems: state => state.item.currentItems,
   currentItem: state => state.item.currentItem,
   allReviews: state => state.item.allReviews,
   currentReviews: state => state.item.currentReviews,

@@ -61,7 +61,7 @@ def get_auth_token():
 
 @rest.route('/user')
 @auth.login_required
-def get_user():
+def verify_user():       ##????
     guser = g.user
     ref = request.args.get('ref','actived')
     if ref == 'verify':
@@ -72,6 +72,12 @@ def get_user():
         return jsonify(user_dict)
     else:
         return jsonify(guser.to_dict())
+
+@rest.route('/user/<int:id>')
+def get_user(id): 
+    user = Users.query.get_or_404(id)
+    user_dict = user.to_dict()
+    return jsonify(user_dict)
 
 @rest.route('/ruts')
 @auth.login_required
@@ -95,49 +101,68 @@ def get_ruts():            ##!! to be optimized
         'tags': [{'tagid': t.id,'tagname': t.tag} for t in tag_set] 
     })
 
-@rest.route('/challengeruts')
+@rest.route('/challengerut')  # challenging !!
 @auth.login_required
-def get_challege_ruts():
+def get_challege_rut():
     user = g.user
-    ref = request.args.get('ref','') # for current challenge
-    if ref:
-        challenge_rut = user.challenge_posts.first()
-        try:
-            rut = challenge_rut.challenge_post
-            deadline = challenge_rut.deadline
-            rut_dict = rut.to_dict()
-            items = [t.item.to_dict() for t in rut.items]
-            return jsonify({
-                'ruts': [rut_dict],
-                'total': 1,
-                'tags': [],
-                'items': items,
-                'deadline': deadline
-            })
-        except:
-            return jsonify({
-                'ruts': [],
-                'total': 0,
-                'tags': []
-            })
-    q = [c.challenge_post for c in user.challenge_posts]
-    q_rand = Posts.query.limit(0)  ##???
-    query = q_rand.union(*q)
-    ruts = query.order_by(Posts.timestamp.desc())  # other way,list reverse
+    #ref = request.args.get('ref','') # for current challenge
+    challenge_rut = user.challenge_posts.first()
+    try:
+        rut = challenge_rut.challenge_post
+        deadline = challenge_rut.deadline
+        rut_dict = rut.to_dict()
+        items = [t.item.to_dict() for t in rut.items]
+        return jsonify({
+            'ruts': [rut_dict],
+            'total': 1,
+            'tags': [],
+            'items': items,
+            'deadline': deadline
+        })
+    except:
+        return jsonify({
+            'ruts': [],
+            'total': 0,
+            'tags': []
+        })
+
+@rest.route('/created/ruts')
+def get_created_ruts():
+    userid = request.args.get('userid','')
+    user = Users.query.get_or_404(int(userid))
+    ruts = user.posts.order_by(Posts.timestamp.desc())
     return jsonify({
         'ruts': [r.to_dict() for r in ruts],
         'total': ruts.count(),
         'tags': []
     })
 
-    # if ref == 'create':
-    #     q = [user.posts] # a query list
-    # elif ref == 'star':
-    #     q = [s.star_post for s in user.star_posts]
+@rest.route('/star/ruts')
+def get_star_ruts():
+    userid = request.args.get('userid','')
+    user = Users.query.get_or_404(userid)
+    ruts = [s.star_post for s in user.star_posts]
+    ruts.reverse()
+    return jsonify({
+        'ruts': [r.to_dict() for r in ruts],
+        'total': len(ruts),
+        'tags': []
+    })
+
+@rest.route('/challenge/ruts')
+def get_challege_ruts():
+    userid = request.args.get('userid','')
+    user = Users.query.get_or_404(userid)
+    ruts = [c.challenge_post for c in user.challenge_posts]
+    ruts.reverse()  # other way,list reverse
+    return jsonify({
+        'ruts': [r.to_dict() for r in ruts],
+        'total': len(ruts),
+        'tags': []
+    })
    
     # elif ref == 'contribute':
     #     q = [c.contribute_post for c in user.contribute_posts]
-    # else:
 
 @rest.route('/create', methods=['POST'])
 @auth.login_required
@@ -155,6 +180,42 @@ def new_rut():
     post.tag_to_db()
     db.session.commit()
     return jsonify(post.to_dict())
+
+@rest.route('/items/doing')
+def get_doing_items():
+    userid = request.args.get('userid','')
+    user = Users.query.get_or_404(userid)
+    flags = user.flag_items.filter_by(flag_label=2)
+    items = [d.flag_item for d in flags ]
+    items.reverse()
+    return jsonify({
+        'items': [i.to_dict() for i in items],
+        'total': len(items)
+    })
+
+@rest.route('/items/todo')
+def get_todo_items():
+    userid = request.args.get('userid','')
+    user = Users.query.get_or_404(userid)
+    flags = user.flag_items.filter_by(flag_label=1)
+    items = [d.flag_item for d in flags ]
+    items.reverse()
+    return jsonify({
+        'items': [i.to_dict() for i in items],
+        'total': len(items)
+    })
+
+@rest.route('/items/done')
+def get_done_items():
+    userid = request.args.get('userid','')
+    user = Users.query.get_or_404(userid)
+    flags = user.flag_items.filter_by(flag_label=3)
+    items = [d.flag_item for d in flags ]
+    items.reverse()
+    return jsonify({
+        'items': [i.to_dict() for i in items],
+        'total': len(items)
+    })
 
 @rest.route('/clips')
 @auth.login_required

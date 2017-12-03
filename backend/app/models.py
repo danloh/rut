@@ -1474,6 +1474,8 @@ class Users(UserMixin, db.Model):
             'avatar': self.avatar,
             'location': self.location,
             'about': self.about_me,
+            'followercount': self.followers.count(), 
+            'followedcount': self.followed.count(), # following other
             'exlink': self.links,
             'url': '/profile/'+str(self.id)
         }

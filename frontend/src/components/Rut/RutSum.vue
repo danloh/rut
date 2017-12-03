@@ -6,7 +6,7 @@
     <span class="title">
       <router-link :to="'/readuplist/' + rut.id"> {{ rut.title }}</router-link>
     </span>
-    <p class="intro" v-html="rut.intro"></p>
+    <div class="intro" v-html="intro"></div>
     <span class="meta">
       <span> ~| including {{ rut.itemcount }} items | <router-link :to="'/readuplist/' + rut.id">...See Detail</router-link></span>
     </span>
@@ -14,12 +14,18 @@
 </template>
 
 <script>
+import { showLess } from '@/util/filters'
+
 export default {
   name: 'rut-sum',
   props: ['rut'],
   computed: {
     cover () {
       return this.rut.cover
+    },
+    intro () {
+      let content = this.rut.intro
+      return showLess(content)
     }
   }
 }
@@ -39,10 +45,12 @@ export default {
   .title
     font-size 1.2em
     font-weight 700
-    padding 10px 0
+    padding-top 10px
     a
       &:hover
         color #ff6600
+  .intro
+    padding auto
   .meta
     font-size .85em
     color #828282
