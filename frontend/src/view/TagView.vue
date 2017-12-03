@@ -50,19 +50,16 @@ export default {
     loadmoreRuts () {
       this.$store.commit('ADD_RUTS', this.currentPage)
     },
-    loadNew (id) { // try to reload, fail
-      this.$store.dispatch('getTag', id)
-    }
-  },
-  watch: { // try to reload, fail
-    currentTagid () {
+    loadData () {
       let tagid = this.$route.params.id
       this.$store.dispatch('getTag', tagid)
     }
   },
-  mounted () {
-    let tagid = this.$route.params.id
-    this.$store.dispatch('getTag', tagid)
+  watch: {
+    '$route': 'loadData' // watch to render same component
+  },
+  created () {
+    this.loadData()
   }
 }
 </script>

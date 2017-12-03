@@ -25,9 +25,10 @@
         <br>
         <router-link :to="'/readuplist/' + challengeRut.id"> {{ challengeRut.title }}</router-link>
         <br>
-        <span>Due Date: {{dueDate}} <el-button type="text">..Set</el-button></span>
+        <b>Due Date: {{dueDate}} <el-button type="text">..Set</el-button></b>
+        <br>
+        <b>Including Items:</b>
       </div>
-      <b> Including Items:</b>
       <p class="right-item" v-for="item in items" :key="item.id" :item="item">
         ~{{item.cate}} <router-link :to="'/item/' + item.id" :title="item.title"> {{ item.title.slice(0, 60) }}...</router-link>
       </p>
@@ -111,6 +112,8 @@ export default {
     padding 5px
     .right-title
       padding 0px 5px
+      b
+        font-size 0.85em
     .right-item
       padding 0px 5px
       font-size 0.85em
