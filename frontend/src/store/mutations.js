@@ -2,7 +2,8 @@
 
 export default {
   MOD_USER (state, userobj) {
-    state.user = userobj
+    state.currentUser = userobj
+    state.authed = Object.keys(userobj).length !== 0
     state.userid = userobj.id
     localStorage.userid = userobj.id
   },
@@ -17,7 +18,8 @@ export default {
   DEL_TOKEN (state) {
     state.token = ''
     state.userid = ''
-    state.user = null
+    state.currentUser = null
+    state.authed = false
     localStorage.token = ''
     localStorage.userid = ''
   },

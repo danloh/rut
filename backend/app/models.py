@@ -333,6 +333,8 @@ class Posts(db.Model):
                 tip_creator=tip_creator
             ) # refer to the relationship-backref var
             db.session.add(c)
+            # update item's vote
+            item.cal_vote()
             # update the renew timestamp
             self.renew()
             #save activity to db Events
@@ -375,21 +377,14 @@ class Posts(db.Model):
                 if _tag is None:
                     tag=Tags(tag=_tg)
                     tag.posts.append(self)
+                    tag.cal_vote()
                     db.session.add(tag)
                 else:
                     _tag.posts.append(self)
+                    _tag.cal_vote()
                     db.session.add(_tag)
         #db.session.commit()
     
-    # caculate the post score
-    @property
-    def score(self):
-        itemcount = self.items.count()
-        starcount = self.starers.count()
-        challengecount = self.challengers.count()
-        score = itemcount*2 + starcount * 5 + challengecount *10
-        return score
-
     #check if can be edited
     @property
     def uneditable(self):
@@ -455,6 +450,14 @@ class Posts(db.Model):
         self.vote = n+m
         db.session.add(self)
         #db.session.commit()
+    @property
+    def score(self):
+        """caculate the post score, can be deprecated"""
+        itemcount = self.items.count()
+        starcount = self.starers.count()
+        challengecount = self.challengers.count()
+        score = itemcount*2 + starcount * 5 + challengecount *10
+        return score
 
     # set logo cover of  post
     @property
@@ -546,6 +549,7 @@ class Items(db.Model):
     price = db.Column(db.String(128))
     details = db.Column(db.Text)
     itag_str = db.Column(db.String(512))
+    vote = db.Column(db.Integer,default=0)
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
@@ -618,9 +622,11 @@ class Items(db.Model):
                     tag=Tags(tag=_tg)
                     tag.items.append(self)
                     db.session.add(tag)
+                    tag.cal_vote()
                 elif _tag.items.filter_by(id=self.id).first() is None:
                     _tag.items.append(self)
                     db.session.add(_tag)
+                    _tag.cal_vote()
         #db.session.commit()
 
     # add author to db
@@ -642,6 +648,15 @@ class Items(db.Model):
                     contribution=v
                 )
                 db.session.add(byline)
+        #db.session.commit()
+    
+    def cal_vote(self,c=None,p=None,r=None,f=None):
+        c = c or self.clips.count()
+        p = p or self.posts.count()
+        r = r or self.reviews.count()
+        f = f or self.flagers.count()
+        self.vote = c+p+r+f
+        db.session.add(self)
         #db.session.commit()
     
     def to_dict(self):
@@ -687,6 +702,7 @@ class Tags(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tag = db.Column(db.String(128), nullable=False, unique=True)
     descript = db.Column(db.String(512))
+    vote = db.Column(db.Integer, default=0)
 
     # 1 to n with Events
     events = db.relationship(
@@ -748,6 +764,23 @@ class Tags(db.Model):
     @cache.memoize()
     def get_tags():
         return Tags.query.order_by(db.func.rand()).limit(20).all()
+
+    def cal_vote(self,i=None,p=None,d=None,f=None):
+        i = i or self.items.count()
+        p = p or self.posts.count()
+        d = d or self.demands.count()
+        f = f or self.favers.count()
+        self.vote = i+p+d+f
+        db.session.add(self)
+        #db.session.commit()
+    @property
+    def score(self):
+        itemcount = self.items.count()
+        postcount = self.posts.count()
+        demandcount = self.demands.count()
+        favcount = self.favers.count()
+        score = itemcount + postcount + demandcount + favcount
+        return score, demandcount
 
     def to_dict(self):
         tag_dict = {
@@ -1009,9 +1042,11 @@ class Demands(db.Model):
                 if _tag is None:
                     tag=Tags(tag=_tg)
                     tag.demands.append(self)
+                    tag.cal_vote()
                     db.session.add(tag)
                 else:
                     _tag.demands.append(self)
+                    _tag.cal_vote()
                     db.session.add(_tag)
         #db.session.commit()
     
@@ -1390,6 +1425,8 @@ class Users(UserMixin, db.Model):
         else:
             new_fl = Flag(flager=self, flag_item=item,flag_label=n)
             db.session.add(new_fl)
+        # update item's vote
+        item.cal_vote()
         #db.session.commit()
     def flaging(self,item):
         fl = Flag.query.filter_by(user_id=self.id,item_id=item.id).\
@@ -1703,3 +1740,9 @@ class Columns(db.Model):
 
     def __repr__(self):
         return '<Columns %r>' % self.title
+
+#update db
+# cd backend
+# python manage.py db init
+# python manage.py db migrate -m "comment"
+# python manage.py db upgrade

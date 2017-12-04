@@ -73,8 +73,15 @@ def verify_user():       ##????
     else:
         return jsonify(guser.to_dict())
 
+@rest.route('/currentuser') 
+@auth.login_required  
+def get_current_user(): # for authed-user to re-get info
+    user = g.user
+    user_dict = user.to_dict()
+    return jsonify(user_dict)
+
 @rest.route('/user/<int:id>')
-def get_user(id): 
+def get_user(id):        # get info per userid
     user = Users.query.get_or_404(id)
     user_dict = user.to_dict()
     return jsonify(user_dict)
@@ -92,7 +99,7 @@ def get_ruts():            ##!! to be optimized
     q = post_fo
     for tag_obj in tag_set:
         q.append(tag_obj.posts)
-    q_rand = Posts.query.order_by(db.func.rand()).limit(10) # !! need to optimize
+    q_rand = Posts.query.order_by(db.func.rand()).limit(0) # !! need to optimize
     query = q_rand.union(*q)
     ruts = query.order_by(Posts.timestamp.desc())  # other way,list reverse
     return jsonify({  # need to optimize

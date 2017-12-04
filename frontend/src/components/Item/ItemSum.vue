@@ -57,7 +57,7 @@ export default {
     },
     checkFlaging () {
       if (this.checkAuth()) {
-        let itemid = this.item.id || this.$route.params.id // ??
+        let itemid = this.item.id || this.$route.params.id // ?? liftcycle timing
         return checkFlag(itemid)
         .then(resp => {
           this.flagAction = resp.data
@@ -119,7 +119,7 @@ export default {
 .itemsum
   background-color #fff
   min-height 180px
-  padding 10px 100px 10px 140px
+  padding 10px 110px 10px 135px
   border-bottom 1px solid #eee
   position relative
   .thumb

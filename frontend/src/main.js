@@ -72,14 +72,16 @@ router.beforeEach((to, from, next) => {
       store.commit('SET_TOKEN', localToken)
       store.commit('SET_USER', localID)
       next()
-      bar.finish()
     } else {
       next({path: '/login'})
     }
   } else {
     next()
-    bar.finish()
   }
+})
+
+router.afterEach(() => {
+  bar.finish()
 })
 
 Vue.prototype.$axios = axios

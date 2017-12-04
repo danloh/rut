@@ -1163,10 +1163,11 @@ def countfav(id):
         current_user.unfav(tag)
 
     v = tag.favers.count()
+    tag.cal_vote(f=v)
     db.session.commit()
 
     fv=str(v)
-    return fv 
+    return fv
 #######################################################################
 #### end for fav tag Ajax #############################################
 #######################################################################
@@ -1213,12 +1214,15 @@ def challenge():
         items = None
          
     if form.validate_on_submit():
+        item = Items.query.get(form.resource.data)
         clip = Clips(
             body = form.body.data,
-            item = Items.query.get(form.resource.data),
+            item = items,
             creator = current_user._get_current_object()
         )
         db.session.add(clip)
+        # update item's vote
+        item.cal_vote()
         #save activity to db Events
         current_user.set_event(action='excerpt',clip=clip)
         db.session.commit()
@@ -1430,6 +1434,8 @@ def add_review(id):
             creator=current_user._get_current_object()
         )
         db.session.add(review)
+        # update item's vote
+        item.cal_vote()
         #save activity to db Events
         current_user.set_event(action='add',review=review)
         db.session.commit()

@@ -23,6 +23,10 @@ const auth = (servername, params) => {
   return request(`${base}/auth/${servername}`, params)
 }
 
+const fetchCurrentUser = params => {
+  return request(`${base}/currentuser`, params)
+}
+
 const fetchUser = (id, params) => {
   return request(`${base}/user/${id}`, params)
 }
@@ -89,6 +93,7 @@ export {
   login,
   auth,
   authUser,
+  fetchCurrentUser,
   fetchUser,
   fetchRuts,
   fetchChallengeRut,

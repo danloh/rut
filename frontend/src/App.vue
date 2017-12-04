@@ -55,11 +55,12 @@ export default {
   name: 'app',
   computed: {
     ...mapGetters([
-      'currentUser'
+      'currentUser',
+      'authed'
     ]),
-    authed () {
-      return this.currentUser !== null
-    },
+    // authed () {
+    //   return this.currentUser !== null
+    // },
     avatar () {
       return this.currentUser.avatar
     }
@@ -68,10 +69,27 @@ export default {
     onLogout () {
       this.$store.commit('DEL_TOKEN')
       this.$router.push('/')
+    },
+    checkAuth () {
+      let localToken = localStorage.token
+      // let localID = localStorage.userid
+      if (localToken) {
+        this.$axios.defaults.auth = {
+          username: localToken,
+          password: localToken
+        }
+        this.getCurrentUser()
+        return true
+      } else {
+        return false
+      }
+    },
+    getCurrentUser () {
+      this.$store.dispatch('getCurrentUser')
     }
   },
-  beforeDestroy () {
-    this.onLogout()
+  beforeMount () {
+    this.checkAuth()
   }
 }
 </script>

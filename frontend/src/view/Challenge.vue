@@ -141,7 +141,7 @@ export default {
       b
         font-size 0.85em
     .right-item
-      padding 0px 5px
+      padding 0 0 0 10px
       font-size 0.85em
       background-color white
 </style>
