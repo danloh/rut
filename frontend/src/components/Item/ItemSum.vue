@@ -16,9 +16,9 @@
       <el-dropdown>
         <el-button type="primary" size="mini" plain>{{flagAction}}<i class="el-icon-arrow-down el-icon--right"></i></el-button>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item>Schedule</el-dropdown-item>
-          <el-dropdown-item>Working On</el-dropdown-item>
-          <el-dropdown-item>Have Done</el-dropdown-item>
+          <el-dropdown-item><span @click="flagSchedule">Schedule</span></el-dropdown-item>
+          <el-dropdown-item><span @click="flagWorking">Working On</span></el-dropdown-item>
+          <el-dropdown-item><span @click="flagDone">Have Done</span></el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
@@ -26,18 +26,91 @@
 </template>
 
 <script>
+import { flagItem, checkFlag } from '@/api/api'
+
 export default {
   name: 'item-sum',
   props: ['item'],
   data () {
     return {
-      flagAction: 'Flag it'
+      flagAction: this.checkFlaging()
     }
   },
   computed: {
     cover () {
       return this.item.cover
     }
+  },
+  methods: {
+    checkAuth () {
+      let localToken = localStorage.token
+      // let localID = localStorage.userid
+      if (localToken) {
+        this.$axios.defaults.auth = {
+          username: localToken,
+          password: localToken
+        }
+        return true
+      } else {
+        return false
+      }
+    },
+    checkFlaging () {
+      if (this.checkAuth()) {
+        let itemid = this.item.id || this.$route.params.id // ??
+        return checkFlag(itemid)
+        .then(resp => {
+          this.flagAction = resp.data
+        })
+      } else {
+        this.flagAction = 'Flag it'
+      }
+    },
+    flagSchedule () {
+      if (this.checkAuth()) {
+        return flagItem('todo', this.item.id)
+        .then(() => {
+          this.flagAction = 'Scheduled'
+        })
+      } else {
+        this.$message({
+          showClose: true,
+          message: 'Should Log in to Access'
+        })
+        this.$router.push('/login')
+      }
+    },
+    flagWorking () {
+      if (this.checkAuth()) {
+        return flagItem('doing', this.item.id)
+        .then(() => {
+          this.flagAction = 'Working On'
+        })
+      } else {
+        this.$message({
+          showClose: true,
+          message: 'Should Log in to Access'
+        })
+        this.$router.push('/login')
+      }
+    },
+    flagDone () {
+      if (this.checkAuth()) {
+        return flagItem('done', this.item.id)
+        .then(() => {
+          this.flagAction = 'Have Done'
+        })
+      } else {
+        this.$message({
+          showClose: true,
+          message: 'Should Log in to Access'
+        })
+        this.$router.push('/login')
+      }
+    }
+  // },
+  // beforeUpdate () {
+  //   this.checkFlaging()
   }
 }
 </script>

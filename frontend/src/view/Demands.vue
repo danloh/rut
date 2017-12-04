@@ -48,11 +48,15 @@ export default {
         if (valid) {
           let data = { demand: form.demand }
           this.$store.dispatch('postDemand', data)
+          this.resetForm(formName)
         } else {
           console.log('error submit!!')
           return false
         }
       })
+    },
+    resetForm (formName) {
+      this.$refs[formName].resetFields()
     }
   }
 }

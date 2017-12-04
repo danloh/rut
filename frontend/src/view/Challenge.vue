@@ -3,8 +3,13 @@
     <div class="challenge-view">
       <div>
         <el-form :model="clipForm" :rules="rules" ref="clipForm">
-          <el-form-item prop="clip" style="margin-bottom:8px">
+          <el-form-item prop="clip" style="margin-bottom:16px">
             <el-input type="textarea" v-model="clipForm.clip" placeholder="excerpt something"></el-input>
+          </el-form-item>
+          <el-form-item prop="doing" style="margin-bottom:8px">
+            <el-select class="selectItem" v-model="clipForm.doingItemID" placeholder="Pick an item from which you excerpt clip in Your working-ons">
+              <el-option v-for="i in doingItems" :key="i.id" :label="i.title" :value="i.id"></el-option>
+            </el-select>
           </el-form-item>
           <el-form-item>
             <el-button size="mini" @click="submitClip('clipForm', clipForm)">Submit</el-button>
@@ -38,6 +43,7 @@
 
 <script>
 import ClipList from '@/components/Challenge/ClipList.vue'
+import { fetchChallengeItems } from '@/api/api'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -47,13 +53,16 @@ export default {
   data () {
     return {
       clipForm: {
-        clip: ''
+        clip: '',
+        doingItemID: null
       },
       rules: {
-        clip: [{ required: true, message: 'Required', trigger: 'blur' }]
+        clip: [{ required: true, message: 'Required', trigger: 'blur' }],
+        doingItemID: [{ required: true, message: 'Required', trigger: 'change' }]
       },
       items: null,
-      dueDate: ''
+      dueDate: '',
+      doingItems: []
     }
   },
   computed: {
@@ -67,14 +76,28 @@ export default {
   methods: {
     submitClip (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid) {
-          let data = { clip: form.clip }
+        if (valid && form.doingItemID !== null) {
+          let data = { clip: form.clip, itemid: form.doingItemID }
           this.$store.dispatch('postClip', data)
+          this.resetForm(formName)
         } else {
           console.log('error submit!!')
+          this.$message({
+            showClose: true,
+            message: 'Something Wrong, Please check input'
+          })
           return false
         }
       })
+    },
+    getChallengeItems () {
+      return fetchChallengeItems()
+      .then(resp => {
+        this.doingItems = resp.data
+      })
+    },
+    resetForm (formName) {
+      this.$refs[formName].resetFields()
     }
   },
   mounted () {
@@ -83,6 +106,7 @@ export default {
       this.items = resp.data.items
       this.dueDate = resp.data.deadline
     })
+    this.getChallengeItems()
   }
 }
 </script>
@@ -93,6 +117,8 @@ export default {
   position relative
   .challenge-view
     padding auto
+    .selectItem
+      width 100%
     .submenu
       margin-bottom 5px
       a

@@ -101,7 +101,7 @@ def get_ruts():            ##!! to be optimized
         'tags': [{'tagid': t.id,'tagname': t.tag} for t in tag_set] 
     })
 
-@rest.route('/challengerut')  # challenging !!
+@rest.route('/challengerut')  # challenging rut !!
 @auth.login_required
 def get_challege_rut():
     user = g.user
@@ -124,6 +124,15 @@ def get_challege_rut():
             'total': 0,
             'tags': []
         })
+
+@rest.route('/challengeitems')  # challenging items !!
+@auth.login_required
+def get_challege_items():
+    user = g.user
+    doing_flags = user.flag_items.filter_by(flag_label=2).limit(5) # note the order
+    doing_items = [f.flag_item for f in doing_flags]
+    doing_dict_list = [{'id':item.id, 'title': item.title} for item in doing_items]
+    return jsonify(doing_dict_list)
 
 @rest.route('/<int:userid>/created/ruts')
 def get_created_ruts(userid):
@@ -210,6 +219,38 @@ def get_done_items(userid):
         'total': len(items)
     })
 
+@rest.route('/checkflag/item/<int:itemid>')
+@auth.login_required
+def check_flag(itemid):
+    user = g.user
+    item = Items.query.get_or_404(itemid)
+    flaging = user.flaging(item)
+    return jsonify(flaging)
+
+@rest.route('/flagtodo/item/<int:itemid>')
+@auth.login_required
+def flag_item_todo(itemid):
+    user = g.user
+    item = Items.query.get_or_404(itemid)
+    user.flag(item,1)
+    return jsonify('Schedule')
+
+@rest.route('/flagdoing/item/<int:itemid>')
+@auth.login_required
+def flag_item_doing(itemid):
+    user = g.user
+    item = Items.query.get_or_404(itemid)
+    user.flag(item,2)
+    return jsonify('Working On')
+
+@rest.route('/flagdone/item/<int:itemid>')
+@auth.login_required
+def flag_item_done(itemid):
+    user = g.user
+    item = Items.query.get_or_404(itemid)
+    user.flag(item,3)
+    return jsonify('Done')
+
 @rest.route('/clips')
 @auth.login_required
 def get_clips():
@@ -237,10 +278,11 @@ def get_clips():
 @rest.route('/newclip', methods=['POST'])
 @auth.login_required
 def new_clip():
+    itemid = request.json.get('itemid')
     clip = Clips(
         creator = g.user,
         body = request.json.get('clip'),
-        item = Items.query.get(1)  # for test currently
+        item = Items.query.get(itemid) 
     )
     db.session.add(clip)
     db.session.commit()
