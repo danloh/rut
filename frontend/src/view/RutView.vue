@@ -7,14 +7,14 @@
         </span>
       </div>
       <div class="title">
-        <h2>{{ arut.title }}</h2>
+        <h2>{{ rutDetail.title }}</h2>
         <p class="meta">
-          By <router-link :to="'/profile/' + creator.id">{{ creator.name }}</router-link>
-          | {{ arut.createat | toLocal }}
-          | including {{ arut.itemcount }} items
+          By <router-link :to="'/profile/' + creatorid">{{ creatorname }}</router-link>
+          | {{ rutDetail.createat | toLocal }}
+          | including {{ rutDetail.itemcount }} items
         </p>
       </div>
-      <div class="intro" v-html="arut.intro"></div>
+      <div class="intro" v-html="rutDetail.intro"></div>
       <div class="toolbar">
         <el-button size="mini" plain v-if="canEdit">
           <router-link :to="'/edit/readuplist/' + rutid">...Edit</router-link>
@@ -31,7 +31,7 @@
         <div class="tip" v-html="tip.tip"></div>
       </div>
       <div class="epilog">
-        {{arut.epilog}} <el-button type="text" v-if="canEdit">...Edit Epilog</el-button>
+        {{rutDetail.epilog}} <el-button type="text" v-if="canEdit">...Edit Epilog</el-button>
       </div>
       <div class="comment">
         <router-link :to="'/rut/comment' + rutid">Comment</router-link>
@@ -61,45 +61,46 @@ export default {
       starCount: 0,
       challengeCount: 0,
       creatorid: null,
-      canEdit: this.checkEditable()  // ????
+      creatorname: '',
+      currentUserID: null,
+      canEdit: this.creatorid === this.currentUserId // not work in computed why?
     }
   },
   computed: {
-    ...mapGetters({
-      arut: 'rutDetail',
-      currentUserid: 'currentUserID'
-    }),
+    ...mapGetters([
+      'rutDetail'
+    ]),
     rutid () {
-      return this.arut.id
+      return this.rutDetail.id
     },
     tips () {
-      return this.arut.tips
+      return this.rutDetail.tips
     },
     tags () {
-      return this.arut.tags
+      return this.rutDetail.tags
     },
     creator () {
-      return this.arut.creator
+      return this.rutDetail.creator
     },
     contributors () {
-      return this.arut.contributors
+      return this.rutDetail.contributors
     },
     contributorIDList () {
-      return this.arut.contributoridlist
+      return this.rutDetail.contributoridlist
     },
     credential () {
-      return this.arut.credential
+      return this.rutDetail.credential
     },
-    canbeEdit () {  // ???
-      return this.creator.id === this.currentUserid
-      // || this.arut.editable === 'Everyone' || this.currentUserid in this.contributorIDList
-    },
+    // canEdit () {  // ???
+    //   return this.creatorid === this.currentUserID
+    //   // || this.rutDetail.editable === 'Everyone' || this.currentUserID in this.contributorIDList
+    // },
     canDelete () {
-      return this.creator.id === this.currentUserid
+      return this.creatorid === this.currentUserID // ?
     }
   },
   title () {
-    return this.arut.title
+    return this.rutDetail.title
   },
   created () {
     let crutid = this.$route.params.id
@@ -107,8 +108,9 @@ export default {
     .then(resp => {
       this.starCount = resp.data.starcount
       this.challengeCount = resp.data.challengecount
-      this.creatorid = resp.data.creator.id  // ??
-      this.checkEditable() // ??
+      this.creatorid = resp.data.creator.id
+      this.creatorname = resp.data.creator.name
+      this.currentUserID = this.$store.getters.currentUserID
     })
   },
   methods: {
@@ -191,11 +193,6 @@ export default {
           message: 'Should Log in to Continue'
         })
         this.$router.push('/login')
-      }
-    },
-    checkEditable () { // ??
-      if (this.creatorid === this.$store.getters.currentUserID) {
-        this.canEdit = true
       }
     }
   }
