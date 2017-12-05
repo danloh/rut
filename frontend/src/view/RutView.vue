@@ -31,7 +31,10 @@
         <div class="tip" v-html="tip.tip"></div>
       </div>
       <div class="epilog">
-        {{rutDetail.epilog}} <el-button type="text" v-if="canEdit">...Edit Epilog</el-button>
+        {{rutDetail.epilog}} 
+        <el-button type="text" v-if="canEdit">
+          <router-link :to="'/edit/readuplist/' + rutid">...Edit</router-link>
+        </el-button>
       </div>
       <div class="comment">
         <router-link :to="'/rut/comment' + rutid">Comment</router-link>
@@ -62,7 +65,7 @@ export default {
       challengeCount: 0,
       creatorid: null,
       creatorname: '',
-      currentUserID: null
+      currentUserID: -1
     }
   },
   computed: {

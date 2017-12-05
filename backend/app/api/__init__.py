@@ -256,12 +256,15 @@ def new_rut():
 @rest.route('/editrut/<int:rutid>', methods=['POST'])
 @auth.login_required
 def edit_rut(rutid):
+    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    if rut.creator != user:
+        return jsonify('Error')  #how to tacle error?
     rut.title = request.json.get('title'),
     rut.intro = request.json.get('intro'),
     rut.rating = request.json.get('rating'),
     rut.credential = request.json.get('credential'),
-    rut.editable = request.json.get('editable')
+    rut.epilog = request.json.get('epilog')
     db.session.add(rut)
     db.session.commit()
     return jsonify(rut.to_dict())

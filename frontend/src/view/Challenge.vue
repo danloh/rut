@@ -48,7 +48,7 @@ import { mapGetters } from 'vuex'
 
 export default {
   name: 'challenge',
-  title: 'Challenge To Reading Anything',
+  title: 'Readup.Tips - Challenge To Reading Anything',
   components: { ClipList },
   data () {
     return {

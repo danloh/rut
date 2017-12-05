@@ -3,6 +3,7 @@ import Router from 'vue-router'
 
 Vue.use(Router)
 
+import store from '@/store'
 // import components
 import Home from '@/view/Home'
 import Register from '@/components/Register'
@@ -15,6 +16,7 @@ import TagView from '@/view/TagView'
 import Connect from '@/components/Connect'
 import Create from '@/components/Rut/Create'
 import EditRut from '@/components/Rut/EditRut'
+import AddItem from '@/components/Rut/AddItem'
 import ItemView from '@/view/ItemView'
 import createClipList from '@/components/Challenge/CreateClipList'
 import createDemandList from '@/components/Demand/CreateDemandList'
@@ -31,6 +33,14 @@ const scrollBehavior = (to, from, savedPosition) => {
     return position
   }
 }
+// for auth edit rut
+const beforeEnter = (to, from, next) => {
+  let currentUserID = store.getters.currentUserID
+  let creatorID = store.getters.rutDetail.creator.id
+  if (currentUserID === creatorID) {
+    next()
+  }
+}
 
 const router = new Router({
   mode: 'history',
@@ -41,10 +51,21 @@ const router = new Router({
     { path: '/register', component: Register, name: 'Register' },
     { path: '/login', component: Login, name: 'Login' },
     { path: '/connect', component: Connect, name: 'Connect' },
-    { path: '/create', component: Create, name: 'CreateRut', meta: {auth: true} },
-    { path: '/edit/readuplist/:id', component: EditRut, name: 'EditRut', meta: {auth: true} },
-    { path: '/readuplist/:id', component: RutView, name: 'Rutview' },
     { path: '/tag/:id', component: TagView, name: 'Tag' },
+    { path: '/create', component: Create, name: 'CreateRut', meta: {auth: true} },
+    { path: '/readuplist/:id', component: RutView, name: 'Rutview' },
+    { path: '/edit/readuplist/:id',
+      component: EditRut,
+      name: 'EditRut',
+      meta: {auth: true},
+      beforeEnter
+    },
+    { path: '/additemto/readuplist/:id',
+      component: AddItem,
+      name: 'AddItem',
+      meta: {auth: true},
+      beforeEnter
+    },
     { path: '/item/:id',
       component: ItemView,
       children: [

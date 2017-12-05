@@ -25,6 +25,9 @@
           <el-radio-button label="Everyone"></el-radio-button>
         </el-radio-group>
       </el-form-item> -->
+      <el-form-item label="Epilog" prop="epilog">
+        <el-input type="textarea" v-model="editForm.epilog"></el-input>
+      </el-form-item>
       <el-form-item>
         <el-button type="success" size="medium" @click="onEdit('editForm', editForm)">Done and Submit</el-button>
         <!-- <el-button @click="resetForm('editForm')">Reset</el-button> -->
@@ -47,7 +50,7 @@ export default {
         tag: '',
         rating: '',
         credential: '',
-        editable: ''
+        epilog: ''
       },
       rules: {
         title: [
@@ -75,16 +78,16 @@ export default {
             intro: form.intro,
             rating: form.rating,
             credential: form.credential,
-            editable: form.editable
+            epilog: form.epilog
           }
           editRut(this.rutId, data)
           .then(() => {
             let id = this.rutId
             this.$router.push(`/readuplist/${id}`)
-            this.$message({
-              showClose: true,
-              message: 'Edit Done'
-            })
+            // this.$message({
+            //   showClose: true,
+            //   message: 'Edit Done'
+            // })
           }).catch(error => {
             this.$message.error(error.status) // elementui
           })
@@ -97,21 +100,21 @@ export default {
     resetForm (formName) {
       this.$refs[formName].resetFields()
     },
-    loadRutDta () {
+    loadRutData () {
       let rut = this.$store.getters.rutDetail
       if (rut.id === Number(this.$route.params.id)) {
         this.editForm.title = rut.title
         this.editForm.intro = rut.intro
         this.editForm.rating = rut.rating
         this.editForm.credential = rut.credential
-        this.editForm.editable = rut.editable
+        this.editForm.epilog = rut.epilog
         this.rutId = rut.id
         this.rutTitle = rut.title
       }
     }
   },
   created () {
-    this.loadRutDta()
+    this.loadRutData()
   }
 }
 </script>

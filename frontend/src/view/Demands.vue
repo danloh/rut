@@ -27,7 +27,7 @@
 <script>
 export default {
   name: 'demands',
-  title: 'Request',
+  title: 'Readup.Tips - Request',
   data () {
     return {
       demandForm: {

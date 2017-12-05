@@ -22,7 +22,7 @@ import { mapGetters } from 'vuex'
 
 export default {
   name: 'home',
-  title: 'Home',
+  title: 'Readup.Tips - Share Reading List',
   components: {
     RutList, Spinner
   },
