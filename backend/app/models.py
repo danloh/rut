@@ -148,9 +148,10 @@ class Contribute(db.Model):
         user_dict = self.contributor.to_dict()
         contribute_dict = {
             'id': self.id,
+            'contributorid': self.user_id,
             'postid': self.post_id,
             'disabled': self.disabled,
-            'contributors': user_dict
+            'contributor': user_dict
         }
         return contribute_dict
 
@@ -485,15 +486,17 @@ class Posts(db.Model):
         return posts_select
 
     def to_dict(self):
-        
         creator = self.creator.to_dict()
-        contributors = [i.to_dict() for i in self.contributors]
+        contributes = self.contributors
+        contributors = [i.to_dict() for i in contributes]
+        contributor_id_list = [i.user_id for i in contributes]
         tags = [t.to_dict() for t in self.tags]
         post_dict = {
             'id': self.id,
             'title': self.title,
             'intro': self.intro,
             'credential': self.credential,
+            'rating': self.rating,
             'epilog': self.epilog,
             'createat': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             #'renewat': self.renewal.strftime('%Y-%m-%d %H:%M:%S'),
@@ -506,28 +509,28 @@ class Posts(db.Model):
             'editable': self.editable,
             'creator': creator,
             'contributors': contributors,
-            'tags': tags,
-            'link': '/readuplist/'+str(self.id)
+            'contributoridlist': contributor_id_list,
+            'tags': tags
         }
         return post_dict
 
     ## markdown to html
-    @staticmethod
-    def on_changed_intro(target, value, oldvalue, initiator):
-        target.intro_html = bleach.linkify(bleach.clean(
-            markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True))
-    @staticmethod
-    def on_changed_epilog(target, value, oldvalue, initiator):
-        target.epilog_html = bleach.linkify(bleach.clean(
-            markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True))
+    # @staticmethod
+    # def on_changed_intro(target, value, oldvalue, initiator):
+    #     target.intro_html = bleach.linkify(bleach.clean(
+    #         markdown(value, output_format='html'),
+    #         tags=allowed_tags, strip=False))
+    # @staticmethod
+    # def on_changed_epilog(target, value, oldvalue, initiator):
+    #     target.epilog_html = bleach.linkify(bleach.clean(
+    #         markdown(value, output_format='html'),
+    #         tags=allowed_tags, strip=True))
 
     def __repr__(self):
         return '<Posts %r>' % self.title
 
-db.event.listen(Posts.intro, 'set', Posts.on_changed_intro)
-db.event.listen(Posts.epilog, 'set', Posts.on_changed_epilog)
+# db.event.listen(Posts.intro, 'set', Posts.on_changed_intro)
+# db.event.listen(Posts.epilog, 'set', Posts.on_changed_epilog)
 
 class Items(db.Model):
     __table_name__ = 'items'
@@ -1372,12 +1375,12 @@ class Users(UserMixin, db.Model):
         if not self.staring(post):
             s = Star(starer=self, star_post=post)
             db.session.add(s)
-            #db.session.commit()
+            db.session.commit() # need to commit for API??
     def unstar(self, post):
         s = self.star_posts.filter_by(post_id=post.id).first()
         if s:
             db.session.delete(s)
-            #db.session.commit()
+            db.session.commit() # need to commit for API??
     def staring(self, post):
         return self.star_posts.filter_by(
             post_id=post.id).first() is not None
@@ -1387,12 +1390,12 @@ class Users(UserMixin, db.Model):
         if not self.challenging(post):
             c = Challenge(challenger=self, challenge_post=post)
             db.session.add(c)
-            #db.session.commit()
+            db.session.commit() # need to commit for API??
     def unchallenge(self, post):
         c = self.challenge_posts.filter_by(post_id=post.id).first()
         if c:
             db.session.delete(c)
-            #db.session.commit()
+            db.session.commit() # need to commit for API??
     def challenging(self, post):
         return self.challenge_posts.filter_by(
             post_id=post.id).first() is not None
@@ -1427,7 +1430,7 @@ class Users(UserMixin, db.Model):
             db.session.add(new_fl)
         # update item's vote
         item.cal_vote()
-        #db.session.commit()
+        db.session.commit() # need to commit for API??
     def flaging(self,item):
         fl = Flag.query.filter_by(user_id=self.id,item_id=item.id).\
             first()

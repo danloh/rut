@@ -57,7 +57,7 @@ export default {
     },
     checkFlaging () {
       if (this.checkAuth()) {
-        let itemid = this.item.id || this.$route.params.id // ?? liftcycle timing
+        let itemid = this.item.id || this.$route.params.id // why?? liftcycle timing??
         return checkFlag(itemid)
         .then(resp => {
           this.flagAction = resp.data

@@ -43,7 +43,7 @@ export default {
       'inRuts'
     ])
   },
-  mounted () {
+  beforeMount () {
     let itemid = this.$route.params.id
     this.$store.dispatch('getItem', itemid)
   }

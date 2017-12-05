@@ -13,7 +13,7 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
   state: {  // only for auth user
     currentUser: null,
-    userid: '',
+    currentUserID: '',
     authed: false,
     token: '',
     nexturl: ''

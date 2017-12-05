@@ -13,7 +13,7 @@ api = Api(rest)
 auth = HTTPBasicAuth()
 
 from . import res
-api.add_resource(res.Rut, '/rut/<int:rutid>')
+#api.add_resource(res.Rut, '/rut/<int:rutid>')
 api.add_resource(res.Tag, '/tag/<int:tagid>')
 api.add_resource(res.Item, '/item/<int:itemid>')
 #api.add_resource(res.Commentz, '/comments')
@@ -108,6 +108,18 @@ def get_ruts():            ##!! to be optimized
         'tags': [{'tagid': t.id,'tagname': t.tag} for t in tag_set] 
     })
 
+@rest.route('/rut/<int:rutid>')
+def get_rut(rutid):
+    rut = Posts.query.get_or_404(rutid)
+    rut_dict = rut.to_dict()
+    #attach tips and items included in rut 
+    tips = [t.to_dict() for t in rut.items]  # in Collect model
+    # sort tips per order-key in collect-dict
+    from operator import itemgetter
+    order_tips = sorted(tips, key=itemgetter('order'))
+    rut_dict['tips'] = order_tips
+    return jsonify(rut_dict)
+
 @rest.route('/challengerut')  # challenging rut !!
 @auth.login_required
 def get_challege_rut():
@@ -176,6 +188,54 @@ def get_challege_ruts(userid):
     # elif ref == 'contribute':
     #     q = [c.contribute_post for c in user.contribute_posts]
 
+@rest.route('/checkstar/rut/<int:rutid>')
+@auth.login_required
+def check_star(rutid):
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    staring = 'Unstar' if user.staring(rut) else 'Star'
+    return jsonify(staring)
+
+@rest.route('/checkchallenge/rut/<int:rutid>')
+@auth.login_required
+def check_challenge(rutid):
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    challenging = 'Endchallenge' if user.challenging(rut) else 'Challenge'
+    return jsonify(challenging)
+
+@rest.route('/star/rut/<int:rutid>')
+@auth.login_required
+def star_rut(rutid):
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    user.star(rut)
+    return jsonify('Unstar')
+
+@rest.route('/unstar/rut/<int:rutid>')
+@auth.login_required
+def unstar_rut(rutid):
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    user.unstar(rut)
+    return jsonify('Star')
+
+@rest.route('/challenge/rut/<int:rutid>')
+@auth.login_required
+def challenge_rut(rutid):
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    user.challenge(rut)
+    return jsonify('EndChallenge')
+
+@rest.route('/unchallenge/rut/<int:rutid>')
+@auth.login_required
+def unchallenge_rut(rutid):
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    user.unchallenge(rut)
+    return jsonify('Challenge')
+
 @rest.route('/create', methods=['POST'])
 @auth.login_required
 def new_rut():
@@ -192,6 +252,19 @@ def new_rut():
     post.tag_to_db()
     db.session.commit()
     return jsonify(post.to_dict())
+
+@rest.route('/editrut/<int:rutid>', methods=['POST'])
+@auth.login_required
+def edit_rut(rutid):
+    rut = Posts.query.get_or_404(rutid)
+    rut.title = request.json.get('title'),
+    rut.intro = request.json.get('intro'),
+    rut.rating = request.json.get('rating'),
+    rut.credential = request.json.get('credential'),
+    rut.editable = request.json.get('editable')
+    db.session.add(rut)
+    db.session.commit()
+    return jsonify(rut.to_dict())
 
 @rest.route('/<int:userid>/doing/items')
 def get_doing_items(userid):
@@ -240,7 +313,7 @@ def flag_item_todo(itemid):
     user = g.user
     item = Items.query.get_or_404(itemid)
     user.flag(item,1)
-    return jsonify('Schedule')
+    return jsonify('Scheduled')
 
 @rest.route('/flagdoing/item/<int:itemid>')
 @auth.login_required

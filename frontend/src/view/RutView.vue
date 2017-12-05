@@ -1,5 +1,5 @@
 <template>
-  <div class="rutpage" :key="arut.id">
+  <div class="rutpage">
     <div class="rutview">
       <div class="tagbar">
         <span class="tag" v-for="(tag, index) in tags" :key="index">
@@ -16,11 +16,15 @@
       </div>
       <div class="intro" v-html="arut.intro"></div>
       <div class="toolbar">
-        <el-button type="info" size="mini" plain v-if="canEdit">...Edit...</el-button>
-        <el-button type="info" size="mini" plain v-if="canEdit">...Add Item...</el-button>
+        <el-button size="mini" plain v-if="canEdit">
+          <router-link :to="'/edit/readuplist/' + rutid">...Edit</router-link>
+        </el-button>
+        <el-button size="mini" plain v-if="canEdit">
+          <router-link :to="'/additemto/readuplist/' + rutid">Add Item...</router-link>
+        </el-button>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <el-button type="success" size="mini" plain><b>{{starAction}} {{arut.starcount}}</b></el-button>
-        <el-button type="success" size="mini" plain><b>{{challengeAction}} {{arut.challengecount}}</b></el-button>
+        <el-button type="success" size="mini" plain @click="starRut"><b>{{ starAction }} {{ starCount }}</b></el-button>
+        <el-button type="success" size="mini" plain @click="challengeRut"><b>{{ challengeAction }} {{ challengeCount }}</b></el-button>
       </div>
       <div class="itemtip" v-for="tip in tips" :key="tip.order">
         <item-sum class="itemsum" :item="tip.item"></item-sum>
@@ -30,7 +34,7 @@
         {{arut.epilog}} <el-button type="text" v-if="canEdit">...Edit Epilog</el-button>
       </div>
       <div class="comment">
-        <router-link :to="'/rut/comment' + arut.id">Comment</router-link>
+        <router-link :to="'/rut/comment' + rutid">Comment</router-link>
       </div>
     </div>
     <div class="rutside">
@@ -44,6 +48,7 @@
 import Spinner from '@/components/Misc/Spinner.vue'
 import ItemSum from '@/components/Item/ItemSum.vue'
 import Comment from '@/components/Comment.vue'
+import { scRut, checkSC } from '@/api/api'  // sc: star and challenge
 import { mapGetters } from 'vuex'
 
 export default {
@@ -51,14 +56,22 @@ export default {
   components: { ItemSum, Spinner, Comment },
   data () {
     return {
-      starAction: 'Star',
-      challengeAction: 'Challenge'
+      starAction: this.checkStar(),
+      challengeAction: this.checkChallenge(),
+      starCount: 0,
+      challengeCount: 0,
+      creatorid: null,
+      canEdit: this.checkEditable()  // ????
     }
   },
   computed: {
     ...mapGetters({
-      arut: 'rutDetail'
+      arut: 'rutDetail',
+      currentUserid: 'currentUserID'
     }),
+    rutid () {
+      return this.arut.id
+    },
     tips () {
       return this.arut.tips
     },
@@ -68,20 +81,123 @@ export default {
     creator () {
       return this.arut.creator
     },
+    contributors () {
+      return this.arut.contributors
+    },
+    contributorIDList () {
+      return this.arut.contributoridlist
+    },
     credential () {
       return this.arut.credential
     },
-    canEdit () {
-      return true // this.creator.id === this.$store.state.userid ||
-      // this.arut.editable === 'Everyone'
+    canbeEdit () {  // ???
+      return this.creator.id === this.currentUserid
+      // || this.arut.editable === 'Everyone' || this.currentUserid in this.contributorIDList
+    },
+    canDelete () {
+      return this.creator.id === this.currentUserid
     }
   },
   title () {
     return this.arut.title
   },
-  beforeMount () {
-    let rutid = this.$route.params.id
-    this.$store.dispatch('getRut', rutid)
+  created () {
+    let crutid = this.$route.params.id
+    this.$store.dispatch('getRut', crutid)
+    .then(resp => {
+      this.starCount = resp.data.starcount
+      this.challengeCount = resp.data.challengecount
+      this.creatorid = resp.data.creator.id  // ??
+      this.checkEditable() // ??
+    })
+  },
+  methods: {
+    checkAuth () {
+      let localToken = localStorage.token
+      // let localID = localStorage.userid
+      if (localToken) {
+        this.$axios.defaults.auth = {
+          username: localToken,
+          password: localToken
+        }
+        return true
+      } else {
+        return false
+      }
+    },
+    checkStar () {
+      if (this.checkAuth()) {
+        let rutid = this.$route.params.id // ?? liftcycle timing
+        return checkSC(rutid, 'star')
+        .then(resp => {
+          this.starAction = resp.data
+        })
+      } else {
+        this.starAction = 'Star'
+      }
+    },
+    checkChallenge () {
+      if (this.checkAuth()) {
+        let rutid = this.$route.params.id // ?? liftcycle timing
+        return checkSC(rutid, 'challenge')
+        .then(resp => {
+          this.challengeAction = resp.data
+        })
+      } else {
+        this.challengeAction = 'Challenge'
+      }
+    },
+    starRut () {
+      if (this.checkAuth()) {
+        if (this.starAction === 'Star') {
+          return scRut('star', this.rutid)
+          .then(() => {
+            this.starAction = 'Unstar'
+            this.starCount += 1
+          })
+        } else {
+          return scRut('unstar', this.rutid)
+          .then(() => {
+            this.starAction = 'Star'
+            this.starCount -= 1
+          })
+        }
+      } else {
+        this.$message({
+          showClose: true,
+          message: 'Should Log in to Continue'
+        })
+        this.$router.push('/login')
+      }
+    },
+    challengeRut () {
+      if (this.checkAuth()) {
+        if (this.challengeAction === 'Challenge') {
+          return scRut('challenge', this.rutid)
+          .then(() => {
+            this.challengeAction = 'Endchallenge'
+            this.challengeCount += 1
+          })
+        } else {
+          return scRut('unchallenge', this.rutid)
+          .then(() => {
+            this.challengeAction = 'Challenge'
+            this.challengeCount -= 1
+          })
+        }
+      } else {
+        this.$message({
+          showClose: true,
+          message: 'Should Log in to Continue'
+        })
+        this.$router.push('/login')
+      }
+    },
+    checkEditable () { // ??
+      if (this.creatorid === this.$store.getters.currentUserID) {
+        this.canEdit = true
+      }
+    }
   }
 }
 </script>

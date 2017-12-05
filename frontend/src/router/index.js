@@ -13,7 +13,8 @@ import Profile from '@/view/Profile'
 import RutView from '@/view/RutView'
 import TagView from '@/view/TagView'
 import Connect from '@/components/Connect'
-import Create from '@/components/Create'
+import Create from '@/components/Rut/Create'
+import EditRut from '@/components/Rut/EditRut'
 import ItemView from '@/view/ItemView'
 import createClipList from '@/components/Challenge/CreateClipList'
 import createDemandList from '@/components/Demand/CreateDemandList'
@@ -40,7 +41,8 @@ const router = new Router({
     { path: '/register', component: Register, name: 'Register' },
     { path: '/login', component: Login, name: 'Login' },
     { path: '/connect', component: Connect, name: 'Connect' },
-    { path: '/create', component: Create, name: 'Create', meta: {auth: true} },
+    { path: '/create', component: Create, name: 'CreateRut', meta: {auth: true} },
+    { path: '/edit/readuplist/:id', component: EditRut, name: 'EditRut', meta: {auth: true} },
     { path: '/readuplist/:id', component: RutView, name: 'Rutview' },
     { path: '/tag/:id', component: TagView, name: 'Tag' },
     { path: '/item/:id',

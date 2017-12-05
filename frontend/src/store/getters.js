@@ -1,5 +1,6 @@
 const getters = {
   currentUser: state => state.currentUser,
+  currentUserID: state => state.currentUserID,
   authed: state => state.authed,
   nexturl: state => state.nexturl,
   // ruts

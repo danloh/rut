@@ -50,6 +50,19 @@ const fetchProfileRuts = (action, userid, params) => {  // act: created, challen
 const fetchRut = (rutid, params) => { // !!
   return request(`${base}/rut/${rutid}`, params)
 }
+// check if user star or challenge a rut
+const checkSC = (rutid, action, params) => {
+  return request(`${base}/check${action}/rut/${rutid}`, params)
+}
+// tag star or challenge a rut
+const scRut = (action, rutid, params) => {
+  return request(`${base}/${action}/rut/${rutid}`, params)
+}
+
+// edit rut
+const editRut = (rutid, params) => {
+  return request(`${base}/editrut/${rutid}`, params, 'post')
+}
 
 const fetchTag = (tagid, params) => { // !!
   return request(`${base}/tag/${tagid}`, params)
@@ -100,6 +113,9 @@ export {
   fetchChallengeItems,
   fetchProfileRuts,
   fetchRut,
+  checkSC,
+  scRut,
+  editRut,
   fetchTag,
   fetchItem,
   checkFlag,
