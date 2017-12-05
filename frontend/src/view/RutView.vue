@@ -62,8 +62,7 @@ export default {
       challengeCount: 0,
       creatorid: null,
       creatorname: '',
-      currentUserID: null,
-      canEdit: this.creatorid === this.currentUserId // not work in computed why?
+      currentUserID: null
     }
   },
   computed: {
@@ -91,10 +90,10 @@ export default {
     credential () {
       return this.rutDetail.credential
     },
-    // canEdit () {  // ???
-    //   return this.creatorid === this.currentUserID
-    //   // || this.rutDetail.editable === 'Everyone' || this.currentUserID in this.contributorIDList
-    // },
+    canEdit () {  // ???
+      return this.creatorid === this.currentUserID
+      // || this.rutDetail.editable === 'Everyone' || this.currentUserID in this.contributorIDList
+    },
     canDelete () {
       return this.creatorid === this.currentUserID // ?
     }

@@ -70,7 +70,7 @@ router.beforeEach((to, from, next) => {
         password: localToken
       }
       store.commit('SET_TOKEN', localToken)
-      store.commit('SET_USER', localID)
+      store.commit('SET_USER', Number(localID))
       next()
     } else {
       next({path: '/login'})
