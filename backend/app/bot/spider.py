@@ -160,7 +160,7 @@ def parse_html_amazon(url):
     d['binding'] = binding
     d['price'] = price
 
-    #get detail info
+    #get detail info : paperback, Publisher, Language, etc
     detailTable = soup.find(
         'table',
         id='productDetailsTable'

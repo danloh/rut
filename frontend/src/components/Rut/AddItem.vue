@@ -3,17 +3,19 @@
     <h3 class="title"> Add Item to Readup Tips:
       <router-link class="title" :to="'/readuplist/' + rutId">{{rutTitle}}</router-link>
     </h3>
+    <spinner :show="loading"></spinner>
     <!-- check -->
-    <el-form class="check-form" :model="checkForm" ref="checkForm" label-width="120px" size="mini">
-      <el-form-item label="URL" prop="url">
+    <el-form class="add-form" :model="checkForm" ref="checkForm" label-width="180px" size="mini" v-show="!show">
+      <el-form-item label="Amazon URL or ISBN-13" prop="url">
         <el-input v-model="checkForm.url"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="success" size="medium" @click="onCheck('checkForm', checkForm)">Submit</el-button>
+        <el-button type="success" size="medium" @click="onCheck('checkForm', checkForm)">Fetch Via Spider</el-button>
       </el-form-item>
     </el-form>
+    <el-button size="mini" @click="altShow">Fetch Item Info via Spider or Manually</el-button>
     <!-- add mannually -->
-    <el-form class="add-form" :model="addForm" :rules="addRules" ref="addForm" label-width="120px" size="mini">
+    <el-form class="add-form" :model="addForm" :rules="addRules" ref="addForm" label-width="120px" size="mini" v-show="show">
       <el-form-item label="Type" prop="cate">
         <el-radio-group v-model="addForm.cate">
           <el-radio-button label="Book"></el-radio-button>
@@ -50,15 +52,17 @@
 </template>
 
 <script>
-import { addItem } from '@/api/api'
+import { checkItem, addItem } from '@/api/api'
+import Spinner from '@/components/Misc/Spinner.vue'
 
 export default {
   name: 'add-rut',
   title: 'Add Item to Readup Tips',
+  components: { Spinner },
   data () {
     return {
       checkForm: {
-        url: ''
+        url: ''  // actually  url or uid
       },
       addForm: {
         cate: 'Book',
@@ -80,23 +84,53 @@ export default {
           { required: true, message: 'Required', trigger: 'blur' }
         ],
         resUrl: [
-          { required: this.addForm.cate === 'Online', message: 'Required', trigger: 'blur' }
+          { required: true, message: 'Required', trigger: 'blur' }
         ]
       },
+      show: false,
+      loading: false,
       rutId: null,
       rutTitle: null
     }
   },
   methods: {
+    onCheck (formName, form) {
+      this.loading = true
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          let data = {
+            url: form.url
+          }
+          checkItem(this.rutId, data)
+          .then(resp => {
+            let id = this.rutId
+            if (resp.data === 'Back') {
+              this.$message({
+                showClose: true,
+                message: 'Faill to add, You can Try again'
+              })
+            }
+            this.loading = false
+            this.$router.push(`/readuplist/${id}`)
+          }).catch(error => {
+            this.$message.error(error.status) // elementui
+          })
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
     onAdd (formName, form) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           let data = {
             title: form.title,
-            intro: form.intro,
-            rating: form.rating,
-            credential: form.credential,
-            epilog: form.epilog
+            uid: form.uid,
+            resUrl: form.resUrl,
+            byline: form.byline,
+            cover: form.cover,
+            tips: form.tips
           }
           addItem(this.rutId, data)
           .then(() => {
@@ -121,14 +155,12 @@ export default {
     loadRutData () {
       let rut = this.$store.getters.rutDetail
       if (rut.id === Number(this.$route.params.id)) {
-        this.addForm.title = rut.title
-        this.addForm.intro = rut.intro
-        this.addForm.rating = rut.rating
-        this.addForm.credential = rut.credential
-        this.addForm.epilog = rut.epilog
         this.rutId = rut.id
         this.rutTitle = rut.title
       }
+    },
+    altShow () {
+      this.show = !this.show
     }
   },
   created () {

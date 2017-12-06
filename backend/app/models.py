@@ -85,17 +85,17 @@ class Collect(db.Model):
             'postid': self.post_id,
             'itemid': self.item_id,
             'item': item_dict,
-            'tip': self.tips_html or self.tips
+            'tip':  self.tips or self.tips_html
         }
         return tip_dict
 
-    @staticmethod
-    def on_changed_tips(target, value, oldvalue, initiator):
-        target.tips_html = bleach.linkify(bleach.clean(
-            markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True))
+#     @staticmethod
+#     def on_changed_tips(target, value, oldvalue, initiator):
+#         target.tips_html = bleach.linkify(bleach.clean(
+#             markdown(value, output_format='html'),
+#             tags=allowed_tags, strip=True))
 
-db.event.listen(Collect.tips, 'set', Collect.on_changed_tips)
+# db.event.listen(Collect.tips, 'set', Collect.on_changed_tips)
 
 # helper Model for n2n Posts with Users for star
 class Star(db.Model):
@@ -339,7 +339,7 @@ class Posts(db.Model):
             # update the renew timestamp
             self.renew()
             #save activity to db Events
-            current_user.set_event(action='updates',post=self,item=item)
+            #current_user.set_event(action='updates',post=self,item=item)
             #db.session.commit() #if need commit?
 
     # set and change the order of items, ## ??maybe an issue here!!##
@@ -347,6 +347,7 @@ class Posts(db.Model):
         _c = self.items  # ie. a collect-object
         c_old = _c.filter_by(item_id=item.id).first()
         old_order = c_old.order
+        new_order = int(new_order)
 
         if new_order == old_order:
             pass
@@ -596,16 +597,7 @@ class Items(db.Model):
     @property
     def item_cover(self):
         if self.cover is None or not self.cover.strip():
-            if self.cate == 'Online':
-                return url_for('static', filename='pic/online.svg')
-            if self.cate == 'Book':
-                return url_for('static', filename='pic/book.svg')
-            if self.cate == 'Video':
-                return url_for('static', filename='pic/video.svg')
-            if self.cate == 'Album':
-                return url_for('static', filename='pic/album.svg')
-            if self.cate == 'Other':
-                return url_for('static', filename='pic/other.svg')
+            return url_for('static', filename='pic/book.svg')
 
     # add item tags to database
     def itag_to_db(self):

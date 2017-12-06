@@ -6,18 +6,19 @@ Vue.use(Router)
 import store from '@/store'
 // import components
 import Home from '@/view/Home'
-import Register from '@/components/Register'
-import Login from '@/components/Login'
 import Challenge from '@/view/Challenge'
 import Demands from '@/view/Demands'
 import Profile from '@/view/Profile'
 import RutView from '@/view/RutView'
+import ItemView from '@/view/ItemView'
 import TagView from '@/view/TagView'
+import Register from '@/components/Register'
+import Login from '@/components/Login'
 import Connect from '@/components/Connect'
 import Create from '@/components/Rut/Create'
 import EditRut from '@/components/Rut/EditRut'
 import AddItem from '@/components/Rut/AddItem'
-import ItemView from '@/view/ItemView'
+import EditTips from '@/components/Rut/EditTips'
 import createClipList from '@/components/Challenge/CreateClipList'
 import createDemandList from '@/components/Demand/CreateDemandList'
 import createReviewList from '@/components/Item/CreateReviewList'
@@ -63,6 +64,12 @@ const router = new Router({
     { path: '/additemto/readuplist/:id',
       component: AddItem,
       name: 'AddItem',
+      meta: {auth: true},
+      beforeEnter
+    },
+    { path: '/edit/readuptips/:id',
+      component: EditTips,
+      name: 'EditTips',
       meta: {auth: true},
       beforeEnter
     },

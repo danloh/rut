@@ -14,7 +14,10 @@
           | including {{ rutDetail.itemcount }} items
         </p>
       </div>
-      <div class="intro" v-html="rutDetail.intro"></div>
+      <div class="intro">
+        <b>Preface:&nbsp;</b>
+        <div v-html="rutDetail.intro"></div>
+      </div>
       <div class="toolbar">
         <el-button size="mini" plain v-if="canEdit">
           <router-link :to="'/edit/readuplist/' + rutid">...Edit</router-link>
@@ -28,10 +31,15 @@
       </div>
       <div class="itemtip" v-for="tip in tips" :key="tip.order">
         <item-sum class="itemsum" :item="tip.item"></item-sum>
+        <b>&nbsp;&nbsp;Read-up-Tips:&nbsp;</b> 
+        <el-button type="text" v-if="canEdit">
+          <router-link :to="'/edit/readuptips/' + tip.cid">...Edit</router-link>
+        </el-button>
         <div class="tip" v-html="tip.tip"></div>
       </div>
       <div class="epilog">
-        {{rutDetail.epilog}} 
+        <b>Epilog:&nbsp;</b>
+        <div v-html="rutDetail.epilog"></div>
         <el-button type="text" v-if="canEdit">
           <router-link :to="'/edit/readuplist/' + rutid">...Edit</router-link>
         </el-button>
@@ -224,7 +232,7 @@ $bgcolor = lighten(#f6f6f1, 50%)
         top 5px
         margin 5px
       .tip
-        padding 10px
+        padding 5px 10px
     .epilog
       background-color $bgcolor
       padding 10px

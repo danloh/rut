@@ -58,10 +58,21 @@ const checkSC = (rutid, action, params) => {
 const scRut = (action, rutid, params) => {
   return request(`${base}/${action}/rut/${rutid}`, params)
 }
-
 // edit rut
 const editRut = (rutid, params) => {
   return request(`${base}/editrut/${rutid}`, params, 'post')
+}
+// add item to rut
+const addItem = (rutid, params) => {
+  return request(`${base}/additemtorut/${rutid}`, params, 'post')
+}
+// check item to add
+const checkItem = (rutid, params) => {
+  return request(`${base}/checkitemtoadd/${rutid}`, params, 'post')
+}
+// edit tips
+const editTips = (cid, params) => {
+  return request(`${base}/edittips/${cid}`, params, 'post')
 }
 
 const fetchTag = (tagid, params) => { // !!
@@ -116,6 +127,9 @@ export {
   checkSC,
   scRut,
   editRut,
+  addItem,
+  checkItem,
+  editTips,
   fetchTag,
   fetchItem,
   checkFlag,

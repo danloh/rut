@@ -7,6 +7,7 @@ from flask_restful import Api, Resource
 from flask_httpauth import HTTPBasicAuth
 from .. import db
 from ..models import *
+from ..bot import spider
 
 rest = Blueprint('rest', __name__)
 api = Api(rest)
@@ -268,6 +269,136 @@ def edit_rut(rutid):
     db.session.add(rut)
     db.session.commit()
     return jsonify(rut.to_dict())
+
+@rest.route('/edittips/<int:cid>', methods=['POST'])
+@auth.login_required
+def edit_tips(cid):
+    user = g.user
+    tip_collect = Collect.query.filter_by(id=cid).first_or_404()  #collect 's id
+    post_id = tip_collect.post_id
+    rut = Posts.query.get_or_404(post_id)
+    if rut.creator != user:
+        return jsonify('Error')  #how to tacle error?
+    # get the data
+    order = request.json.get('order')
+    tips = request.json.get('tips')
+    if not order or not tips:  # cannot be null
+        return jsonify('Error')
+    item = Items.query.get_or_404(tip_collect.item_id)
+    # get the data
+    order = request.json.get('order')
+    tips = request.json.get('tips')
+    # re-ordering
+    rut.ordering(item, order)
+    rut.renew()
+    tip_collect.tips = tips
+    db.session.add(tip_collect)
+    db.session.commit()
+    return jsonify('Done')
+
+@rest.route('/additemtorut/<int:rutid>', methods=['POST'])
+@auth.login_required
+def add_item_to_rut(rutid):
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    if rut.creator != user:
+        return jsonify('Error')  #how to tacle error?
+    uid = request.json.get('uid').replace('-','').replace(' ','')
+    old_item = Items.query.filter_by(uid=uid).first()
+    res_url = request.json.get('resUrl','').strip()
+    tips = request.json.get('tips','No Tips Yet')
+    if res_url:
+        online_item = Items.query.filter_by(res_url=res_url).first()
+    else:
+        online_item = None
+    if old_item is None and online_item is None:
+        new_item = Items(
+            uid = request.json.get('uid'),
+            title = request.json.get('title'),
+            res_url = request.json.get('resUrl',''),
+            author = request.json.get('byline',''),
+            cover = request.json.get('cover',''),
+            cate = request.json.get('cate','Book'),
+            publisher = request.json.get('publisher',''),
+            pub_date = request.json.get('pubdate',''),
+            language = request.json.get('language',''),
+            binding = request.json.get('binding','Paperback'),
+            page = request.json.get('page',''),
+            level = request.json.get('level',''),
+            price = request.json.get('price',''),
+            details = request.json.get('detail','')
+        )
+        db.session.add(new_item)            
+        rut.collecting(new_item,tips,user)
+
+        if request.json.get('byline','').strip():
+            new_item.author_to_db()
+    elif old_item is not None:
+        rut.collecting(old_item,tips,user)  
+    elif online_item is not None:
+        rut.collecting(online_item,tips,user)
+    db.session.commit()
+
+    return jsonify('Done')
+
+@rest.route('/checkitemtoadd/<int:rutid>', methods=['POST'])
+@auth.login_required
+def check_item_for_add(rutid):
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    if rut.creator != user:
+        return jsonify('Error')  #how to tacle error?
+    #regexp prepare
+    re_url=r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
+    #re_uid=r'([-]*(1[03])*[ ]*(: ){0,1})*(([0-9Xx][- ]*){13}|([0-9Xx][- ]*){10})'
+    reg_url = re.compile(re_url,0)
+    tips="No Tips" # default
+
+    checker = request.json.get('url') #url_or_uid
+    if reg_url.match(checker):
+        pure_url = checker.split('/ref=')[0] #for amazon url
+        # check if the url has been spidered, 
+        # if not, to spider
+        # if so,query item and add to post directly
+        lst = Items.query.filter(Items.res_url.in_((checker,pure_url))).all()
+        if lst:
+            item = lst[0]
+            rut.collecting(item,tips,user)
+            db.session.commit()
+            return jsonify('Done')
+        else:
+            d = spider.parse_html(checker)
+            new_item = Items(
+                uid = d.get('uid'),
+                title = d.get('title'),
+                res_url = d.get('res_url',''),
+                author = d.get('author',''),
+                cover = d.get('cover',''),
+                cate = d.get('cate','Book'),
+                publisher = d.get('Publisher',''),
+                pub_date = d.get('Publication Date') or d.get('publish_date',''),
+                language = d.get('Language','English'),
+                binding = d.get('binding','Paperback'),
+                page = d.get('page') or d.get('Print Length', '') ,
+                level = d.get('Level',''),
+                price = d.get('price',''),
+                details = d.get('details','')
+            )
+            db.session.add(new_item)          
+            rut.collecting(new_item,tips,user)
+            if request.json.get('byline','').strip():
+                new_item.author_to_db()
+            db.session.commit()     
+            return jsonify('Done')
+    else:
+        uid=checker.replace('-','').replace(' ','')
+        item=Items.query.filter_by(uid=uid).first()
+        if item is not None:
+            rut.collecting(item,tips,user)
+            db.session.commit()
+            return jsonify('Done')
+        else:
+            return jsonify('Back') #redirect(url_for('.check_item', id=id))
 
 @rest.route('/<int:userid>/doing/items')
 def get_doing_items(userid):
