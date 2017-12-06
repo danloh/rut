@@ -534,3 +534,52 @@ def new_demand():
     demand.dtag_to_db()
     db.session.commit()
     return jsonify(demand.to_dict())
+
+@rest.route('/edittag/<int:tagid>', methods=['POST'])
+@auth.login_required
+def edit_tag(tagid):
+    query = Tags.query
+    tag = query.get_or_404(tagid)
+    # get data
+    name = request.json.get('name').strip()
+    parent = request.json.get('parent').strip()
+    description = request.json.get('description').strip()
+    if not name:
+        return jsonify('Error')
+    if tag.tag != name and query.filter_by(tag=name).first():
+        return jsonify('Duplicated Tag Name')
+    tag.tag = name
+    tag.descript = description
+    db.session.add(tag)
+    # update parent tag
+    parent_tag = query.filter_by(tag=parent).first()
+    if not parent_tag:
+        parent_tag = Tags(tag=parent)
+        db.session.add(parent_tag)
+    tag.parent(parent_tag)
+    db.session.commit()
+    return jsonify('Done')
+
+@rest.route('/checkfavtag/<int:tagid>')
+@auth.login_required
+def check_fav(tagid):
+    user = g.user
+    tag = Tags.query.get_or_404(tagid)
+    faving = 'UnFollow' if user.faving(tag) else 'Follow'
+    return jsonify(faving)
+
+@rest.route('/fav/tag/<int:tagid>')
+@auth.login_required
+def fav_tag(tagid):
+    user = g.user
+    tag = Tags.query.get_or_404(tagid)
+    user.fav(tag)
+    return jsonify('UnFollow')
+
+@rest.route('/unfav/tag/<int:tagid>')
+@auth.login_required
+def unfav_tag(tagid):
+    user = g.user
+    tag = Tags.query.get_or_404(tagid)
+    user.unfav(tag)
+    return jsonify('Follow')

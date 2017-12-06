@@ -39,10 +39,10 @@
       </div>
       <div class="epilog">
         <b>Epilog:&nbsp;</b>
-        <div v-html="rutDetail.epilog"></div>
         <el-button type="text" v-if="canEdit">
           <router-link :to="'/edit/readuplist/' + rutid">...Edit</router-link>
         </el-button>
+        <div v-html="rutDetail.epilog"></div>
       </div>
       <div class="comment">
         <router-link :to="'/rut/comment' + rutid">Comment</router-link>

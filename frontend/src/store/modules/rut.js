@@ -64,10 +64,15 @@ const actions = {
     })
   },
   getTag: ({commit, state}, tagid, param = {}) => {
-    return fetchTag(tagid, param)
-    .then(resp => {
-      commit('SET_RUTS', resp.data)
-      commit('SET_TAG', resp.data)
+    return new Promise((resolve, reject) => {
+      fetchTag(tagid, param)
+      .then(resp => {
+        commit('SET_RUTS', resp.data)
+        commit('SET_TAG', resp.data)
+        resolve(resp)
+      }).catch(error => {
+        reject(error)
+      })
     })
   }
 }

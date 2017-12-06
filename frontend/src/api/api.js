@@ -78,6 +78,18 @@ const editTips = (cid, params) => {
 const fetchTag = (tagid, params) => { // !!
   return request(`${base}/tag/${tagid}`, params)
 }
+// edit tag
+const editTag = (tagid, params) => {
+  return request(`${base}/edittag/${tagid}`, params, 'post')
+}
+// check faving tag
+const checkFav = (tagid, params) => {
+  return request(`${base}/checkfavtag/${tagid}`, params)
+}
+// fav unfav tag
+const favTag = (action, tagid, params) => {
+  return request(`${base}/${action}/tag/${tagid}`, params)
+}
 
 const fetchItem = (itemid, params) => {
   return request(`${base}/item/${itemid}`, params)
@@ -131,6 +143,9 @@ export {
   checkItem,
   editTips,
   fetchTag,
+  editTag,
+  checkFav,
+  favTag,
   fetchItem,
   checkFlag,
   flagItem,

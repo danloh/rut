@@ -1,25 +1,47 @@
 <template>
   <div class="tagpage">
     <div class="tagside">
-      <h4 class="lefttitle">Related Tags</h4>
-      <div class="leftbody" v-for="(tag, index) in showTags" :key="index">
+      <h4 class="sidetitle">Related Tags</h4>
+      <div class="sidebody" v-for="(tag, index) in showTags" :key="index">
         <router-link :to="'/tag/' + tag.tagid">{{tag.tagname}}</router-link>
       </div>
     </div>
     <div class="tagmeta">
       <h4><b>{{ tagDetail.tagname}}</b></h4>
-      <p>{{ tagDetail.descript}} <el-button type="text">...Edit Description</el-button></p>
-      <el-button class="fbtn" type="success" size="mini" plain>{{action}} {{tagDetail.favcount}}</el-button>
+      <div>{{ tagDetail.descript}} 
+        <el-button type="text" @click="openDialog = true">...Edit</el-button>
+      </div>
+      <el-button class="fbtn" type="success" size="mini" plain @click="favTag">{{action}} {{favCount}}</el-button>
     </div>
     <div class="rutlist">
       <rut-list :rutlist="currentRuts" @loadmore="loadmoreRuts"></rut-list>
     </div>
+    <!-- dialog -->
+    <el-dialog title="Edit Tag Description" :visible.sync="openDialog">
+      <el-form :model="tagForm" ref="tagForm" label-width="120px" size="mini">
+        <el-form-item label="Tag Name" prop="name">
+          <el-input v-model="tagForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="Parent Tag" prop="parent">
+          <el-input v-model="tagForm.parent"></el-input>
+        </el-form-item>
+        <el-form-item label="Description" prop="description">
+          <el-input type="textarea" v-model="tagForm.description"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="openDialog = false">Cancel</el-button>
+        <el-button type="success" @click="editTag('tagForm', tagForm)">Edit</el-button>
+      </div>
+    </el-dialog>
+    <!-- dialog end -->
   </div>
 </template>
 
 <script>
 import RutList from '@/components/Rut/RutList.vue'
 import { mapGetters } from 'vuex'
+import { editTag, checkFav, favTag } from '@/api/api'
 
 export default {
   name: 'tag-view',
@@ -28,7 +50,14 @@ export default {
   },
   data () {
     return {
-      action: 'Follow'
+      action: this.checkFav() || 'Follow',
+      favCount: 0,
+      openDialog: false,
+      tagForm: {
+        name: '',
+        parent: '',
+        description: ''
+      }
     }
   },
   computed: {
@@ -43,6 +72,9 @@ export default {
       'tagDetail'
     ])
   },
+  tagid () {
+    return this.tagDetail.id
+  },
   title () {
     return this.tagDetail.tagname
   },
@@ -53,10 +85,88 @@ export default {
     loadData () {
       let tagid = this.$route.params.id
       this.$store.dispatch('getTag', tagid)
+      .then(resp => {
+        this.tagForm.name = resp.data.tagname
+        this.tagForm.description = resp.data.descript
+        this.favCount = resp.data.favcount
+      })
+    },
+    editTag (formName, form) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          let data = {
+            name: form.name,
+            parent: form.parent,
+            description: form.description
+          }
+          let tagid = this.tagDetail.id
+          editTag(tagid, data)
+          .then((resp) => {
+            this.openDialog = false
+            this.loadData()  // can be less consumption
+            this.$message({
+              showClose: true,
+              message: resp.data
+            })
+          }).catch(error => {
+            this.$message.error(error.status) // elementui
+          })
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
+    checkAuth () {
+      let localToken = localStorage.token
+      if (localToken) {
+        this.$axios.defaults.auth = {
+          username: localToken,
+          password: localToken
+        }
+        return true
+      } else {
+        return false
+      }
+    },
+    checkFav () {
+      if (this.checkAuth()) {
+        let tagid = this.$route.params.id
+        return checkFav(tagid)
+        .then(resp => {
+          this.action = resp.data
+        })
+      } else {
+        this.action = 'Follow'
+      }
+    },
+    favTag () {
+      if (this.checkAuth()) {
+        let tagid = this.$route.params.id
+        if (this.action === 'Follow') {
+          return favTag('fav', tagid)
+          .then(() => {
+            this.action = 'UnFollow'
+            this.favCount += 1
+          })
+        } else {
+          return favTag('unfav', tagid)
+          .then(() => {
+            this.action = 'Follow'
+            this.favCount -= 1
+          })
+        }
+      } else {
+        this.$message({
+          showClose: true,
+          message: 'Should Log in to Continue'
+        })
+        this.$router.push('/login')
+      }
     }
   },
   watch: {
-    '$route': 'loadData' // watch to render same component
+    '$route': 'loadData' // watch to render re-used component
   },
   created () {
     this.loadData()
@@ -73,10 +183,10 @@ export default {
     right 0
     width 220px
     background-color white
-    .lefttitle
+    .sidetitle
       background-color #e5ebe4
       padding 5px 10px
-    .leftbody
+    .sidebody
       padding 5px 10px
   .tagmeta
     background-color white

@@ -768,14 +768,6 @@ class Tags(db.Model):
         self.vote = i+p+d+f
         db.session.add(self)
         #db.session.commit()
-    @property
-    def score(self):
-        itemcount = self.items.count()
-        postcount = self.posts.count()
-        demandcount = self.demands.count()
-        favcount = self.favers.count()
-        score = itemcount + postcount + demandcount + favcount
-        return score, demandcount
 
     def to_dict(self):
         tag_dict = {
