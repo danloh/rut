@@ -34,7 +34,7 @@
         <br>
         <b>Including Items:</b>
       </div>
-      <p class="right-item" v-for="item in items" :key="item.id" :item="item">
+      <p class="right-item" v-for="(item, index) in items" :key="index" :item="item">
         ~{{item.cate}} <router-link :to="'/item/' + item.id" :title="item.title"> {{ item.title.slice(0, 60) }}...</router-link>
       </p>
     </div>

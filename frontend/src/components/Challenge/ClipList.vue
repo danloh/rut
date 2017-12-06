@@ -1,7 +1,7 @@
 <template>
   <div class="cliplist">
     <div class="clip-list">
-      <clip v-for="clip in currentClips" :key="clip.id" :clip="clip"></clip>
+      <clip v-for="(clip, index) in currentClips" :key="index" :clip="clip"></clip>
     </div>
     <div>
       <el-button class="blockbtn" @click="loadmoreClip" :disabled="!hasMore">More</el-button>

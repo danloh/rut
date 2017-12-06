@@ -1,6 +1,6 @@
 <template>
   <div class="review-list">
-    <review-sum v-for="review in currentReviews" :key="review.id" :review="review"></review-sum>
+    <review-sum v-for="(review, index) in currentReviews" :key="index" :review="review"></review-sum>
     <div>
       <el-button class="blockbtn" @click="loadmoreReview" :disabled="!hasMore" v-if="hasMore">More</el-button>
     </div>

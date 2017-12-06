@@ -1,8 +1,8 @@
 <template>
-  <div class="tagpage" :key="tagDetail.id">
+  <div class="tagpage">
     <div class="tagside">
       <h4 class="lefttitle">Related Tags</h4>
-      <div class="leftbody" v-for="tag in showTags" :key="tag.tagid">
+      <div class="leftbody" v-for="(tag, index) in showTags" :key="index">
         <router-link :to="'/tag/' + tag.tagid">{{tag.tagname}}</router-link>
       </div>
     </div>

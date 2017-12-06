@@ -104,6 +104,7 @@ body
   padding-top 42px
   color #34495e
   overflow-y scroll
+  overflow-x scroll
 
 a
   color #337ab7
@@ -125,6 +126,7 @@ p
   right 0
   .inner
     max-width 960px
+    min-width 800px
     box-sizing border-box
     margin 0px auto
     padding 8px 0px
@@ -157,6 +159,7 @@ p
   text-align center
 .view
   max-width 960px
+  min-width 800px
   width 90%
   margin 0 auto
   position relative

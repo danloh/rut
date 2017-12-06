@@ -29,7 +29,7 @@
         <el-button type="success" size="mini" plain @click="starRut"><b>{{ starAction }} {{ starCount }}</b></el-button>
         <el-button type="success" size="mini" plain @click="challengeRut"><b>{{ challengeAction }} {{ challengeCount }}</b></el-button>
       </div>
-      <div class="itemtip" v-for="tip in tips" :key="tip.order">
+      <div class="itemtip" v-for="(tip, index) in tips" :key="index">
         <item-sum class="itemsum" :item="tip.item"></item-sum>
         <b>&nbsp;&nbsp;Read-up-Tips:&nbsp;</b> 
         <el-button type="text" v-if="canEdit">
@@ -67,8 +67,8 @@ export default {
   components: { ItemSum, Spinner, Comment },
   data () {
     return {
-      starAction: this.checkStar(),
-      challengeAction: this.checkChallenge(),
+      starAction: this.checkStar() || 'Star',
+      challengeAction: this.checkChallenge() || 'Challenge',
       starCount: 0,
       challengeCount: 0,
       creatorid: null,

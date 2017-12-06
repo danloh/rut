@@ -33,7 +33,7 @@ export default {
   props: ['item'],
   data () {
     return {
-      flagAction: this.checkFlaging()
+      flagAction: this.checkFlaging() || 'Flag it'
     }
   },
   computed: {

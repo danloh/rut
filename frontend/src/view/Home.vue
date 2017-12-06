@@ -8,7 +8,7 @@
     </div>
     <div class="homeside">
       <h4 class="righttitle">Top Topics</h4>
-      <div class="rightbody" v-for="tag in showTags" :key="tag.tagid">
+      <div class="rightbody" v-for="(tag, index) in showTags" :key="index">
         <router-link :to="'/tag/' + tag.tagid">{{tag.tagname}}</router-link>
       </div>
     </div>
