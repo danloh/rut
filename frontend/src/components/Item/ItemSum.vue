@@ -19,21 +19,42 @@
           <el-dropdown-item><span @click="flagSchedule">Schedule</span></el-dropdown-item>
           <el-dropdown-item><span @click="flagWorking">Working On</span></el-dropdown-item>
           <el-dropdown-item><span @click="flagDone">Have Done</span></el-dropdown-item>
+          <el-dropdown-item divided><span @click="showAndloadData">Add to List</span></el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
+    <!-- addtolist dialog -->
+    <el-dialog title="Add Item to Created List" :visible.sync="showDialog">
+      <el-form :model="intoForm" ref="intoForm" label-width="120px" size="mini">
+        <el-form-item label="Created List" prop="rut">
+          <el-select v-model="intoForm.selectRutID">
+            <el-option v-for="r in createdRuts" :key="r.id" :label="r.title" :value="r.id"></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="showDialog = false">Cancel</el-button>
+        <el-button type="success" @click="addtoRut('intoForm', intoForm)">Add</el-button>
+      </div>
+    </el-dialog>
+    <!-- dialog end -->
   </div>
 </template>
 
 <script>
-import { flagItem, checkFlag } from '@/api/api'
+import { flagItem, checkFlag, fetchProfileRuts, itemToRut } from '@/api/api'
 
 export default {
   name: 'item-sum',
   props: ['item'],
   data () {
     return {
-      flagAction: this.checkFlaging() || 'Flag it'
+      flagAction: this.checkFlaging() || 'Flag it',
+      showDialog: false,
+      intoForm: {
+        selectRutID: null
+      },
+      createdRuts: {}
     }
   },
   computed: {
@@ -107,10 +128,48 @@ export default {
         })
         this.$router.push('/login')
       }
+    },
+    showAndloadData () {
+      if (this.checkAuth()) {
+        let userid = this.$store.getters.currentUserID
+        return fetchProfileRuts('created', userid)
+        .then(resp => {
+          this.createdRuts = resp.data.ruts
+          this.showDialog = true
+        })
+      } else {
+        this.showDialog = false
+        this.$message({
+          showClose: true,
+          message: 'Should Log in to Access'
+        })
+      }
+    },
+    addtoRut (formName, form) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          if (this.checkAuth()) {
+            let rutid = form.selectRutID
+            let itemid = this.item.id
+            return itemToRut(itemid, rutid)
+            .then(() => {
+              this.showDialog = false
+              this.$message({
+                showClose: true,
+                message: 'Done'
+              })
+              this.$router.push(`/readuplist/${rutid}`) // why not work from rut page: re-sued component issue
+            })
+          } else {
+            this.showDialog = false
+            this.$message({
+              showClose: true,
+              message: 'Should Log in to Access'
+            })
+          }
+        }
+      })
     }
-  // },
-  // beforeUpdate () {
-  //   this.checkFlaging()
   }
 }
 </script>

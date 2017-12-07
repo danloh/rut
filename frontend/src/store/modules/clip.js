@@ -5,7 +5,7 @@ import {
 } from '@/api/api'
 
 // initial state
-const perPage = 5
+const perPage = 15
 const state = {
   allClips: [],
   totalClips: 0,

@@ -112,18 +112,18 @@ export default {
   title () {
     return this.rutDetail.title
   },
-  created () {
-    let crutid = this.$route.params.id
-    this.$store.dispatch('getRut', crutid)
-    .then(resp => {
-      this.starCount = resp.data.starcount
-      this.challengeCount = resp.data.challengecount
-      this.creatorid = resp.data.creator.id
-      this.creatorname = resp.data.creator.name
-      this.currentUserID = this.$store.getters.currentUserID
-    })
-  },
   methods: {
+    loadRutData () {
+      let crutid = this.$route.params.id
+      this.$store.dispatch('getRut', crutid)
+      .then(resp => {
+        this.starCount = resp.data.starcount
+        this.challengeCount = resp.data.challengecount
+        this.creatorid = resp.data.creator.id
+        this.creatorname = resp.data.creator.name
+        this.currentUserID = this.$store.getters.currentUserID
+      })
+    },
     checkAuth () {
       let localToken = localStorage.token
       // let localID = localStorage.userid
@@ -205,6 +205,12 @@ export default {
         this.$router.push('/login')
       }
     }
+  },
+  watch: {
+    '$route': 'loadRutData' // render re-used component for addtorut
+  },
+  created () {
+    this.loadRutData()
   }
 }
 </script>
@@ -266,4 +272,3 @@ $bgcolor = lighten(#f6f6f1, 50%)
       min-height 45px
       font-size 0.85em
 </style>
-

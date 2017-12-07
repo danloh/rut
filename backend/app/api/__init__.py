@@ -300,6 +300,9 @@ def edit_tips(cid):
 @rest.route('/additemtorut/<int:rutid>', methods=['POST'])
 @auth.login_required
 def add_item_to_rut(rutid):
+    """Input item info and then check if exsiting 
+    and add to rut as new or exsitingf item
+    """
     user = g.user
     rut = Posts.query.get_or_404(rutid)
     if rut.creator != user:
@@ -341,6 +344,20 @@ def add_item_to_rut(rutid):
     db.session.commit()
 
     return jsonify('Done')
+
+@rest.route('/item/<int:itemid>/torut/<int:rutid>')
+@auth.login_required
+def item_to_rut(itemid, rutid):
+    """Add existing item to Rut"""
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    if rut.creator != user:
+        return jsonify('Error')
+    item = Items.query.get_or_404(itemid)
+    rut.collecting(item,'No Tips',user)
+    db.session.commit()
+    return jsonify('Done')
+
 
 @rest.route('/checkitemtoadd/<int:rutid>', methods=['POST'])
 @auth.login_required

@@ -62,9 +62,13 @@ const scRut = (action, rutid, params) => {
 const editRut = (rutid, params) => {
   return request(`${base}/editrut/${rutid}`, params, 'post')
 }
-// add item to rut
+// add item to rut, new or check existing
 const addItem = (rutid, params) => {
   return request(`${base}/additemtorut/${rutid}`, params, 'post')
+}
+// add existing item to rut
+const itemToRut = (itemid, rutid, params) => {
+  return request(`${base}/item/${itemid}/torut/${rutid}`, params)
 }
 // check item to add
 const checkItem = (rutid, params) => {
@@ -144,6 +148,7 @@ export {
   scRut,
   editRut,
   addItem,
+  itemToRut,
   checkItem,
   editTips,
   fetchTag,

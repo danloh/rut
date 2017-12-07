@@ -31,7 +31,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="openDialog = false">Cancel</el-button>
-        <el-button type="success" @click="editTag('tagForm', tagForm)">Edit</el-button>
+        <el-button type="success" @click="editTag('tagForm', tagForm)">Submit</el-button>
       </div>
     </el-dialog>
     <!-- dialog end -->
