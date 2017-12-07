@@ -1,41 +1,31 @@
 <svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
- <g>
-  <title>Cover</title>
-  <rect x="-1" y="-1" width="512" height="512" id="canvas_background" fill="none"/>
- </g>
 
  <g>
+  <title>Book</title>
+  <rect fill="none" id="canvas_background" height="512" width="512" y="-1" x="-1"/>
+ </g>
+ <g>
   <title>Layer 1</title>
-  <polygon stroke="null" points="16,0 0,0 0,512 512,512 512,496 16,496 " id="svg_1"/>
-  <g id="svg_2">
-   <rect x="72" y="168.8" width="88" height="270.4" fill="#007fff" id="svg_3"/>
-   <rect x="72" y="51.2" width="88" height="102.4" fill="#007fff" id="svg_4"/>
+  <g id="svg_1">
+   <path fill="#aad4ff" id="svg_2" d="m464,64l0,416l-384,0c-17.672,0 -32,-14.312 -32,-32s14.328,-32 32,-32l352,0l0,-416l-352,0c-35.344,0 -64,28.656 -64,64l0,384c0,35.344 28.656,64 64,64l416,0l0,-448l-32,0zm-384,64l0,-32l0,-64l320,0l0,352l-320,0l0,-256zm256,-32l-192,0l0,-32l192,0l0,32zm-64,64l-128,0l0,-32l128,0l0,32zm-64,64l-64,0l0,-32l64,0l0,32z"/>
+   <line stroke="null" stroke-linecap="null" stroke-linejoin="null" id="svg_19" y2="425" x2="431.999997" y1="430" x1="99" fill-opacity="null" stroke-opacity="null" stroke-width="null" fill="#ffffaa"/>
+   <line stroke-linecap="null" stroke-linejoin="null" id="svg_20" y2="427" x2="406" y1="430" x1="95" stroke-opacity="null" stroke-width="null" stroke="null" fill="#ffffaa"/>
+   <line stroke-linecap="null" stroke-linejoin="null" id="svg_21" y2="275" x2="304" y1="276" x1="137" fill-opacity="null" stroke-opacity="null" stroke-width="null" stroke="null" fill="#ffffaa"/>
   </g>
-  <g id="svg_5">
-   <rect x="220" y="51.2" width="88" height="102.4" fill="#ff7f00" id="svg_6"/>
-   <rect x="220" y="168.8" width="88" height="270.4" fill="#ff7f00" id="svg_7"/>
-  </g>
-  <path d="m56,455.2l120,0l0,-420l-120,0l0,420zm104,-16l-88,0l0,-270.4l88,0l0,270.4zm-88,-388l88,0l0,102.4l-88,0l0,-102.4z" id="svg_8"/>
-  <path d="m204,455.2l120,0l0,-420l-120,0l0,420zm104,-16l-88,0l0,-270.4l88,0l0,270.4zm-88,-388l88,0l0,102.4l-88,0l0,-102.4z" id="svg_9"/>
-  <g transform="rotate(-3 424.99999999999784,240.19999694824176) " id="svg_10">
-   <polygon points="459.79998779296875,144.60000610351562 451,43 363.79998779296875,51 371.79998779296875,152.60000610351562 " fill="#00bf5f" id="svg_11"/>
-   <polygon points="462.0799865722656,160.60800170898438 374.4320068359375,168.5760040283203 374.20001220703125,168.60000610351562 398.20001220703125,437.3999938964844 398.3760070800781,437.3840026855469 486.0159912109375,429.4159851074219 486.20001220703125,429.3999938964844 462.20001220703125,160.60000610351562 " fill="#00bf5f" id="svg_12"/>
-  </g>
-  <path transform="rotate(-3 424.60000610351415,240.19999694824133) " d="m465.4,25.4l-119.2,11.2l37.6,418.4l119.2,-11.2l-37.6,-418.4zm20.616,404.016l-87.64,7.968l-0.176,0.016l-24,-268.8l0.232,-0.024l87.64,-7.968l0.128,-0.008l24,268.8l-0.184,0.016zm-35.016,-386.416l8.8,101.6l-88,8l-8,-101.6l87.2,-8z" id="svg_13" stroke="null"/>
+  <g id="svg_3"/>
+  <g id="svg_4"/>
+  <g id="svg_5"/>
+  <g id="svg_6"/>
+  <g id="svg_7"/>
+  <g id="svg_8"/>
+  <g id="svg_9"/>
+  <g id="svg_10"/>
+  <g id="svg_11"/>
+  <g id="svg_12"/>
+  <g id="svg_13"/>
   <g id="svg_14"/>
   <g id="svg_15"/>
   <g id="svg_16"/>
   <g id="svg_17"/>
-  <g id="svg_18"/>
-  <g id="svg_19"/>
-  <g id="svg_20"/>
-  <g id="svg_21"/>
-  <g id="svg_22"/>
-  <g id="svg_23"/>
-  <g id="svg_24"/>
-  <g id="svg_25"/>
-  <g id="svg_26"/>
-  <g id="svg_27"/>
-  <g id="svg_28"/>
  </g>
 </svg>

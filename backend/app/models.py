@@ -470,7 +470,8 @@ class Posts(db.Model):
             return url_for('static', filename='pic/dpc.svg')
         else:
             m = random.randrange(n)
-            return self.items.all()[m].item.cover
+            item = self.items.all()[m].item
+            return item.item_cover
 
     @staticmethod
     #@cache.memoize() #to tackle
@@ -597,7 +598,9 @@ class Items(db.Model):
     @property
     def item_cover(self):
         if self.cover is None or not self.cover.strip():
-            return url_for('static', filename='pic/book.svg')
+            return url_for('static', filename='pic/dpc.svg')
+        else:
+            return self.cover
 
     # add item tags to database
     def itag_to_db(self):
@@ -665,7 +668,7 @@ class Items(db.Model):
             'reviewcount': self.reviews.count(),
             'clipcount': self.clips.count(),
             'commentcount': self.comments.count(),
-            'cover': self.cover or self.item_cover,
+            'cover': self.item_cover,
             'publisher': self.publisher,
             'pubdate': self.pub_date,
             'language': self.language,
