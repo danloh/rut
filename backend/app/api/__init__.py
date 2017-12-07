@@ -8,6 +8,7 @@ from flask_httpauth import HTTPBasicAuth
 from .. import db
 from ..models import *
 from ..bot import spider
+from ..utils import split_str, str_to_dict, str_to_set
 
 rest = Blueprint('rest', __name__)
 api = Api(rest)
@@ -463,6 +464,69 @@ def flag_item_done(itemid):
     user = g.user
     item = Items.query.get_or_404(itemid)
     user.flag(item,3)
+    return jsonify('Done')
+
+@rest.route('/edititem/<int:itemid>', methods=['POST'])
+@auth.login_required
+def edit_item(itemid):
+    query = Items.query
+    item = query.get_or_404(itemid)
+    uid = request.json.get('uid').replace('-','').replace(' ','')
+    if query.filter_by(uid=uid) and item.uid != uid:
+        return jsonify('Error')
+    #update item 
+    item.uid = uid
+    item.cate = request.json.get('cate')
+    item.title = request.json.get('title')
+    item.author = request.json.get('byline')
+    item.cover = request.json.get('cover')
+    item.res_url = request.json.get('resUrl')
+    item.publisher = request.json.get('publisher','')
+    item.pub_date = request.json.get('publishDate','')
+    item.language = request.json.get('language','')
+    item.binding = request.json.get('binding','')
+    item.page = request.json.get('page','')
+    item.level = request.json.get('level','')
+    item.price = request.json.get('price','')
+    item.details = request.json.get('details','')
+    #edit author  byline
+    old_str = item.author
+    old_d = str_to_dict(old_str)
+    old_set = set(k for k in old_d if k is not "None")
+    new_str = request.json.get('byline')
+    new_d = str_to_dict(new_str)
+    new_set = set(k for k in new_d)
+    add_name = new_set - old_set
+    del_name = old_set - new_set
+
+    a_query = Authors.query
+    for name in add_name:
+        author = a_query.filter_by(name=name).first()
+        if author is None:
+            new_author = Authors(name=name)
+            db.session.add(new_author)
+            byline=Byline(
+                item=item,
+                by=new_author,
+                contribution=new_d.get(name,"Author")
+            )
+            db.session.add(byline)
+        else:
+            byline=Byline(
+                item=item,
+                by=author,
+                contribution=new_d.get(name,"Author")
+            )
+            db.session.add(byline)
+
+    b_query = Byline.query
+    for name in del_name:
+        old_author = a_query.filter_by(name=name).first()
+        byline = b_query.filter_by(item=item,by=old_author).first()
+        db.session.delete(byline)
+    #END edit author byline
+    db.session.add(item)
+    db.session.commit()
     return jsonify('Done')
 
 @rest.route('/clips')

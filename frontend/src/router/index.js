@@ -19,6 +19,7 @@ import Create from '@/components/Rut/Create'
 import EditRut from '@/components/Rut/EditRut'
 import AddItem from '@/components/Rut/AddItem'
 import EditTips from '@/components/Rut/EditTips'
+import EditItem from '@/components/Item/EditItem'
 import createClipList from '@/components/Challenge/CreateClipList'
 import createDemandList from '@/components/Demand/CreateDemandList'
 import createReviewList from '@/components/Item/CreateReviewList'
@@ -77,16 +78,21 @@ const router = new Router({
       component: ItemView,
       children: [
         { path: '', name: 'defaultreview', redirect: 'hotreview' },
-        { path: 'hotreview', name: 'hotreview', component: createReviewList('hot') },
-        { path: 'newreview', name: 'newreview', component: createReviewList('new') }
+        { path: 'hotreview', name: 'Hotreview', component: createReviewList('hot') },
+        { path: 'newreview', name: 'Newreview', component: createReviewList('new') }
       ]
+    },
+    { path: '/edit/item/:id',
+      component: EditItem,
+      name: 'EditItem',
+      meta: {auth: true}
     },
     { path: '/demand',
       component: Demands,
       children: [
         { path: '', name: 'defaultdemand', redirect: 'popular' },
-        { path: 'popular', name: 'populardemand', component: createDemandList() },
-        { path: 'new', name: 'newestdemand', component: createDemandList('new') }
+        { path: 'popular', name: 'Populardemand', component: createDemandList() },
+        { path: 'new', name: 'Newdemand', component: createDemandList('new') }
       ]
     },
     { path: '/challenge',

@@ -2,13 +2,22 @@
   <div class="item-page">
     <div class="item-main">
       <item-sum :item="currentItem"></item-sum>
-      <div><b>More Details</b> &nbsp;&nbsp;&nbsp;<el-button type="text">...Add More</el-button></div>
+      <div>
+        <b>More Details</b> &nbsp;&nbsp;&nbsp;
+        <el-button type="text">
+          <router-link :to="'/edit/item/' + currentItem.id">...Edit</router-link>
+        </el-button>
+      </div>
       <div class="item-detail">
         <div v-html="currentItem.details">...</div>
       </div>
+      <div>
+        <b>Clips</b>
+        <clip-list :param="cliplistParam"></clip-list>
+      </div>
       <div class="submenu">
-        <router-link :to="'/item/' + currentItem.id + '/hotreview'">Hot</router-link>
-        <router-link :to="'/item/' + currentItem.id + '/newreview'">New</router-link>
+        <router-link :to="'/item/' + currentItem.id + '/hotreview'">Hot Reviews</router-link>
+        <router-link :to="'/item/' + currentItem.id + '/newreview'">New Reviews</router-link>
         &nbsp;&nbsp;&nbsp;
         <el-button type="text">...Post a Review</el-button>
       </div>
@@ -29,6 +38,7 @@
 
 <script>
 import ItemSum from '@/components/Item/ItemSum.vue'
+import ClipList from '@/components/Challenge/ClipList.vue'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -36,7 +46,12 @@ export default {
   title () {
     return this.currentItem.title
   },
-  components: { ItemSum },
+  components: { ItemSum, ClipList },
+  data () {
+    return {
+      cliplistParam: {}
+    }
+  },
   computed: {
     ...mapGetters([
       'currentItem',
@@ -45,6 +60,7 @@ export default {
   },
   beforeMount () {
     let itemid = this.$route.params.id
+    this.cliplistParam = {'itemid': itemid}
     this.$store.dispatch('getItem', itemid)
   }
 }

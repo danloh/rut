@@ -669,6 +669,10 @@ class Items(db.Model):
             'publisher': self.publisher,
             'pubdate': self.pub_date,
             'language': self.language,
+            'page': self.page,
+            'level': self.level,
+            'binding': self.binding,
+            'price': self.price,
             'resurl': self.res_url,
             'details': self.details
         }

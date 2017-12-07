@@ -3,7 +3,7 @@
     <div class="clip-list">
       <clip v-for="(clip, index) in currentClips" :key="index" :clip="clip"></clip>
     </div>
-    <div>
+    <div v-if="hasMore">
       <el-button class="blockbtn" @click="loadmoreClip" :disabled="!hasMore">More</el-button>
     </div>
   </div>

@@ -90,9 +90,13 @@ const checkFav = (tagid, params) => {
 const favTag = (action, tagid, params) => {
   return request(`${base}/${action}/tag/${tagid}`, params)
 }
-
+// get Item
 const fetchItem = (itemid, params) => {
   return request(`${base}/item/${itemid}`, params)
+}
+// edit item
+const editItem = (itemid, params) => {
+  return request(`${base}/edititem/${itemid}`, params, 'post')
 }
 
 const fetchProfileItems = (flag, userid, params) => {
@@ -149,6 +153,7 @@ export {
   fetchItem,
   checkFlag,
   flagItem,
+  editItem,
   fetchProfileItems,
   fetchClips,
   fetchDemands,
