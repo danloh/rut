@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="rut-list">
-      <rut-sum v-for="(rut, index) in rutlist" :key="index" :rut="rut"></rut-sum>
+      <rut-sum v-for="rut in rutlist" :key="rut.id" :rut="rut"></rut-sum>
     </div>
     <div>
       <el-button class="blockbtn" @click="$emit('loadmore')" :disabled="!hasMore">More</el-button>

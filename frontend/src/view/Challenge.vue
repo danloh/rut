@@ -113,7 +113,7 @@ export default {
 
 <style lang="stylus" scoped>
 .challenge-page
-  padding 10px 280px 10px 0px
+  padding 10px 285px 10px 0px
   position relative
   .challenge-view
     padding auto

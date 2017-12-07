@@ -30,6 +30,10 @@ const fetchCurrentUser = params => {
 const fetchUser = (id, params) => {
   return request(`${base}/user/${id}`, params)
 }
+// create new rut
+const newRut = (params, demandid) => {
+  return request(`${base}/create/${demandid}`, params, 'post')
+}
 
 const fetchRuts = params => {
   return request(`${base}/ruts`, params)
@@ -122,13 +126,25 @@ const fetchClips = params => {
 const newClip = params => {
   return request(`${base}/newclip`, params, 'post')
 }
-
+// upvote clip
+const upvoteClip = (clipid, params) => {
+  return request(`${base}/upvoteclip/${clipid}`, params)
+}
+// get demand list
 const fetchDemands = (params) => {
   return request(`${base}/demands`, params)
 }
-
+// get specific demand
+const fetchDemand = (demandid, params) => {
+  return request(`${base}/demand/${demandid}`, params)
+}
+// submit new demand
 const newDemand = params => {
   return request(`${base}/newdemand`, params, 'post')
+}
+// upvote demand
+const upvoteDemand = (demandid, params) => {
+  return request(`${base}/upvotedemand/${demandid}`, params)
 }
 
 export {
@@ -139,6 +155,7 @@ export {
   authUser,
   fetchCurrentUser,
   fetchUser,
+  newRut,
   fetchRuts,
   fetchChallengeRut,
   fetchChallengeItems,
@@ -162,6 +179,9 @@ export {
   fetchProfileItems,
   fetchClips,
   fetchDemands,
+  fetchDemand,
   newClip,
-  newDemand
+  upvoteClip,
+  newDemand,
+  upvoteDemand
 }

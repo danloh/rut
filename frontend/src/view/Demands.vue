@@ -12,8 +12,8 @@
         </el-form>
       </div>
       <div class="submenu">
-        <router-link to="/demand/popular">Popular</router-link>
-        <router-link to="/demand/new">New</router-link>
+        <router-link to="/demands/popular">Popular</router-link>
+        <router-link to="/demands/new">New</router-link>
       </div>
       <div class="demand-view">
         <router-view></router-view>

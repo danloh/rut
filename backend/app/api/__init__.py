@@ -238,9 +238,10 @@ def unchallenge_rut(rutid):
     user.unchallenge(rut)
     return jsonify('Challenge')
 
-@rest.route('/create', methods=['POST'])
+@rest.route('/create/', methods=['POST'])
+@rest.route('/create/<int:demandid>', methods=['POST'])
 @auth.login_required
-def new_rut():
+def new_rut(demandid=None):
     post = Posts(
         creator = g.user,
         title = request.json.get('title'),
@@ -252,8 +253,17 @@ def new_rut():
     )
     db.session.add(post)
     post.tag_to_db()
+    # link to demand if come from demand
+    if demandid:
+        demand = Demands.query.get(demandid)
+        if demand:
+            respon = Respon(
+                post=post,
+                demand=demand
+            )
+            db.session.add(respon)
     db.session.commit()
-    return jsonify(post.to_dict())
+    return jsonify({'id':post.id})
 
 @rest.route('/editrut/<int:rutid>', methods=['POST'])
 @auth.login_required
@@ -583,22 +593,67 @@ def new_clip():
     db.session.commit()
     return jsonify(clip.to_dict())
 
+@rest.route('/upvoteclip/<int:clipid>')
+@auth.login_required
+def upvote_clip(clipid):
+    user = g.user
+    clip = Clips.query.get_or_404(clipid)
+    voted = Cvote.query.filter_by(user_id=user.id,clip_id=clipid).first()
+    if voted is None:
+        clip.vote = clip.vote + 1 
+        db.session.add(clip)
+        cvote = Cvote(
+            voter=user,
+            vote_clip=clip
+        )
+        db.session.add(cvote)
+        db.session.commit()
+    return jsonify(clip.vote)
+
 @rest.route('/demands')
 def get_demands():
-    query = q = Demands.query
+    query = Demands.query
     userid = request.args.get('userid','')
     ref = request.args.get('type','popular')
     if userid:
-        query = q.filter_by(requestor_id=int(userid))
+        demands = query.filter_by(requestor_id=int(userid))
     if ref == "new":
         demands = query.order_by(Demands.timestamp.desc())
     else:
         demands = query.order_by(Demands.vote.desc())
-    demand_dict = {
+    demands_dict = {
         'demands': [d.to_dict() for d in demands],
         'total': demands.count()
     }
+    return jsonify(demands_dict)
+
+@rest.route('/demand/<int:demandid>')
+def get_demand(demandid):
+    demand = Demands.query.get_or_404(demandid)
+    demand_dict = demand.to_dict()
+    #attach answers to demand
+    respons = [r.post for r in demand.posts]
+    answers = [{'id':p.id,'title':p.title} for p in respons]
+    demand_dict['answers'] = answers
     return jsonify(demand_dict)
+
+@rest.route('/upvotedemand/<int:demandid>')
+@auth.login_required
+def upvote_demand(demandid):
+    user = g.user
+    demand = Demands.query.get_or_404(demandid) # demand's id
+    voted = Dvote.query.filter_by(user_id=user.id,demand_id=demandid).first()
+    if voted is None:
+        demand.vote = demand.vote + 1 
+        db.session.add(demand)
+        dvote = Dvote(
+            voter=user,
+            vote_demand=demand
+        )
+        db.session.add(dvote)
+        db.session.commit()
+        #return jsonify(demand.vote)
+    return jsonify(demand.vote)
 
 @rest.route('/newdemand', methods=['POST'])
 @auth.login_required

@@ -1,6 +1,7 @@
 <template>
   <div class="create-page">
     <h3 class="title">Create New Readup Tips</h3>
+    <p v-if="demandid"> For a demand <router-link :to="'/demand/' + demandid" target="_blank">Link</router-link></p>
     <el-form class="create-form" :model="createForm" :rules="rules" ref="createForm" label-width="120px" size="mini">
       <el-form-item label="Title" prop="title">
         <el-input v-model="createForm.title"></el-input>
@@ -35,6 +36,8 @@
 </template>
 
 <script>
+import { newRut } from '@/api/api'
+
 export default {
   name: 'create',
   title: 'Create New',
@@ -63,7 +66,8 @@ export default {
         {value: 'All', label: 'All'}, {value: 'Secondary', label: 'Secondary'},
         {value: 'College', label: 'College'}, {value: 'Elementary', label: 'Elementary'},
         {value: 'Preschool', label: 'Preschool'}, {value: 'Professional', label: 'Professional'}
-      ]
+      ],
+      demandid: this.$route.params.id || ''
     }
   },
   methods: {
@@ -78,7 +82,9 @@ export default {
             credential: form.credential,
             editable: 'Creator' // form.editable
           }
-          this.$axios.post('api/create', data).then((resp) => {
+          let demandid = this.$route.params.id || ''
+          return newRut(data, demandid)
+          .then((resp) => {
             let id = resp.data.id
             // this.$store.commit('SET_', data)
             this.$router.push(`/readuplist/${id}`)

@@ -199,6 +199,20 @@ class Byline(db.Model):
         primary_key=True)
     contribution = db.Column(db.String(32), nullable=False)
 
+# helper for n2n Users vote Clips
+class Cvote(db.Model):
+    __table_name__ = 'cvote'
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id"),
+        primary_key=True)
+    clip_id = db.Column(
+        db.Integer,
+        db.ForeignKey("clips.id"),
+        primary_key=True)
+    timestamp = db.Column(db.DateTime,
+                        default=datetime.utcnow)
+
 # helper for n2n Users vote Demands
 class Dvote(db.Model):
     __table_name__ = 'dvote'
@@ -961,6 +975,13 @@ class Clips(db.Model):
     item_id = db.Column(
         db.Integer, db.ForeignKey("items.id")
     )
+    # n2n with Users for vote
+    voters = db.relationship(
+        'Cvote',
+        foreign_keys=[Cvote.clip_id],
+        backref=db.backref('vote_clip', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
 
     def to_dict(self):
         clip_dict = {
@@ -1008,7 +1029,7 @@ class Demands(db.Model):
         db.ForeignKey("users.id")
     )
 
-    # n2n with Posts
+    # n2n with Posts, as answer
     posts = db.relationship(
         'Respon',
         foreign_keys=[Respon.demand_id],
@@ -1307,7 +1328,14 @@ class Users(UserMixin, db.Model):
         backref=db.backref('followed', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-
+    
+    # n2n with Clips for vote
+    vote_clips = db.relationship(
+        'Cvote',
+        foreign_keys=[Cvote.user_id],
+        backref=db.backref('voter', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
     # n2n with Demands for vote
     vote_demands = db.relationship(
         'Dvote',

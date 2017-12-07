@@ -8,6 +8,7 @@ import store from '@/store'
 import Home from '@/view/Home'
 import Challenge from '@/view/Challenge'
 import Demands from '@/view/Demands'
+import DemandView from '@/view/DemandView'
 import Profile from '@/view/Profile'
 import RutView from '@/view/RutView'
 import ItemView from '@/view/ItemView'
@@ -54,7 +55,7 @@ const router = new Router({
     { path: '/login', component: Login, name: 'Login' },
     { path: '/connect', component: Connect, name: 'Connect' },
     { path: '/tag/:id', component: TagView, name: 'Tag' },
-    { path: '/create', component: Create, name: 'CreateRut', meta: {auth: true} },
+    { path: '/create/:id(\\d+)?', component: Create, name: 'CreateRut', meta: {auth: true} },
     { path: '/readuplist/:id', component: RutView, name: 'Rutview' },
     { path: '/edit/readuplist/:id',
       component: EditRut,
@@ -87,7 +88,7 @@ const router = new Router({
       name: 'EditItem',
       meta: {auth: true}
     },
-    { path: '/demand',
+    { path: '/demands',
       component: Demands,
       children: [
         { path: '', name: 'defaultdemand', redirect: 'popular' },
@@ -95,6 +96,7 @@ const router = new Router({
         { path: 'new', name: 'Newdemand', component: createDemandList('new') }
       ]
     },
+    { path: '/demand/:id', name: 'demand', component: DemandView },
     { path: '/challenge',
       component: Challenge,
       meta: {auth: true},

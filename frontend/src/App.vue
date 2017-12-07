@@ -8,7 +8,7 @@
         <router-link to="/challenge">
           <b>Challenge</b>
         </router-link>
-        <router-link to="/demand">
+        <router-link to="/demands">
           <b>Request</b>
         </router-link>
         <router-link to="/create">
