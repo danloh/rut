@@ -15,7 +15,8 @@ export default {
   name: 'demand-list',
   components: { Demand },
   props: {
-    type: String
+    type: String,
+    userid: null
   },
   computed: {
     ...mapGetters([
@@ -36,7 +37,7 @@ export default {
     }
   },
   mounted () {
-    this.$store.dispatch('getDemands', {'type': this.type})
+    this.$store.dispatch('getDemands', {'type': this.type, 'userid': this.userid})
   }
 }
 </script>

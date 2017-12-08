@@ -4,7 +4,7 @@
     <div class="demand-bar">
       Requseted by <router-link :to="'/profile/' + requestor.id">{{ requestor.name }}</router-link>
       | {{ vote }} <el-button type="text"><span @click="upDemand">Upvote</span></el-button>
-      | {{ answercount }} <el-button type="text"><router-link :to="'/create/' + demand.id"><b>Answer</b></router-link></el-button>
+      | {{ answercount }}<el-button type="text"><router-link :to="'/create/' + demand.id"><b>Answer</b></router-link></el-button>
       | {{demand.commentcount}} <router-link :to="'/demand/' + demand.id">Discuss</router-link>
     </div>
   </div>

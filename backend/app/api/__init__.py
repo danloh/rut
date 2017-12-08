@@ -572,6 +572,8 @@ def get_clips():
         query = q.filter_by(item_id=itemid)
     elif ref == "All":
         query = q.filter(Clips.creator != user)
+    elif ref == "Hot":
+        query = q.order_by(Clips.vote.desc())
     else:
         query = q.filter_by(creator_id=user.id)
     order_query = query.order_by(Clips.timestamp.desc()) # or reverse list
@@ -617,9 +619,9 @@ def get_demands():
     ref = request.args.get('type','popular')
     if userid:
         demands = query.filter_by(requestor_id=int(userid))
-    if ref == "new":
+    elif ref == "new":
         demands = query.order_by(Demands.timestamp.desc())
-    else:
+    elif ref == "popular":  # popular
         demands = query.order_by(Demands.vote.desc())
     demands_dict = {
         'demands': [d.to_dict() for d in demands],

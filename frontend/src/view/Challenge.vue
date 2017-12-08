@@ -18,6 +18,7 @@
       </div>
       <div class="submenu">
         <router-link to="/challenge/allclip">All Clips</router-link>
+        <router-link to="/challenge/hotclip">Popular Clips</router-link>
         <router-link to="/challenge/myclip">My Clips</router-link>
       </div>
       <div class="clip-view">
