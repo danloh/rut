@@ -18,24 +18,24 @@
     </div>
 </template>
 
-<script>
-import { auth } from '../api/api'
+// <script>
+// // import { auth } from '../api/api'
 
-export default {
-  name: 'connect',
-  data () {
-    return {
-      nexturl: this.$store.state.nexturl
-    }
-  },
+// export default {
+//   name: 'connect',
+//   data () {
+//     return {
+//       nexturl: this.$store.state.nexturl
+//     }
+//   },
 
-  methods: {
-    authTwitter () {
-      return auth('Twitter').then((resp) => {
-        this.$store.state.user = resp.data
-        this.$root.router.push('/')
-      })
-    }
-  }
-}
+//   methods: {
+//     authTwitter () {
+//       return auth('Twitter').then((resp) => {
+//         this.$store.state.user = resp.data
+//         this.$root.router.push('/')
+//       })
+//     }
+//   }
+// }
 </script>

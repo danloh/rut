@@ -17,11 +17,11 @@
         <div class="rightmenu">
           <el-dropdown v-if="authed">
             <el-button type="success" size="small">
-              <img class="profile" :src="avatar" alt="Avatar">
+              <i class="el-icon-menu"></i>
               <i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>Profile</el-dropdown-item>
+              <el-dropdown-item><router-link :to="'/profile/' + currentUserID">Profile</router-link></el-dropdown-item>
               <el-dropdown-item>Setting</el-dropdown-item>
               <el-dropdown-item>
                 <el-button size="small" @click="onLogout">Log out</el-button>
@@ -49,47 +49,22 @@
 
 <script>
 // import store from './store'
+// import { getToken } from '@/util/auth'
 import { mapGetters } from 'vuex'
 
 export default {
   name: 'app',
   computed: {
     ...mapGetters([
-      'currentUser',
+      'currentUserID',
       'authed'
-    ]),
-    // authed () {
-    //   return this.currentUser !== null
-    // },
-    avatar () {
-      return this.currentUser.avatar
-    }
+    ])
   },
   methods: {
     onLogout () {
       this.$store.commit('DEL_TOKEN')
       this.$router.push('/')
-    },
-    checkAuth () {
-      let localToken = localStorage.token
-      // let localID = localStorage.userid
-      if (localToken) {
-        this.$axios.defaults.auth = {
-          username: localToken,
-          password: localToken
-        }
-        this.getCurrentUser()
-        return true
-      } else {
-        return false
-      }
-    },
-    getCurrentUser () {
-      this.$store.dispatch('getCurrentUser')
     }
-  },
-  beforeMount () {
-    this.checkAuth()
   }
 }
 </script>

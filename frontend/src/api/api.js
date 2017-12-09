@@ -15,13 +15,13 @@ const login = () => {
   return request(`${base}/login`)
 }
 
-const authUser = params => {
-  return request(`${base}/user`, params)  // why cannot be frontend url?
-}
+// const authUser = params => {
+//   return request(`${base}/user`, params)  // why cannot be frontend url?
+// }
 
-const auth = (servername, params) => {
-  return request(`${base}/auth/${servername}`, params)
-}
+// const auth = (servername, params) => {
+//   return request(`${base}/auth/${servername}`, params)
+// }
 
 const fetchCurrentUser = params => {
   return request(`${base}/currentuser`, params)
@@ -151,8 +151,8 @@ export {
   axios,
   register,
   login,
-  auth,
-  authUser,
+  // auth,
+  // authUser,
   fetchCurrentUser,
   fetchUser,
   newRut,

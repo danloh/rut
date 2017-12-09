@@ -12,6 +12,7 @@
 
 <script>
 import { upvoteDemand } from '@/api/api'
+import { checkAuth } from '@/util/checkAuth'
 
 export default {
   name: 'demand',
@@ -28,21 +29,8 @@ export default {
     }
   },
   methods: {
-    checkAuth () {
-      let localToken = localStorage.token
-      // let localID = localStorage.userid
-      if (localToken) {
-        this.$axios.defaults.auth = {
-          username: localToken,
-          password: localToken
-        }
-        return true
-      } else {
-        return false
-      }
-    },
     upDemand () {
-      if (this.checkAuth()) {
+      if (checkAuth()) {
         let demandid = this.demand.id
         return upvoteDemand(demandid)
         .then(resp => {

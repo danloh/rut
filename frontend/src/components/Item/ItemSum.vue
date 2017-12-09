@@ -43,6 +43,7 @@
 
 <script>
 import { flagItem, checkFlag, fetchProfileRuts, itemToRut } from '@/api/api'
+import { checkAuth } from '@/util/checkAuth'
 
 export default {
   name: 'item-sum',
@@ -63,21 +64,8 @@ export default {
     }
   },
   methods: {
-    checkAuth () {
-      let localToken = localStorage.token
-      // let localID = localStorage.userid
-      if (localToken) {
-        this.$axios.defaults.auth = {
-          username: localToken,
-          password: localToken
-        }
-        return true
-      } else {
-        return false
-      }
-    },
     checkFlaging () {
-      if (this.checkAuth()) {
+      if (checkAuth()) {
         let itemid = this.item.id || this.$route.params.id // why?? liftcycle timing??
         return checkFlag(itemid)
         .then(resp => {
@@ -88,7 +76,7 @@ export default {
       }
     },
     flagSchedule () {
-      if (this.checkAuth()) {
+      if (checkAuth()) {
         return flagItem('todo', this.item.id)
         .then(() => {
           this.flagAction = 'Scheduled'
@@ -102,7 +90,7 @@ export default {
       }
     },
     flagWorking () {
-      if (this.checkAuth()) {
+      if (checkAuth()) {
         return flagItem('doing', this.item.id)
         .then(() => {
           this.flagAction = 'Working On'
@@ -116,7 +104,7 @@ export default {
       }
     },
     flagDone () {
-      if (this.checkAuth()) {
+      if (checkAuth()) {
         return flagItem('done', this.item.id)
         .then(() => {
           this.flagAction = 'Have Done'
@@ -130,7 +118,7 @@ export default {
       }
     },
     showAndloadData () {
-      if (this.checkAuth()) {
+      if (checkAuth()) {
         let userid = this.$store.getters.currentUserID
         return fetchProfileRuts('created', userid)
         .then(resp => {
@@ -148,7 +136,7 @@ export default {
     addtoRut (formName, form) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          if (this.checkAuth()) {
+          if (checkAuth()) {
             let rutid = form.selectRutID
             let itemid = this.item.id
             return itemToRut(itemid, rutid)

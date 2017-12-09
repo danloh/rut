@@ -60,6 +60,7 @@ import Spinner from '@/components/Misc/Spinner.vue'
 import ItemSum from '@/components/Item/ItemSum.vue'
 import Comment from '@/components/Comment.vue'
 import { scRut, checkSC } from '@/api/api'  // sc: star and challenge
+import { checkAuth } from '@/util/checkAuth'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -124,21 +125,8 @@ export default {
         this.currentUserID = this.$store.getters.currentUserID
       })
     },
-    checkAuth () {
-      let localToken = localStorage.token
-      // let localID = localStorage.userid
-      if (localToken) {
-        this.$axios.defaults.auth = {
-          username: localToken,
-          password: localToken
-        }
-        return true
-      } else {
-        return false
-      }
-    },
     checkStar () {
-      if (this.checkAuth()) {
+      if (checkAuth()) {
         let rutid = this.$route.params.id // ?? liftcycle timing
         return checkSC(rutid, 'star')
         .then(resp => {
@@ -149,7 +137,7 @@ export default {
       }
     },
     checkChallenge () {
-      if (this.checkAuth()) {
+      if (checkAuth()) {
         let rutid = this.$route.params.id // ?? liftcycle timing
         return checkSC(rutid, 'challenge')
         .then(resp => {
@@ -160,7 +148,7 @@ export default {
       }
     },
     starRut () {
-      if (this.checkAuth()) {
+      if (checkAuth()) {
         if (this.starAction === 'Star') {
           return scRut('star', this.rutid)
           .then(() => {
@@ -183,7 +171,7 @@ export default {
       }
     },
     challengeRut () {
-      if (this.checkAuth()) {
+      if (checkAuth()) {
         if (this.challengeAction === 'Challenge') {
           return scRut('challenge', this.rutid)
           .then(() => {

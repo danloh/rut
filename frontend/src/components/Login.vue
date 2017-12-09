@@ -44,7 +44,7 @@ export default {
           this.$axios.get('api/login').then((resp) => {
             let data = resp.data
             this.$store.commit('SET_TOKEN', data.token)
-            this.$store.commit('MOD_USER', data.user)
+            this.$store.commit('SET_USER', data.userid)
             this.$router.push('/')
           }).catch(error => {
             this.$message.error(error.status) // elementui

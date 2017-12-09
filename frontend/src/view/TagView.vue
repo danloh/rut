@@ -42,6 +42,7 @@
 import RutList from '@/components/Rut/RutList.vue'
 import { mapGetters } from 'vuex'
 import { editTag, checkFav, favTag } from '@/api/api'
+import { checkAuth } from '@/util/checkAuth'
 
 export default {
   name: 'tag-view',
@@ -117,20 +118,8 @@ export default {
         }
       })
     },
-    checkAuth () {
-      let localToken = localStorage.token
-      if (localToken) {
-        this.$axios.defaults.auth = {
-          username: localToken,
-          password: localToken
-        }
-        return true
-      } else {
-        return false
-      }
-    },
     checkFav () {
-      if (this.checkAuth()) {
+      if (checkAuth()) {
         let tagid = this.$route.params.id
         return checkFav(tagid)
         .then(resp => {
@@ -141,7 +130,7 @@ export default {
       }
     },
     favTag () {
-      if (this.checkAuth()) {
+      if (checkAuth()) {
         let tagid = this.$route.params.id
         if (this.action === 'Follow') {
           return favTag('fav', tagid)

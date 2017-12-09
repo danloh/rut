@@ -8,6 +8,7 @@ import locale from 'element-ui/lib/locale/lang/en'
 import ProgressBar from './components/Misc/ProgressBar.vue'
 import titleMixin from './util/title'
 import * as filters from './util/filters'
+import { getToken } from '@/util/auth'
 import App from './App'
 import router from './router'
 import store from './store'
@@ -28,16 +29,10 @@ Object.keys(filters).forEach(key => {
   Vue.filter(key, filters[key])
 })
 
-// config axios
-// defaul auth
-axios.defaults.auth = {
-  username: '',
-  password: ''
-}
 // Request interceptor
 axios.interceptors.request.use((config) => {
   if (store.state.token) {
-    config.headers['X-Token'] = store.state.token
+    config.headers['R-Token'] = store.state.token
   }
   return config
 }, (error) => {
@@ -62,15 +57,13 @@ axios.interceptors.response.use((response) => {
 router.beforeEach((to, from, next) => {
   bar.start()
   if (to.meta.auth) {
-    let localToken = localStorage.token
-    let localID = localStorage.userid
+    // config axios defaul auth
+    let localToken = getToken()
+    axios.defaults.auth = {
+      username: localToken,
+      password: localToken
+    }
     if (localToken) {
-      axios.defaults.auth = {
-        username: localToken,
-        password: localToken
-      }
-      store.commit('SET_TOKEN', localToken)
-      store.commit('SET_USER', Number(localID))
       next()
     } else {
       next({path: '/login'})

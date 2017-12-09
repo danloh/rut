@@ -44,11 +44,11 @@ def verify_password(username_or_token, password):
     if request.path == "/api/login":
         user = Users.query.filter_by(name=username_or_token).first()
         if not user or not user.verify_password(password):
-            return False
+            return False  # how to hadle error?
     else:
         user = Users.verify_auth_token(username_or_token)
         if not user:
-            return False
+            return False # how to hadle error?
     g.user = user
     return True
 
@@ -58,7 +58,7 @@ def get_auth_token():
     token = g.user.generate_auth_token()
     return jsonify({
         'token': token.decode('ascii'),
-        'user': g.user.to_dict()
+        'userid': g.user.id
     })
 
 @rest.route('/user')

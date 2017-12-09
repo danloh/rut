@@ -5,13 +5,14 @@
       From <router-link :to="'/item/' + fromitem.id" :title="fromitem.title">{{ fromitem.title.slice(0, 60) }}...</router-link>
       via <router-link :to="'/profile/' + creator.id">{{ creator.name.slice(0, 20) }}</router-link>
       | {{ clip.timestamp | toMDY }}
-      | {{ vote }} <el-button type="text"><span @click="upClip">Upvote</span></el-button>
+      | {{ vote }} <el-button type="text"><span @click="upClip">Like</span></el-button>
     </p>
   </div>
 </template>
 
 <script>
 import { upvoteClip } from '@/api/api'
+import { checkAuth } from '@/util/checkAuth'
 
 export default {
   name: 'clip',
@@ -30,21 +31,8 @@ export default {
     }
   },
   methods: {
-    checkAuth () {
-      let localToken = localStorage.token
-      // let localID = localStorage.userid
-      if (localToken) {
-        this.$axios.defaults.auth = {
-          username: localToken,
-          password: localToken
-        }
-        return true
-      } else {
-        return false
-      }
-    },
     upClip () {
-      if (this.checkAuth()) {
+      if (checkAuth()) {
         let clipid = this.clip.id
         return upvoteClip(clipid)
         .then(resp => {
