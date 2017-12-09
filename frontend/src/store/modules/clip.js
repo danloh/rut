@@ -1,6 +1,7 @@
 // import axios from '@/main'
 import {
   fetchClips,
+  fetchIUClips,
   newClip
 } from '@/api/api'
 
@@ -18,6 +19,12 @@ const state = {
 // actions
 const actions = {
   getClips: ({commit, state}, params = {}) => {
+    if (params.itemid || params.userid) {
+      return fetchIUClips(params)
+      .then(resp => {
+        commit('SET_CLIPS', resp.data)
+      })
+    }
     return fetchClips(params)
     .then(resp => {
       commit('SET_CLIPS', resp.data)

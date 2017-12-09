@@ -460,10 +460,11 @@ class Posts(db.Model):
         db.session.add(self)
         #db.session.commit()
 
-    def cal_vote(self,n=None,m=None):
-        n = n or self.starers.count()
-        m = m or self.challengers.count() * 2
-        self.vote = n+m
+    def cal_vote(self,i=None,s=None,c=None):
+        i = i or self.items.count()
+        s = s or self.starers.count()
+        c = c or self.challengers.count() * 2
+        self.vote = i+s+c
         db.session.add(self)
         #db.session.commit()
     @property
@@ -497,8 +498,7 @@ class Posts(db.Model):
         posts_popular = _query.order_by(Posts.vote.desc()).limit(m)
 
         posts_select = posts_latest.union(posts_popular).\
-                       order_by(db.func.rand()).limit(m)
-
+                       order_by(db.func.rand())#.all()
         return posts_select
 
     def to_dict(self):
@@ -779,7 +779,7 @@ class Tags(db.Model):
     @staticmethod
     @cache.memoize()
     def get_tags():
-        return Tags.query.order_by(db.func.rand()).limit(20).all()
+        return Tags.query.order_by(Tags.vote.desc()).order_by(db.func.rand()).limit(20).all()
 
     def cal_vote(self,i=None,p=None,d=None,f=None):
         i = i or self.items.count()
@@ -1394,11 +1394,13 @@ class Users(UserMixin, db.Model):
         if not self.staring(post):
             s = Star(starer=self, star_post=post)
             db.session.add(s)
+            post.cal_vote()
             db.session.commit() # need to commit for API??
     def unstar(self, post):
         s = self.star_posts.filter_by(post_id=post.id).first()
         if s:
             db.session.delete(s)
+            post.cal_vote()
             db.session.commit() # need to commit for API??
     def staring(self, post):
         return self.star_posts.filter_by(
@@ -1409,11 +1411,13 @@ class Users(UserMixin, db.Model):
         if not self.challenging(post):
             c = Challenge(challenger=self, challenge_post=post)
             db.session.add(c)
+            post.cal_vote()
             db.session.commit() # need to commit for API??
     def unchallenge(self, post):
         c = self.challenge_posts.filter_by(post_id=post.id).first()
         if c:
             db.session.delete(c)
+            post.cal_vote()
             db.session.commit() # need to commit for API??
     def challenging(self, post):
         return self.challenge_posts.filter_by(
@@ -1467,12 +1471,14 @@ class Users(UserMixin, db.Model):
         if not self.faving(tag):
             fv = Fav(faver=self, fav_tag=tag)
             db.session.add(fv)
-            #db.session.commit()
+            tag.cal_vote()
+            db.session.commit() #for API??
     def unfav(self, tag):
         fv = self.fav_tags.filter_by(tag_id=tag.id).first()
         if fv:
             db.session.delete(fv)
-            #db.session.commit()
+            tag.cal_vote()
+            db.session.commit() #for API??
     def faving(self, tag):
         return self.fav_tags.filter_by(
             tag_id=tag.id).first() is not None

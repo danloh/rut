@@ -50,7 +50,7 @@ export default {
   props: ['item'],
   data () {
     return {
-      flagAction: this.checkFlaging() || 'Flag it',
+      flagAction: this.checkFlaging(), // || 'Flag it',
       showDialog: false,
       intoForm: {
         selectRutID: null
@@ -72,7 +72,7 @@ export default {
           this.flagAction = resp.data
         })
       } else {
-        this.flagAction = 'Flag it'
+        return 'Flag it'
       }
     },
     flagSchedule () {

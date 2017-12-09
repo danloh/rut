@@ -14,10 +14,10 @@ rest = Blueprint('rest', __name__)
 api = Api(rest)
 auth = HTTPBasicAuth()
 
-from . import res
+#from . import res
 #api.add_resource(res.Rut, '/rut/<int:rutid>')
-api.add_resource(res.Tag, '/tag/<int:tagid>')
-api.add_resource(res.Item, '/item/<int:itemid>')
+#api.add_resource(res.Tag, '/tag/<int:tagid>')
+#api.add_resource(res.Item, '/item/<int:itemid>')
 #api.add_resource(res.Commentz, '/comments')
 
 # for user authentication NEEDED
@@ -89,24 +89,29 @@ def get_user(id):        # get info per userid
     return jsonify(user_dict)
 
 @rest.route('/ruts')
-@auth.login_required
-def get_ruts():            ##!! to be optimized
-    user = g.user
-    ref = request.args.get('ref','random')
-    #get related tags set and fav tags
-    tag_set, tag_fv = user.get_tag_set()
-    # get followed posts queries
-    post_fo = [f.followed.posts for f in user.followed]
-    #list the queries, followed _posts as init 
-    q = post_fo
-    for tag_obj in tag_set:
-        q.append(tag_obj.posts)
-    q_rand = Posts.query.order_by(db.func.rand()).limit(0) # !! need to optimize
-    query = q_rand.union(*q)
-    ruts = query.order_by(Posts.timestamp.desc())  # other way,list reverse
+#@auth.login_required
+def get_ruts():
+    # #personalized ruts
+    # user = g.user
+    # #get related tags set and fav tags
+    # tag_set, tag_fv = user.get_tag_set()
+    # # get followed posts queries
+    # post_fo = [f.followed.posts for f in user.followed]
+    # #list the queries, followed _posts as init 
+    # q = post_fo
+    # for tag_obj in tag_set:
+    #     q.append(tag_obj.posts)
+    # q_rand = Posts.query.order_by(db.func.rand()).limit(0) # !! need to optimize
+    # query = q_rand.union(*q)
+    # ruts = query.order_by(Posts.timestamp.desc())  # other way,list reverse
+    # total = ruts.count()
+    # #Top Picked ruts
+    ruts = Posts.select_posts()
+    total = ruts.count() #len(ruts)
+    tag_set = Tags.get_tags()
     return jsonify({  # need to optimize
         'ruts': [r.to_dict() for r in ruts],
-        'total': ruts.count(),
+        'total': total,
         'tags': [{'tagid': t.id,'tagname': t.tag} for t in tag_set] 
     })
 
@@ -277,7 +282,8 @@ def edit_rut(rutid):
     rut.rating = request.json.get('rating'),
     rut.credential = request.json.get('credential'),
     rut.epilog = request.json.get('epilog')
-    db.session.add(rut)
+    rut.renew() # renew the update time and add to db
+    #db.session.add(rut)
     db.session.commit()
     return jsonify(rut.to_dict())
 
@@ -493,6 +499,24 @@ def flag_item_done(itemid):
     user.flag(item,3)
     return jsonify('Done')
 
+@rest.route('/item/<int:itemid>')
+def get_item(itemid):
+    item = Items.query.get_or_404(itemid)
+    item_dict = item.to_dict()
+    # attach reviews
+    reviews = item.reviews
+    hotreviews = reviews.order_by(Reviews.vote.desc())
+    newreviews = reviews.order_by(Reviews.timestamp.desc()).limit(15)
+    hot_reviews = [r.to_dict() for r in hotreviews]
+    new_reviews = [r.to_dict() for r in newreviews]
+    item_dict['hotreviews'] = hot_reviews
+    item_dict['newreviews'] = new_reviews
+    # attach included ruts
+    ruts = [c.post for c in item.posts.order_by(Collect.timestamp.desc())]
+    included_ruts = [{'id':r.id, 'title': r.title} for r in ruts]
+    item_dict['inruts'] = included_ruts
+    return jsonify(item_dict)
+
 @rest.route('/edititem/<int:itemid>', methods=['POST'])
 @auth.login_required
 def edit_item(itemid):
@@ -560,9 +584,24 @@ def edit_item(itemid):
 @auth.login_required
 def get_clips():
     user = g.user
+    ref = request.args.get('ref','')
+    q = Clips.query
+    if ref == "All":
+        query = q.filter(Clips.creator != user)
+    elif ref == "Hot":
+        query = q.order_by(Clips.vote.desc())
+    else:
+        query = q.filter_by(creator_id=user.id)
+    order_query = query.order_by(Clips.timestamp.desc()) # or reverse list
+    return jsonify({
+        'clips': [c.to_dict() for c in order_query],
+        'total': query.count()
+    })
+
+@rest.route('/iuclips')
+def get_iuclips():
     userid = request.args.get('userid','')
     itemid = request.args.get('itemid','')
-    ref = request.args.get('ref','')
     q = Clips.query
     if userid and itemid:
         query =q.filter_by(creator_id=userid,item_id=itemid)
@@ -570,13 +609,7 @@ def get_clips():
         query = q.filter_by(creator_id=userid)
     elif itemid:
         query = q.filter_by(item_id=itemid)
-    elif ref == "All":
-        query = q.filter(Clips.creator != user)
-    elif ref == "Hot":
-        query = q.order_by(Clips.vote.desc())
-    else:
-        query = q.filter_by(creator_id=user.id)
-    order_query = query.order_by(Clips.timestamp.desc()) # or reverse list
+    order_query = query.order_by(Clips.timestamp.desc())
     return jsonify({
         'clips': [c.to_dict() for c in order_query],
         'total': query.count()
@@ -672,6 +705,28 @@ def new_demand():
     demand.dtag_to_db()
     db.session.commit()
     return jsonify(demand.to_dict())
+
+
+@rest.route('/tag/<int:tagid>')
+def get_tag(tagid):
+    tag = Tags.query.get_or_404(tagid)
+    tag_dict = tag.to_dict()
+    #attach ruts included in tag 
+    tagruts = [p.to_dict() for p in tag.posts]
+    tagruts.reverse()  # as order_by, which is faster?
+    tag_dict['ruts'] = tagruts
+    tag_dict['total'] = len(tagruts)
+    # related tags
+    parent_tags = [t.parent_tag for t in tag.parent_tags.\
+                order_by(db.func.rand()).limit(5)]
+    tags = parent_tags
+    for tg in parent_tags:
+        child_tags = [t.child_tag for t in Clan.query.\
+                filter_by(parent_tag_id=tg.id).\
+                order_by(db.func.rand()).limit(5)]
+        tags += child_tags   
+    tag_dict['tags'] = [{'tagid': t.id,'tagname': t.tag} for t in tags] 
+    return jsonify(tag_dict)
 
 @rest.route('/edittag/<int:tagid>', methods=['POST'])
 @auth.login_required

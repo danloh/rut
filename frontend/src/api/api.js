@@ -122,6 +122,10 @@ const flagItem = (flag, itemid, params) => {
 const fetchClips = params => {
   return request(`${base}/clips`, params)
 }
+// for specific item or user
+const fetchIUClips = params => {
+  return request(`${base}/iuclips`, params)
+}
 
 const newClip = params => {
   return request(`${base}/newclip`, params, 'post')
@@ -178,6 +182,7 @@ export {
   editItem,
   fetchProfileItems,
   fetchClips,
+  fetchIUClips,
   fetchDemands,
   fetchDemand,
   newClip,

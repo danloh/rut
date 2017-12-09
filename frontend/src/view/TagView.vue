@@ -51,7 +51,7 @@ export default {
   },
   data () {
     return {
-      action: this.checkFav() || 'Follow',
+      action: this.checkFav(), // || 'Follow',
       favCount: 0,
       openDialog: false,
       tagForm: {
@@ -90,6 +90,7 @@ export default {
         this.tagForm.name = resp.data.tagname
         this.tagForm.description = resp.data.descript
         this.favCount = resp.data.favcount
+        this.action = this.checkFav() // || 'Follow'
       })
     },
     editTag (formName, form) {
@@ -126,7 +127,7 @@ export default {
           this.action = resp.data
         })
       } else {
-        this.action = 'Follow'
+        return 'Follow' // work incorrectly when non-login if no return
       }
     },
     favTag () {

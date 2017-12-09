@@ -68,8 +68,8 @@ export default {
   components: { ItemSum, Spinner, Comment },
   data () {
     return {
-      starAction: this.checkStar() || 'Star',
-      challengeAction: this.checkChallenge() || 'Challenge',
+      starAction: this.checkStar(), // || 'Star',
+      challengeAction: this.checkChallenge(), // || 'Challenge',
       starCount: 0,
       challengeCount: 0,
       creatorid: null,
@@ -133,7 +133,7 @@ export default {
           this.starAction = resp.data
         })
       } else {
-        this.starAction = 'Star'
+        return 'Star'
       }
     },
     checkChallenge () {
@@ -144,7 +144,7 @@ export default {
           this.challengeAction = resp.data
         })
       } else {
-        this.challengeAction = 'Challenge'
+        return 'Challenge'
       }
     },
     starRut () {

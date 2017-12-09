@@ -1,7 +1,7 @@
 <template>
   <div class="item-page">
     <div class="item-main">
-      <item-sum :item="currentItem"></item-sum>
+      <item-sum :item="currentItem" :key="currentItem.id"></item-sum> <!--key to re-render-->
       <div>
         <b>More Details</b> &nbsp;&nbsp;&nbsp;
         <el-button type="text">
