@@ -31,8 +31,19 @@
         <br>
         <router-link :to="'/readuplist/' + challengeRut.id"> {{ challengeRut.title }}</router-link>
         <br>
-        <b>Due Date: {{dueDate}} <el-button type="text">..Set</el-button></b>
+        <b class="deadline">Deadline: {{ dueDate | toMDY }} <el-button type="text" @click="showPicker=true">..Set</el-button></b>
         <br>
+        <div class="datePick" v-show="showPicker">
+          <el-date-picker
+            v-model="pickDate"
+            type="date"
+            size="mini"
+            placeholder="Pick a day"
+            value-format="yyyy-MM-dd"
+            :picker-options="pickerOptions">
+          </el-date-picker>
+          <el-button type="text" @click="setDue">OK</el-button>
+        </div>
         <b>Including Items:</b>
       </div>
       <p class="right-item" v-for="(item, index) in items" :key="index" :item="item">
@@ -44,7 +55,7 @@
 
 <script>
 import ClipList from '@/components/Challenge/ClipList.vue'
-import { fetchChallengeItems } from '@/api/api'
+import { fetchChallengeItems, setDeadline } from '@/api/api'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -63,7 +74,14 @@ export default {
       },
       items: null,
       dueDate: '',
-      doingItems: []
+      doingItems: [],
+      showPicker: false,
+      pickerOptions: {
+        disabledDate (time) {
+          return time.getTime() < Date.now()
+        }
+      },
+      pickDate: null
     }
   },
   computed: {
@@ -95,6 +113,14 @@ export default {
       return fetchChallengeItems()
       .then(resp => {
         this.doingItems = resp.data
+      })
+    },
+    setDue () {
+      let params = {'date': this.pickDate}
+      return setDeadline(params)
+      .then((resp) => {
+        this.showPicker = false
+        this.dueDate = resp.data
       })
     },
     resetForm (formName) {
@@ -141,6 +167,8 @@ export default {
       padding 0px 5px
       b
         font-size 0.85em
+      .deadline
+          color: red
     .right-item
       padding 0 0 0 10px
       font-size 0.85em

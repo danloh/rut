@@ -27,7 +27,7 @@ const mapMon = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun', 7: '
 export function toMDY (date) {
   if (!date) return date
   date = new Date(date)
-  return `${mapMon[date.getMonth() + 1]} ${date.getDate()},${date.getFullYear()} ${date.getHours() > 11 ? 'PM' : 'AM'}`
+  return `${mapMon[date.getMonth() + 1]} ${date.getDate()},${date.getFullYear()}` // ${date.getHours() > 11 ? 'PM' : 'AM'}
 }
 
 // showLess

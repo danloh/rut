@@ -3,7 +3,6 @@
 
 from flask import Blueprint, redirect, url_for, request, g, jsonify
 from flask_login import login_required, current_user
-from flask_restful import Api, Resource
 from flask_httpauth import HTTPBasicAuth
 from .. import db
 from ..models import *
@@ -11,9 +10,10 @@ from ..bot import spider
 from ..utils import split_str, str_to_dict, str_to_set
 
 rest = Blueprint('rest', __name__)
-api = Api(rest)
 auth = HTTPBasicAuth()
 
+#from flask_restful import Api, Resource
+#api = Api(rest)
 #from . import res
 #api.add_resource(res.Rut, '/rut/<int:rutid>')
 #api.add_resource(res.Tag, '/tag/<int:tagid>')
@@ -159,6 +159,18 @@ def get_challege_items():
     doing_items = [f.flag_item for f in doing_flags]
     doing_dict_list = [{'id':item.id, 'title': item.title} for item in doing_items]
     return jsonify(doing_dict_list)
+
+@rest.route('/setdeadline')
+@auth.login_required
+def set_deadline():
+    user = g.user
+    challenge_rut = user.challenge_posts.first()
+    deadline = request.args.get('date')
+    challenge_rut.deadline = deadline
+    db.session.add(challenge_rut)
+    db.session.commit()
+    due = challenge_rut.deadline
+    return jsonify(due)
 
 @rest.route('/<int:userid>/created/ruts')
 def get_created_ruts(userid):

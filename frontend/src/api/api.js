@@ -42,9 +42,13 @@ const fetchRuts = params => {
 const fetchChallengeRut = params => {
   return request(`${base}/challengerut`, params)
 }
-
-const fetchChallengeItems = params => {   // get some working on items to challenge page
+// get some working on items to challenge page
+const fetchChallengeItems = params => {
   return request(`${base}/challengeitems`, params)
+}
+// set challenge deadline
+const setDeadline = params => {
+  return request(`${base}/setdeadline`, params)
 }
 
 const fetchProfileRuts = (action, userid, params) => {  // act: created, challenge, star
@@ -163,6 +167,7 @@ export {
   fetchRuts,
   fetchChallengeRut,
   fetchChallengeItems,
+  setDeadline,
   fetchProfileRuts,
   fetchRut,
   checkSC,
