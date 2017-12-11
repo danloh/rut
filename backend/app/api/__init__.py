@@ -299,6 +299,33 @@ def edit_rut(rutid):
     db.session.commit()
     return jsonify(rut.to_dict())
 
+@rest.route('/edittags/<int:rutid>', methods=['POST'])
+@auth.login_required
+def edit_tags(rutid):
+    rut = Posts.query.get_or_404(rutid)
+    old = request.json.get('old')
+    new = request.json.get('new')
+    old_set = set(old)
+    new_set = set(new)
+    add_tags = new_set - old_set
+    del_tags = old_set - new_set
+    _query = Tags.query
+    for t in add_tags:
+        _tag = _query.filter_by(tag=t).first()
+        if _tag is None:
+            new_tag = Tags(tag=t)
+            new_tag.posts.append(rut)
+            db.session.add(new_tag)
+        else:
+            _tag.posts.append(rut)
+            db.session.add(_tag)
+    for tg in del_tags:
+        _tag = _query.filter_by(tag=tg).first()
+        _tag.posts.remove(rut)
+    db.session.commit()
+    new_tags = [t.to_dict() for t in rut.tags]
+    return jsonify(new_tags)
+
 @rest.route('/edittips/<int:cid>', methods=['POST'])
 @auth.login_required
 def edit_tips(cid):

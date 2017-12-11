@@ -103,6 +103,10 @@ const mutations = {
   },
   SET_TAG (state, data) {
     state.tagDetail = data
+  },
+  // update tags after edit rut's tags
+  NEW_TAGS (state, data) {
+    state.rutDetail.tags = data
   }
 }
 

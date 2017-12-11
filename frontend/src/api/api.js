@@ -70,6 +70,10 @@ const scRut = (action, rutid, params) => {
 const editRut = (rutid, params) => {
   return request(`${base}/editrut/${rutid}`, params, 'post')
 }
+// edit rut's tags
+const editTags = (rutid, params) => {
+  return request(`${base}/edittags/${rutid}`, params, 'post')
+}
 // add item to rut, new or check existing
 const addItem = (rutid, params) => {
   return request(`${base}/additemtorut/${rutid}`, params, 'post')
@@ -173,6 +177,7 @@ export {
   checkSC,
   scRut,
   editRut,
+  editTags,
   addItem,
   itemToRut,
   checkItem,

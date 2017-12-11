@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie'
+import axios from '@/main'
 
 const TokenKey = 'R-Token'
 const IDKey = 'R-ID'
@@ -25,4 +26,17 @@ export function setID (id) {
 
 export function removeID () {
   return Cookies.remove(IDKey)
+}
+
+export function checkAuth () {
+  let localToken = getToken()
+  axios.defaults.auth = {
+    username: localToken,
+    password: localToken
+  }
+  if (localToken) {
+    return true
+  } else {
+    return false
+  }
 }

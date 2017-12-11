@@ -12,7 +12,7 @@
 
 <script>
 import { upvoteClip } from '@/api/api'
-import { checkAuth } from '@/util/checkAuth'
+import { checkAuth } from '@/util/auth'
 
 export default {
   name: 'clip',

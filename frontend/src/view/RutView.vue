@@ -5,7 +5,20 @@
         <span class="tag" v-for="(tag, index) in tags" :key="index">
           <router-link :to="'/tag/' + tag.id">{{tag.tagname}}</router-link>
         </span>
+        <el-button type="text" @click="showDialog=true" v-show="canTag">..Edit</el-button>
       </div>
+      <!-- edit tag dialog -->
+      <el-dialog title="Edit Tag" :visible.sync="showDialog" width="30%">
+        <el-input size="mini" v-model="newTag" @keyup.enter.native="addNewTag" placeholder="Input a Tag, Press Enter to Add"></el-input>
+        <div v-for="(tag, index) in newTags" :key="index">
+          <p><el-button type="text" size="mini" @click="newTags.splice(index, 1)">X</el-button>&nbsp;&nbsp; {{ tag }} </p>
+        </div>
+        <div slot="footer" class="dialog-footer">
+          <el-button size="mini" @click="showDialog = false">Cancel</el-button>
+          <el-button type="success" size="mini" @click="editTag">Done</el-button>
+        </div>
+      </el-dialog>
+      <!-- dialog end -->
       <div class="title">
         <h2>{{ rutDetail.title }}</h2>
         <p class="meta">
@@ -47,7 +60,7 @@
       <div class="comment">
         <router-link :to="'/rut/comment' + rutid">Comment</router-link>
       </div>
-    </div>
+    </div>   
     <div class="rutside">
       <p class="sidetitle">Creator's Credential</p>
       <div class="sidebody" v-html="credential"></div>
@@ -59,8 +72,8 @@
 import Spinner from '@/components/Misc/Spinner.vue'
 import ItemSum from '@/components/Item/ItemSum.vue'
 import Comment from '@/components/Comment.vue'
-import { scRut, checkSC } from '@/api/api'  // sc: star and challenge
-import { checkAuth } from '@/util/checkAuth'
+import { scRut, checkSC, editTags } from '@/api/api'  // sc: star and challenge
+import { checkAuth } from '@/util/auth'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -74,7 +87,11 @@ export default {
       challengeCount: 0,
       creatorid: null,
       creatorname: '',
-      currentUserID: -1
+      currentUserID: -1,
+      showDialog: false,
+      newTag: '',
+      newTags: [],
+      canTag: checkAuth()
     }
   },
   computed: {
@@ -123,6 +140,7 @@ export default {
         this.creatorid = resp.data.creator.id
         this.creatorname = resp.data.creator.name
         this.currentUserID = this.$store.getters.currentUserID
+        this.newTags = resp.data.tags.map(t => t.tagname)
       })
     },
     checkStar () {
@@ -167,7 +185,7 @@ export default {
           showClose: true,
           message: 'Should Log in to Continue'
         })
-        this.$router.push('/login')
+        // this.$router.push('/login')
       }
     },
     challengeRut () {
@@ -190,7 +208,28 @@ export default {
           showClose: true,
           message: 'Should Log in to Continue'
         })
-        this.$router.push('/login')
+        // this.$router.push('/login')
+      }
+    },
+    addNewTag () {
+      this.newTags.push(this.newTag)
+      this.newTag = ''
+    },
+    editTag () {
+      if (checkAuth()) {
+        let oldTags = this.tags.map(t => t.tagname)
+        let newTags = this.newTags
+        let data = {'old': oldTags, 'new': newTags}
+        return editTags(this.rutid, data)
+        .then(resp => {
+          this.$store.commit('NEW_TAGS', resp.data)
+          this.showDialog = false
+        })
+      } else {
+        this.$message({
+          showClose: true,
+          message: 'Should Log in to Continue'
+        })
       }
     }
   },

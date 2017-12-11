@@ -24,17 +24,17 @@
       </el-dropdown>
     </div>
     <!-- addtolist dialog -->
-    <el-dialog title="Add Item to Created List" :visible.sync="showDialog">
-      <el-form :model="intoForm" ref="intoForm" label-width="120px" size="mini">
-        <el-form-item label="Created List" prop="rut">
+    <el-dialog title="Add Item to Created List" :visible.sync="showDialog" width="35%">
+      <el-form :model="intoForm" ref="intoForm">
+        <el-form-item prop="rut">
           <el-select v-model="intoForm.selectRutID">
             <el-option v-for="r in createdRuts" :key="r.id" :label="r.title" :value="r.id"></el-option>
           </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="showDialog = false">Cancel</el-button>
-        <el-button type="success" @click="addtoRut('intoForm', intoForm)">Add</el-button>
+        <el-button size="mini" @click="showDialog = false">Cancel</el-button>
+        <el-button size="mini" type="success" @click="addtoRut('intoForm', intoForm)">Add</el-button>
       </div>
     </el-dialog>
     <!-- dialog end -->
@@ -43,7 +43,7 @@
 
 <script>
 import { flagItem, checkFlag, fetchProfileRuts, itemToRut } from '@/api/api'
-import { checkAuth } from '@/util/checkAuth'
+import { checkAuth } from '@/util/auth'
 
 export default {
   name: 'item-sum',
@@ -187,6 +187,8 @@ export default {
     position absolute
     top 10px
     right 2px
+.el-select
+  width 100%
 li
   list-style-type none
 </style>

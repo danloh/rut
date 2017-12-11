@@ -42,7 +42,7 @@
 import RutList from '@/components/Rut/RutList.vue'
 import { mapGetters } from 'vuex'
 import { editTag, checkFav, favTag } from '@/api/api'
-import { checkAuth } from '@/util/checkAuth'
+import { checkAuth } from '@/util/auth'
 
 export default {
   name: 'tag-view',
