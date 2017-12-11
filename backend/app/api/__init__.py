@@ -107,10 +107,10 @@ def get_ruts():
     # total = ruts.count()
     # #Top Picked ruts
     ruts = Posts.select_posts()
-    total = ruts.count() #len(ruts)
+    total = len(ruts) #ruts.count() #
     tag_set = Tags.get_tags()
     return jsonify({  # need to optimize
-        'ruts': [r.to_dict() for r in ruts],
+        'ruts': ruts, #[r.to_dict() for r in ruts],
         'total': total,
         'tags': [{'tagid': t.id,'tagname': t.tag} for t in tag_set] 
     })

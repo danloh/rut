@@ -489,7 +489,7 @@ class Posts(db.Model):
             return item.item_cover
 
     @staticmethod
-    #@cache.memoize() #to tackle
+    @cache.memoize() #to tackle
     def select_posts():
         _query = Posts.query
         m = current_app.config['POST_PER_PAGE']
@@ -499,7 +499,8 @@ class Posts(db.Model):
 
         posts_select = posts_latest.union(posts_popular).\
                        order_by(db.func.rand())#.all()
-        return posts_select
+        posts = [r.to_dict() for r in posts_select]  #execute here for cache
+        return posts
 
     def to_dict(self):
         creator = self.creator.to_dict()
