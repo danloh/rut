@@ -66,7 +66,12 @@ router.beforeEach((to, from, next) => {
     if (localToken) {
       next()
     } else {
-      next({path: '/login'})
+      next({
+        path: '/login',
+        query: {
+          redirect: to.fullPath // redirect after login
+        }
+      })
     }
   } else {
     next()
