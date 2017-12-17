@@ -11,6 +11,14 @@ const register = data => {
   return request(`${base}/register`, data, 'post')
 }
 
+const confirm = (token) => {
+  return request(`${base}/confirm/${token}`)
+}
+
+const reset = (token, data) => {
+  return request(`${base}/reset/${token}`, data, 'post')
+}
+
 const login = () => {
   return request(`${base}/login`)
 }
@@ -162,6 +170,8 @@ const upvoteDemand = (demandid, params) => {
 export {
   axios,
   register,
+  confirm,
+  reset,
   login,
   // auth,
   // authUser,

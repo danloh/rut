@@ -28,8 +28,34 @@ export default {
   name: 'register',
   title: 'Register',
   data () {
+    var validateName = (rule, value, callback) => {
+      if (value.trim() !== '') {
+        this.checkName().then(resp => { // call Promise here
+          if (resp.data) {
+            callback()
+          } else {
+            callback(new Error('Please Try again, The username has been used'))
+          }
+        })
+      } else {
+        callback(new Error('Please Input Username'))
+      }
+    }
+    var validateEmail = (rule, value, callback) => {
+      if (value.trim() !== '') {
+        this.checkEmail().then(resp => {
+          if (resp.data) {
+            callback()
+          } else {
+            callback(new Error('The Email has been registered, Please log in directly'))
+          }
+        })
+      } else {
+        callback(new Error('Please Input Email'))
+      }
+    }
     var validatePass = (rule, value, callback) => {
-      if (value === '') {
+      if (value.trim() === '') {
         callback(new Error('Please input the password'))
       } else {
         if (this.regForm.repassword !== '') {
@@ -39,7 +65,7 @@ export default {
       }
     }
     var validaterePass = (rule, value, callback) => {
-      if (value === '') {
+      if (value.trim() === '') {
         callback(new Error('Please input the password again'))
       } else if (value !== this.regForm.password) {
         callback(new Error('Two inputs do not match!'))
@@ -56,10 +82,10 @@ export default {
       },
       rules: {
         username: [
-          { required: true, message: 'Please enter username', trigger: 'blur' }
+          { required: true, validator: validateName, trigger: 'blur' }
         ],
         email: [
-          { required: true, message: 'Please enter email', trigger: 'blur' }
+          { required: true, validator: validateEmail, trigger: 'blur' }
         ],
         password: [
           { required: true, validator: validatePass, trigger: 'blur' }
@@ -82,8 +108,13 @@ export default {
           }
           this.$axios.post('api/register', data).then((resp) => {
             let data = resp.data
-            this.$store.commit('SET_TOKEN', data)
+            this.$store.commit('SET_TOKEN', data.token) // as login
+            this.$store.commit('SET_USER', data.userid) // as login
             this.$router.push('/')
+            this.$message({
+              showClose: true,
+              message: 'Welcome! A confirmation email has been sent to you by email.'
+            })
           }).catch(error => {
             this.$message.error(error.status) // elementui
           })
@@ -92,6 +123,14 @@ export default {
           return false
         }
       })
+    },
+    checkName () {
+      let name = this.regForm.username
+      return this.$axios.get(`api/checkname/${name}`) // return a Promise
+    },
+    checkEmail () {
+      let email = this.regForm.email
+      return this.$axios.get(`api/checkemail/${email}`)
     },
     resetForm (formName) {
       this.$refs[formName].resetFields()

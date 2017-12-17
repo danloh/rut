@@ -1,0 +1,80 @@
+<template>
+<div class="sign-page">
+  <h3 class="title">Reset password</h3>
+  <el-form class="sign-form" :model="forgetForm" :rules="rules" ref="forgetForm" size="mini">
+    <el-form-item label="Username" prop="username">
+      <el-input v-model="forgetForm.username"></el-input>
+    </el-form-item>
+    <el-form-item label="Email" prop="email">
+      <el-input v-model="forgetForm.email"></el-input>
+    </el-form-item>
+    <el-form-item>
+      <el-button class="blockbtn" type="primary" @click="onReq('forgetForm', forgetForm)">Sign Up</el-button>
+      <br>
+      <el-button @click="resetForm('forgetForm')">Reset</el-button>
+    </el-form-item>
+  </el-form>
+</div>
+</template>
+
+<script>
+export default {
+  name: 'forget',
+  title: 'Request to Reset Password',
+  data () {
+    return {
+      forgetForm: {
+        username: '',
+        email: ''
+      },
+      rules: {
+        username: [
+          { required: true, message: 'Please enter username', trigger: 'blur' }
+        ],
+        email: [
+          { required: true, message: 'Please enter email', trigger: 'blur' }
+        ]
+      }
+    }
+  },
+  methods: {
+    onReq (formName, form) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          let data = {
+            username: form.username,
+            email: form.email
+          }
+          this.$axios.post('api/reset', data).then((resp) => {
+            this.$message({
+              showClose: true,
+              message: resp.data
+            })
+            // this.$router.push('/')
+          }).catch(error => {
+            this.$message.error(error.status) // elementui
+          })
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
+    resetForm (formName) {
+      this.$refs[formName].resetFields()
+    }
+  }
+}
+</script>
+
+<style lang="stylus" scoped>
+.sign-page
+  padding 10px 250px 10px 250px
+  position relative
+  .sign-form
+    padding 20px
+    border 1px dotted #689f38
+  .title
+    text-align center
+    margin-bottom 20px
+</style>

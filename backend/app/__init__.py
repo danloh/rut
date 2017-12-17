@@ -5,7 +5,7 @@ from flask import Flask
 from flask_bootstrap import Bootstrap 
 from flask_sqlalchemy import SQLAlchemy
 from flask_caching import Cache
-
+from flask_mail import Mail
 from flask_oauthlib.client import OAuth
 from flask_login import LoginManager
 from flask_moment import Moment
@@ -22,7 +22,7 @@ cache = Cache(config={
     'CACHE_TYPE': 'simple',
     'CACHE_DEFAULT_TIMEOUT':60*10
     })
-
+mail = Mail()
 oauth = OAuth()
 login_manager = LoginManager()
 login_manager.session_protection = 'strong'
@@ -41,7 +41,7 @@ def create_app(config_name):
     pagedown.init_app(app)
     db.init_app(app)
     cache.init_app(app)
-
+    mail.init_app(app)
     oauth.init_app(app)
     login_manager.init_app(app)
     cors.init_app(app)

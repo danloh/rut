@@ -42,13 +42,31 @@ const mutations = {
     state.nexturl = nexturl
   }
 }
-import { fetchCurrentUser } from '@/api/api'
+import { fetchCurrentUser, confirm, reset } from '@/api/api'
 const actions = {
   getCurrentUser: ({ commit, state }) => {
     return new Promise((resolve, reject) => {
       fetchCurrentUser()
       .then(resp => {
         commit('SET_INFO', resp.data)
+        resolve(resp)
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+  confirmEmail: (context, token) => {
+    return new Promise((resolve, reject) => {
+      confirm(token).then(resp => {
+        resolve(resp)
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+  resetPsw: (context, params) => {
+    return new Promise((resolve, reject) => {
+      reset(params['token'], params['data']).then(resp => {
         resolve(resp)
       }).catch(error => {
         reject(error)

@@ -13,9 +13,13 @@ import Profile from '@/view/Profile'
 import RutView from '@/view/RutView'
 import ItemView from '@/view/ItemView'
 import TagView from '@/view/TagView'
-import Register from '@/components/Register'
-import Login from '@/components/Login'
-import Connect from '@/components/Connect'
+import Register from '@/components/Auth/Register'
+import Confirm from '@/components/Auth/Confirm'
+import Forget from '@/components/Auth/Forget'
+import ResetPsw from '@/components/Auth/ResetPsw'
+import ChangePsw from '@/components/Auth/ChangePsw'
+import Login from '@/components/Auth/Login'
+import Connect from '@/components/Auth/Connect'
 import Create from '@/components/Rut/Create'
 import EditRut from '@/components/Rut/EditRut'
 import AddItem from '@/components/Rut/AddItem'
@@ -52,6 +56,10 @@ const router = new Router({
   routes: [
     { path: '/', component: Home, name: 'Home', meta: {auth: true} },
     { path: '/register', component: Register, name: 'Register' },
+    { path: '/confirm/:token', component: Confirm, name: 'Confirm', meta: {auth: true} }, // token, regexp!!
+    { path: '/forget', component: Forget, name: 'Forget' },
+    { path: '/reset/:token', component: ResetPsw, name: 'ResetPsw' }, // token, regexp!!
+    { path: '/changepsw', component: ChangePsw, name: 'ChangePsw' },
     { path: '/login', component: Login, name: 'Login' },
     { path: '/connect', component: Connect, name: 'Connect' },
     { path: '/tag/:id', component: TagView, name: 'Tag' },

@@ -11,6 +11,14 @@ class Config:
     SQLALCHEMY_RECORD_QUERIES = True
     SLOW_DB_QUERY_TIME=0.25
 
+    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    MAIL_SUBJECT_PREFIX = '[Readup.Tips]'
+    MAIL_SENDER = 'Readup.Tips Admin <readup.tips@gmail.com>'
+
     POST_PER_PAGE = 20
     FOLLOW_PER_PAGE = 50
     COMMENT_PER_PAGE = 20

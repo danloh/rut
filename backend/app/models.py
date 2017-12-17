@@ -1362,14 +1362,58 @@ class Users(UserMixin, db.Model):
             if self.role is None:
                 self.role = Roles.query.filter_by(default=True).first()
     
-    # password hashing and token
+    # password hashing
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
 
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
 
-    def generate_auth_token(self, expiration=60000):
+    @property
+    def password(self):
+        raise AttributeError('password is not a readable attribute')
+
+    @password.setter
+    def password(self, password):
+        self.password_hash = pwd_context.encrypt(password)
+    
+    # confirm and reset psw
+    def generate_confirmation_token(self, expiration=24*3600):
+        s = Serializer(current_app.config['SECRET_KEY'], expiration)
+        return s.dumps({'confirm': self.id}).decode('utf-8')
+
+    def confirm(self, token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token.encode('utf-8'))
+        except:
+            return False
+        if data.get('confirm') != self.id:
+            return False
+        self.confirmed = True
+        db.session.add(self)
+        return True
+
+    def generate_reset_token(self, expiration=3600):
+        s = Serializer(current_app.config['SECRET_KEY'], expiration)
+        return s.dumps({'reset': self.id}).decode('utf-8')
+
+    @staticmethod
+    def reset_password(token, new_password):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token.encode('utf-8'))
+        except:
+            return False
+        user = Users.query.get(data.get('reset'))
+        if user is None:
+            return False
+        user.password = new_password
+        db.session.add(user)
+        return True
+    
+    # token auth
+    def generate_auth_token(self, expiration=10*24*3600):
         s = Serializer(current_app.config['SECRET_KEY'], expires_in=expiration)
         return s.dumps({'id': self.id})
 
@@ -1382,7 +1426,7 @@ class Users(UserMixin, db.Model):
             return None #'valid token expired' # None #    # valid token, but expired
         except BadSignature:
             return None #'invalid token' #None    # invalid token
-        user = Users.query.get(data['id'])
+        user = Users.query.get(data.get('id'))
         return user
     
     #check the user's permission

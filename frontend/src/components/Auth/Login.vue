@@ -12,6 +12,7 @@
         <el-button class="blockbtn" type="primary" @click="onLogin('loginForm', loginForm)">Log in</el-button>
       </el-form-item>
       <router-link :to="'/register'"> or Sign Up</router-link>
+      <router-link :to="'/register'"> Forget Password?</router-link>
     </el-form>
   </div>
 </template>
