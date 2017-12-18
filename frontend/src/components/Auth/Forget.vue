@@ -1,7 +1,7 @@
 <template>
-<div class="sign-page">
-  <h3 class="title">Reset password</h3>
-  <el-form class="sign-form" :model="forgetForm" :rules="rules" ref="forgetForm" size="mini">
+<div class="forget-page">
+  <h3 class="title">Request to Reset password</h3>
+  <el-form class="forget-form" :model="forgetForm" :rules="rules" ref="forgetForm" size="mini">
     <el-form-item label="Username" prop="username">
       <el-input v-model="forgetForm.username"></el-input>
     </el-form-item>
@@ -9,9 +9,9 @@
       <el-input v-model="forgetForm.email"></el-input>
     </el-form-item>
     <el-form-item>
-      <el-button class="blockbtn" type="primary" @click="onReq('forgetForm', forgetForm)">Sign Up</el-button>
+      <el-button class="blockbtn" type="primary" @click="onReq('forgetForm', forgetForm)">Request Reset Password</el-button>
       <br>
-      <el-button @click="resetForm('forgetForm')">Reset</el-button>
+      <!-- <el-button @click="resetForm('forgetForm')">Reset</el-button> -->
     </el-form-item>
   </el-form>
 </div>
@@ -50,7 +50,7 @@ export default {
               showClose: true,
               message: resp.data
             })
-            // this.$router.push('/')
+            this.$router.push('/')
           }).catch(error => {
             this.$message.error(error.status) // elementui
           })
@@ -68,10 +68,10 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.sign-page
+.forget-page
   padding 10px 250px 10px 250px
   position relative
-  .sign-form
+  .forget-form
     padding 20px
     border 1px dotted #689f38
   .title

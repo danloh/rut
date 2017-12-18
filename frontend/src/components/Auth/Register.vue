@@ -19,6 +19,7 @@
       <br>
       <el-button @click="resetForm('regForm')">Reset</el-button>
     </el-form-item>
+    <router-link :to="'/login'">Login Directly with existing Account</router-link>
   </el-form>
 </div>
 </template>
@@ -42,7 +43,8 @@ export default {
       }
     }
     var validateEmail = (rule, value, callback) => {
-      if (value.trim() !== '') {
+      let regEmail = /^[a-zA-Z0-9_-]+([-_.][A-Za-z0-9]+)*@[a-zA-Z0-9_-]+(\.[a-zA-Z]+)+$/
+      if (regEmail.test(value)) {
         this.checkEmail().then(resp => {
           if (resp.data) {
             callback()

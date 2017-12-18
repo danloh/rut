@@ -1,4 +1,4 @@
-Dear {{ user.username }},
+Dear {{ name }},
 
 Welcome to Readup.Tips!
 

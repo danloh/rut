@@ -42,10 +42,10 @@ def register():
     db.session.add(user)
     db.session.commit()
     if email:
-        token = user.generate_confirmation_token()
+        token = user.generate_confirmation_token().replace('.', '@')
         url= 'localhost:8080/confirm/%s' %token
         send_email(user.email, 'Confirm Your Account',
-                    'email/confirm', user=user, url=url)
+                    'email/confirm', name=user.name, url=url)
     # log in once register successfully
     auth_token = user.generate_auth_token()
     return jsonify({ 'username': user.name, 'userid': user.id, 'token': auth_token.decode('ascii') })
@@ -65,6 +65,7 @@ def checkemail(email=None):
 @auth.login_required
 def confirm(token):
     user = g.user
+    token = token.replace('@', '.')
     if user.confirmed:
         return jsonify('You have confirmed your account. Thanks!')
     if user.confirm(token):
@@ -77,10 +78,10 @@ def confirm(token):
 @auth.login_required
 def resend_confirmation():
     user= g.user
-    token = user.generate_confirmation_token()
+    token = user.generate_confirmation_token().replace('.', '@')
     url= 'localhost:8080/confirm/%s' %token
     send_email(user.email, 'Confirm Your Account',
-               'email/confirm', user=user, url=url)
+               'email/confirm', name=user.name, url=url)
     return jsonify('A new confirmation email has been sent to you by email.')
 
 @rest.route('/changepassword', methods=['GET', 'POST'])
@@ -103,13 +104,13 @@ def password_reset_request():
     username = request.json.get('username')
     user = Users.query.filter_by(email=email, name=username).first()
     if user:
-        token = user.generate_reset_token()
+        token = user.generate_reset_token().replace('.', '@')
         url= 'localhost:8080/reset/%s' % token
         send_email(
             user.email, 
             'Reset Your Password',
             'email/reset_password',
-            user=user, url=url,
+            name=user.name, url=url,
             next=request.args.get('next')
         )
         return jsonify('An email with instructions to reset your password has been '
@@ -119,8 +120,9 @@ def password_reset_request():
 
 @rest.route('/reset/<token>', methods=['GET', 'POST'])
 def password_reset(token):
+    token = token.replace('@', '.')
     new_psw = request.json.get('newpsw')
-    if User.reset_password(token, new_psw):
+    if Users.reset_password(token, new_psw):
         db.session.commit()
         return jsonify('Your password has been updated, Please log in again.')
     else:

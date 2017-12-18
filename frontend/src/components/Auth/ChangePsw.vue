@@ -1,8 +1,8 @@
 <template>
-<div class="sign-page">
-  <h3 class="title">Welcome to Join in</h3>
-  <el-form class="sign-form" :model="changepswForm" :rules="rules" ref="changepswForm" size="mini">
-    <el-form-item label="Password" prop="password">
+<div class="change-page">
+  <h3 class="title">Change Password</h3>
+  <el-form class="change-form" :model="changepswForm" :rules="rules" ref="changepswForm" size="mini">
+    <el-form-item label="Current Password" prop="password">
       <el-input :type="pwdType" v-model="changepswForm.password"></el-input>
     </el-form-item>
     <el-form-item label="New Password" prop="newpassword">
@@ -12,7 +12,7 @@
       <el-input :type="pwdType" v-model="changepswForm.repassword"></el-input>
     </el-form-item>
     <el-form-item>
-      <el-button class="blockbtn" type="primary" @click="onChange('changepswForm', changepswForm)">Sign Up</el-button>
+      <el-button class="blockbtn" type="primary" @click="onChange('changepswForm', changepswForm)">Change Password</el-button>
       <br>
       <el-button @click="resetForm('changepswForm')">Reset</el-button>
     </el-form-item>
@@ -95,10 +95,10 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.sign-page
+.change-page
   padding 10px 250px 10px 250px
   position relative
-  .sign-form
+  .change-form
     padding 20px
     border 1px dotted #689f38
   .title

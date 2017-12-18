@@ -29,8 +29,8 @@
             </el-dropdown-menu>
           </el-dropdown>
           <div class="login" v-else>
-            <router-link to="/register">Signup</router-link>
-            <router-link to="/login">Login</router-link>
+            <router-link to="/register">SIGNUP</router-link>
+            <router-link to="/login">LOGIN</router-link>
           </div>
         </div>
       </nav>
