@@ -19,7 +19,7 @@
       <br>
       <el-button @click="resetForm('regForm')">Reset</el-button>
     </el-form-item>
-    <router-link :to="'/login'">Login Directly with existing Account</router-link>
+    <router-link :to="'/login'">Have an Account? Login</router-link>
   </el-form>
 </div>
 </template>

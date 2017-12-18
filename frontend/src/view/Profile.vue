@@ -8,7 +8,7 @@
         &nbsp;<el-button size="mini">Follow</el-button>
       </div>
     </div>
-    <div class="profile-view">
+    <div class="profile-view" :key="userid">
       <router-view></router-view>
     </div>
     <div class="profile-side">
@@ -28,6 +28,8 @@
         <router-link :to="'/profile/' + userid + '/scheduled/'">scheduled</router-link>
         <br>
         <router-link :to="'/profile/' + userid + '/havedone/'">Have Done</router-link>
+        <br>
+        <router-link :to="'/setting/' + userid" v-if="showSetting"><small>~Setting~</small></router-link>
       </div>
     </div>
   </div>
@@ -37,22 +39,37 @@
 import { fetchUser } from '@/api/api'
 
 export default {
-  name: 'home',
+  name: 'profile',
   title () {
     return this.user.name
   },
   data () {
     return {
       user: {},
-      userid: this.$route.params.id
+      userid: this.$route.params.id,
+      showSetting: false
     }
   },
-  beforeMount () {
-    let userid = this.$route.params.id
-    return fetchUser(userid)
-    .then(resp => {
-      this.user = resp.data
-    })
+  methods: {
+    loadUser () {
+      let userid = this.$route.params.id
+      return fetchUser(userid)
+      .then(resp => {
+        this.user = resp.data
+        this.userid = resp.data.id
+        let currentUserID = this.$store.getters.currentUserID
+        if (Number(userid) === Number(currentUserID)) {
+          this.$store.commit('SET_INFO', resp.data)
+          this.showSetting = true
+        }
+      })
+    }
+  },
+  created () {
+    this.loadUser()
+  },
+  watch: {
+    '$route': 'loadUser'
   }
 }
 </script>

@@ -42,7 +42,7 @@ const mutations = {
     state.nexturl = nexturl
   }
 }
-import { fetchCurrentUser, confirm, reset } from '@/api/api'
+import { fetchCurrentUser, confirm, change, reset } from '@/api/api'
 const actions = {
   getCurrentUser: ({ commit, state }) => {
     return new Promise((resolve, reject) => {
@@ -58,6 +58,15 @@ const actions = {
   confirmEmail: (context, token) => {
     return new Promise((resolve, reject) => {
       confirm(token).then(resp => {
+        resolve(resp)
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+  changePsw: (context, params) => {
+    return new Promise((resolve, reject) => {
+      change(params).then(resp => {
         resolve(resp)
       }).catch(error => {
         reject(error)

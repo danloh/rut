@@ -30,6 +30,8 @@ import createDemandList from '@/components/Demand/CreateDemandList'
 import createReviewList from '@/components/Item/CreateReviewList'
 import createProfileRuts from '@/components/Profile/CreateProfileRuts'
 import createProfileItems from '@/components/Profile/CreateProfileItems'
+import Setting from '@/components/Profile/Setting'
+import EditProfile from '@/components/Profile/EditProfile'
 
 // for go back / forward scrollBehavior
 const scrollBehavior = (to, from, savedPosition) => {
@@ -109,7 +111,7 @@ const router = new Router({
       component: Challenge,
       meta: {auth: true},
       children: [
-        { path: '', name: 'defaultclip', redirect: 'myclip' },
+        { path: '', name: 'defaultclip', redirect: 'hotclip' },
         { path: 'myclip', name: 'Myclip', component: createClipList(), meta: {auth: true} },
         { path: 'hotclip', name: 'Hotclip', component: createClipList('hotclip', {ref: 'Hot'}), meta: {auth: true} },
         { path: 'allclip', name: 'Allclip', component: createClipList('allclip', {ref: 'All'}), meta: {auth: true} }
@@ -125,6 +127,14 @@ const router = new Router({
         { path: 'working', name: 'WorkingItems', component: createProfileItems('doing') },
         { path: 'scheduled', name: 'ScheduledItems', component: createProfileItems('todo') },
         { path: 'havedone', name: 'DoneItems', component: createProfileItems('done') }
+      ]
+    },
+    { path: '/setting/:id',
+      component: Setting,
+      children: [
+        { path: '', name: 'defaultSetting', redirect: 'setting' },
+        { path: 'setting', name: 'Setting', component: EditProfile, meta: {auth: true} },
+        { path: 'change', name: 'Change', component: ChangePsw, meta: {auth: true} }
       ]
     }
   ]

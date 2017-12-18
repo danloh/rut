@@ -1,12 +1,14 @@
 <template>
   <div class="rutsum">
-    <span>
-      <img class="cover" :src="cover" style="width:80px; height:100px" alt="Cover">
-    </span>
-    <span class="title">
-      <router-link :to="'/readuplist/' + rut.id"> {{ rut.title }}</router-link>
-    </span>
-    <div class="intro" v-html="intro"></div>
+    <router-link :to="'/readuplist/' + rut.id">
+      <span>
+        <img class="cover" :src="cover" style="width:80px; height:100px" alt="Cover">
+      </span>
+      <span class="title">
+        <router-link :to="'/readuplist/' + rut.id"> {{ rut.title }}</router-link>
+      </span>
+      <div class="intro" v-html="intro"></div>
+    </router-link>
     <span class="meta">
       <span> ~| including {{ rut.itemcount }} items | <router-link :to="'/readuplist/' + rut.id">...See Detail</router-link></span>
     </span>
@@ -38,6 +40,8 @@ export default {
   padding 10px 30px 10px 100px
   border-bottom 1px solid #eee
   position relative
+  &:hover
+    background-color lighten(#f3f3ed, 60%)
   .cover
     position absolute
     top 10px

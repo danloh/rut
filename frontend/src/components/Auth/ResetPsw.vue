@@ -59,11 +59,10 @@ export default {
   },
   methods: {
     onReset (formName, form) {
+      this.$store.commit('DEL_TOKEN')
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          let data = {
-            newpsw: form.password
-          }
+          let data = {newpsw: form.password}
           let token = this.$route.params.token
           let params = {'token': token, 'data': data}
           this.$store.dispatch('resetPsw', params)

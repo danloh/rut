@@ -50,6 +50,19 @@ def register():
     auth_token = user.generate_auth_token()
     return jsonify({ 'username': user.name, 'userid': user.id, 'token': auth_token.decode('ascii') })
 
+@rest.route('/editprofile', methods = ['POST'])
+@auth.login_required
+def edit_profile():
+    user = g.user
+    user.nickname = request.json.get('nickname')
+    user.location = request.json.get('location')
+    user.avatar = request.json.get('avatarUrl')
+    user.about_me = request.json.get('about')
+    user.links = request.json.get('url')
+    db.session.add(user)
+    db.session.commit()
+    return jsonify('Have Updated Your Profile')
+
 @rest.route('/checkname/<username>')
 def checkname(username=None):
     if username and Users.query.filter_by(name=username).first() is None:

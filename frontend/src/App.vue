@@ -21,10 +21,11 @@
               <i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item><router-link :to="'/profile/' + currentUserID">Profile</router-link></el-dropdown-item>
-              <el-dropdown-item>Setting</el-dropdown-item>
               <el-dropdown-item>
-                <el-button size="small" @click="onLogout">Log out</el-button>
+                <router-link :to="'/profile/' + currentUserID">Profile</router-link>
+              </el-dropdown-item>
+              <el-dropdown-item divided>
+                <el-button type="text" size="mini" @click="onLogout">Log out</el-button>
               </el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>

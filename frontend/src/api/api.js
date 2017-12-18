@@ -14,7 +14,11 @@ const register = data => {
 const confirm = (token) => {
   return request(`${base}/confirm/${token}`)
 }
-
+// change password
+const change = (data) => {
+  return request(`${base}/changepassword`, data, 'post')
+}
+// rest password if forget password
 const reset = (token, data) => {
   return request(`${base}/reset/${token}`, data, 'post')
 }
@@ -37,6 +41,10 @@ const fetchCurrentUser = params => {
 
 const fetchUser = (id, params) => {
   return request(`${base}/user/${id}`, params)
+}
+
+const editProfile = (params) => {
+  return request(`${base}/editprofile`, params, 'post')
 }
 // create new rut
 const newRut = (params, demandid) => {
@@ -171,12 +179,14 @@ export {
   axios,
   register,
   confirm,
+  change,
   reset,
   login,
   // auth,
   // authUser,
   fetchCurrentUser,
   fetchUser,
+  editProfile,
   newRut,
   fetchRuts,
   fetchChallengeRut,

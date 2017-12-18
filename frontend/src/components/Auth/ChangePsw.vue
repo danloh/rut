@@ -14,13 +14,15 @@
     <el-form-item>
       <el-button class="blockbtn" type="primary" @click="onChange('changepswForm', changepswForm)">Change Password</el-button>
       <br>
-      <el-button @click="resetForm('changepswForm')">Reset</el-button>
+      <!-- <el-button @click="resetForm('changepswForm')">Reset</el-button> -->
     </el-form-item>
   </el-form>
 </div>
 </template>
 
 <script>
+import { checkAuth } from '@/util/auth'
+
 export default {
   name: 'changepsw',
   title: 'Change Password',
@@ -67,19 +69,20 @@ export default {
   methods: {
     onChange (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid) {
+        if (valid && checkAuth()) {
           let data = {
             oldpsw: form.password,
             newpsw: form.newpassword
           }
-          this.$axios.post('api/changepassword', data).then((resp) => {
-            this.$router.push('/login')
+          this.$store.dispatch('changePsw', data).then((resp) => {
+            this.$store.commit('DEL_TOKEN')
             this.$message({
               showClose: true,
               message: resp.data
             })
+            this.$router.push('/login')
           }).catch(error => {
-            this.$message.error(error.status) // elementui
+            this.$message.error(error.status)
           })
         } else {
           console.log('error submit!!')
@@ -96,7 +99,7 @@ export default {
 
 <style lang="stylus" scoped>
 .change-page
-  padding 10px 250px 10px 250px
+  padding 10px 120px 10px 80px
   position relative
   .change-form
     padding 20px
