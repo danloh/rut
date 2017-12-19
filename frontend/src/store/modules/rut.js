@@ -52,9 +52,9 @@ const actions = {
       })
     })
   },
-  getRut: ({commit, state}, rutid, param = {}) => {
+  getRut: ({commit, state}, rutid) => {
     return new Promise((resolve, reject) => {
-      fetchRut(rutid, param)
+      fetchRut(rutid)
       .then(resp => {
         commit('SET_RUT', resp.data)
         resolve(resp)
@@ -63,9 +63,9 @@ const actions = {
       })
     })
   },
-  getTag: ({commit, state}, tagid, param = {}) => {
+  getTag: ({commit, state}, tagid) => {
     return new Promise((resolve, reject) => {
-      fetchTag(tagid, param)
+      fetchTag(tagid)
       .then(resp => {
         commit('SET_RUTS', resp.data)
         commit('SET_TAG', resp.data)

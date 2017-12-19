@@ -175,6 +175,10 @@ const upvoteDemand = (demandid, params) => {
   return request(`${base}/upvotedemand/${demandid}`, params)
 }
 
+const newComment = (ref, id, params) => {
+  return request(`${base}/comment/${ref}/${id}`, params, 'post')
+}
+
 export {
   axios,
   register,
@@ -218,5 +222,6 @@ export {
   newClip,
   upvoteClip,
   newDemand,
-  upvoteDemand
+  upvoteDemand,
+  newComment
 }

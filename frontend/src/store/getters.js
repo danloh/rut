@@ -26,6 +26,7 @@ const getters = {
   totalDemands: state => state.demand.totalDemands,
   currentD: state => state.demand.currentD,
   currentDemands: state => state.demand.currentDemands,
+  demandDetail: state => state.demand.demandDetail,
   maxD: state => state.demand.maxD,
   perD: state => state.demand.perD,
   // item & reviews

@@ -173,4 +173,7 @@ export default {
       padding 0 0 0 10px
       font-size 0.85em
       background-color white
+    a
+      &:hover
+        color #ff6600
 </style>

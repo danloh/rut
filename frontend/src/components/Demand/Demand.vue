@@ -20,13 +20,14 @@ export default {
   data () {
     return {
       vote: this.demand.vote,
-      answercount: this.demand.answercount
+      answercount: this.demand.answercount,
+      requestor: this.demand.requestor
     }
   },
   computed: {
-    requestor () {
-      return this.demand.requestor
-    }
+    // requestor () {
+    //   return this.demand.requestor
+    // }
   },
   methods: {
     upDemand () {

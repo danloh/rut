@@ -28,7 +28,7 @@
         </p>
       </div>
       <div class="intro">
-        <b>Preface:&nbsp;</b>
+        <b class="indicator">Preface:&nbsp;</b>
         <div v-html="rutDetail.intro"></div>
       </div>
       <div class="toolbar">
@@ -44,22 +44,22 @@
       </div>
       <div class="itemtip" v-for="(tip, index) in tips" :key="index">
         <item-sum class="itemsum" :item="tip.item"></item-sum>
-        <b>&nbsp;&nbsp;Read-up-Tips:&nbsp;</b> 
+        <b class="indicator">&nbsp;&nbsp;Tips:&nbsp;</b> 
         <el-button type="text" v-if="canEdit">
           <router-link :to="'/edit/readuptips/' + tip.cid">...Edit</router-link>
         </el-button>
         <div class="tip" v-html="tip.tip"></div>
       </div>
       <div class="epilog">
-        <b>Epilog:&nbsp;</b>
+        <b class="indicator">Epilog:&nbsp;</b>
         <el-button type="text" v-if="canEdit">
           <router-link :to="'/edit/readuplist/' + rutid">...Edit</router-link>
         </el-button>
         <div v-html="rutDetail.epilog"></div>
       </div>
-      <div class="comment">
-        <router-link :to="'/rut/comment' + rutid">Comment</router-link>
-      </div>
+      <!-- <div class="comment">
+        <router-link :to="'/rut/comment/' + rutid">Comment</router-link>
+      </div> -->
     </div>   
     <div class="rutside">
       <p class="sidetitle">Creator's Credential</p>
@@ -71,7 +71,7 @@
 <script>
 import Spinner from '@/components/Misc/Spinner.vue'
 import ItemSum from '@/components/Item/ItemSum.vue'
-import Comment from '@/components/Comment.vue'
+import Comment from '@/components/Comment/Comment.vue'
 import { scRut, checkSC, editTags } from '@/api/api'  // sc: star and challenge
 import { checkAuth } from '@/util/auth'
 import { mapGetters } from 'vuex'
@@ -284,6 +284,9 @@ $bgcolor = lighten(#f6f6f1, 50%)
       display flex
       align-items center
       justify-content flex-end
+  .indicator
+    font-size 0.7em
+    background-color transparent
   .rutside
     background-color #f5f9f5
     position absolute

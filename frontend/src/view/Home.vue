@@ -77,4 +77,7 @@ export default {
       padding 10px 15px
     .rightbody
       padding 5px 20px
+      a
+        &:hover
+          color #ff6600
 </style>

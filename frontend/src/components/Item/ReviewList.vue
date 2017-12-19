@@ -57,4 +57,3 @@ export default {
   .review-list
     padding auto
 </style>
-

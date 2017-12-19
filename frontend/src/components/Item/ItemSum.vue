@@ -182,7 +182,7 @@ export default {
       font-weight 700
       a
         &:hover
-          color lightblue
+          color red
   .operate
     position absolute
     top 10px

@@ -1,14 +1,15 @@
 function pluralize (time, label) {
   if (time === 1) {
-    return time + label + 'ago'
+    return time + label + ' ago'
   }
   return time + label + 's' + ' ago'
 }
 // time ago formating
 export function timeAgo (date) {
-  date = new Date(date)
-  let time = date.getTime()
-  const between = Date.now() / 1000 - Number(time) / 1000
+  let realDate = new Date(date)
+  let time = realDate.getTime()
+  let offset = new Date().getTimezoneOffset() * 60
+  const between = Number(Date.now()) / 1000 + offset - Number(time) / 1000
   if (between < 3600) {
     if (Object.is(~~(between / 60), 0)) return 'just now'
     return pluralize(~~(between / 60), ' minute') // double bitwise NOT -> floor

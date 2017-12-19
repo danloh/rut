@@ -101,5 +101,8 @@ export default {
         padding 2px 5px
         font-size 0.85em
         background-color white
+        a
+          &:hover
+            color #ff6600
 </style>
 

@@ -867,7 +867,6 @@ class Comments(db.Model):
         backref=db.backref('parent_commt', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-
     def reply(self, commt):
         r = Reply(parent_commt=self, child_commt=commt)
         db.session.add(r)
@@ -886,12 +885,23 @@ class Comments(db.Model):
             'body': self.body_html or self.body,
             'vote': self.vote,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-            'children': [c.child_commt.to_dict() for c in self.child_commts]
+            'creator': {'id': self.creator_id, 'name': self.creator.nickname or self.creator.name},
+            'children': [c.to_dict() for c in self.child_comments]
         }
         return comment_dict
 
     def __repr__(self):
         return '<Coments %r>' % self.body
+
+#Monkey patched for self reference -reply
+Comments.parent_comment_id = db.Column(
+    db.Integer, db.ForeignKey("comments.id")
+)
+Comments.parent_comment = db.relationship(
+    'Comments',
+    backref='child_comments',
+    remote_side=Comments.id
+)
 
 db.event.listen(Comments.body, 'set', Comments.on_changed_body)
 
@@ -1067,9 +1077,10 @@ class Demands(db.Model):
         #db.session.commit()
     
     def to_dict(self):
+        requestor = self.requestor
         demand_dict = {
             'id': self.id,
-            'requestor': self.requestor.to_dict(),
+            'requestor': {'id': requestor.id, 'name': requestor.nickname or requestor.name},
             'body': self.body,
             'vote': self.vote,
             'answercount': self.posts.count(),

@@ -1,6 +1,7 @@
 // import axios from '@/main'
 import {
   fetchDemands,
+  fetchDemand,
   newDemand
 } from '@/api/api'
 
@@ -11,6 +12,7 @@ const state = {
   totalDemands: 0,
   currentD: 0,
   currentDemands: [],
+  demandDetail: {},
   maxD: 0,
   perD: perPage
 }
@@ -21,6 +23,17 @@ const actions = {
     return fetchDemands(params)
     .then(resp => {
       commit('SET_DEMANDS', resp.data)
+    })
+  },
+  getDemand: ({commit}, demandid) => {
+    return new Promise((resolve, reject) => {
+      fetchDemand(demandid)
+      .then(resp => {
+        commit('SET_DEMAND', resp.data)
+        resolve(resp)
+      }).catch(error => {
+        reject(error)
+      })
     })
   },
   postDemand: ({commit, state}, params = {}) => {
@@ -50,6 +63,9 @@ const mutations = {
   },
   ADD_DEMAND (state, data) {
     state.currentDemands.unshift(data)
+  },
+  SET_DEMAND (state, data) {
+    state.demandDetail = data
   }
 }
 

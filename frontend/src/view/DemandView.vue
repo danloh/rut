@@ -1,29 +1,19 @@
 <template>
   <div class="demand-page">
     <div class="demand-main">
-      <demand :demand="demand"></demand>
+      <demand :demand="demandDetail" :key="demandDetail.id"></demand>
       <div class="answer">
         <b>The Answers to This Demand:</b>
-        <p v-for="(rut, index) in answers" :key="index" :rut="rut">
+        <p class="title" v-for="(rut, index) in answers" :key="index" :rut="rut">
           - <router-link :to="'/readuplist/' + rut.id" :title="rut.title"> {{ rut.title.slice(0, 160) }}...</router-link>
         </p>
       </div>
       <div class="comment">
         <b>Discuss</b>
-        <el-form :model="commentForm" :rules="rules" ref="commentForm">
-          <el-form-item prop="comment" style="margin-bottom:8px">
-            <el-input v-model="commentForm.comment" placeholder="Post a Comment"></el-input>
-          </el-form-item>
-          <el-form-item>
-            <el-button size="mini" @click="submitComment('commentForm', commentForm)">Submit</el-button>
-          </el-form-item>
-        </el-form>
+        <reply class="reply" :refer="refer" :show="true" @newreply="updateNew"></reply>
       </div>
-      <div class="submenu">
-        &nbsp;&nbsp;&nbsp;
-      </div>
-      <div class="comment-view">
-        <router-view></router-view>
+      <div v-for="comment in comments" :key="comment.id">
+        <comment :comment="comment"></comment>
       </div>
     </div>
     <div class="demand-side">
@@ -33,54 +23,53 @@
 
 <script>
 import Demand from '@/components/Demand/Demand.vue'
-import { fetchDemand } from '@/api/api'
-// import { mapGetters } from 'vuex'
+import Comment from '@/components/Comment/Comment.vue'
+import Reply from '@/components/Comment/Reply.vue'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'demand-view',
   title () {
-    return this.demand.body
+    return this.demandDetail.body
   },
-  components: { Demand },
+  components: { Demand, Comment, Reply },
   data () {
     return {
-      demand: null,
       commentForm: {
         comment: ''
       },
       rules: {
         comment: [{ required: true, message: 'Required', trigger: 'blur' }]
-      }
+      },
+      refer: { re: 'demand', id: this.$route.params.id },
+      comments: {}
     }
   },
   computed: {
+    ...mapGetters([
+      'demandDetail'
+    ]),
     answers () {
-      return this.demand.answers
+      return this.demandDetail.answers
+    // },
+    // comments () {
+    //   return this.demandDetail.comments
     }
   },
   methods: {
-    submitDemand (formName, form) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          let data = { comment: form.comment }
-          this.$store.dispatch('postComment', data)
-          this.resetForm(formName)
-        } else {
-          console.log('error submit!!')
-          return false
-        }
+    loadDemandData () {
+      let demandid = this.$route.params.id
+      this.$store.dispatch('getDemand', demandid)
+      .then(resp => {
+        this.comments = resp.data.comments
       })
     },
-    resetForm (formName) {
-      this.$refs[formName].resetFields()
+    updateNew (data) {
+      this.comments.unshift(data)
     }
   },
   created () {
-    let demandid = this.$route.params.id
-    return fetchDemand(demandid)
-    .then(resp => {
-      this.demand = resp.data
-    })
+    this.loadDemandData()
   }
 }
 </script>
@@ -95,16 +84,10 @@ export default {
       background-color white
       padding 5px
       margin-bottom 5px
-    .submenu
-        margin-bottom 5px
+      .title
         a
-          color grey
-          margin-right 0.85em
           &:hover
-            color darkgreen
-          &.router-link-active
-            color orange
-            font-weight 800
+            color #ff6600
   .demand-side
     position absolute
     top 10px
@@ -122,4 +105,3 @@ export default {
         font-size 0.85em
         background-color white
 </style>
-
