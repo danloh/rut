@@ -66,7 +66,7 @@ export default {
   methods: {
     checkFlaging () {
       if (checkAuth()) {
-        let itemid = this.item.id || this.$route.params.id // why?? liftcycle timing??
+        let itemid = this.item.id || this.$route.params.id // why?? liftcycle timing??: in list or in view
         return checkFlag(itemid)
         .then(resp => {
           this.flagAction = resp.data
@@ -86,7 +86,10 @@ export default {
           showClose: true,
           message: 'Should Log in to Access'
         })
-        this.$router.push('/login')
+        this.$router.push({
+          path: '/login',
+          query: {redirect: this.$route.fullPath}
+        })
       }
     },
     flagWorking () {
@@ -100,7 +103,10 @@ export default {
           showClose: true,
           message: 'Should Log in to Access'
         })
-        this.$router.push('/login')
+        this.$router.push({
+          path: '/login',
+          query: {redirect: this.$route.fullPath}
+        })
       }
     },
     flagDone () {
@@ -114,9 +120,13 @@ export default {
           showClose: true,
           message: 'Should Log in to Access'
         })
-        this.$router.push('/login')
+        this.$router.push({
+          path: '/login',
+          query: {redirect: this.$route.fullPath}
+        })
       }
     },
+    // get created ruts before add item to one
     showAndloadData () {
       if (checkAuth()) {
         let userid = this.$store.getters.currentUserID
@@ -131,6 +141,10 @@ export default {
           showClose: true,
           message: 'Should Log in to Access'
         })
+        // this.$router.push({
+        //   path: '/login',
+        //   query: {redirect: this.$route.fullPath}
+        // })
       }
     },
     addtoRut (formName, form) {
@@ -153,6 +167,10 @@ export default {
             this.$message({
               showClose: true,
               message: 'Should Log in to Access'
+            })
+            this.$router.push({
+              path: '/login',
+              query: {redirect: this.$route.fullPath}
             })
           }
         }

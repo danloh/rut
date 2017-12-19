@@ -51,7 +51,7 @@ export default {
   },
   data () {
     return {
-      action: this.checkFav(), // || 'Follow',
+      action: this.checkFavor(), // || 'Follow',
       favCount: 0,
       openDialog: false,
       tagForm: {
@@ -90,7 +90,7 @@ export default {
         this.tagForm.name = resp.data.tagname
         this.tagForm.description = resp.data.descript
         this.favCount = resp.data.favcount
-        this.action = this.checkFav() // || 'Follow'
+        this.action = this.checkFavor() // || 'Follow'
       })
     },
     editTag (formName, form) {
@@ -119,7 +119,7 @@ export default {
         }
       })
     },
-    checkFav () {
+    checkFavor () {
       if (checkAuth()) {
         let tagid = this.$route.params.id
         return checkFav(tagid)
@@ -151,7 +151,10 @@ export default {
           showClose: true,
           message: 'Should Log in to Continue'
         })
-        this.$router.push('/login')
+        this.$router.push({
+          path: '/login',
+          query: {redirect: this.$route.fullPath}
+        })
       }
     }
   },

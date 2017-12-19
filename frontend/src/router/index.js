@@ -32,6 +32,7 @@ import createProfileRuts from '@/components/Profile/CreateProfileRuts'
 import createProfileItems from '@/components/Profile/CreateProfileItems'
 import Setting from '@/components/Profile/Setting'
 import EditProfile from '@/components/Profile/EditProfile'
+import UserList from '@/components/Profile/UserList'
 
 // for go back / forward scrollBehavior
 const scrollBehavior = (to, from, savedPosition) => {
@@ -56,11 +57,11 @@ const router = new Router({
   fallback: false,
   scrollBehavior, // : () => ({y: 0}),
   routes: [
-    { path: '/', component: Home, name: 'Home', meta: {auth: true} },
+    { path: '/', component: Home, name: 'Home' },
     { path: '/register', component: Register, name: 'Register' },
-    { path: '/confirm/:token', component: Confirm, name: 'Confirm', meta: {auth: true} }, // token, regexp!!
+    { path: '/confirm/:token', component: Confirm, name: 'Confirm', meta: {auth: true} },
     { path: '/forget', component: Forget, name: 'Forget' },
-    { path: '/reset/:token', component: ResetPsw, name: 'ResetPsw' }, // token, regexp!!
+    { path: '/reset/:token', component: ResetPsw, name: 'ResetPsw' },
     { path: '/changepsw', component: ChangePsw, name: 'ChangePsw' },
     { path: '/login', component: Login, name: 'Login' },
     { path: '/connect', component: Connect, name: 'Connect' },
@@ -126,7 +127,8 @@ const router = new Router({
         { path: 'challenge', name: 'ChallengeRuts', component: createProfileRuts('challenge') },
         { path: 'working', name: 'WorkingItems', component: createProfileItems('doing') },
         { path: 'scheduled', name: 'ScheduledItems', component: createProfileItems('todo') },
-        { path: 'havedone', name: 'DoneItems', component: createProfileItems('done') }
+        { path: 'havedone', name: 'DoneItems', component: createProfileItems('done') },
+        { path: 'followeds', name: 'Followeds', component: UserList }
       ]
     },
     { path: '/setting/:id',

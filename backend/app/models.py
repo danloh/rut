@@ -1484,12 +1484,12 @@ class Users(UserMixin, db.Model):
         if not self.is_following(user):
             f = Follow(follower=self,followed=user)
             db.session.add(f)
-            #db.session.commit()
+            db.session.commit() # need to commit for API??
     def unfollow(self, user):
         f = self.followed.filter_by(followed_id=user.id).first()
         if f:
             db.session.delete(f)
-            #db.session.commit()
+            db.session.commit() # need to commit for API??
     def is_following(self, user):
         return self.followed.filter_by(
             followed_id=user.id).first() is not None

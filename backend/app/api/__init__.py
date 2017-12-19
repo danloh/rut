@@ -180,6 +180,36 @@ def get_user(id):        # get info per userid
     user_dict = user.to_dict()
     return jsonify(user_dict)
 
+@rest.route('/checkfollow/<int:userid>')
+@auth.login_required
+def check_follow(userid):
+    user = g.user
+    fo_user = Users.query.get_or_404(userid)
+    following = 'UnFollow' if user.is_following(fo_user) else 'Follow'
+    return jsonify(following)
+
+@rest.route('/follow/user/<int:userid>')
+@auth.login_required
+def follow_user(userid):
+    user = g.user
+    fo_user = Users.query.get_or_404(userid)
+    user.follow(fo_user)
+    return jsonify('UnFollow')
+@rest.route('/unfollow/user/<int:userid>')
+@auth.login_required
+def unfollow_user(userid):
+    user = g.user
+    fo_user = Users.query.get_or_404(userid)
+    user.unfollow(fo_user)
+    return jsonify('Follow')
+
+@rest.route('/user/<int:userid>/followed')
+def get_followeds(userid):
+    user = Users.query.get_or_404(userid)
+    followeds = [ u.followed for u in user.followed ]
+    user_dicts = [u.to_dict() for u in followeds]
+    return jsonify(user_dicts)
+
 @rest.route('/ruts')
 #@auth.login_required
 def get_ruts():

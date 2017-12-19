@@ -17,6 +17,7 @@ Vue.config.productionTip = false
 
 // UI + en
 Vue.use(ElementUI, { locale })
+
 // progress bar, reder off-document and append afterwards
 const bar = Vue.prototype.$bar = new Vue(ProgressBar).$mount()
 document.body.appendChild(bar.$el)
@@ -29,35 +30,53 @@ Object.keys(filters).forEach(key => {
   Vue.filter(key, filters[key])
 })
 
+// Axios config
 // Request interceptor
-axios.interceptors.request.use((config) => {
-  if (store.state.token) {
-    config.headers['R-Token'] = store.state.token
-  }
-  return config
-}, (error) => {
-  return Promise.reject(error)
-})
-// Response interceptor
-axios.interceptors.response.use((response) => {
-  return response
-}, (error) => {
-  if (error.response) {
-    switch (error.response.status) {
-      case 401:
-        store.commit('DEL_TOKEN')
-        router.push('/login')
+axios.interceptors.request.use(
+  config => {
+    let token = store.state.token
+    if (token) {
+      config.headers.Authorization = `token ${token}`
     }
+    return config
+  },
+  error => {
+    return Promise.reject(error)
   }
-  return Promise.reject(error.response.data)
-})
+)
+// Response interceptor
+axios.interceptors.response.use(
+  response => {
+    return response
+  },
+  error => {
+    if (error.response) {
+      switch (error.response.status) {
+        case 401:
+          store.commit('DEL_TOKEN')
+          router.replace({
+            path: '/login',
+            query: {redirect: router.currentRoute.fullPath}
+          })
+          break
+        case 404:
+          error.message = 'Not Found Page'
+          break
+        case 500:
+          error.message = 'Internal Server Error'
+          break
+      }
+    }
+    return Promise.reject(error)
+  }
+)
 
 // config router
 // check auth when login required( define in meta // need to tackle some issue!!
 router.beforeEach((to, from, next) => {
   bar.start()
   if (to.meta.auth) {
-    // config axios defaul auth
+    // config axios defaul auth??!!
     let localToken = getToken()
     axios.defaults.auth = {
       username: localToken,
@@ -68,9 +87,7 @@ router.beforeEach((to, from, next) => {
     } else {
       next({
         path: '/login',
-        query: {
-          redirect: to.fullPath // redirect after login
-        }
+        query: {redirect: to.fullPath} // redirect after login
       })
     }
   } else {

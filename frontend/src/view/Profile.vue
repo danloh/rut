@@ -4,8 +4,10 @@
       <b>{{user.name}}</b>
       <p class="aboutme">{{user.about || 'Not Introduce Self Yet'}}</p>
       <div class="fobar">
-        <span>Following {{user.followedcount}} </span>
-        &nbsp;<el-button size="mini">Follow</el-button>
+        <span>Following 
+          <router-link :to="'/profile/' + userid + '/followeds'">{{ followedCount }} </router-link>
+        </span> &nbsp;&nbsp;&nbsp;
+        <el-button size="mini" @click="followUser" :disabled="showSetting">{{ action }}</el-button>
       </div>
     </div>
     <div class="profile-view" :key="userid">
@@ -36,7 +38,8 @@
 </template>
 
 <script>
-import { fetchUser } from '@/api/api'
+import { fetchUser, checkFollowing, followOne } from '@/api/api'
+import { checkAuth } from '@/util/auth'
 
 export default {
   name: 'profile',
@@ -47,7 +50,9 @@ export default {
     return {
       user: {},
       userid: this.$route.params.id,
-      showSetting: false
+      showSetting: false,
+      action: this.checkFollow(),
+      followedCount: 0 // this user following other
     }
   },
   methods: {
@@ -55,14 +60,53 @@ export default {
       let userid = this.$route.params.id
       return fetchUser(userid)
       .then(resp => {
-        this.user = resp.data
-        this.userid = resp.data.id
+        let data = resp.data
+        this.user = data
+        this.userid = data.id
+        this.followedCount = data.followedcount
+        this.action = this.checkFollow()
         let currentUserID = this.$store.getters.currentUserID
         if (Number(userid) === Number(currentUserID)) {
           this.$store.commit('SET_INFO', resp.data)
           this.showSetting = true
         }
       })
+    },
+    checkFollow () {
+      if (checkAuth()) {
+        let userid = this.$route.params.id
+        return checkFollowing(userid)
+        .then(resp => {
+          this.action = resp.data
+        })
+      } else {
+        return 'Follow' // work incorrectly when non-login if no return
+      }
+    },
+    followUser () {
+      if (checkAuth()) {
+        let userid = this.$route.params.id
+        if (this.action === 'Follow') {
+          return followOne('follow', userid)
+          .then(() => {
+            this.action = 'UnFollow'
+          })
+        } else {
+          return followOne('unfollow', userid)
+          .then(() => {
+            this.action = 'Follow'
+          })
+        }
+      } else {
+        this.$message({
+          showClose: true,
+          message: 'Should Log in to Continue'
+        })
+        this.$router.push({
+          path: '/login',
+          query: {redirect: this.$route.fullPath}
+        })
+      }
     }
   },
   created () {
@@ -82,14 +126,14 @@ export default {
     background-color #f6f6f1
     border-bottom 1px dotted orange
     min-height 40px
-    padding 10px 180px 10px 10px
+    padding 10px 215px 10px 10px
     margin-bottom 10px
     position relative
     .fobar
       position absolute
       top 10px
       right 0
-      width 160px
+      width 210px
   .profile-view
     padding auto
   .profile-side

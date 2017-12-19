@@ -34,17 +34,29 @@ const login = () => {
 // const auth = (servername, params) => {
 //   return request(`${base}/auth/${servername}`, params)
 // }
-
+// get authed user info
 const fetchCurrentUser = params => {
   return request(`${base}/currentuser`, params)
 }
-
+// get user info
 const fetchUser = (id, params) => {
   return request(`${base}/user/${id}`, params)
+}
+// get follows
+const fetchFollows = (userid, follow, params) => {
+  return request(`${base}/user/${userid}/${follow}`, params)
 }
 
 const editProfile = (params) => {
   return request(`${base}/editprofile`, params, 'post')
+}
+// check if follow someone
+const checkFollowing = (userid, params) => {
+  return request(`${base}/checkfollow/${userid}`, params)
+}
+// fo / unfo someone
+const followOne = (action, userid, params) => {
+  return request(`${base}/${action}/user/${userid}`, params)
 }
 // create new rut
 const newRut = (params, demandid) => {
@@ -190,7 +202,10 @@ export {
   // authUser,
   fetchCurrentUser,
   fetchUser,
+  fetchFollows,
   editProfile,
+  checkFollowing,
+  followOne,
   newRut,
   fetchRuts,
   fetchChallengeRut,

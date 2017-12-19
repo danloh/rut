@@ -185,7 +185,10 @@ export default {
           showClose: true,
           message: 'Should Log in to Continue'
         })
-        // this.$router.push('/login')
+        this.$router.push({
+          path: '/login',
+          query: {redirect: this.$route.fullPath}
+        })
       }
     },
     challengeRut () {
@@ -208,7 +211,10 @@ export default {
           showClose: true,
           message: 'Should Log in to Continue'
         })
-        // this.$router.push('/login')
+        this.$router.push({
+          path: '/login',
+          query: {redirect: this.$route.fullPath}
+        })
       }
     },
     addNewTag () {
@@ -229,6 +235,10 @@ export default {
         this.$message({
           showClose: true,
           message: 'Should Log in to Continue'
+        })
+        this.$router.push({
+          path: '/login',
+          query: {redirect: this.$route.fullPath}
         })
       }
     }

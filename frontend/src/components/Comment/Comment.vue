@@ -6,12 +6,12 @@
     </div>
     <div class="text" v-html="comment.body"></div>
     <el-button type="text" size="mini" @click="showRe = !showRe">
-      {{ showRe ? 'Hide' : 'reply' }}
+      {{ showRe ? 'Hide' : 'Reply' }}
     </el-button>
-    <reply class="reply" :refer="refer" :show.sync="showRe" @newreply="updateNew"></reply> <!--sync, hide input once submit-->
-    <div class="toggle" :class="{ open }" v-if="hasChild">
+    <span class="toggle" :class="{ open }" v-if="hasChild">
       <a @click="open = !open">{{ open ? '[-]' : '[+]' }} </a>
-    </div>
+    </span>
+    <reply class="reply" :refer="refer" :show.sync="showRe" @newreply="updateNew"></reply> <!--sync, hide input once submit-->
     <div class="comment-children" v-show="open">
       <comment v-for="commt in childComments" :key="commt.id" :comment="commt"></comment>  <!--recursively use-->
     </div>
@@ -50,12 +50,12 @@ export default {
 <style lang="stylus" scoped>
 .comment
   border-top 1px dotted green
-  padding 0.5em 1em
+  padding 0.2em 1em
   background-color lighten(#f3f3ed, 60%)
   position relative
   .by, .toggle
     font-size 0.75em
-    margin 0.5em 0
+    margin 0.2em 0
   .by
     color #828282
     a
@@ -64,14 +64,14 @@ export default {
   .text
     overflow-wrap break-word
     font-size 1.05em
-    margin 0.5em 0
+    margin 0.3em 0
     a:hover
       color #ff6600
     pre
       white-space pre-wrap
   .toggle
     background-color #fffbf2
-    padding 0.3em 0.5em
+    padding 0.2em 0.5em
     border-radius 4px
     a
       color #828282
