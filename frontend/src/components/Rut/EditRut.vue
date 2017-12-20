@@ -38,6 +38,7 @@
 
 <script>
 import { editRut } from '@/api/api'
+import { checkAuth } from '@/util/auth'
 
 export default {
   name: 'edit-rut',
@@ -72,7 +73,7 @@ export default {
   methods: {
     onEdit (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid) {
+        if (valid && checkAuth()) {
           let data = {
             title: form.title,
             intro: form.intro,
@@ -89,7 +90,7 @@ export default {
             //   message: 'Edit Done'
             // })
           }).catch(error => {
-            this.$message.error(error.status) // elementui
+            this.$message.error(error.status)
           })
         } else {
           console.log('error submit!!')

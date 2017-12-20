@@ -948,11 +948,14 @@ class Reviews(db.Model):
             tags=allowed_tags, strip=True))
     
     def to_dict(self):
+        creator = self.creator
+        item = self.item
         review_dict = {
             'id': self.id,
             'heading': self.heading,
-            'creator': self.creator.to_dict(),
-            'body': self.body_html or self.body,
+            'creator': {'id': creator.id, 'name': creator.nickname or creator.name},
+            'body': self.body or self.body_html,
+            'item': {'id': item.id, 'title': item.title},
             'vote':  self.vote,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         }
@@ -961,7 +964,7 @@ class Reviews(db.Model):
     def __repr__(self):
         return '<Reviews %r>' % self.heading
 
-db.event.listen(Reviews.body, 'set', Reviews.on_changed_body)
+#db.event.listen(Reviews.body, 'set', Reviews.on_changed_body)
 
 
 class Clips(db.Model):

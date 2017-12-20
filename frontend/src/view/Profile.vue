@@ -31,7 +31,9 @@
         <br>
         <router-link :to="'/profile/' + userid + '/havedone/'">Have Done</router-link>
         <br>
-        <router-link :to="'/setting/' + userid" v-if="showSetting"><small>~Setting~</small></router-link>
+        <router-link :to="'/setting/' + userid" v-if="showSetting">
+          <small style="outline: dotted 1px; background-color: #d5d5be">~Setting~</small>
+        </router-link>
       </div>
     </div>
   </div>
@@ -167,5 +169,5 @@ export default {
           color green
           font-weight 800
 .aboutme, .user-info, .fobar
-    font-size 0.85em
+  font-size 0.85em
 </style>

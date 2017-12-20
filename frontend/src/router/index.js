@@ -12,6 +12,7 @@ import DemandView from '@/view/DemandView'
 import Profile from '@/view/Profile'
 import RutView from '@/view/RutView'
 import ItemView from '@/view/ItemView'
+import ReviewView from '@/view/ReviewView'
 import TagView from '@/view/TagView'
 import Register from '@/components/Auth/Register'
 import Confirm from '@/components/Auth/Confirm'
@@ -25,6 +26,8 @@ import EditRut from '@/components/Rut/EditRut'
 import AddItem from '@/components/Rut/AddItem'
 import EditTips from '@/components/Rut/EditTips'
 import EditItem from '@/components/Item/EditItem'
+import NewReview from '@/components/Item/NewReview'
+import EditReview from '@/components/Item/EditReview'
 import createClipList from '@/components/Challenge/CreateClipList'
 import createDemandList from '@/components/Demand/CreateDemandList'
 import createReviewList from '@/components/Item/CreateReviewList'
@@ -94,11 +97,10 @@ const router = new Router({
         { path: 'newreview', name: 'Newreview', component: createReviewList('new') }
       ]
     },
-    { path: '/edit/item/:id',
-      component: EditItem,
-      name: 'EditItem',
-      meta: {auth: true}
-    },
+    { path: '/edit/item/:id', component: EditItem, name: 'EditItem', meta: {auth: true} },
+    { path: '/review/item/:id', component: NewReview, name: 'NewReview', meta: {auth: true} },
+    { path: '/editreview/:id', component: EditReview, name: 'EditReview', meta: {auth: true} },
+    { path: '/review/:id', component: ReviewView, name: 'ReviewView' },
     { path: '/demands',
       component: Demands,
       children: [

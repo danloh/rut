@@ -170,6 +170,22 @@ const newClip = params => {
 const upvoteClip = (clipid, params) => {
   return request(`${base}/upvoteclip/${clipid}`, params)
 }
+// create review
+const newReview = (itemid, params) => {
+  return request(`${base}/newreview/${itemid}`, params, 'post')
+}
+// fetch review
+const fetchReview = (reviewid, params) => {
+  return request(`${base}/review/${reviewid}`, params)
+}
+// edit review
+const editReview = (reviewid, params) => {
+  return request(`${base}/editreview/${reviewid}`, params, 'post')
+}
+// upvote review
+const upvoteReview = (reviewid, params) => {
+  return request(`${base}/upvotereview/${reviewid}`, params)
+}
 // get demand list
 const fetchDemands = (params) => {
   return request(`${base}/demands`, params)
@@ -232,6 +248,10 @@ export {
   fetchProfileItems,
   fetchClips,
   fetchIUClips,
+  newReview,
+  fetchReview,
+  editReview,
+  upvoteReview,
   fetchDemands,
   fetchDemand,
   newClip,

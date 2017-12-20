@@ -47,7 +47,7 @@ export default {
             let data = resp.data
             this.$store.commit('SET_TOKEN', data.token)
             this.$store.commit('SET_USER', data.userid)
-            let nextUrl = this.$route.query.redirect || '/' // uncompletely tackled!!
+            let nextUrl = this.$route.query.redirect || '/challenge' // uncompletely tackled!!
             this.$router.push(nextUrl)
           }).catch(error => {
             this.$message.error(error.status) // elementui

@@ -20,6 +20,7 @@
 
 <script>
 import { editTips } from '@/api/api'
+import { checkAuth } from '@/util/auth'
 
 export default {
   name: 'edit-tips',
@@ -52,7 +53,7 @@ export default {
   methods: {
     onEdit (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid) {
+        if (valid && checkAuth()) {
           let data = {
             order: form.order,
             tips: form.tips

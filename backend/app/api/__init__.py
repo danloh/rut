@@ -806,6 +806,60 @@ def upvote_clip(clipid):
         db.session.commit()
     return jsonify(clip.vote)
 
+@rest.route('/newreview/<int:itemid>', methods=['POST'])
+@auth.login_required
+def new_review(itemid):
+    user = g.user
+    item = Items.query.get_or_404(itemid)
+    review = Reviews(
+        heading = request.json.get('title'),
+        body = request.json.get('review'),
+        item = item,
+        creator = user
+    )
+    db.session.add(review)
+    item.cal_vote()
+    db.session.commit()
+    review_dict = review.to_dict()
+    return jsonify(review_dict)
+
+@rest.route('/editreview/<int:reviewid>', methods=['POST'])
+@auth.login_required
+def edit_review(reviewid):
+    user = g.user
+    review = Reviews.query.get_or_404(reviewid)
+    if user != review.creator:
+        return jsonify('No Permission')
+    review.heading = request.json.get('title'),
+    review.body = request.json.get('review'),
+    db.session.add(review)
+    db.session.commit()
+    review_dict = review.to_dict()
+    return jsonify(review_dict)
+
+@rest.route('/review/<int:reviewid>')
+def get_review(reviewid):
+    review = Reviews.query.get_or_404(reviewid)
+    review_dict = review.to_dict()
+    return jsonify(review_dict)
+
+@rest.route('/upvotereview/<int:reviewid>')
+@auth.login_required
+def upvote_review(reviewid):
+    user = g.user
+    review = Reviews.query.get_or_404(reviewid)
+    voted = Rvote.query.filter_by(user_id=user.id,review_id=reviewid).first()
+    if user != review.creator and voted is None:
+        review.vote = review.vote + 1 
+        db.session.add(review)
+        rvote = Rvote(
+            voter=user,
+            vote_review=review
+        )
+        db.session.add(rvote)
+        db.session.commit()
+    return jsonify(review.vote)
+    
 @rest.route('/demands')
 def get_demands():
     query = Demands.query

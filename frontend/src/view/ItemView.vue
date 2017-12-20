@@ -11,18 +11,18 @@
       <div class="item-detail">
         <div v-html="currentItem.details">...</div>
       </div>
-      <div>
-        <b>Clips</b>
-        <clip-list :param="cliplistParam"></clip-list>
-      </div>
       <div class="submenu">
         <router-link :to="'/item/' + currentItem.id + '/hotreview'">Hot Reviews</router-link>
         <router-link :to="'/item/' + currentItem.id + '/newreview'">New Reviews</router-link>
         &nbsp;&nbsp;&nbsp;
-        <el-button type="text">...Post a Review</el-button>
+        <router-link style="color: blue; font-size: 0.8em" :to="'/review/item/' + currentItem.id" target="_blank">...Post A Review</router-link>
       </div>
       <div class="review-view">
         <router-view></router-view>
+      </div>
+      <div class="clips">
+        <b>Clips</b>
+        <clip-list :param="cliplistParam"></clip-list>
       </div>
     </div>
     <div class="item-side">
@@ -74,6 +74,10 @@ export default {
     padding auto
     .item-detail
       background-color white
+      padding 5px
+    .clips
+      padding 5px
+    .review-view
       padding 5px
     .submenu
         margin-bottom 5px
