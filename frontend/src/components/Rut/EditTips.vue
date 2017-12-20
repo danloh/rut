@@ -10,6 +10,12 @@
       <el-form-item label="Edit Tips" prop="tips">
         <el-input type="textarea" v-model="editForm.tips"></el-input>
       </el-form-item>
+      <el-form-item label="Reminder" prop="spoiler">
+        <el-radio-group v-model="editForm.spoiler">
+          <el-radio-button label="No Spoiler"></el-radio-button>
+          <el-radio-button label="Spoiler Ahead"></el-radio-button>
+        </el-radio-group>
+      </el-form-item>
       <el-form-item>
         <el-button type="success" size="medium" @click="onEdit('editForm', editForm)">Done and Submit</el-button>
         <!-- <el-button @click="resetForm('editForm')">Reset</el-button> -->
@@ -36,7 +42,8 @@ export default {
     return {
       editForm: {
         order: '',
-        tips: ''
+        tips: '',
+        spoiler: ''
       },
       rules: {
         order: [
@@ -56,7 +63,8 @@ export default {
         if (valid && checkAuth()) {
           let data = {
             order: form.order,
-            tips: form.tips
+            tips: form.tips,
+            spoiler: form.spoiler
           }
           let cid = this.$route.params.id
           editTips(cid, data)
@@ -88,6 +96,7 @@ export default {
       })[0]
       this.editForm.order = tip.order
       this.editForm.tips = tip.tip
+      this.editForm.spoiler = tip.spoiler ? 'Spoiler Ahead' : 'No Spoiler'
       this.rutId = rut.id
       this.rutTitle = rut.title
     }

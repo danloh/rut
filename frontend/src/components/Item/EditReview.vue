@@ -8,6 +8,12 @@
       <el-form-item prop="review">
         <el-input type="textarea" :rows="16" v-model="reviewForm.review"></el-input>
       </el-form-item>
+      <el-form-item prop="spoiler">
+        <el-radio-group v-model="reviewForm.spoiler">
+          <el-radio-button label="No Spoiler"></el-radio-button>
+          <el-radio-button label="Spoiler Ahead"></el-radio-button>
+        </el-radio-group>
+      </el-form-item>
       <el-form-item>
         <el-button type="success" size="medium" @click="onEdit('reviewForm', reviewForm)" :disabled="!canEdit">Done and Submit</el-button>
         <!-- <el-button @click="resetForm('reviewForm')">Reset</el-button> -->
@@ -34,7 +40,8 @@ export default {
     return {
       reviewForm: {
         title: '',
-        review: ''
+        review: '',
+        spoiler: ''
       },
       rules: {
         title: [
@@ -62,7 +69,8 @@ export default {
         if (valid && checkAuth()) {
           let data = {
             title: form.title,
-            review: form.review
+            review: form.review,
+            spoiler: form.spoiler
           }
           let reviewid = this.$route.params.id
           editReview(reviewid, data)
@@ -87,6 +95,7 @@ export default {
         let data = resp.data
         this.reviewForm.title = data.heading
         this.reviewForm.review = data.body
+        this.reviewForm.spoiler = data.spoiler ? 'Spoiler Ahead' : 'No Spoiler'
         this.creatorID = data.creator.id
         this.currentUserID = this.$store.getters.currentUserID
         this.canEdit = Number(this.creatorID) === Number(this.currentUserID)

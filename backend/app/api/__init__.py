@@ -463,13 +463,14 @@ def edit_tips(cid):
     if not order or not tips:  # cannot be null
         return jsonify('Error')
     item = Items.query.get_or_404(tip_collect.item_id)
-    # get the data
-    order = request.json.get('order')
-    tips = request.json.get('tips')
+    # get the spoiler
+    spoiler_text = request.json.get('spoiler')
+    spoiler = True if spoiler_text == 'Spoiler Ahead' else False
     # re-ordering
     rut.ordering(item, order)
     rut.renew()
     tip_collect.tips = tips
+    tip_collect.spoiler = spoiler
     db.session.add(tip_collect)
     db.session.commit()
     return jsonify('Done')
@@ -488,6 +489,8 @@ def add_item_to_rut(rutid):
     old_item = Items.query.filter_by(uid=uid).first()
     res_url = request.json.get('resUrl','').strip()
     tips = request.json.get('tips','No Tips Yet')
+    spoiler_text = request.json.get('spoiler')
+    spoiler = True if spoiler_text == 'Spoiler Ahead' else False
     if res_url:
         online_item = Items.query.filter_by(res_url=res_url).first()
     else:
@@ -510,14 +513,14 @@ def add_item_to_rut(rutid):
             details = request.json.get('detail','')
         )
         db.session.add(new_item)            
-        rut.collecting(new_item,tips,user)
+        rut.collecting(new_item,tips,user,spoiler)
 
         if request.json.get('byline','').strip():
             new_item.author_to_db()
     elif old_item is not None:
-        rut.collecting(old_item,tips,user)  
+        rut.collecting(old_item,tips,user,spoiler)  
     elif online_item is not None:
-        rut.collecting(online_item,tips,user)
+        rut.collecting(online_item,tips,user,spoiler)
     db.session.commit()
 
     return jsonify('Done')
@@ -531,7 +534,7 @@ def item_to_rut(itemid, rutid):
     if rut.creator != user:
         return jsonify('Error')
     item = Items.query.get_or_404(itemid)
-    rut.collecting(item,'No Tips',user)
+    rut.collecting(item,'No Tips Yet',user)
     db.session.commit()
     return jsonify('Done')
 
@@ -547,7 +550,7 @@ def check_item_for_add(rutid):
     re_url=r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
     #re_uid=r'([-]*(1[03])*[ ]*(: ){0,1})*(([0-9Xx][- ]*){13}|([0-9Xx][- ]*){10})'
     reg_url = re.compile(re_url,0)
-    tips="No Tips" # default
+    tips="No Tips Yet" # default
 
     checker = request.json.get('url') #url_or_uid
     if reg_url.match(checker):
@@ -811,9 +814,12 @@ def upvote_clip(clipid):
 def new_review(itemid):
     user = g.user
     item = Items.query.get_or_404(itemid)
+    spoiler_text = request.json.get('spoiler')
+    spoiler = True if spoiler_text == 'Spoiler Ahead' else False
     review = Reviews(
         heading = request.json.get('title'),
         body = request.json.get('review'),
+        spoiler = spoiler,
         item = item,
         creator = user
     )
@@ -830,8 +836,11 @@ def edit_review(reviewid):
     review = Reviews.query.get_or_404(reviewid)
     if user != review.creator:
         return jsonify('No Permission')
-    review.heading = request.json.get('title'),
-    review.body = request.json.get('review'),
+    review.heading = request.json.get('title')
+    review.body = request.json.get('review')
+    spoiler_text = request.json.get('spoiler')
+    spoiler = True if spoiler_text == 'Spoiler Ahead' else False
+    review.spoiler = spoiler
     db.session.add(review)
     db.session.commit()
     review_dict = review.to_dict()

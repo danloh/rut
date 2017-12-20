@@ -9,6 +9,12 @@
       <el-form-item prop="review">
         <el-input type="textarea" :rows="12" v-model="reviewForm.review" placeholder="Post Review"></el-input>
       </el-form-item>
+      <el-form-item prop="spoiler">
+        <el-radio-group v-model="reviewForm.spoiler">
+          <el-radio-button label="No Spoiler"></el-radio-button>
+          <el-radio-button label="Spoiler Ahead"></el-radio-button>
+        </el-radio-group>
+      </el-form-item>
       <el-form-item>
         <el-button type="success" size="medium" @click="onSubmit('reviewForm', reviewForm)">Submit</el-button>
         <!-- <el-button @click="resetForm('reviewForm')">Reset</el-button> -->
@@ -27,7 +33,8 @@ export default {
     return {
       reviewForm: {
         title: '',
-        review: ''
+        review: '',
+        spoiler: 'No Spoiler'
       },
       rules: {
         title: [
@@ -46,7 +53,8 @@ export default {
         if (valid) {
           let data = {
             title: form.title,
-            review: form.review
+            review: form.review,
+            spoiler: form.spoiler
           }
           let itemid = this.$route.params.id
           newReview(itemid, data)

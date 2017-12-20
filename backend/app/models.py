@@ -52,7 +52,6 @@ tag_demand = db.Table(
     )
 )
 
-
 # helper Model for n2n Posts collect Items
 class Collect(db.Model):
     __table_name__ = 'collect'
@@ -69,14 +68,13 @@ class Collect(db.Model):
     order = db.Column(db.SmallInteger)   #item's order in post
     tips = db.Column(db.Text, nullable=False)
     tips_html = db.Column(db.Text)
+    spoiler = db.Column(db.Boolean, default=False) # if tips spoiler ahead?
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
-
     # n to 1 with Users
     tip_creator_id = db.Column(
         db.Integer, db.ForeignKey("users.id")
     )
-
     def to_dict(self):
         item_dict = self.item.to_dict()
         tip_dict = {
@@ -85,7 +83,8 @@ class Collect(db.Model):
             'postid': self.post_id,
             'itemid': self.item_id,
             'item': item_dict,
-            'tip':  self.tips or self.tips_html
+            'tip':  self.tips or self.tips_html,
+            'spoiler': self.spoiler
         }
         return tip_dict
 
@@ -334,7 +333,7 @@ class Posts(db.Model):
         """
         return self.items.filter_by(item_id=item.id).first() is not None
 
-    def collecting(self, item, tips, tip_creator):
+    def collecting(self, item, tips, tip_creator, spoiler=False):
         """
         collect item into post,
         ie. add a record into Collect table
@@ -345,7 +344,8 @@ class Posts(db.Model):
                 item=item,
                 order=self.items.count()+1,
                 tips=tips,
-                tip_creator=tip_creator
+                tip_creator=tip_creator,
+                spoiler=spoiler
             ) # refer to the relationship-backref var
             db.session.add(c)
             # update item's vote
@@ -804,7 +804,7 @@ class Tags(db.Model):
         return '<Tags %r>' % self.tag
 
 
-# helper Model for Reply comments
+# helper Model for Reply comments, can be deprecated?
 class Reply(db.Model):
     __tablename__ = 'reply'
     parent_commt_id = db.Column(
@@ -854,7 +854,7 @@ class Comments(db.Model):
         db.Integer, db.ForeignKey("demands.id")
     )
 
-    # n2n with self
+    # n2n with self can be deprecated?
     parent_commts = db.relationship(
         'Reply',
         foreign_keys=[Reply.child_commt_id],
@@ -871,6 +871,7 @@ class Comments(db.Model):
         r = Reply(parent_commt=self, child_commt=commt)
         db.session.add(r)
         #db.session.commit()
+    ## end  n2n  with self, can be deprecated?
 
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):
@@ -893,7 +894,7 @@ class Comments(db.Model):
     def __repr__(self):
         return '<Coments %r>' % self.body
 
-#Monkey patched for self reference -reply
+# Monkey patched for self reference -reply
 Comments.parent_comment_id = db.Column(
     db.Integer, db.ForeignKey("comments.id")
 )
@@ -902,6 +903,7 @@ Comments.parent_comment = db.relationship(
     backref='child_comments',
     remote_side=Comments.id
 )
+# end Monkey patch
 
 db.event.listen(Comments.body, 'set', Comments.on_changed_body)
 
@@ -912,6 +914,7 @@ class Reviews(db.Model):
     heading = db.Column(db.String(256), nullable=False)
     body = db.Column(db.Text, nullable=False)
     body_html = db.Column(db.Text)
+    spoiler = db.Column(db.Boolean, default=False)
     vote = db.Column(db.Integer,default=1)
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
@@ -955,6 +958,7 @@ class Reviews(db.Model):
             'heading': self.heading,
             'creator': {'id': creator.id, 'name': creator.nickname or creator.name},
             'body': self.body or self.body_html,
+            'spoiler': self.spoiler,
             'item': {'id': item.id, 'title': item.title},
             'vote':  self.vote,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')

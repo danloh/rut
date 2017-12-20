@@ -42,17 +42,20 @@
         <el-button type="success" size="mini" plain @click="starRut"><b>{{ starAction }} {{ starCount }}</b></el-button>
         <el-button type="success" size="mini" plain @click="challengeRut"><b>{{ challengeAction }} {{ challengeCount }}</b></el-button>
       </div>
-      <div class="itemtip" v-for="(tip, index) in tips" :key="index">
-        <item-sum class="itemsum" :item="tip.item"></item-sum>
+      <div class="itemtip" v-for="tip in tips" :key="tip.cid">
+        <item-sum class="itemsum" :item="tip.item" :key="tip.itemid"></item-sum>
         <b class="indicator">&nbsp;&nbsp;Tips:&nbsp;</b> 
-        <el-button type="text" v-if="canEdit">
+        <el-button type="text" size="mini" v-if="canEdit">
           <router-link :to="'/edit/readuptips/' + tip.cid">...Edit</router-link>
         </el-button>
-        <div class="tip" v-html="tip.tip"></div>
+        <div class="tip">
+          <div v-html="tip.tip" v-show="!tip.spoiler || !short"></div>
+          <el-button type="text" size="mini" @click="short = !short" v-if="tip.spoiler && short">... Spoilers Ahead! Continue?</el-button>
+        </div>
       </div>
       <div class="epilog">
         <b class="indicator">Epilog:&nbsp;</b>
-        <el-button type="text" v-if="canEdit">
+        <el-button type="text" size="mini" v-if="canEdit">
           <router-link :to="'/edit/readuplist/' + rutid">...Edit</router-link>
         </el-button>
         <div v-html="rutDetail.epilog"></div>
@@ -91,7 +94,8 @@ export default {
       showDialog: false,
       newTag: '',
       newTags: [],
-      canTag: checkAuth()
+      canTag: checkAuth(),
+      short: true
     }
   },
   computed: {
@@ -267,7 +271,7 @@ $bgcolor = lighten(#f6f6f1, 50%)
         font-size 0.8em
     .intro
       background-color $bgcolor
-      padding 10px
+      padding 5px 10px
       border-bottom 1px dotted #f3bc59
     .itemtip
       background-color $bgcolor
@@ -300,7 +304,7 @@ $bgcolor = lighten(#f6f6f1, 50%)
       text-align right
   .indicator
     font-size 0.7em
-    background-color transparent
+    color #668e66
   .rutside
     background-color #f5f9f5
     position absolute

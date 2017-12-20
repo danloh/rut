@@ -43,6 +43,12 @@
       <el-form-item label="Tips" prop="tips">
         <el-input type="textarea" v-model="addForm.tips"></el-input>
       </el-form-item>
+      <el-form-item label="in Tips" prop="spoiler">
+        <el-radio-group v-model="addForm.spoiler">
+          <el-radio-button label="No Spoiler"></el-radio-button>
+          <el-radio-button label="Spoiler Ahead"></el-radio-button>
+        </el-radio-group>
+      </el-form-item>
       <el-form-item>
         <el-button type="success" size="medium" @click="onAdd('addForm', addForm)">Done and Add</el-button>
         <!-- <el-button @click="resetForm('addForm')">Reset</el-button> -->
@@ -71,7 +77,8 @@ export default {
         resUrl: '',
         byline: '',
         cover: '',
-        tips: ''
+        tips: '',
+        spoiler: 'No Spoiler'
       },
       addRules: {
         title: [
@@ -130,7 +137,8 @@ export default {
             resUrl: form.resUrl,
             byline: form.byline,
             cover: form.cover,
-            tips: form.tips
+            tips: form.tips,
+            spoiler: form.spoiler
           }
           addItem(this.rutId, data)
           .then(() => {

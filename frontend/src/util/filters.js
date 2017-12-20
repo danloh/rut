@@ -32,9 +32,9 @@ export function toMDY (date) {
 }
 
 // showLess
-export function showLess (content, least = 152) {
+export function showLess (content, least = 152, less = true) {
   if (!content) return ''
-  if (content.length > least) {
+  if (content.length > least && less) {
     let lessContent = content.substring(0, least)
     let lastLinkIndex = lessContent.lastIndexOf('<a')
     let lastEndlinkIndex = lessContent.lastIndexOf('</a>')
