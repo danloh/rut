@@ -4,6 +4,10 @@
       <review-sum :review="review" :key="review.id"></review-sum> <!--Note :key to render-->
     </div>
     <div class="comment">
+      <reply class="reply" :refer="refer" :show="true" @newreply="updateNew"></reply>
+    </div>
+    <div v-for="comment in comments" :key="comment.id">
+      <comment :comment="comment"></comment>
     </div>
   </div>
 </template>
@@ -23,12 +27,9 @@ export default {
   components: { ReviewSum, Comment, Reply },
   data () {
     return {
-      review: {}
-    }
-  },
-  computed: {
-    creator () {
-      return this.review.creator
+      review: {},
+      comments: [],
+      refer: { re: 'review', id: this.$route.params.id }
     }
   },
   methods: {
@@ -38,7 +39,11 @@ export default {
       .then(resp => {
         let data = resp.data
         this.review = data
+        this.comments = data.comments
       })
+    },
+    updateNew (data) {
+      this.comments.unshift(data)
     }
   },
   created () {

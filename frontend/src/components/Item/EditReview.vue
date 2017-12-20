@@ -56,6 +56,7 @@ export default {
           showClose: true,
           message: 'No Permission'
         })
+        return false
       }
       this.$refs[formName].validate((valid) => {
         if (valid && checkAuth()) {

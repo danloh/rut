@@ -11,6 +11,7 @@ import Demands from '@/view/Demands'
 import DemandView from '@/view/DemandView'
 import Profile from '@/view/Profile'
 import RutView from '@/view/RutView'
+import RutComment from '@/view/RutComment'
 import ItemView from '@/view/ItemView'
 import ReviewView from '@/view/ReviewView'
 import TagView from '@/view/TagView'
@@ -89,6 +90,7 @@ const router = new Router({
       meta: {auth: true},
       beforeEnter
     },
+    { path: '/commenton/rut/:id', component: RutComment, name: 'RutComment' },
     { path: '/item/:id',
       component: ItemView,
       children: [

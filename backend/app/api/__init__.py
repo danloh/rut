@@ -841,6 +841,10 @@ def edit_review(reviewid):
 def get_review(reviewid):
     review = Reviews.query.get_or_404(reviewid)
     review_dict = review.to_dict()
+    #attach comments
+    comments = [c.to_dict() for c in review.comments]
+    comments.reverse()
+    review_dict['comments'] = comments
     return jsonify(review_dict)
 
 @rest.route('/upvotereview/<int:reviewid>')
@@ -1017,3 +1021,12 @@ def new_comment(demandid=None,rutid=None,commentid=None,itemid=None,reviewid=Non
     db.session.commit()
     comment_dict = comment.to_dict()
     return jsonify(comment_dict)
+
+@rest.route('/commentonrut/<int:rutid>')
+def get_comment_rut(rutid):
+    rut = Posts.query.get_or_404(rutid)
+    rut_dict = {'id': rut.id, 'title': rut.title}
+    comments = [c.to_dict() for c in rut.comments]
+    comments.reverse()
+    rut_dict['comments'] = comments
+    return jsonify(rut_dict)

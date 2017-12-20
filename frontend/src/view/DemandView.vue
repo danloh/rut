@@ -9,7 +9,6 @@
         </p>
       </div>
       <div class="comment">
-        <b>Discuss</b>
         <reply class="reply" :refer="refer" :show="true" @newreply="updateNew"></reply>
       </div>
       <div v-for="comment in comments" :key="comment.id">
@@ -35,14 +34,8 @@ export default {
   components: { Demand, Comment, Reply },
   data () {
     return {
-      commentForm: {
-        comment: ''
-      },
-      rules: {
-        comment: [{ required: true, message: 'Required', trigger: 'blur' }]
-      },
       refer: { re: 'demand', id: this.$route.params.id },
-      comments: {}
+      comments: []
     }
   },
   computed: {

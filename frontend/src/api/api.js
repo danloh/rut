@@ -66,7 +66,7 @@ const newRut = (params, demandid) => {
 const fetchRuts = params => {
   return request(`${base}/ruts`, params)
 }
-
+// get one challenge rut
 const fetchChallengeRut = params => {
   return request(`${base}/challengerut`, params)
 }
@@ -202,9 +202,13 @@ const newDemand = params => {
 const upvoteDemand = (demandid, params) => {
   return request(`${base}/upvotedemand/${demandid}`, params)
 }
-
+// post new comment
 const newComment = (ref, id, params) => {
   return request(`${base}/comment/${ref}/${id}`, params, 'post')
+}
+// get comments for a rut
+const fetchRutComment = (rutid, params) => {
+  return request(`${base}/commentonrut/${rutid}`, params)
 }
 
 export {
@@ -258,5 +262,6 @@ export {
   upvoteClip,
   newDemand,
   upvoteDemand,
-  newComment
+  newComment,
+  fetchRutComment
 }

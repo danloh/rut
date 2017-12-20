@@ -57,9 +57,9 @@
         </el-button>
         <div v-html="rutDetail.epilog"></div>
       </div>
-      <!-- <div class="comment">
-        <router-link :to="'/rut/comment/' + rutid">Comment</router-link>
-      </div> -->
+      <div class="bottombar">
+        <router-link :to="'/commenton/rut/' + rutid" target="_blank">To Comments Page</router-link>
+      </div>
     </div>   
     <div class="rutside">
       <p class="sidetitle">Creator's Credential</p>
@@ -294,6 +294,10 @@ $bgcolor = lighten(#f6f6f1, 50%)
       display flex
       align-items center
       justify-content flex-end
+    .bottombar
+      font-size 0.85em
+      padding 10px
+      text-align right
   .indicator
     font-size 0.7em
     background-color transparent
