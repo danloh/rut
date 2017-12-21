@@ -108,17 +108,21 @@ export default {
             email: form.email,
             password: form.password
           }
-          this.$axios.post('api/register', data).then((resp) => {
+          this.$axios.post('api/register', data)
+          .then((resp) => {
             let data = resp.data
             this.$store.commit('SET_TOKEN', data.token) // as login
             this.$store.commit('SET_USER', data.userid) // as login
-            this.$router.push('/')
+            this.$router.push('/challenge')
             this.$message({
               showClose: true,
               message: 'Welcome! A confirmation email has been sent to you by email.'
             })
           }).catch(error => {
-            this.$message.error(error.status) // elementui
+            this.$message({
+              showClose: true,
+              message: error.response.statusText
+            })
           })
         } else {
           console.log('error submit!!')

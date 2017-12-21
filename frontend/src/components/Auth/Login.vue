@@ -43,14 +43,21 @@ export default {
             username: form.username,
             password: form.password
           }
-          this.$axios.get('api/login').then((resp) => {
+          this.$axios.get('api/login')
+          .then((resp) => {
             let data = resp.data
             this.$store.commit('SET_TOKEN', data.token)
             this.$store.commit('SET_USER', data.userid)
             let nextUrl = this.$route.query.redirect || '/challenge' // uncompletely tackled!!
             this.$router.push(nextUrl)
-          }).catch(error => {
-            this.$message.error(error.status) // elementui
+          }).catch(() => {
+            // this.$router.go(0)
+            this.$message({
+              showClose: true,
+              duration: 0,
+              message: 'oops...Please Check Account or Password',
+              type: 'error'
+            })
           })
         } else {
           console.log('error submit!!')

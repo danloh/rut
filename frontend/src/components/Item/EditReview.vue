@@ -30,13 +30,6 @@ export default {
   name: 'edit-review',
   title: 'Edit Review',
   data () {
-    var notNull = (rule, value, callback) => {
-      if (value === '') {
-        callback(new Error('Can not be null'))
-      } else {
-        callback()
-      }
-    }
     return {
       reviewForm: {
         title: '',
@@ -45,10 +38,10 @@ export default {
       },
       rules: {
         title: [
-          { validator: notNull, message: 'Required', trigger: 'change' }
+          { required: true, message: 'Required', trigger: 'change' }
         ],
         review: [
-          { validator: notNull, message: 'Required', trigger: 'change' }
+          { required: true, message: 'Required', trigger: 'change' }
         ]
       },
       canEdit: false
@@ -75,7 +68,10 @@ export default {
           .then(() => {
             this.$router.push(`/review/${reviewid}`)
           }).catch(error => {
-            this.$message.error(error.status)
+            this.$message({
+              showClose: true,
+              message: error.response.statusText
+            })
           })
         } else {
           console.log('error submit!!')

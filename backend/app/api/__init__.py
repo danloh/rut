@@ -1,26 +1,20 @@
 # -*- coding: utf-8 -*-
 # api  __init__
 
-from flask import Blueprint, redirect, url_for, request, g, jsonify
-from flask_login import login_required, current_user
+from flask import Blueprint, current_app, request, g, jsonify, abort
+#from flask_login import login_required, current_user
+from flask_sqlalchemy import get_debug_queries
 from flask_httpauth import HTTPBasicAuth
 from .. import db
 from ..models import *
 from ..bot import spider
 from ..utils import split_str, str_to_dict, str_to_set
 from ..task.email import send_email
-from .errors import bad_request, error_response
+from .errors import error_response
 
 rest = Blueprint('rest', __name__)
 auth = HTTPBasicAuth()
 
-#from flask_restful import Api, Resource
-#api = Api(rest)
-#from . import res
-#api.add_resource(res.Rut, '/rut/<int:rutid>')
-#api.add_resource(res.Tag, '/tag/<int:tagid>')
-#api.add_resource(res.Item, '/item/<int:itemid>')
-#api.add_resource(res.Commentz, '/comments')
 
 @rest.route('/register', methods = ['POST'])
 def register():
@@ -146,11 +140,11 @@ def verify_password(username_or_token, password):
     if request.path == "/api/login":
         user = Users.query.filter_by(name=username_or_token).first()
         if not user or not user.verify_password(password):
-            return False  # how to hadle error?
+            abort(401) #return False  # how to hadle error?
     else:
         user = Users.verify_auth_token(username_or_token)
         if not user:
-            return False # how to hadle error?
+            abort(401) #return False # how to hadle error?
     g.user = user
     return True
 
@@ -410,7 +404,7 @@ def edit_rut(rutid):
     user = g.user
     rut = Posts.query.get_or_404(rutid)
     if rut.creator != user:
-        return jsonify('Error')  #how to tacle error?
+        abort(403)  #how to tacle error?
     rut.title = request.json.get('title'),
     rut.intro = request.json.get('intro'),
     rut.rating = request.json.get('rating'),
@@ -456,12 +450,12 @@ def edit_tips(cid):
     post_id = tip_collect.post_id
     rut = Posts.query.get_or_404(post_id)
     if rut.creator != user:
-        return jsonify('Error')  #how to tacle error?
+        abort(403) #return jsonify('Error')  #how to tacle error?
     # get the data
     order = request.json.get('order')
     tips = request.json.get('tips')
-    if not order or not tips:  # cannot be null
-        return jsonify('Error')
+    if not order or not tips:
+        abort(403) #return jsonify('Error') # cannot be null
     item = Items.query.get_or_404(tip_collect.item_id)
     # get the spoiler
     spoiler_text = request.json.get('spoiler')
@@ -484,7 +478,7 @@ def add_item_to_rut(rutid):
     user = g.user
     rut = Posts.query.get_or_404(rutid)
     if rut.creator != user:
-        return jsonify('Error')  #how to tacle error?
+        abort(403) #return jsonify('Error')
     uid = request.json.get('uid').replace('-','').replace(' ','')
     old_item = Items.query.filter_by(uid=uid).first()
     res_url = request.json.get('resUrl','').strip()
@@ -532,7 +526,7 @@ def item_to_rut(itemid, rutid):
     user = g.user
     rut = Posts.query.get_or_404(rutid)
     if rut.creator != user:
-        return jsonify('Error')
+        abort(403) #return jsonify('Error')
     item = Items.query.get_or_404(itemid)
     rut.collecting(item,'No Tips Yet',user)
     db.session.commit()
@@ -545,7 +539,7 @@ def check_item_for_add(rutid):
     user = g.user
     rut = Posts.query.get_or_404(rutid)
     if rut.creator != user:
-        return jsonify('Error')  #how to tacle error?
+        abort(403) #return jsonify('Error')
     #regexp prepare
     re_url=r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
     #re_uid=r'([-]*(1[03])*[ ]*(: ){0,1})*(([0-9Xx][- ]*){13}|([0-9Xx][- ]*){10})'
@@ -689,7 +683,7 @@ def edit_item(itemid):
     item = query.get_or_404(itemid)
     uid = request.json.get('uid').replace('-','').replace(' ','')
     if query.filter_by(uid=uid) and item.uid != uid:
-        return jsonify('Error')
+        abort(403) #return jsonify('Error') # can not be duplicated
     #update item 
     item.uid = uid
     item.cate = request.json.get('cate')
@@ -836,7 +830,7 @@ def edit_review(reviewid):
     user = g.user
     review = Reviews.query.get_or_404(reviewid)
     if user != review.creator:
-        return jsonify('Error, No Permission')
+        abort(403) #return jsonify('Error, No Permission')
     review.heading = request.json.get('title')
     review.body = request.json.get('review')
     spoiler_text = request.json.get('spoiler')
@@ -971,9 +965,9 @@ def edit_tag(tagid):
     parent = request.json.get('parent').strip()
     description = request.json.get('description').strip()
     if not name:
-        return jsonify('Error')
+        abort(403) #return jsonify('Error')
     if tag.tag != name and query.filter_by(tag=name).first():
-        return jsonify('Duplicated Tag Name')
+        abort(403) #return jsonify('Duplicated Tag Name')
     tag.tag = name
     tag.descript = description
     db.session.add(tag)
@@ -1040,3 +1034,36 @@ def get_comment_rut(rutid):
     comments.reverse()
     rut_dict['comments'] = comments
     return jsonify(rut_dict)
+
+
+@rest.after_request
+def after_request(response):
+    #response.headers.add('Access-Control-Allow-Origin', '*')
+    #response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    #response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    for query in get_debug_queries():
+        if query.duration >= current_app.config['SLOW_DB_QUERY_TIME']:
+            current_app.logger.warning(
+                'Slow query: %s\nParameters: %s\nDuration: %fs\nContext: %s\n'
+                % (query.statement, query.parameters, query.duration, query.context))
+    return response
+
+@rest.errorhandler(400)
+@rest.errorhandler(401)
+@rest.errorhandler(403)
+@rest.errorhandler(404)
+@rest.errorhandler(500)
+def error_handler(error):
+    if hasattr(error, 'name'):
+        msg = error.name
+        code = error.code
+    else:
+        msg = error.message
+        code = 500
+    return error_response(code, message=msg)
+
+## just for test
+@rest.route('/testerror')
+#@auth.login_required
+def test_error():
+    abort(405)

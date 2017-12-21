@@ -5,7 +5,7 @@
     </h3>
     <spinner :show="loading"></spinner>
     <!-- check via url spider or UID -->
-    <el-form class="add-form" :model="checkForm" ref="checkForm" label-width="180px" size="mini" v-show="!show">
+    <el-form class="add-form" :model="checkForm" ref="checkForm" size="mini" v-show="!show">
       <el-form-item label="Amazon URL or ISBN-13" prop="url">
         <el-input v-model="checkForm.url"></el-input>
       </el-form-item>
@@ -123,7 +123,10 @@ export default {
             this.loading = false
             this.$router.push(`/readuplist/${id}`)
           }).catch(error => {
-            this.$message.error(error.status) // elementui
+            this.$message({
+              showClose: true,
+              message: error.response.statusText
+            })
           })
         } else {
           console.log('error submit!!')
@@ -153,7 +156,10 @@ export default {
             //   message: 'add Done'
             // })
           }).catch(error => {
-            this.$message.error(error.status) // elementui
+            this.$message({
+              showClose: true,
+              message: error.response.statusText
+            })
           })
         } else {
           console.log('error submit!!')

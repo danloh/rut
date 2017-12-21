@@ -123,10 +123,14 @@ export default {
             this.$router.push(`/item/${id}`)
             this.$message({
               showClose: true,
-              message: resp.data
+              message: resp.data,
+              type: 'success'
             })
           }).catch(error => {
-            this.$message.error(error.status)
+            this.$message({
+              showClose: true,
+              message: error.response.statusText
+            })
           })
         } else {
           console.log('error submit!!')

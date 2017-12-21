@@ -90,10 +90,13 @@ export default {
             this.$router.push(`/readuplist/${id}`)
             this.$message({
               showClose: true,
-              message: 'Have Created a New tips, Now you can add item to it'
+              message: 'A New tips Created, Now you can add item to it'
             })
           }).catch(error => {
-            this.$message.error(error.status) // elementui
+            this.$message({
+              showClose: true,
+              message: error.response.statusText
+            })
           })
         } else {
           console.log('error submit!!')

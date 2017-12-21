@@ -157,7 +157,8 @@ export default {
             this.showDialog = false
             this.$message({
               showClose: true,
-              message: 'Done, and Now You can add Tips'
+              message: 'Done, and Now You can add Tips',
+              type: 'success'
             })
             this.$router.push(`/readuplist/${rutid}`) // why not work from rut page: re-sued component issue
           })

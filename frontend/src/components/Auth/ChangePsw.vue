@@ -75,7 +75,8 @@ export default {
             oldpsw: form.password,
             newpsw: form.newpassword
           }
-          this.$store.dispatch('changePsw', data).then((resp) => {
+          this.$store.dispatch('changePsw', data)
+          .then((resp) => {
             this.$store.commit('DEL_TOKEN')
             this.$message({
               showClose: true,
@@ -83,7 +84,10 @@ export default {
             })
             this.$router.push('/login')
           }).catch(error => {
-            this.$message.error(error.status)
+            this.$message({
+              showClose: true,
+              message: error.response.statusText
+            })
           })
         } else {
           console.log('error submit!!')

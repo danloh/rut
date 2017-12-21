@@ -32,13 +32,6 @@ export default {
   name: 'edit-tips',
   title: 'Edit Tip',
   data () {
-    var notNull = (rule, value, callback) => {
-      if (value === '') {
-        callback(new Error('Can not be null'))
-      } else {
-        callback()
-      }
-    }
     return {
       editForm: {
         order: '',
@@ -47,10 +40,10 @@ export default {
       },
       rules: {
         order: [
-          { validator: notNull, message: 'Required', trigger: 'change' }
+          { required: true, message: 'Required', trigger: 'change' }
         ],
         tips: [
-          { validator: notNull, message: 'Required', trigger: 'change' }
+          { required: true, message: 'Required', trigger: 'change' }
         ]
       },
       rutId: null,
@@ -77,7 +70,10 @@ export default {
             //   message: 'Edit Done'
             // })
           }).catch(error => {
-            this.$message.error(error.status) // elementui
+            this.$message({
+              showClose: true,
+              message: error.response.statusText
+            })
           })
         } else {
           console.log('error submit!!')

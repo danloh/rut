@@ -45,14 +45,18 @@ export default {
             username: form.username,
             email: form.email
           }
-          this.$axios.post('api/reset', data).then((resp) => {
+          this.$axios.post('api/reset', data)
+          .then((resp) => {
             this.$message({
               showClose: true,
               message: resp.data
             })
             this.$router.push('/')
           }).catch(error => {
-            this.$message.error(error.status) // elementui
+            this.$message({
+              showClose: true,
+              message: error.response.statusText
+            })
           })
         } else {
           console.log('error submit!!')

@@ -91,7 +91,10 @@ export default {
             //   message: 'Edit Done'
             // })
           }).catch(error => {
-            this.$message.error(error.status)
+            this.$message({
+              showClose: true,
+              message: error.response.statusText
+            })
           })
         } else {
           console.log('error submit!!')

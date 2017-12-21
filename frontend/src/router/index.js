@@ -15,6 +15,7 @@ import RutComment from '@/view/RutComment'
 import ItemView from '@/view/ItemView'
 import ReviewView from '@/view/ReviewView'
 import TagView from '@/view/TagView'
+import NotFound from '@/view/NotFound'
 import Register from '@/components/Auth/Register'
 import Confirm from '@/components/Auth/Confirm'
 import Forget from '@/components/Auth/Forget'
@@ -150,7 +151,9 @@ const router = new Router({
         { path: 'setting', name: 'Setting', component: EditProfile, beforeEnter: beforeEnterSet, meta: {auth: true} },
         { path: 'change', name: 'Change', component: ChangePsw, beforeEnter: beforeEnterSet, meta: {auth: true} }
       ]
-    }
+    },
+    { path: '/404', component: NotFound, name: 'NotFound', hidden: true },
+    { path: '*', hidden: true, redirect: { path: '/404' } }
   ]
 })
 

@@ -18,7 +18,7 @@
     </div>
     <!-- dialog -->
     <el-dialog title="Edit Tag Description" :visible.sync="openDialog">
-      <el-form :model="tagForm" ref="tagForm" label-width="120px" size="mini">
+      <el-form :model="tagForm" :rules="rules" ref="tagForm" size="mini">
         <el-form-item label="Tag Name" prop="name">
           <el-input v-model="tagForm.name"></el-input>
         </el-form-item>
@@ -58,6 +58,14 @@ export default {
         name: '',
         parent: '',
         description: ''
+      },
+      rules: {
+        name: [
+          { required: true, message: 'Please give a tag name', trigger: 'blur' }
+        ],
+        description: [
+          { required: true, message: 'Descript it', trigger: 'blur' }
+        ]
       }
     }
   },
@@ -108,10 +116,14 @@ export default {
             this.loadData()  // can be less consumption
             this.$message({
               showClose: true,
-              message: resp.data
+              message: resp.data,
+              type: 'success'
             })
           }).catch(error => {
-            this.$message.error(error.status) // elementui
+            this.$message({
+              showClose: true,
+              message: error.response.statusText
+            })
           })
         } else {
           console.log('error submit!!')
