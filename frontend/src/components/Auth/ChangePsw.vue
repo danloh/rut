@@ -12,7 +12,7 @@
       <el-input :type="pwdType" v-model="changepswForm.repassword"></el-input>
     </el-form-item>
     <el-form-item>
-      <el-button class="blockbtn" type="primary" @click="onChange('changepswForm', changepswForm)">Change Password</el-button>
+      <el-button class="blockbtn" type="primary" @click="onChange('changepswForm', changepswForm)" :disabled="!canChange">Change Password</el-button>
       <br>
       <!-- <el-button @click="resetForm('changepswForm')">Reset</el-button> -->
     </el-form-item>
@@ -63,13 +63,14 @@ export default {
           { required: true, validator: validaterePass, trigger: 'blur' }
         ]
       },
-      pwdType: 'password'
+      pwdType: 'password',
+      canChange: Number(this.$store.getters.currentUser.id) === Number(this.$route.params.id)
     }
   },
   methods: {
     onChange (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid && checkAuth()) {
+        if (valid && checkAuth() && this.canChange) {
           let data = {
             oldpsw: form.password,
             newpsw: form.newpassword

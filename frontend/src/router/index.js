@@ -55,6 +55,14 @@ const beforeEnter = (to, from, next) => {
     next()
   }
 }
+// for profile setting
+const beforeEnterSet = (to, from, next) => {
+  let currentUserID = store.getters.currentUserID
+  let profileID = to.params.id
+  if (currentUserID === Number(profileID)) {
+    next()
+  }
+}
 
 const router = new Router({
   mode: 'history',
@@ -139,8 +147,8 @@ const router = new Router({
       component: Setting,
       children: [
         { path: '', name: 'defaultSetting', redirect: 'setting' },
-        { path: 'setting', name: 'Setting', component: EditProfile, meta: {auth: true} },
-        { path: 'change', name: 'Change', component: ChangePsw, meta: {auth: true} }
+        { path: 'setting', name: 'Setting', component: EditProfile, beforeEnter: beforeEnterSet, meta: {auth: true} },
+        { path: 'change', name: 'Change', component: ChangePsw, beforeEnter: beforeEnterSet, meta: {auth: true} }
       ]
     }
   ]

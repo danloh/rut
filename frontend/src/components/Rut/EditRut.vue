@@ -67,13 +67,14 @@ export default {
         {value: 'Preschool', label: 'Preschool'}, {value: 'Professional', label: 'Professional'}
       ],
       rutId: null,
-      rutTitle: null
+      rutTitle: null,
+      canEdit: false
     }
   },
   methods: {
     onEdit (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid && checkAuth()) {
+        if (valid && checkAuth() && this.canEdit) {
           let data = {
             title: form.title,
             intro: form.intro,
@@ -111,6 +112,9 @@ export default {
         this.editForm.epilog = rut.epilog
         this.rutId = rut.id
         this.rutTitle = rut.title
+        let creatorID = rut.creator.id
+        let currentUserID = this.$store.getters.currentUserID
+        this.canEdit = Number(creatorID) === Number(currentUserID)
       }
     }
   },

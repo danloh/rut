@@ -4,7 +4,7 @@
       <router-link class="title" :to="'/readuplist/' + rutId">{{rutTitle}}</router-link>
     </h3>
     <spinner :show="loading"></spinner>
-    <!-- check -->
+    <!-- check via url spider or UID -->
     <el-form class="add-form" :model="checkForm" ref="checkForm" label-width="180px" size="mini" v-show="!show">
       <el-form-item label="Amazon URL or ISBN-13" prop="url">
         <el-input v-model="checkForm.url"></el-input>
@@ -59,6 +59,7 @@
 
 <script>
 import { checkItem, addItem } from '@/api/api'
+import { checkAuth } from '@/util/auth'
 import Spinner from '@/components/Misc/Spinner.vue'
 
 export default {
@@ -97,14 +98,16 @@ export default {
       show: false,
       loading: false,
       rutId: null,
-      rutTitle: null
+      rutTitle: null,
+      canEdit: false
     }
   },
   methods: {
+    // via Spider
     onCheck (formName, form) {
       this.loading = true
       this.$refs[formName].validate((valid) => {
-        if (valid) {
+        if (valid && checkAuth() && this.canEdit) {
           let data = {
             url: form.url
           }
@@ -114,7 +117,7 @@ export default {
             if (resp.data === 'Back') {
               this.$message({
                 showClose: true,
-                message: 'Faill to add, You can Try again'
+                message: 'Faill to add, no such item, You can Try again via an Amazon url'
               })
             }
             this.loading = false
@@ -128,9 +131,10 @@ export default {
         }
       })
     },
+    // manually add
     onAdd (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid) {
+        if (valid && checkAuth() && this.canEdit) {
           let data = {
             title: form.title,
             uid: form.uid,
@@ -162,6 +166,9 @@ export default {
     },
     loadRutData () {
       let rut = this.$store.getters.rutDetail
+      let creatorID = rut.creator.id
+      let currentUserID = this.$store.getters.currentUserID
+      this.canEdit = Number(creatorID) === Number(currentUserID)
       if (rut.id === Number(this.$route.params.id)) {
         this.rutId = rut.id
         this.rutTitle = rut.title

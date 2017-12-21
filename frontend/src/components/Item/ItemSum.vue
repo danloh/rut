@@ -55,7 +55,7 @@ export default {
       intoForm: {
         selectRutID: null
       },
-      createdRuts: {}
+      createdRuts: []
     }
   },
   computed: {
@@ -149,30 +149,28 @@ export default {
     },
     addtoRut (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid) {
-          if (checkAuth()) {
-            let rutid = form.selectRutID
-            let itemid = this.item.id
-            return itemToRut(itemid, rutid)
-            .then(() => {
-              this.showDialog = false
-              this.$message({
-                showClose: true,
-                message: 'Done'
-              })
-              this.$router.push(`/readuplist/${rutid}`) // why not work from rut page: re-sued component issue
-            })
-          } else {
+        if (valid && checkAuth()) {
+          let rutid = form.selectRutID
+          let itemid = this.item.id
+          return itemToRut(itemid, rutid)
+          .then(() => {
             this.showDialog = false
             this.$message({
               showClose: true,
-              message: 'Should Log in to Access'
+              message: 'Done, and Now You can add Tips'
             })
-            this.$router.push({
-              path: '/login',
-              query: {redirect: this.$route.fullPath}
-            })
-          }
+            this.$router.push(`/readuplist/${rutid}`) // why not work from rut page: re-sued component issue
+          })
+        } else {
+          this.showDialog = false
+          this.$message({
+            showClose: true,
+            message: 'Should Log in to Access'
+          })
+          this.$router.push({
+            path: '/login',
+            query: {redirect: this.$route.fullPath}
+          })
         }
       })
     }

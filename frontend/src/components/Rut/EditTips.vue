@@ -54,13 +54,14 @@ export default {
         ]
       },
       rutId: null,
-      rutTitle: null
+      rutTitle: null,
+      canEdit: false
     }
   },
   methods: {
     onEdit (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid && checkAuth()) {
+        if (valid && checkAuth() && this.canEdit) {
           let data = {
             order: form.order,
             tips: form.tips,
@@ -99,6 +100,9 @@ export default {
       this.editForm.spoiler = tip.spoiler ? 'Spoiler Ahead' : 'No Spoiler'
       this.rutId = rut.id
       this.rutTitle = rut.title
+      let creatorID = rut.creator.id
+      let currentUserID = this.$store.getters.currentUserID
+      this.canEdit = Number(creatorID) === Number(currentUserID)
     }
   },
   created () {

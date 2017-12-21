@@ -95,7 +95,7 @@ export default {
     },
     editTag (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid) {
+        if (valid && checkAuth()) {
           let data = {
             name: form.name,
             parent: form.parent,

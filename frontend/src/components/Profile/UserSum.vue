@@ -97,7 +97,7 @@ export default {
         &:hover
           color red
     .location
-      font-size 0.85em
+      font-size 0.95em
       color #9cce83
   .operate
     position absolute

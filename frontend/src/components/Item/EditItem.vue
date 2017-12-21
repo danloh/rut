@@ -62,6 +62,7 @@
 
 <script>
 import { editItem } from '@/api/api'
+import { checkAuth } from '@/util/auth'
 
 export default {
   name: 'edit-item',
@@ -99,7 +100,7 @@ export default {
   methods: {
     onEditItem (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid) {
+        if (valid && checkAuth()) {
           let data = {
             cate: form.cate,
             title: form.title,

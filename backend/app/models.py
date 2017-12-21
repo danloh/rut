@@ -1593,13 +1593,21 @@ class Users(UserMixin, db.Model):
         tag_set = set(tag_all)
 
         return tag_set,tag_fv
+    # set logo cover of  post
+    @property
+    @cache.memoize()
+    def user_avatar(self):
+        avatar = self.avatar
+        if not avatar or not avatar.strip():
+            return url_for('static', filename='pic/profile.svg')
+        return avatar
 
     def to_dict(self):
         user_dict = {
             'id': self.id,
             'name': self.nickname or self.name,
             'role': self.role.duty,
-            'avatar': self.avatar,
+            'avatar': self.user_avatar,
             'location': self.location,
             'about': self.about_me,
             'followercount': self.followers.count(), 

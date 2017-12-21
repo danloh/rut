@@ -51,9 +51,7 @@ export default {
           { validator: notNull, message: 'Required', trigger: 'change' }
         ]
       },
-      creatorID: -1,
-      currentUserID: this.$store.getters.currentUserID,
-      canEdit: Number(this.creatorID) === Number(this.currentUserID)
+      canEdit: false
     }
   },
   methods: {
@@ -66,7 +64,7 @@ export default {
         return false
       }
       this.$refs[formName].validate((valid) => {
-        if (valid && checkAuth()) {
+        if (valid && checkAuth() && this.canEdit) {
           let data = {
             title: form.title,
             review: form.review,
@@ -96,14 +94,21 @@ export default {
         this.reviewForm.title = data.heading
         this.reviewForm.review = data.body
         this.reviewForm.spoiler = data.spoiler ? 'Spoiler Ahead' : 'No Spoiler'
-        this.creatorID = data.creator.id
-        this.currentUserID = this.$store.getters.currentUserID
-        this.canEdit = Number(this.creatorID) === Number(this.currentUserID)
+        let creatorID = data.creator.id
+        let currentUserID = this.$store.getters.currentUserID
+        this.canEdit = Number(creatorID) === Number(currentUserID)
       })
     }
   },
   created () {
     this.loadReviewData()
+    // if (!this.canEdit) {
+    //   this.$router.push(`/review/${this.$route.params.id}`)
+    //   this.$message({
+    //     showClose: true,
+    //     message: 'No Permission to Edit'
+    //   })
+    // }
   }
 }
 </script>

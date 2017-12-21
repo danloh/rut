@@ -22,7 +22,6 @@ auth = HTTPBasicAuth()
 #api.add_resource(res.Item, '/item/<int:itemid>')
 #api.add_resource(res.Commentz, '/comments')
 
-# for user authentication NEEDED
 @rest.route('/register', methods = ['POST'])
 def register():
     username = request.json.get('username')
@@ -61,8 +60,9 @@ def edit_profile():
     user.links = request.json.get('url')
     db.session.add(user)
     db.session.commit()
-    return jsonify('Have Updated Your Profile')
+    return jsonify('Your Profile Updated')
 
+# check if name / email duplicated when regsiter
 @rest.route('/checkname/<username>')
 def checkname(username=None):
     if username and Users.query.filter_by(name=username).first() is None:
@@ -107,7 +107,7 @@ def change_password():
         user.password = new_psw
         db.session.add(user)
         db.session.commit()
-        return jsonify('Your password has been Changed, Please login again.')
+        return jsonify('Your password Changed, Please login again.')
     else:
         return jsonify('Invalid password.')
 
@@ -137,7 +137,7 @@ def password_reset(token):
     new_psw = request.json.get('newpsw')
     if Users.reset_password(token, new_psw):
         db.session.commit()
-        return jsonify('Your password has been updated, Please log in again.')
+        return jsonify('Your password updated, Please login again.')
     else:
         return jsonify('Something wrong, Try Again')
 
@@ -551,7 +551,7 @@ def check_item_for_add(rutid):
     #re_uid=r'([-]*(1[03])*[ ]*(: ){0,1})*(([0-9Xx][- ]*){13}|([0-9Xx][- ]*){10})'
     reg_url = re.compile(re_url,0)
     tips="No Tips Yet" # default
-
+    # by spider 
     checker = request.json.get('url') #url_or_uid
     if reg_url.match(checker):
         pure_url = checker.split('/ref=')[0] #for amazon url
@@ -588,6 +588,7 @@ def check_item_for_add(rutid):
                 new_item.author_to_db()
             db.session.commit()     
             return jsonify('Done')
+    # check if exsiting by UID
     else:
         uid=checker.replace('-','').replace(' ','')
         item=Items.query.filter_by(uid=uid).first()
@@ -742,7 +743,7 @@ def edit_item(itemid):
     #END edit author byline
     db.session.add(item)
     db.session.commit()
-    return jsonify('Done')
+    return jsonify('The item info Updated, Thank You')
 
 @rest.route('/clips')
 @auth.login_required
@@ -835,7 +836,7 @@ def edit_review(reviewid):
     user = g.user
     review = Reviews.query.get_or_404(reviewid)
     if user != review.creator:
-        return jsonify('No Permission')
+        return jsonify('Error, No Permission')
     review.heading = request.json.get('title')
     review.body = request.json.get('review')
     spoiler_text = request.json.get('spoiler')
@@ -983,7 +984,7 @@ def edit_tag(tagid):
         db.session.add(parent_tag)
     tag.parent(parent_tag)
     db.session.commit()
-    return jsonify('Done')
+    return jsonify('Tag Info Updated, Thank You')
 
 @rest.route('/checkfavtag/<int:tagid>')
 @auth.login_required

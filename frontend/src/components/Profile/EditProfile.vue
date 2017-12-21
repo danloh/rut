@@ -18,7 +18,7 @@
         <el-input v-model="settingForm.url"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="success" size="medium" @click="onSetting('settingForm', settingForm)">Update</el-button>
+        <el-button type="success" size="medium" @click="onSetting('settingForm', settingForm)" :disabled="!canSetting">Update</el-button>
         <!-- <el-button @click="resetForm('settingForm')">Reset</el-button> -->
       </el-form-item>
     </el-form>
@@ -40,13 +40,15 @@ export default {
         avatarUrl: '',
         about: '',
         url: ''
-      }
+      },
+      userid: null,
+      canSetting: false
     }
   },
   methods: {
     onSetting (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid && checkAuth()) {
+        if (valid && checkAuth() && this.canSetting) {
           let data = {
             nickname: form.nickname,
             location: form.location,
@@ -56,7 +58,7 @@ export default {
           }
           editProfile(data)
           .then((resp) => {
-            this.$router.push('/')
+            this.$router.push(`/profile/${this.userid}`)
             this.$message({
               showClose: true,
               message: resp.data
@@ -75,12 +77,14 @@ export default {
     },
     loadUserData () {
       let user = this.$store.getters.currentUser
+      this.userid = user.id
       if (user.id === Number(this.$route.params.id)) {
-        this.settingForm.nickname = user.nickname
+        this.settingForm.nickname = user.name // no nickname from api
         this.settingForm.location = user.location
         this.settingForm.avatarUrl = user.avatar
         this.settingForm.about = user.about_me
         this.settingForm.url = user.links
+        this.canSetting = true
       }
     }
   },
