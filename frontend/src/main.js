@@ -47,7 +47,7 @@ axios.interceptors.request.use(
 // Response interceptor
 axios.interceptors.response.use(
   response => {
-    console.log(response.config)
+    // console.log(response.config)
     return response
   },
   error => {
