@@ -1,0 +1,13 @@
+Dear {{ name }},
+
+Welcome to Readup.Tips!
+
+To confirm your account please click on the following link:
+
+{{ url }}
+
+Sincerely,
+
+The Readup.Tips Team
+
+Note: replies to this email address are not monitored.

@@ -1,0 +1,50 @@
+<template>
+  <div class="list-view">
+    <b>{{action.toUpperCase()}} {{totalRuts}}</b>
+    <div class="rut-list">
+      <rut-list :rutlist="currentRuts" @loadmore="loadmoreRuts"></rut-list>
+    </div>
+  </div>
+</template>
+
+<script>
+import RutList from '@/components/Rut/RutList.vue'
+import { mapGetters } from 'vuex'
+
+export default {
+  name: 'profile-ruts',
+  props: {
+    action: String // to be: created, star, challenge
+  },
+  components: { RutList },
+  computed: {
+    ...mapGetters([
+      'allRuts',
+      'totalRuts',
+      'currentPage',
+      'currentRuts',
+      'maxPage',
+      'perPage'
+    ])
+  },
+  methods: {
+    loadmoreRuts () {
+      this.$store.commit('ADD_RUTS', this.currentPage)
+    }
+  },
+  mounted () {
+    let action = this.action
+    let userid = this.$route.params.id
+    let params = {'action': action, 'userid': userid}
+    this.$store.dispatch('getProfileRuts', params)
+  }
+}
+</script>
+
+<style lang="stylus" scoped>
+.rut-list
+  width 100%
+  margin-top 5px
+  li
+    list-style-type none
+</style>
