@@ -241,6 +241,9 @@ def get_rut(rutid):
     from operator import itemgetter
     order_tips = sorted(tips, key=itemgetter('order'))
     rut_dict['tips'] = order_tips
+    # attach demands respon to
+    demands = [{'id': r.demand_id, 'demand': r.demand.body} for r in rut.demands]
+    rut_dict['demands'] = demands
     return jsonify(rut_dict)
 
 @rest.route('/challengerut')  # challenging rut !!
@@ -473,7 +476,7 @@ def edit_tips(cid):
 @auth.login_required
 def add_item_to_rut(rutid):
     """Input item info and then check if exsiting 
-    and add to rut as new or exsitingf item
+    and add to rut as new or exsiting item
     """
     user = g.user
     rut = Posts.query.get_or_404(rutid)
@@ -933,6 +936,23 @@ def new_demand():
     db.session.commit()
     return jsonify(demand.to_dict())
 
+@rest.route('/rut/<int:rutid>/answerdemand/<int:demandid>')
+@auth.login_required
+def rut_as_answer(rutid, demandid):
+    """link  Rut to  a demand as Answer"""
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    if rut.creator != user:
+        abort(403) #no permission
+    demand = Demands.query.get_or_404(demandid)
+    respon = Respon(
+        post = rut,
+        demand = demand
+    )
+    db.session.add(respon)
+    db.session.commit()
+    answer = {'id': rut.id, 'title': rut.title}
+    return jsonify(answer)
 
 @rest.route('/tag/<int:tagid>')
 def get_tag(tagid):
@@ -951,8 +971,8 @@ def get_tag(tagid):
         child_tags = [t.child_tag for t in Clan.query.\
                 filter_by(parent_tag_id=tg.id).\
                 order_by(db.func.rand()).limit(5)]
-        tags += child_tags   
-    tag_dict['tags'] = [{'tagid': t.id,'tagname': t.tag} for t in tags] 
+        tags += child_tags
+    tag_dict['tags'] = [{'tagid': t.id,'tagname': t.tag} for t in set(tags)]
     return jsonify(tag_dict)
 
 @rest.route('/edittag/<int:tagid>', methods=['POST'])

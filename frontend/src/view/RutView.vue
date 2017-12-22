@@ -63,10 +63,18 @@
       <div class="bottombar">
         <router-link :to="'/commenton/rut/' + rutid" target="_blank">To Comments Page</router-link>
       </div>
-    </div>   
+    </div> 
     <div class="rutside">
-      <p class="sidetitle">Creator's Credential</p>
-      <div class="sidebody" v-html="credential"></div>
+      <div class="credential">
+        <p class="credential-title"><b>Creator's Credential</b></p>
+        <div class="credential-body">{{ credential || 'Not Introduce' }}</div>
+      </div>
+      <div class="demands" v-if="demandCount">
+        <b>As Answer to Request:</b>
+        <p class="demand-title" v-for="(demand, index) in demands" :key="index" :demand="demand">
+          - <router-link :to="'/demand/' + demand.id"> {{ demand.demand.slice(0, 60) }}...</router-link>
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -88,6 +96,7 @@ export default {
       challengeAction: this.checkChallenge(), // || 'Challenge',
       starCount: 0,
       challengeCount: 0,
+      demandCount: 0,
       creatorid: null,
       creatorname: '',
       currentUserID: -1,
@@ -111,15 +120,18 @@ export default {
     tags () {
       return this.rutDetail.tags
     },
+    demands () {
+      return this.rutDetail.demands
+    },
     creator () {
       return this.rutDetail.creator
     },
-    contributors () {
-      return this.rutDetail.contributors
-    },
-    contributorIDList () {
-      return this.rutDetail.contributoridlist
-    },
+    // contributors () {
+    //   return this.rutDetail.contributors
+    // },
+    // contributorIDList () {
+    //   return this.rutDetail.contributoridlist
+    // },
     credential () {
       return this.rutDetail.credential
     },
@@ -139,12 +151,14 @@ export default {
       let crutid = this.$route.params.id
       this.$store.dispatch('getRut', crutid)
       .then(resp => {
-        this.starCount = resp.data.starcount
-        this.challengeCount = resp.data.challengecount
-        this.creatorid = resp.data.creator.id
-        this.creatorname = resp.data.creator.name
+        let data = resp.data
+        this.starCount = data.starcount
+        this.challengeCount = data.challengecount
+        this.creatorid = data.creator.id
+        this.creatorname = data.creator.name
         this.currentUserID = this.$store.getters.currentUserID
-        this.newTags = resp.data.tags.map(t => t.tagname)
+        this.newTags = data.tags.map(t => t.tagname)
+        this.demandCount = data.demands.length
       })
     },
     checkStar () {
@@ -306,17 +320,27 @@ $bgcolor = lighten(#f6f6f1, 50%)
     font-size 0.7em
     color #668e66
   .rutside
-    background-color #f5f9f5
     position absolute
     right 0
     top 10px
     width 240px
-    .sidetitle
-      background-color #dff0d8
-      padding 10px
-      color #3c763d
-    .sidebody
-      padding 0 10px
-      min-height 45px
-      font-size 0.85em
+    .credential
+      background-color #f5f9f5
+      .credential-title
+        background-color #dff0d8
+        padding 10px
+        color #3c763d
+      .credential-body
+        padding 0 10px
+        min-height 45px
+        font-size 0.85em
+    .demands
+      background-color white
+      padding 5px
+      margin-bottom 5px
+      .demand-title
+        font-size 0.85em
+        a
+          &:hover
+            color #ff6600
 </style>

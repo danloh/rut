@@ -23,9 +23,7 @@ import { mapGetters } from 'vuex'
 export default {
   name: 'home',
   title: 'Readup.Tips - Share Reading List',
-  components: {
-    RutList, Spinner
-  },
+  components: { RutList, Spinner },
   data: () => ({
     loading: true
   }),

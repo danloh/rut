@@ -1,5 +1,5 @@
 <template>
-  <div class="demand-main">
+  <div class="demand-main" v-if="requestor"> <!--render after requestor get data-->
     <div class="demand-body">{{demand.body}}</div>
     <div class="demand-bar">
       Requseted by <router-link :to="'/profile/' + requestor.id">{{ requestor.name }}</router-link>
@@ -20,14 +20,13 @@ export default {
   data () {
     return {
       vote: this.demand.vote,
-      answercount: this.demand.answercount,
-      requestor: this.demand.requestor
+      answercount: this.demand.answercount
     }
   },
   computed: {
-    // requestor () {
-    //   return this.demand.requestor
-    // }
+    requestor () {
+      return this.demand.requestor
+    }
   },
   methods: {
     upDemand () {

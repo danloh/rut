@@ -504,9 +504,9 @@ class Posts(db.Model):
 
     def to_dict(self):
         creator = self.creator.to_dict()
-        contributes = self.contributors
-        contributors = [i.to_dict() for i in contributes]
-        contributor_id_list = [i.user_id for i in contributes]
+        #contributes = self.contributors
+        #contributors = [i.to_dict() for i in contributes]
+        #contributor_id_list = [i.user_id for i in contributes]
         tags = [t.to_dict() for t in self.tags]
         post_dict = {
             'id': self.id,
@@ -525,8 +525,8 @@ class Posts(db.Model):
             'cover': self.post_cover,
             'editable': self.editable,
             'creator': creator,
-            'contributors': contributors,
-            'contributoridlist': contributor_id_list,
+            #'contributors': contributors,
+            #'contributoridlist': contributor_id_list,
             'tags': tags
         }
         return post_dict
@@ -780,7 +780,8 @@ class Tags(db.Model):
     @staticmethod
     @cache.memoize()
     def get_tags():
-        return Tags.query.order_by(Tags.vote.desc()).order_by(db.func.rand()).limit(20).all()
+        return Tags.query.order_by(Tags.vote.desc()).\
+                        order_by(db.func.rand()).limit(20).all()
 
     def cal_vote(self,i=None,p=None,d=None,f=None):
         i = i or self.items.count()

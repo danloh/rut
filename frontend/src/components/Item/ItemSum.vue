@@ -24,7 +24,7 @@
       </el-dropdown>
     </div>
     <!-- addtolist dialog -->
-    <el-dialog title="Add Item to Created List" :visible.sync="showDialog" width="35%">
+    <el-dialog title="Add Item to Created List" :visible.sync="showDialog" width="45%">
       <el-form :model="intoForm" ref="intoForm">
         <el-form-item prop="rut">
           <el-select v-model="intoForm.selectRutID">

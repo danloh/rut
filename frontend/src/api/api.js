@@ -202,6 +202,10 @@ const newDemand = params => {
 const upvoteDemand = (demandid, params) => {
   return request(`${base}/upvotedemand/${demandid}`, params)
 }
+// link a rut to demand as Answer
+const rutAsAnswer = (rutid, demandid, params) => {
+  return request(`${base}/rut/${rutid}/answerdemand/${demandid}`, params)
+}
 // post new comment
 const newComment = (ref, id, params) => {
   return request(`${base}/comment/${ref}/${id}`, params, 'post')
@@ -262,6 +266,7 @@ export {
   upvoteClip,
   newDemand,
   upvoteDemand,
+  rutAsAnswer,
   newComment,
   fetchRutComment
 }

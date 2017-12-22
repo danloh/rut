@@ -15,13 +15,15 @@
         <router-link :to="'/item/' + currentItem.id + '/hotreview'">Hot Reviews</router-link>
         <router-link :to="'/item/' + currentItem.id + '/newreview'">New Reviews</router-link>
         &nbsp;&nbsp;&nbsp;
-        <router-link style="color: blue; font-size: 0.8em" :to="'/review/item/' + currentItem.id" target="_blank">...Post A Review</router-link>
+        <router-link style="color: blue; font-size: 0.8em" :to="'/review/item/' + currentItem.id" target="_blank">...Post Review</router-link>
       </div>
       <div class="review-view">
         <router-view></router-view>
       </div>
       <div class="clips">
-        <b>Clips</b>
+        <b style="color: orange">Clips</b>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <router-link style="color: blue; font-size: 0.8em" to="/challenge" target="_blank">...Excerpt Quote</router-link>
         <clip-list :param="cliplistParam"></clip-list>
       </div>
     </div>
@@ -80,7 +82,8 @@ export default {
     .review-view
       padding 5px
     .submenu
-        margin-bottom 5px
+        margin 5px 0
+        padding 5px
         a
           color grey
           margin-right 0.85em
