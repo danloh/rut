@@ -4,6 +4,12 @@
       <router-link class="title" :to="'/readuplist/' + rutId">{{rutTitle}}</router-link>
     </h3>
     <spinner :show="loading"></spinner>
+    <el-button size="small" type="primary">
+      {{ show ? 'Add Item Info Manually' : 'Fetch Item Info via Spider' }}
+    </el-button>
+    <el-button size="mini" type="text" @click="show = !show">
+      or {{ show ? 'Fetch Item Info via Spider' : 'Add Item Info Manually' }}
+    </el-button>
     <!-- check via url spider or UID -->
     <el-form class="add-form" :model="checkForm" ref="checkForm" size="mini" v-show="!show">
       <el-form-item label="Amazon URL or ISBN-13" prop="url">
@@ -13,7 +19,6 @@
         <el-button type="success" size="medium" @click="onCheck('checkForm', checkForm)">Fetch Via Spider</el-button>
       </el-form-item>
     </el-form>
-    <el-button size="mini" @click="altShow">Fetch Item Info via Spider or Manually</el-button>
     <!-- add mannually -->
     <el-form class="add-form" :model="addForm" :rules="addRules" ref="addForm" label-width="120px" size="mini" v-show="show">
       <el-form-item label="Type" prop="cate">
@@ -41,7 +46,7 @@
         <el-input v-model="addForm.cover"></el-input>
       </el-form-item>
       <el-form-item label="Tips" prop="tips">
-        <el-input type="textarea" v-model="addForm.tips"></el-input>
+        <el-input type="textarea" :rows="12" v-model="addForm.tips"></el-input>
       </el-form-item>
       <el-form-item label="in Tips" prop="spoiler">
         <el-radio-group v-model="addForm.spoiler">
@@ -179,9 +184,6 @@ export default {
         this.rutId = rut.id
         this.rutTitle = rut.title
       }
-    },
-    altShow () {
-      this.show = !this.show
     }
   },
   created () {
