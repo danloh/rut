@@ -7,18 +7,18 @@
         <el-input v-model="createForm.title"></el-input>
       </el-form-item>
       <el-form-item label="Preface" prop="intro">
-        <el-input type="textarea" v-model="createForm.intro"></el-input>
+        <el-input type="textarea" :rows="3" v-model="createForm.intro"></el-input>
       </el-form-item>
       <el-form-item label="Tag" prop="tag">
         <el-input v-model="createForm.tag"></el-input>
+      </el-form-item>
+      <el-form-item label="Credential" prop="credential">
+        <el-input type="textarea" v-model="createForm.credential"></el-input>
       </el-form-item>
       <el-form-item label="Rating" prop="rating">
         <el-select v-model="createForm.rating">
           <el-option v-for="r in ratings" :key="r.value" :label="r.label" :value="r.value"></el-option>
         </el-select>
-      </el-form-item>
-      <el-form-item label="Credential" prop="credential">
-        <el-input v-model="createForm.credential"></el-input>
       </el-form-item>
       <!-- <el-form-item label="Who Can Edit?" prop="editable">
         <el-radio-group v-model="createForm.editable">

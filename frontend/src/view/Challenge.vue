@@ -7,7 +7,7 @@
             <el-input type="textarea" v-model="clipForm.clip" placeholder="excerpt something"></el-input>
           </el-form-item>
           <el-form-item prop="doing" style="margin-bottom:8px">
-            <el-select class="selectItem" v-model="clipForm.doingItemID" placeholder="Pick an item from which you excerpt clip in Your working-ons">
+            <el-select class="selectItem" v-model="clipForm.doingItemID" placeholder="Pick an item which you are working on">
               <el-option v-for="i in doingItems" :key="i.id" :label="i.title" :value="i.id"></el-option>
             </el-select>
           </el-form-item>

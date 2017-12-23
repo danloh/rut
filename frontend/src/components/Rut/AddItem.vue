@@ -13,7 +13,7 @@
     <!-- check via url spider or UID -->
     <el-form class="add-form" :model="checkForm" ref="checkForm" size="mini" v-show="!show">
       <el-form-item label="Amazon URL or ISBN-13" prop="url">
-        <el-input v-model="checkForm.url"></el-input>
+        <el-input type="textarea" :rows="1" v-model="checkForm.url"></el-input>
       </el-form-item>
       <el-form-item>
         <el-button type="success" size="medium" @click="onCheck('checkForm', checkForm)">Fetch Via Spider</el-button>
