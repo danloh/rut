@@ -1,5 +1,5 @@
 <template>
-  <div class="review-main">
+  <div class="review-main" v-if="creator">
     <h2 class="title">
       <router-link :to="'/review/' + review.id">{{ review.heading }}</router-link>
     </h2>
@@ -13,8 +13,8 @@
       <el-button type="text" size="mini" @click="showFull" v-if="spoiler || short">{{ readMore }}</el-button>
     </div>
     <div class="bar">
-      <router-link :to="'/editreview/' + review.id" v-if="canEdit">...Edit</router-link>
-      | <el-button type="text"><span @click="upReview">Helpful</span></el-button> {{ vote }} 
+      <router-link :to="'/editreview/' + review.id" v-if="canEdit">...Edit |</router-link>
+      <el-button type="text"><span @click="upReview">Helpful</span></el-button> {{ vote }}
     </div>
   </div>
 </template>

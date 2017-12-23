@@ -9,6 +9,9 @@
           - <router-link :to="'/readuplist/' + rut.id" :title="rut.title"> {{ rut.title.slice(0, 160) }}...</router-link>
         </p>
       </div>
+      <div class="share">
+        <share-bar></share-bar>
+      </div>
       <!-- link to a rut as answer dialog -->
       <el-dialog title="Link A list as Answer" :visible.sync="showDialog" width="45%">
         <el-form :model="asForm" ref="asForm">
@@ -40,6 +43,7 @@
 import Demand from '@/components/Demand/Demand.vue'
 import Comment from '@/components/Comment/Comment.vue'
 import Reply from '@/components/Comment/Reply.vue'
+import ShareBar from '@/components/Misc/ShareBar.vue'
 import { fetchProfileRuts, rutAsAnswer } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { mapGetters } from 'vuex'
@@ -49,7 +53,7 @@ export default {
   title () {
     return this.demandDetail.body
   },
-  components: { Demand, Comment, Reply },
+  components: { Demand, Comment, Reply, ShareBar },
   data () {
     return {
       refer: { re: 'demand', id: this.$route.params.id },

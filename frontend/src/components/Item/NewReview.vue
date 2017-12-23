@@ -1,13 +1,29 @@
 <template>
   <div class="review-page">
     <h3 class="title"> Post New Review:</h3>
-    <router-link class="title" :to="'/item/' + itemId" target="_blank">Item</router-link>
+    <router-link :to="'/item/' + itemId" target="_blank" rel="nofollow noopener noreferrer">Item</router-link>
     <el-form class="review-form" :model="reviewForm" :rules="rules" ref="reviewForm" size="mini">
       <el-form-item prop="title">
         <el-input v-model="reviewForm.title" placeholder="Title"></el-input>
       </el-form-item>
       <el-form-item prop="review">
-        <el-input type="textarea" :rows="12" v-model="reviewForm.review" placeholder="Post Review"></el-input>
+        <mavon-editor 
+          v-model="reviewForm.review" 
+          placeholder="Post Review"
+          :language="'en'"
+          :subfield="false"
+          :toolbars="{
+            bold: true,
+            mark: true,
+            quote: true,
+            link: true,
+            ol: true,
+            ul: true,
+            code: true,
+            fullscreen: true,
+            preview: true
+          }">
+        </mavon-editor>
       </el-form-item>
       <el-form-item prop="spoiler">
         <el-radio-group v-model="reviewForm.spoiler">
@@ -33,7 +49,7 @@ export default {
     return {
       reviewForm: {
         title: '',
-        review: '',
+        review: 'Test',
         spoiler: 'No Spoiler'
       },
       rules: {

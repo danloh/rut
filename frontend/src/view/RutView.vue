@@ -23,8 +23,9 @@
         <h2>{{ rutDetail.title }}</h2>
         <p class="meta">
           By <router-link :to="'/profile/' + creatorid">{{ creatorname }}</router-link>
-          | {{ rutDetail.createat | toLocal }}
-          | including {{ rutDetail.itemcount }} items
+          | {{ rutDetail.createat | toMDY }}
+          | include {{ rutDetail.itemcount }} items
+          | {{ rutDetail.commentcount }} <router-link :to="'/commenton/rut/' + rutid">Comments</router-link>
         </p>
       </div>
       <div class="intro">
@@ -61,7 +62,7 @@
         <div v-html="rutDetail.epilog"></div>
       </div>
       <div class="bottombar">
-        <router-link :to="'/commenton/rut/' + rutid" target="_blank">To Comments Page</router-link>
+        <share-bar></share-bar>
       </div>
     </div> 
     <div class="rutside">
@@ -83,13 +84,14 @@
 import Spinner from '@/components/Misc/Spinner.vue'
 import ItemSum from '@/components/Item/ItemSum.vue'
 import Comment from '@/components/Comment/Comment.vue'
+import ShareBar from '@/components/Misc/ShareBar.vue'
 import { scRut, checkSC, editTags } from '@/api/api'  // sc: star and challenge
 import { checkAuth } from '@/util/auth'
 import { mapGetters } from 'vuex'
 
 export default {
   name: 'rut-view',
-  components: { ItemSum, Spinner, Comment },
+  components: { ItemSum, Spinner, Comment, ShareBar },
   data () {
     return {
       starAction: this.checkStar(), // || 'Star',
@@ -314,7 +316,7 @@ $bgcolor = lighten(#f6f6f1, 50%)
       justify-content flex-end
     .bottombar
       font-size 0.85em
-      padding 10px
+      padding 5px
       text-align right
   .indicator
     font-size 0.7em

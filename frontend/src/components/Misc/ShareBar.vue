@@ -1,0 +1,100 @@
+<template>
+  <div id="share">
+    <div class="share-box">
+      <!-- <a title="evernote" 
+         rel="nofollow noopener"
+         class="share-link evernote"
+         @click.prevent="shareWindow(`https://www.evernote.com/clip.action?url=${url}&title=${title()}`)">
+        Evernote
+      </a> -->
+      <a title="twitter" 
+         rel="nofollow noopener"
+         class="share-link twitter"
+         @click.prevent="shareWindow(`http://twitter.com/share?text=${title()}&url=${url}`)">
+        <img alt="TW" src="/static/pic/twitter.svg" class="icon">
+      </a>
+      <a title="facebook" 
+         rel="nofollow noopener"
+         class="share-link facebook"
+         @click.prevent="shareWindow(`https://www.facebook.com/sharer/sharer.php?u=${url}`)">
+        <img alt="FB" src="/static/pic/facebook.svg" class="icon">
+      </a>
+      <a title="linkedin" 
+         rel="nofollow noopener"
+         class="share-link linkedin"
+         @click.prevent="shareWindow(`http://www.linkedin.com/shareArticle?mini=true&url=${url}&title=${title()}`)">
+        <img alt="FB" src="/static/pic/linkedin.svg" class="icon">
+      </a>
+      <a title="google plus" 
+         rel="nofollow noopener"
+         class="share-link google-plus"
+         @click.prevent="shareWindow(`https://plus.google.com/share?url=${url}`)">
+        <img alt="FB" src="/static/pic/gplus.svg" class="icon">
+      </a>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'share-bar',
+  mounted () {
+  },
+  computed: {
+    url () {
+      return `https://readup.tips${this.$route.fullPath}`
+    }
+  },
+  methods: {
+    title () {
+      try {
+        if (document) return document.title
+      } catch (err) { return 'Readup.Tips' }
+    },
+    shareWindow (url) {
+      url = encodeURI(url)
+      console.log(url)
+      let winName = 'newWin'
+      let awidth = screen.availWidth / 2
+      let aheight = screen.availHeight / 5 * 2
+      let atop = (screen.availHeight - aheight) / 2
+      let aleft = (screen.availWidth - awidth) / 2
+      let param0 = 'scrollbars=0,status=0,menubar=0,resizable=2,location=0'
+      let params = `top=${atop},left=${aleft},width=${awidth},height=${aheight},${param0}`
+      const win = window.open(url, winName, params)
+      win.focus()
+    }
+  }
+}
+</script>
+
+<style lang="stylus" scoped>
+  #share
+    text-align right
+    padding: 0.2em
+    margin-bottom: 0.5em
+    .share-box
+      > .share-link
+        cursor: pointer
+        display: inline-block
+        text-align: center
+
+        &.evernote:hover
+          background-color: rgb(139, 224, 86)
+
+        &.twitter:hover
+          background-color: rgb(85, 172, 238)
+
+        &.facebook:hover
+          background-color: rgb(59, 89, 152)
+
+        &.google-plus:hover
+          background-color: rgb(221, 75, 57)
+
+        &.linkedin:hover
+          background-color: rgb(0, 123, 181)
+
+        .icon
+          width 14px
+          height 14px
+</style>

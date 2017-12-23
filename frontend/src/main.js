@@ -5,6 +5,8 @@ import axios from 'axios'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import locale from 'element-ui/lib/locale/lang/en'
+import mavonEditor from 'mavon-editor'
+import 'mavon-editor/dist/css/index.css'
 import ProgressBar from './components/Misc/ProgressBar.vue'
 import titleMixin from './util/title'
 import * as filters from './util/filters'
@@ -17,7 +19,8 @@ Vue.config.productionTip = false
 
 // UI + en
 Vue.use(ElementUI, { locale })
-
+// Markdown editor
+Vue.use(mavonEditor)
 // progress bar, reder off-document and append afterwards
 const bar = Vue.prototype.$bar = new Vue(ProgressBar).$mount()
 document.body.appendChild(bar.$el)
