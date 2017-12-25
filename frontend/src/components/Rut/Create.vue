@@ -7,7 +7,11 @@
         <el-input v-model="createForm.title"></el-input>
       </el-form-item>
       <el-form-item label="Preface" prop="intro">
-        <el-input type="textarea" :rows="3" v-model="createForm.intro"></el-input>
+        <!-- <el-input type="textarea" :rows="3" v-model="createForm.intro"></el-input> -->
+        <quill-editor v-model="createForm.intro"
+                      ref="TextEditor"
+                      class="quill-editor">
+        </quill-editor>
       </el-form-item>
       <el-form-item label="Tag" prop="tag">
         <el-input v-model="createForm.tag"></el-input>

@@ -494,9 +494,9 @@ def add_item_to_rut(rutid):
         online_item = None
     if old_item is None and online_item is None:
         new_item = Items(
-            uid = request.json.get('uid'),
+            uid = uid,
             title = request.json.get('title'),
-            res_url = request.json.get('resUrl',''),
+            res_url = res_url,
             author = request.json.get('byline',''),
             cover = request.json.get('cover',''),
             cate = request.json.get('cate','Book'),
@@ -564,7 +564,7 @@ def check_item_for_add(rutid):
         else:
             d = spider.parse_html(checker)
             new_item = Items(
-                uid = d.get('uid'),
+                uid = d.get('uid').replace('-','').replace(' ',''),
                 title = d.get('title'),
                 res_url = d.get('res_url',''),
                 author = d.get('author',''),
@@ -685,8 +685,8 @@ def edit_item(itemid):
     query = Items.query
     item = query.get_or_404(itemid)
     uid = request.json.get('uid').replace('-','').replace(' ','')
-    if query.filter_by(uid=uid) and item.uid != uid:
-        abort(403) #return jsonify('Error') # can not be duplicated
+    if query.filter_by(uid=uid).first() and item.uid != uid:
+        abort(403) #return jsonify('Error') # can not be duplicated uid
     #update item 
     item.uid = uid
     item.cate = request.json.get('cate')

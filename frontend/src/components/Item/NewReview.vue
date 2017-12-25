@@ -7,23 +7,10 @@
         <el-input v-model="reviewForm.title" placeholder="Title"></el-input>
       </el-form-item>
       <el-form-item prop="review">
-        <mavon-editor 
-          v-model="reviewForm.review" 
-          placeholder="Post Review"
-          :language="'en'"
-          :subfield="false"
-          :toolbars="{
-            bold: true,
-            mark: true,
-            quote: true,
-            link: true,
-            ol: true,
-            ul: true,
-            code: true,
-            fullscreen: true,
-            preview: true
-          }">
-        </mavon-editor>
+        <quill-editor v-model="reviewForm.review"
+                      ref="TextEditor"
+                      class="quill-editor">
+        </quill-editor>
       </el-form-item>
       <el-form-item prop="spoiler">
         <el-radio-group v-model="reviewForm.spoiler">
@@ -49,7 +36,7 @@ export default {
     return {
       reviewForm: {
         title: '',
-        review: 'Test',
+        review: '',
         spoiler: 'No Spoiler'
       },
       rules: {
@@ -97,7 +84,7 @@ export default {
 
 <style lang="stylus" scoped>
 .review-page
-  padding 10px 180px
+  padding 10px 160px
   position relative
   .review-form
     padding 20px

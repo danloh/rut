@@ -5,8 +5,10 @@ import axios from 'axios'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import locale from 'element-ui/lib/locale/lang/en'
-import mavonEditor from 'mavon-editor'
-import 'mavon-editor/dist/css/index.css'
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
+import VueQuillEditor from 'vue-quill-editor'
 import ProgressBar from './components/Misc/ProgressBar.vue'
 import titleMixin from './util/title'
 import * as filters from './util/filters'
@@ -19,8 +21,23 @@ Vue.config.productionTip = false
 
 // UI + en
 Vue.use(ElementUI, { locale })
-// Markdown editor
-Vue.use(mavonEditor)
+
+// rich Text editor
+const editorOption = {
+  theme: 'snow',
+  placeholder: 'Compose...',
+  modules: {
+    toolbar: [
+      ['bold', 'underline'],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      [{ 'color': [] }, { 'background': [] }],
+      ['blockquote'],
+      ['link'],
+      ['clean']
+    ]
+  }
+}
+Vue.use(VueQuillEditor, editorOption)
 // progress bar, reder off-document and append afterwards
 const bar = Vue.prototype.$bar = new Vue(ProgressBar).$mount()
 document.body.appendChild(bar.$el)

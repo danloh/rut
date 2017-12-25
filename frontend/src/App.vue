@@ -141,4 +141,11 @@ p
   margin 5px auto
   padding 8px 0px
   font-size 0.75em
+.quill-editor
+  border: 1px solid #ccc
+  background-color white
+  .ql-toolbar
+    padding 2px
+  .ql-container
+    min-height 8em
 </style>

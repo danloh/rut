@@ -1,6 +1,6 @@
 <template>
   <div id="share">
-    <div class="share-box">
+    <div class="share-bar">
       <!-- <a title="evernote" 
          rel="nofollow noopener"
          class="share-link evernote"
@@ -71,9 +71,7 @@ export default {
 <style lang="stylus" scoped>
   #share
     text-align right
-    padding: 0.2em
-    margin-bottom: 0.5em
-    .share-box
+    .share-bar
       > .share-link
         cursor: pointer
         display: inline-block
@@ -95,6 +93,7 @@ export default {
           background-color: rgb(0, 123, 181)
 
         .icon
+          padding 5px
           width 14px
           height 14px
 </style>

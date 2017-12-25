@@ -8,13 +8,21 @@
         <el-input v-model="editForm.title"></el-input>
       </el-form-item>
       <el-form-item label="Preface" prop="intro">
-        <el-input type="textarea" :rows="3" v-model="editForm.intro"></el-input>
-      </el-form-item>
-      <el-form-item label="Epilog" prop="epilog">
-        <el-input type="textarea" :rows="3" v-model="editForm.epilog"></el-input>
+        <!-- <el-input type="textarea" :rows="3" v-model="editForm.intro"></el-input> -->
+        <quill-editor v-model="editForm.intro"
+                      ref="TextEditor"
+                      class="quill-editor">
+        </quill-editor>
       </el-form-item>
       <el-form-item label="Credential" prop="credential">
         <el-input type="textarea" v-model="editForm.credential"></el-input>
+      </el-form-item>
+      <el-form-item label="Epilog" prop="epilog">
+        <!-- <el-input type="textarea" :rows="3" v-model="editForm.epilog"></el-input> -->
+        <quill-editor v-model="editForm.epilog"
+                      ref="TextEditor"
+                      class="quill-editor">
+        </quill-editor>
       </el-form-item>
       <!-- <el-form-item label="Who Can Edit?" prop="editable">
         <el-radio-group v-model="editForm.editable">
