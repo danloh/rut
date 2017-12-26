@@ -1,35 +1,35 @@
 <template>
   <div id="share">
     <div class="share-bar">
-      <!-- <a title="evernote" 
-         rel="nofollow noopener"
-         class="share-link evernote"
-         @click.prevent="shareWindow(`https://www.evernote.com/clip.action?url=${url}&title=${title()}`)">
-        Evernote
-      </a> -->
-      <a title="twitter" 
+      <a title="Twitter" 
          rel="nofollow noopener"
          class="share-link twitter"
          @click.prevent="shareWindow(`http://twitter.com/share?text=${title()}&url=${url}`)">
         <img alt="TW" src="/static/pic/twitter.svg" class="icon">
       </a>
-      <a title="facebook" 
+      <a title="Facebook" 
          rel="nofollow noopener"
          class="share-link facebook"
          @click.prevent="shareWindow(`https://www.facebook.com/sharer/sharer.php?u=${url}`)">
         <img alt="FB" src="/static/pic/facebook.svg" class="icon">
       </a>
-      <a title="linkedin" 
+      <a title="Linkedin" 
          rel="nofollow noopener"
          class="share-link linkedin"
          @click.prevent="shareWindow(`http://www.linkedin.com/shareArticle?mini=true&url=${url}&title=${title()}`)">
-        <img alt="FB" src="/static/pic/linkedin.svg" class="icon">
+        <img alt="Linkedin" src="/static/pic/linkedin.svg" class="icon">
       </a>
-      <a title="google plus" 
+      <a title="Google+" 
          rel="nofollow noopener"
          class="share-link google-plus"
          @click.prevent="shareWindow(`https://plus.google.com/share?url=${url}`)">
-        <img alt="FB" src="/static/pic/gplus.svg" class="icon">
+        <img alt="G+" src="/static/pic/gplus.svg" class="icon">
+      </a>
+      <a title="Evernote" 
+         rel="nofollow noopener"
+         class="share-link evernote"
+         @click.prevent="shareWindow(`https://www.evernote.com/clip.action?url=${url}&title=${title()}`)">
+        <img alt="Evernote" src="/static/pic/evernote.svg" class="icon">
       </a>
     </div>
   </div>
@@ -94,6 +94,6 @@ export default {
 
         .icon
           padding 5px
-          width 14px
-          height 14px
+          width 16px
+          height 16px
 </style>

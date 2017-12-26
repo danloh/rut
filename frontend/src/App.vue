@@ -40,7 +40,7 @@
       <router-view></router-view>
     </div>
     <footer class="bottom">
-      ©Readup.Tips - Since 2017
+      ©Readup.Tips - since 2018
       <!-- | <router-link to="/about">About</router-link>
       | <router-link to="/terms">Terms</router-link>
       | <router-link to="/help">Help</router-link> | -->
