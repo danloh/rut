@@ -1,6 +1,6 @@
 <template>
   <div class="clipmain">
-    <div class="clipbody" v-html="clip.body"></div>
+    <div class="clipbody" v-html="clipContent"></div>
     <p class="meta">
       From <router-link :to="'/item/' + fromitem.id" :title="fromitem.title">{{ fromitem.title.slice(0, 60) }}...</router-link>
       via <router-link :to="'/profile/' + creator.id">{{ creator.name.slice(0, 20) }}</router-link>
@@ -13,6 +13,7 @@
 <script>
 import { upvoteClip } from '@/api/api'
 import { checkAuth } from '@/util/auth'
+import marked from '@/util/marked'
 
 export default {
   name: 'clip',
@@ -28,6 +29,9 @@ export default {
     },
     fromitem () {
       return this.clip.fromitem
+    },
+    clipContent () {
+      return marked(this.clip.body)
     }
   },
   methods: {

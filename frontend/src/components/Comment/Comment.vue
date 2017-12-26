@@ -4,7 +4,7 @@
       <router-link :to="'/profile/' + creator.id">{{ creator.name }}</router-link>
       ~ {{ comment.timestamp | timeAgo }}
     </div>
-    <div class="text" v-html="comment.body"></div>
+    <div class="text" v-html="commentContent"></div>
     <el-button type="text" size="mini" @click="showRe = !showRe">
       {{ showRe ? 'Hide' : 'Reply' }}
     </el-button>
@@ -20,6 +20,7 @@
 
 <script>
 import Reply from '@/components/Comment/Reply.vue'
+import marked from '@/util/marked'
 
 export default {
   name: 'comment',
@@ -37,6 +38,9 @@ export default {
   computed: {
     creator () {
       return this.comment.creator
+    },
+    commentContent () {
+      return marked(this.comment.body)
     }
   },
   methods: {

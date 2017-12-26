@@ -19,9 +19,10 @@ from .utils import split_str, str_to_dict, str_to_set
 # html_tags Whitelist for Bleach
 # markdown: comment, clip
 # rich text: intro, epilog, tips, review
-allowed_tags = ['a', 'abbr', 'b', 'blockquote', 'code', 'img',
-                'em', 'i', 'li', 'ol', 'ul', 'pre', 'strong',
-                'h3', 'h4', 'h5', 'h6', 'hr', 'p']
+# now parse markdown in frontend
+# allowed_tags = ['a', 'abbr', 'b', 'blockquote', 'code', 'img',
+#                 'em', 'i', 'li', 'ol', 'ul', 'pre', 'strong',
+#                 'h3', 'h4', 'h5', 'h6', 'hr', 'p']
 
 # simple n2n for Tags Posts
 tag_post = db.Table(
@@ -85,7 +86,7 @@ class Collect(db.Model):
             'postid': self.post_id,
             'itemid': self.item_id,
             'item': item_dict,
-            'tip':  self.tips or self.tips_html,
+            'tip':  self.tips,
             'spoiler': self.spoiler
         }
         return tip_dict
@@ -878,7 +879,7 @@ class Comments(db.Model):
         comment_dict = {
             'id': self.id,
             'heading': self.heading,
-            'body': self.body_html or self.body,
+            'body': self.body,
             'vote': self.vote,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             'creator': {'id': self.creator_id, 'name': self.creator.nickname or self.creator.name},
@@ -889,12 +890,12 @@ class Comments(db.Model):
     def __repr__(self):
         return '<Coments %r>' % self.body
 
-    @staticmethod
-    def on_changed_body(target, value, oldvalue, initiator):
-        target.body_html = bleach.linkify(bleach.clean(
-            markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True))
-db.event.listen(Comments.body, 'set', Comments.on_changed_body)
+#     @staticmethod
+#     def on_changed_body(target, value, oldvalue, initiator):
+#         target.body_html = bleach.linkify(bleach.clean(
+#             markdown(value, output_format='html'),
+#             tags=allowed_tags, strip=True))
+# db.event.listen(Comments.body, 'set', Comments.on_changed_body)
 
 # Monkey patched for self reference -reply
 Comments.parent_comment_id = db.Column(
@@ -951,7 +952,7 @@ class Reviews(db.Model):
             'id': self.id,
             'heading': self.heading,
             'creator': {'id': creator.id, 'name': creator.nickname or creator.name},
-            'body': self.body or self.body_html,
+            'body': self.body,
             'spoiler': self.spoiler,
             'item': {'id': item.id, 'title': item.title},
             'vote':  self.vote,
@@ -998,7 +999,7 @@ class Clips(db.Model):
             'id': self.id,
             'creator': self.creator.to_dict(),
             'fromitem': self.item.to_dict(),
-            'body': self.body_html or self.body,
+            'body': self.body,
             'vote': self.vote,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         }
@@ -1007,12 +1008,12 @@ class Clips(db.Model):
     def __repr__(self):
         return '<Clips %r>' % self.body
     
-    @staticmethod
-    def on_changed_body(target, value, oldvalue, initiator):
-        target.body_html = bleach.linkify(bleach.clean(
-            markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True))
-db.event.listen(Clips.body, 'set', Clips.on_changed_body)
+#     @staticmethod
+#     def on_changed_body(target, value, oldvalue, initiator):
+#         target.body_html = bleach.linkify(bleach.clean(
+#             markdown(value, output_format='html'),
+#             tags=allowed_tags, strip=True))
+# db.event.listen(Clips.body, 'set', Clips.on_changed_body)
 
 
 class Demands(db.Model):
