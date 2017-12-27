@@ -82,9 +82,13 @@ const setDeadline = params => {
 const fetchProfileRuts = (action, userid, params) => {  // act: created, challenge, star
   return request(`${base}/${userid}/${action}/ruts`, params)
 }
-
+// get a rut
 const fetchRut = (rutid, params) => { // !!
   return request(`${base}/rut/${rutid}`, params)
+}
+// get demands of a rut response to
+const fetchRutDemands = (rutid, params) => {
+  return request(`${base}/rut/${rutid}/demands`, params)
 }
 // check if user star or challenge a rut
 const checkSC = (rutid, action, params) => {
@@ -146,6 +150,10 @@ const fetchItem = (itemid, params) => {
 const fetchItemReviews = (itemid, params) => {
   return request(`${base}/item/${itemid}/reviews`, params)
 }
+// fetch inruts of the item
+const fetchInRuts = (itemid, params) => {
+  return request(`${base}/item/${itemid}/inruts`, params)
+}
 // edit item
 const editItem = (itemid, params) => {
   return request(`${base}/edititem/${itemid}`, params, 'post')
@@ -186,6 +194,10 @@ const newReview = (itemid, params) => {
 const fetchReview = (reviewid, params) => {
   return request(`${base}/review/${reviewid}`, params)
 }
+// fetch review's comments
+const fetchReviewComments = (reviewid, params) => {
+  return request(`${base}/review/${reviewid}/comments`, params)
+}
 // edit review
 const editReview = (reviewid, params) => {
   return request(`${base}/editreview/${reviewid}`, params, 'post')
@@ -205,6 +217,10 @@ const fetchDemand = (demandid, params) => {
 // get comments of specific demand
 const fetchDemandComments = (demandid, params) => {
   return request(`${base}/demand/${demandid}/comments`, params)
+}
+// get answers of specific demand
+const fetchDemandAnswers = (demandid, params) => {
+  return request(`${base}/demand/${demandid}/answers`, params)
 }
 // submit new demand
 const newDemand = params => {
@@ -249,6 +265,7 @@ export {
   setDeadline,
   fetchProfileRuts,
   fetchRut,
+  fetchRutDemands,
   checkSC,
   scRut,
   editRut,
@@ -264,6 +281,7 @@ export {
   favTag,
   fetchItem,
   fetchItemReviews,
+  fetchInRuts,
   checkFlag,
   flagItem,
   editItem,
@@ -272,11 +290,13 @@ export {
   fetchIUClips,
   newReview,
   fetchReview,
+  fetchReviewComments,
   editReview,
   upvoteReview,
   fetchDemands,
   fetchDemand,
   fetchDemandComments,
+  fetchDemandAnswers,
   newClip,
   upvoteClip,
   newDemand,

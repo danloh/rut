@@ -20,11 +20,16 @@
       </div>
     </div>
     <div class="demand-side">
+      <p class="right-item">If find nothing usefull, 
+      You can send a request here then Spread 
+      And invite someone to response</p>
     </div>
   </div>
 </template>
 
 <script>
+import { checkAuth } from '@/util/auth'
+
 export default {
   name: 'demands',
   title: 'Readup.Tips - Request',
@@ -45,13 +50,19 @@ export default {
   methods: {
     submitDemand (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid) {
+        if (valid && checkAuth()) {
           let data = { demand: form.demand }
           this.$store.dispatch('postDemand', data)
           this.resetForm(formName)
-        } else {
-          console.log('error submit!!')
-          return false
+        } else if (!checkAuth()) {
+          this.$message({
+            showClose: true,
+            message: 'Should Log in to Continue'
+          })
+          this.$router.push({
+            path: '/login',
+            query: {redirect: this.$route.fullPath}
+          })
         }
       })
     },

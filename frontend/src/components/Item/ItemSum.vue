@@ -25,7 +25,7 @@
     </div>
     <!-- addtolist dialog -->
     <el-dialog title="Add Item to Created List" :visible.sync="showDialog" width="45%">
-      <el-form :model="intoForm" ref="intoForm">
+      <el-form :model="intoForm" :rules="rules" ref="intoForm">
         <el-form-item prop="rut">
           <el-select v-model="intoForm.selectRutID">
             <el-option v-for="r in createdRuts" :key="r.id" :label="r.title" :value="r.id"></el-option>
@@ -54,6 +54,9 @@ export default {
       showDialog: false,
       intoForm: {
         selectRutID: null
+      },
+      rules: {
+        selectRutID: [{ required: true, message: 'Required', trigger: 'change' }] // can be deleted
       },
       createdRuts: []
     }
@@ -141,13 +144,20 @@ export default {
           showClose: true,
           message: 'Should Log in to Access'
         })
-        // this.$router.push({
-        //   path: '/login',
-        //   query: {redirect: this.$route.fullPath}
-        // })
+        this.$router.push({
+          path: '/login',
+          query: {redirect: this.$route.fullPath}
+        })
       }
     },
     addtoRut (formName, form) {
+      if (!form.selectRutID) {
+        this.$message({
+          showClose: true,
+          message: 'Please Select One'
+        })
+        return false
+      }
       this.$refs[formName].validate((valid) => {
         if (valid && checkAuth()) {
           let rutid = form.selectRutID
@@ -162,7 +172,7 @@ export default {
             })
             this.$router.push(`/readuplist/${rutid}`) // why not work from rut page: re-sued component issue
           })
-        } else {
+        } else if (!checkAuth()) {
           this.showDialog = false
           this.$message({
             showClose: true,

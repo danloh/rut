@@ -525,6 +525,7 @@ class Posts(db.Model):
             'starcount': self.starers.count(),
             'challengecount': self.challengers.count(),
             'commentcount': self.comments.count(),
+            'demandcount': self.demands.count(),
             'cover': self.post_cover,
             'editable': self.editable,
             'creator': creator,

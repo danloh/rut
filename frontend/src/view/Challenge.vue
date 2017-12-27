@@ -100,10 +100,9 @@ export default {
           this.$store.dispatch('postClip', data)
           this.resetForm(formName)
         } else {
-          console.log('error submit!!')
           this.$message({
             showClose: true,
-            message: 'Something Wrong, Please check input'
+            message: 'Something Wrong, Please Check'
           })
           return false
         }

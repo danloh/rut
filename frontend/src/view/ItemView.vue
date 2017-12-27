@@ -4,9 +4,7 @@
       <item-sum :item="currentItem" :key="currentItem.id"></item-sum> <!--key to re-render-->
       <div>
         <b>More Details</b> &nbsp;&nbsp;&nbsp;
-        <el-button type="text">
-          <router-link :to="'/edit/item/' + currentItem.id">...Edit</router-link>
-        </el-button>
+        <router-link :to="'/edit/item/' + currentItem.id">...Edit</router-link>
       </div>
       <div class="item-detail">
         <div v-html="currentItem.details">...</div>
@@ -15,7 +13,7 @@
         <router-link :to="'/item/' + currentItem.id + '/hotreview'">Hot Reviews</router-link>
         <router-link :to="'/item/' + currentItem.id + '/newreview'">Latest Reviews</router-link>
         &nbsp;&nbsp;&nbsp;
-        <router-link style="color: blue; font-size: 0.8em" :to="'/review/item/' + currentItem.id">...Post Review</router-link>
+        <router-link style="color: #337ab7" :to="'/review/item/' + currentItem.id">...Post Review</router-link>
       </div>
       <div class="review-view">
         <router-view></router-view>
@@ -23,7 +21,7 @@
       <div class="clips">
         <b style="color: orange">Clips</b>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <router-link style="color: blue; font-size: 0.8em" to="/challenge">...Excerpt Quote</router-link>
+        <router-link to="/challenge">...Excerpt Quote</router-link>
         <clip-list :param="cliplistParam"></clip-list>
       </div>
     </div>
@@ -31,8 +29,11 @@
       <div class="include">
         <b class="in-title">Included in {{currentItem.rutcount}} Tips</b>
         <p class="in-item" v-for="(rut, index) in inRuts" :key="index" :rut="rut">
-          ~ <router-link :to="'/readuplist/' + rut.id" :title="rut.title"> {{ rut.title.slice(0, 60) }}...</router-link>
+          - <router-link :to="'/readuplist/' + rut.id" :title="rut.title"> {{ rut.title.slice(0, 60) }}...</router-link>
         </p>
+        <div v-if="hasMoreRut">
+          <el-button size="mini" class="blockbtn" @click="loadmoreRuts" :disabled="!hasMoreRut">Show More</el-button>
+        </div>
       </div>
     </div>
   </div>
@@ -41,6 +42,7 @@
 <script>
 import ItemSum from '@/components/Item/ItemSum.vue'
 import ClipList from '@/components/Challenge/ClipList.vue'
+import { fetchInRuts } from '@/api/api'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -51,14 +53,29 @@ export default {
   components: { ItemSum, ClipList },
   data () {
     return {
-      cliplistParam: {}
+      cliplistParam: {},
+      currentPage: 1
     }
   },
   computed: {
     ...mapGetters([
       'currentItem',
       'inRuts'
-    ])
+    ]),
+    hasMoreRut () {
+      return this.inRuts.length < this.currentItem.rutcount
+    }
+  },
+  methods: {
+    loadmoreRuts () {
+      let itemid = this.$route.params.id
+      let params = {'page': this.currentPage}
+      fetchInRuts(itemid, params)
+      .then(resp => {
+        this.$store.commit('MORE_INRUTS', resp.data)
+        this.currentPage += 1
+      })
+    }
   },
   beforeMount () {
     let itemid = this.$route.params.id

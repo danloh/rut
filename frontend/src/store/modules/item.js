@@ -62,6 +62,9 @@ const mutations = {
     state.currentR += 1
     state.currentReviews.push(...data)
   },
+  MORE_INRUTS: (state, data) => {
+    state.inRuts.push(...data)
+  },
   MORE_ITEMS (state, data) {
     state.currentR += 1
     state.currentItems.push(...data)

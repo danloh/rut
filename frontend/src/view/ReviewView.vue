@@ -12,11 +12,14 @@
     <div v-for="comment in comments" :key="comment.id">
       <comment :comment="comment"></comment>
     </div>
+    <div v-if="hasMoreComment">
+      <el-button class="blockbtn" @click="loadmoreComment" :disabled="!hasMoreComment">Show More Comments</el-button>
+    </div>
   </div>
 </template>
 
 <script>
-import { fetchReview } from '@/api/api'
+import { fetchReview, fetchReviewComments } from '@/api/api'
 // import { checkAuth } from '@/util/auth'
 import ReviewSum from '@/components/Item/ReviewSum.vue'
 import Comment from '@/components/Comment/Comment.vue'
@@ -33,7 +36,14 @@ export default {
     return {
       review: {},
       comments: [],
+      commentCount: 0,
+      currentPage: 1,
       refer: { re: 'review', id: this.$route.params.id }
+    }
+  },
+  computed: {
+    hasMoreComment () {
+      return this.comments.length < this.commentCount
     }
   },
   methods: {
@@ -44,6 +54,16 @@ export default {
         let data = resp.data
         this.review = data
         this.comments = data.comments
+        this.commentCount = data.commentcount
+      })
+    },
+    loadmoreComment () {
+      let reviewid = this.$route.params.id
+      let params = {'page': this.currentPage}
+      fetchReviewComments(reviewid, params)
+      .then(resp => {
+        this.comments.push(...resp.data)
+        this.currentPage += 1
       })
     },
     updateNew (data) {

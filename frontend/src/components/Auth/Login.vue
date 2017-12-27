@@ -60,7 +60,7 @@ export default {
             })
           })
         } else {
-          console.log('error submit!!')
+          this.$message('error!! Please Check')
           return false
         }
       })
