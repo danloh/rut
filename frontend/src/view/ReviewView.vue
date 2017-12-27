@@ -3,6 +3,9 @@
     <div class="review-main">
       <review-sum :review="review" :key="review.id"></review-sum> <!--Note :key to render-->
     </div>
+    <div class="share">
+      <share-bar></share-bar>
+    </div>
     <div class="comment">
       <reply class="reply" :refer="refer" :show="true" @newreply="updateNew"></reply>
     </div>
@@ -18,13 +21,14 @@ import { fetchReview } from '@/api/api'
 import ReviewSum from '@/components/Item/ReviewSum.vue'
 import Comment from '@/components/Comment/Comment.vue'
 import Reply from '@/components/Comment/Reply.vue'
+import ShareBar from '@/components/Misc/ShareBar.vue'
 
 export default {
   name: 'review-view',
   title () {
     return this.review.heading
   },
-  components: { ReviewSum, Comment, Reply },
+  components: { ReviewSum, Comment, Reply, ShareBar },
   data () {
     return {
       review: {},

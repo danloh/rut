@@ -8,15 +8,21 @@
         <el-input v-model="editForm.title"></el-input>
       </el-form-item>
       <el-form-item label="Preface" prop="intro">
-        <el-input type="textarea" v-model="editForm.intro"></el-input>
-      </el-form-item>
-      <el-form-item label="Rating" prop="rating">
-        <el-select v-model="editForm.rating">
-          <el-option v-for="r in ratings" :key="r.value" :label="r.label" :value="r.value"></el-option>
-        </el-select>
+        <!-- <el-input type="textarea" :rows="3" v-model="editForm.intro"></el-input> -->
+        <quill-editor v-model="editForm.intro"
+                      ref="TextEditor"
+                      class="quill-editor">
+        </quill-editor>
       </el-form-item>
       <el-form-item label="Credential" prop="credential">
-        <el-input v-model="editForm.credential"></el-input>
+        <el-input type="textarea" v-model="editForm.credential"></el-input>
+      </el-form-item>
+      <el-form-item label="Epilog" prop="epilog">
+        <!-- <el-input type="textarea" :rows="3" v-model="editForm.epilog"></el-input> -->
+        <quill-editor v-model="editForm.epilog"
+                      ref="TextEditor"
+                      class="quill-editor">
+        </quill-editor>
       </el-form-item>
       <!-- <el-form-item label="Who Can Edit?" prop="editable">
         <el-radio-group v-model="editForm.editable">
@@ -25,8 +31,10 @@
           <el-radio-button label="Everyone"></el-radio-button>
         </el-radio-group>
       </el-form-item> -->
-      <el-form-item label="Epilog" prop="epilog">
-        <el-input type="textarea" v-model="editForm.epilog"></el-input>
+      <el-form-item label="Rating" prop="rating">
+        <el-select v-model="editForm.rating">
+          <el-option v-for="r in ratings" :key="r.value" :label="r.label" :value="r.value"></el-option>
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="success" size="medium" @click="onEdit('editForm', editForm)">Done and Submit</el-button>

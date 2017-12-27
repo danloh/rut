@@ -2,13 +2,14 @@
   <div class="review-list">
     <review-sum v-for="review in currentReviews" :key="review.id" :review="review" :less="true"></review-sum>
     <div v-if="hasMore">
-      <el-button class="blockbtn" @click="loadmoreReview" :disabled="!hasMore">More</el-button>
+      <el-button class="blockbtn" @click="loadmoreReviews" :disabled="!hasMore">More</el-button>
     </div>
   </div>
 </template>
 
 <script>
 import ReviewSum from './ReviewSum.vue'
+import { fetchItemReviews } from '@/api/api'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -22,18 +23,23 @@ export default {
       'currentItem',
       'currentReviews',
       'currentR',
-      'maxR'
+      'maxR',
+      'perR'
     ]),
     hasMore () {
-      return this.currentR < this.maxR
+      return Math.ceil(this.currentReviews.length / this.perR) < this.maxR
     }
   },
   created () {
-    this.$store.commit('NEW_REVIEWS', this.order)
+    this.$store.commit('ALT_REVIEWS', this.order)
   },
   methods: {
     loadmoreReviews () {
-      this.$store.commit('ADD_REVIEWS', this.currentR)
+      let params = {'page': this.currentR, 'ref': this.order}
+      fetchItemReviews(this.currentItem.id, params)
+      .then(resp => {
+        this.$store.commit('MORE_REVIEWS', resp.data)
+      })
     }
   }
 }

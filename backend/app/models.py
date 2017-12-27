@@ -17,9 +17,12 @@ from .utils import split_str, str_to_dict, str_to_set
 
 
 # html_tags Whitelist for Bleach
-allowed_tags = ['a', 'abbr', 'b', 'blockquote', 'code', 'img',
-                'em', 'i', 'li', 'ol', 'ul', 'pre', 'strong',
-                'h3', 'h4', 'h5', 'h6', 'hr', 'p']
+# markdown: comment, clip
+# rich text: intro, epilog, tips, review
+# now parse markdown in frontend
+# allowed_tags = ['a', 'abbr', 'b', 'blockquote', 'code', 'img',
+#                 'em', 'i', 'li', 'ol', 'ul', 'pre', 'strong',
+#                 'h3', 'h4', 'h5', 'h6', 'hr', 'p']
 
 # simple n2n for Tags Posts
 tag_post = db.Table(
@@ -83,7 +86,7 @@ class Collect(db.Model):
             'postid': self.post_id,
             'itemid': self.item_id,
             'item': item_dict,
-            'tip':  self.tips or self.tips_html,
+            'tip':  self.tips,
             'spoiler': self.spoiler
         }
         return tip_dict
@@ -93,7 +96,6 @@ class Collect(db.Model):
 #         target.tips_html = bleach.linkify(bleach.clean(
 #             markdown(value, output_format='html'),
 #             tags=allowed_tags, strip=True))
-
 # db.event.listen(Collect.tips, 'set', Collect.on_changed_tips)
 
 # helper Model for n2n Posts with Users for star
@@ -496,8 +498,9 @@ class Posts(db.Model):
 
         posts_latest = _query.order_by(Posts.renewal.desc()).limit(m)
         posts_popular = _query.order_by(Posts.vote.desc()).limit(m)
+        posts_random = _query.order_by(db.func.rand()).limit(m)
 
-        posts_select = posts_latest.union(posts_popular).\
+        posts_select = posts_latest.union(posts_popular,posts_random).\
                        order_by(db.func.rand())#.all()
         posts = [r.to_dict() for r in posts_select]  #execute here for cache
         return posts
@@ -530,6 +533,9 @@ class Posts(db.Model):
             'tags': tags
         }
         return post_dict
+    
+    def __repr__(self):
+        return '<Posts %r>' % self.title
 
     ## markdown to html
     # @staticmethod
@@ -542,10 +548,6 @@ class Posts(db.Model):
     #     target.epilog_html = bleach.linkify(bleach.clean(
     #         markdown(value, output_format='html'),
     #         tags=allowed_tags, strip=True))
-
-    def __repr__(self):
-        return '<Posts %r>' % self.title
-
 # db.event.listen(Posts.intro, 'set', Posts.on_changed_intro)
 # db.event.listen(Posts.epilog, 'set', Posts.on_changed_epilog)
 
@@ -874,17 +876,11 @@ class Comments(db.Model):
         #db.session.commit()
     ## end  n2n  with self, can be deprecated?
 
-    @staticmethod
-    def on_changed_body(target, value, oldvalue, initiator):
-        target.body_html = bleach.linkify(bleach.clean(
-            markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True))
-
     def to_dict(self):
         comment_dict = {
             'id': self.id,
             'heading': self.heading,
-            'body': self.body_html or self.body,
+            'body': self.body,
             'vote': self.vote,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             'creator': {'id': self.creator_id, 'name': self.creator.nickname or self.creator.name},
@@ -894,6 +890,13 @@ class Comments(db.Model):
 
     def __repr__(self):
         return '<Coments %r>' % self.body
+
+#     @staticmethod
+#     def on_changed_body(target, value, oldvalue, initiator):
+#         target.body_html = bleach.linkify(bleach.clean(
+#             markdown(value, output_format='html'),
+#             tags=allowed_tags, strip=True))
+# db.event.listen(Comments.body, 'set', Comments.on_changed_body)
 
 # Monkey patched for self reference -reply
 Comments.parent_comment_id = db.Column(
@@ -905,8 +908,6 @@ Comments.parent_comment = db.relationship(
     remote_side=Comments.id
 )
 # end Monkey patch
-
-db.event.listen(Comments.body, 'set', Comments.on_changed_body)
 
 
 class Reviews(db.Model):
@@ -945,12 +946,6 @@ class Reviews(db.Model):
         lazy='dynamic',
         cascade='all, delete-orphan')
 
-    @staticmethod
-    def on_changed_body(target, value, oldvalue, initiator):
-        target.body_html = bleach.linkify(bleach.clean(
-            markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True))
-    
     def to_dict(self):
         creator = self.creator
         item = self.item
@@ -958,7 +953,7 @@ class Reviews(db.Model):
             'id': self.id,
             'heading': self.heading,
             'creator': {'id': creator.id, 'name': creator.nickname or creator.name},
-            'body': self.body or self.body_html,
+            'body': self.body,
             'spoiler': self.spoiler,
             'item': {'id': item.id, 'title': item.title},
             'vote':  self.vote,
@@ -968,8 +963,6 @@ class Reviews(db.Model):
 
     def __repr__(self):
         return '<Reviews %r>' % self.heading
-
-#db.event.listen(Reviews.body, 'set', Reviews.on_changed_body)
 
 
 class Clips(db.Model):
@@ -1007,22 +1000,21 @@ class Clips(db.Model):
             'id': self.id,
             'creator': self.creator.to_dict(),
             'fromitem': self.item.to_dict(),
-            'body': self.body_html or self.body,
+            'body': self.body,
             'vote': self.vote,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         }
         return clip_dict
 
-    @staticmethod
-    def on_changed_body(target, value, oldvalue, initiator):
-        target.body_html = bleach.linkify(bleach.clean(
-            markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True))
-    
     def __repr__(self):
         return '<Clips %r>' % self.body
-
-db.event.listen(Clips.body, 'set', Clips.on_changed_body)
+    
+#     @staticmethod
+#     def on_changed_body(target, value, oldvalue, initiator):
+#         target.body_html = bleach.linkify(bleach.clean(
+#             markdown(value, output_format='html'),
+#             tags=allowed_tags, strip=True))
+# db.event.listen(Clips.body, 'set', Clips.on_changed_body)
 
 
 class Demands(db.Model):
@@ -1804,17 +1796,16 @@ class Articles(db.Model):
         self.renewal = datetime.utcnow()
         db.session.add(self)
         #db.session.commit()
-
-    @staticmethod
-    def on_changed_body(target, value, oldvalue, initiator):
-        target.body_html = bleach.linkify(bleach.clean(
-            markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True))
-
+    
     def __repr__(self):
         return '<Articles %r>' % self.title
 
-db.event.listen(Articles.body, 'set', Articles.on_changed_body)
+    # @staticmethod
+    # def on_changed_body(target, value, oldvalue, initiator):
+    #     target.body_html = bleach.linkify(bleach.clean(
+    #         markdown(value, output_format='html'),
+    #         tags=allowed_tags, strip=True))
+# db.event.listen(Articles.body, 'set', Articles.on_changed_body)
 
 
 class Columns(db.Model):

@@ -10,6 +10,7 @@
 <script>
 import RutList from '@/components/Rut/RutList.vue'
 import { mapGetters } from 'vuex'
+import { fetchProfileRuts } from '@/api/api'
 
 export default {
   name: 'profile-ruts',
@@ -29,7 +30,14 @@ export default {
   },
   methods: {
     loadmoreRuts () {
-      this.$store.commit('ADD_RUTS', this.currentPage)
+      let action = this.action
+      let userid = this.$route.params.id
+      let param = {'page': this.currentPage}
+      // let params = {'action': action, 'userid': userid, 'param': param}
+      fetchProfileRuts(action, userid, param)
+      .then(resp => {
+        this.$store.commit('MORE_RUTS', resp.data.ruts)
+      })
     }
   },
   mounted () {

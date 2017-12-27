@@ -13,9 +13,9 @@
       </div>
       <div class="submenu">
         <router-link :to="'/item/' + currentItem.id + '/hotreview'">Hot Reviews</router-link>
-        <router-link :to="'/item/' + currentItem.id + '/newreview'">New Reviews</router-link>
+        <router-link :to="'/item/' + currentItem.id + '/newreview'">Latest Reviews</router-link>
         &nbsp;&nbsp;&nbsp;
-        <router-link style="color: blue; font-size: 0.8em" :to="'/review/item/' + currentItem.id" target="_blank">...Post Review</router-link>
+        <router-link style="color: blue; font-size: 0.8em" :to="'/review/item/' + currentItem.id">...Post Review</router-link>
       </div>
       <div class="review-view">
         <router-view></router-view>
@@ -23,7 +23,7 @@
       <div class="clips">
         <b style="color: orange">Clips</b>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <router-link style="color: blue; font-size: 0.8em" to="/challenge" target="_blank">...Excerpt Quote</router-link>
+        <router-link style="color: blue; font-size: 0.8em" to="/challenge">...Excerpt Quote</router-link>
         <clip-list :param="cliplistParam"></clip-list>
       </div>
     </div>

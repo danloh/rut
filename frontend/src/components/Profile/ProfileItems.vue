@@ -10,6 +10,7 @@
 <script>
 import ItemList from '@/components/Item/ItemList.vue'
 import { mapGetters } from 'vuex'
+import { fetchProfileItems } from '@/api/api'
 
 export default {
   name: 'profile-items',
@@ -19,16 +20,21 @@ export default {
   components: { ItemList },
   computed: {
     ...mapGetters([
-      'allItems',
       'totalItems',
-      'currentR',
       'currentItems',
+      'currentR',
       'maxR'
     ])
   },
   methods: {
     loadmoreItems () {
-      this.$store.commit('ADD_ITEMS', this.currentR)
+      let flag = this.flag
+      let userid = this.$route.params.id
+      let param = {'page': this.currentR}
+      fetchProfileItems(flag, userid, param)
+      .then(resp => {
+        this.$store.commit('MORE_ITEMS', resp.data.items)
+      })
     }
   },
   mounted () {

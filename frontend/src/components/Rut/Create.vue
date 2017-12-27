@@ -1,24 +1,28 @@
 <template>
   <div class="create-page">
     <h3 class="title">Create New Readup Tips</h3>
-    <p v-if="demandid"> As Answer To A <router-link :to="'/demand/' + demandid" target="_blank">Request</router-link></p>
-    <el-form class="create-form" :model="createForm" :rules="rules" ref="createForm" label-width="120px" size="mini">
+    <p v-if="demandid"> As Answer To A <router-link :to="'/demand/' + demandid" target="_blank" rel="nofollow noopener noreferrer">Request</router-link></p>
+    <el-form class="create-form" :model="createForm" :rules="rules" ref="createForm" label-width="80px" size="mini">
       <el-form-item label="Title" prop="title">
         <el-input v-model="createForm.title"></el-input>
       </el-form-item>
       <el-form-item label="Preface" prop="intro">
-        <el-input type="textarea" v-model="createForm.intro"></el-input>
+        <!-- <el-input type="textarea" :rows="3" v-model="createForm.intro"></el-input> -->
+        <quill-editor v-model="createForm.intro"
+                      ref="TextEditor"
+                      class="quill-editor">
+        </quill-editor>
       </el-form-item>
       <el-form-item label="Tag" prop="tag">
         <el-input v-model="createForm.tag"></el-input>
+      </el-form-item>
+      <el-form-item label="Credential" prop="credential">
+        <el-input type="textarea" v-model="createForm.credential"></el-input>
       </el-form-item>
       <el-form-item label="Rating" prop="rating">
         <el-select v-model="createForm.rating">
           <el-option v-for="r in ratings" :key="r.value" :label="r.label" :value="r.value"></el-option>
         </el-select>
-      </el-form-item>
-      <el-form-item label="Credential" prop="credential">
-        <el-input v-model="createForm.credential"></el-input>
       </el-form-item>
       <!-- <el-form-item label="Who Can Edit?" prop="editable">
         <el-radio-group v-model="createForm.editable">

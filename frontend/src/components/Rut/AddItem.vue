@@ -13,7 +13,7 @@
     <!-- check via url spider or UID -->
     <el-form class="add-form" :model="checkForm" ref="checkForm" size="mini" v-show="!show">
       <el-form-item label="Amazon URL or ISBN-13" prop="url">
-        <el-input v-model="checkForm.url"></el-input>
+        <el-input type="textarea" :rows="1" v-model="checkForm.url"></el-input>
       </el-form-item>
       <el-form-item>
         <el-button type="success" size="medium" @click="onCheck('checkForm', checkForm)">Fetch Via Spider</el-button>
@@ -46,7 +46,11 @@
         <el-input v-model="addForm.cover"></el-input>
       </el-form-item>
       <el-form-item label="Tips" prop="tips">
-        <el-input type="textarea" :rows="12" v-model="addForm.tips"></el-input>
+        <!-- <el-input type="textarea" :rows="12" v-model="addForm.tips"></el-input> -->
+        <quill-editor v-model="addForm.tips"
+                      ref="TextEditor"
+                      class="quill-editor">
+        </quill-editor>
       </el-form-item>
       <el-form-item label="in Tips" prop="spoiler">
         <el-radio-group v-model="addForm.spoiler">

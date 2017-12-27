@@ -1,13 +1,16 @@
 <template>
   <div class="review-page">
     <h3 class="title"> Post New Review:</h3>
-    <router-link class="title" :to="'/item/' + itemId" target="_blank">Item</router-link>
+    <router-link :to="'/item/' + itemId" target="_blank" rel="nofollow noopener noreferrer">Item</router-link>
     <el-form class="review-form" :model="reviewForm" :rules="rules" ref="reviewForm" size="mini">
       <el-form-item prop="title">
         <el-input v-model="reviewForm.title" placeholder="Title"></el-input>
       </el-form-item>
       <el-form-item prop="review">
-        <el-input type="textarea" :rows="12" v-model="reviewForm.review" placeholder="Post Review"></el-input>
+        <quill-editor v-model="reviewForm.review"
+                      ref="TextEditor"
+                      class="quill-editor">
+        </quill-editor>
       </el-form-item>
       <el-form-item prop="spoiler">
         <el-radio-group v-model="reviewForm.spoiler">
@@ -81,7 +84,7 @@ export default {
 
 <style lang="stylus" scoped>
 .review-page
-  padding 10px 180px
+  padding 10px 160px
   position relative
   .review-form
     padding 20px
