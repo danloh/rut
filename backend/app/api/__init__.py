@@ -14,7 +14,7 @@ from .errors import error_response
 rest = Blueprint('rest', __name__)
 auth = HTTPBasicAuth()
 
-PER_PAGE = 2
+PER_PAGE = 20
 
 @rest.route('/register', methods = ['POST'])
 def register():
@@ -934,10 +934,21 @@ def get_demand(demandid):
     answers = [{'id':p.id,'title':p.title} for p in respons]
     demand_dict['answers'] = answers
     #attach comments
-    comments = [c.to_dict() for c in demand.comments]
-    comments.reverse()
+    d_comments = demand.comments.order_by(Comments.timestamp.desc()).limit(50)
+    comments = [c.to_dict() for c in d_comments]
+    ##comments.reverse()
     demand_dict['comments'] = comments
     return jsonify(demand_dict)
+
+@rest.route('/demand/<int:demandid>/comments')
+def get_demand_comments(demandid):
+    demand = Demands.query.get_or_404(demandid)
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', 50, type=int)
+    d_comments = demand.comments.order_by(Comments.timestamp.desc())\
+                 .offset(page*per_page).limit(per_page)
+    comments = [c.to_dict() for c in d_comments]
+    return jsonify(comments)
 
 @rest.route('/upvotedemand/<int:demandid>')
 @auth.login_required
@@ -1094,12 +1105,17 @@ def new_comment(demandid=None,rutid=None,commentid=None,itemid=None,reviewid=Non
     comment_dict = comment.to_dict()
     return jsonify(comment_dict)
 
-@rest.route('/commentonrut/<int:rutid>')
-def get_comment_rut(rutid):
+@rest.route('/commentsonrut/<int:rutid>')
+def get_comments_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     rut_dict = {'id': rut.id, 'title': rut.title}
-    comments = [c.to_dict() for c in rut.comments]
-    comments.reverse()
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', 50, type=int)
+    r_comments = rut.comments
+    rut_dict['commentcount'] = r_comments.count()
+    rut_comments = r_comments.order_by(Comments.timestamp.desc())\
+                   .offset(page*per_page).limit(per_page)
+    comments = [c.to_dict() for c in rut_comments]
     rut_dict['comments'] = comments
     return jsonify(rut_dict)
 

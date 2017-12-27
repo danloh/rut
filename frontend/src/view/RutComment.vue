@@ -3,9 +3,12 @@
     <div class="comment-main">
       <h2>Discuss: <router-link :to="'/readuplist/' + rut.id">{{ rut.title }}</router-link></h2>
     </div>
-    {{ comments.length }} Comments
+    {{ commentCount }} Comments
     <div v-for="comment in comments" :key="comment.id">
       <comment :comment="comment"></comment>
+    </div>
+    <div v-if="hasMoreComment">
+      <el-button class="blockbtn" @click="loadmoreComment" :disabled="!hasMoreComment">Show More Comments</el-button>
     </div>
     <br>
     <div class="comment">
@@ -15,7 +18,7 @@
 </template>
 
 <script>
-import { fetchRutComment } from '@/api/api'
+import { fetchRutComments } from '@/api/api'
 import Comment from '@/components/Comment/Comment.vue'
 import Reply from '@/components/Comment/Reply.vue'
 
@@ -29,17 +32,34 @@ export default {
     return {
       rut: {},
       comments: [],
+      commentCount: 0,
+      currentPage: 1,
       refer: { re: 'rut', id: this.$route.params.id }
+    }
+  },
+  computed: {
+    hasMoreComment () {
+      return this.comments.length < this.commentCount
     }
   },
   methods: {
     loadCommentData () {
       let rutid = this.$route.params.id
-      fetchRutComment(rutid)
+      fetchRutComments(rutid)
       .then(resp => {
         let data = resp.data
         this.rut = data
         this.comments = data.comments
+        this.commentCount = data.commentcount
+      })
+    },
+    loadmoreComment () {
+      let rutid = this.$route.params.id
+      let params = {'page': this.currentPage}
+      fetchRutComments(rutid, params)
+      .then(resp => {
+        this.comments.push(...resp.data.comments)
+        this.currentPage += 1
       })
     },
     updateNew (data) {

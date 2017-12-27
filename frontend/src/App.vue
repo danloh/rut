@@ -44,6 +44,10 @@
       <!-- | <router-link to="/about">About</router-link>
       | <router-link to="/terms">Terms</router-link>
       | <router-link to="/help">Help</router-link> | -->
+      <!--google site search -->
+      <div style="width:160px">
+        <el-input size="mini" v-model="searchWord" @keyup.enter.native="siteSearch" placeholder="Search Readup.Tips"></el-input>
+      </div>
     </footer>
   </div>
 </template>
@@ -55,6 +59,11 @@ import { mapGetters } from 'vuex'
 
 export default {
   name: 'app',
+  data () {
+    return {
+      searchWord: ''
+    }
+  },
   computed: {
     ...mapGetters([
       'currentUserID',
@@ -65,6 +74,15 @@ export default {
     onLogout () {
       this.$store.commit('DEL_TOKEN')
       this.$router.push('/')
+    },
+    siteSearch () {
+      let keyword = this.searchWord
+      if (keyword !== '') {
+        window.open('https://www.google.com/search?q=site:readup.tips/%20' + keyword, '_blank')
+        return false
+      } else {
+        return false
+      }
     }
   }
 }

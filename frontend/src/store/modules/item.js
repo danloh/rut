@@ -4,7 +4,7 @@ import {
 } from '@/api/api'
 
 // initial state
-const perPage = 2
+const perPage = 20
 const state = {
   currentItems: [],
   totalItems: 0,

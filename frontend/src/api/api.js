@@ -202,6 +202,10 @@ const fetchDemands = (params) => {
 const fetchDemand = (demandid, params) => {
   return request(`${base}/demand/${demandid}`, params)
 }
+// get comments of specific demand
+const fetchDemandComments = (demandid, params) => {
+  return request(`${base}/demand/${demandid}/comments`, params)
+}
 // submit new demand
 const newDemand = params => {
   return request(`${base}/newdemand`, params, 'post')
@@ -219,8 +223,8 @@ const newComment = (ref, id, params) => {
   return request(`${base}/comment/${ref}/${id}`, params, 'post')
 }
 // get comments for a rut
-const fetchRutComment = (rutid, params) => {
-  return request(`${base}/commentonrut/${rutid}`, params)
+const fetchRutComments = (rutid, params) => {
+  return request(`${base}/commentsonrut/${rutid}`, params)
 }
 
 export {
@@ -272,11 +276,12 @@ export {
   upvoteReview,
   fetchDemands,
   fetchDemand,
+  fetchDemandComments,
   newClip,
   upvoteClip,
   newDemand,
   upvoteDemand,
   rutAsAnswer,
   newComment,
-  fetchRutComment
+  fetchRutComments
 }

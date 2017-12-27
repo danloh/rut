@@ -33,6 +33,9 @@
       <div v-for="comment in comments" :key="comment.id">
         <comment :comment="comment"></comment>
       </div>
+      <div v-if="hasMoreComment">
+        <el-button class="blockbtn" @click="loadmoreComment" :disabled="!hasMoreComment">More</el-button>
+      </div>
     </div>
     <div class="demand-side">
     </div>
@@ -44,7 +47,7 @@ import Demand from '@/components/Demand/Demand.vue'
 import Comment from '@/components/Comment/Comment.vue'
 import Reply from '@/components/Comment/Reply.vue'
 import ShareBar from '@/components/Misc/ShareBar.vue'
-import { fetchProfileRuts, rutAsAnswer } from '@/api/api'
+import { fetchProfileRuts, rutAsAnswer, fetchDemandComments } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { mapGetters } from 'vuex'
 
@@ -58,7 +61,10 @@ export default {
     return {
       refer: { re: 'demand', id: this.$route.params.id },
       answers: [],
+      answerCount: 0,
       comments: [],
+      commentCount: 0,
+      currentPage: 1,
       showDialog: false,
       asForm: {
         selectRutID: null
@@ -69,7 +75,10 @@ export default {
   computed: {
     ...mapGetters([
       'demandDetail'
-    ])
+    ]),
+    hasMoreComment () {
+      return this.comments.length < this.commentCount
+    }
   },
   methods: {
     loadDemandData () {
@@ -78,11 +87,21 @@ export default {
       .then(resp => {
         let data = resp.data
         this.answers = data.answers
+        this.answerCount = data.answercount
         this.comments = data.comments
+        this.commentCount = data.commentcount
       })
     },
     updateNew (data) {
       this.comments.unshift(data)
+    },
+    loadmoreComment () {
+      let params = {'page': this.currentPage}
+      fetchDemandComments(this.demandDetail.id, params)
+      .then(resp => {
+        this.comments.push(...resp.data)
+        this.currentPage += 1
+      })
     },
     // get created ruts then link to demand as answer
     loadCreatedThenAsAnswer () {
