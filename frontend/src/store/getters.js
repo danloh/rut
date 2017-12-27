@@ -37,6 +37,7 @@ const getters = {
   allReviews: state => state.item.allReviews,
   currentReviews: state => state.item.currentReviews,
   currentR: state => state.item.currentR,
+  perR: state => state.item.perR,
   maxR: state => state.item.maxR,
   inRuts: state => state.item.inRuts
 }

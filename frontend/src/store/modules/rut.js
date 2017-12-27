@@ -8,7 +8,7 @@ import {
 } from '@/api/api'
 
 // initial state
-const perPage = 15
+const perPage = 2
 const state = {
   allRuts: [],
   totalRuts: 0,
@@ -90,6 +90,10 @@ const mutations = {
     state.allTags = dtags
     let sometags = dtags.slice(0, perPage)
     state.showTags = sometags
+  },
+  MORE_RUTS (state, data) {
+    state.currentPage += 1
+    state.currentRuts.push(...data)
   },
   ADD_RUTS (state, page) {
     let start = page * perPage

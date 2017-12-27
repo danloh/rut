@@ -6,7 +6,7 @@ import {
 } from '@/api/api'
 
 // initial state
-const perPage = 15
+const perPage = 2
 const state = {
   allDemands: [],
   totalDemands: 0,
@@ -41,6 +41,12 @@ const actions = {
     .then(resp => {
       commit('ADD_DEMAND', resp.data)
     })
+  },
+  moreDemands: ({commit, state}, params = {}) => {
+    return fetchDemands(params)
+    .then(resp => {
+      commit('MORE_DEMANDS', resp.data.demands)
+    })
   }
 }
 
@@ -54,12 +60,9 @@ const mutations = {
     let sliced = data.demands.slice(0, perPage)
     state.currentDemands = sliced
   },
-  ADD_DEMANDS (state, page) {
-    let start = page * perPage
-    let end = start + perPage
-    let nextDemands = state.allDemands.slice(start, end)
+  MORE_DEMANDS (state, data) {
     state.currentD += 1
-    state.currentDemands.push(...nextDemands)
+    state.currentDemands.push(...data)
   },
   ADD_DEMAND (state, data) {
     state.currentDemands.unshift(data)

@@ -41,7 +41,7 @@
 <script>
 import RutList from '@/components/Rut/RutList.vue'
 import { mapGetters } from 'vuex'
-import { editTag, checkFav, favTag } from '@/api/api'
+import { editTag, checkFav, favTag, fetchTagRuts } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 
 export default {
@@ -89,7 +89,10 @@ export default {
   },
   methods: {
     loadmoreRuts () {
-      this.$store.commit('ADD_RUTS', this.currentPage)
+      fetchTagRuts(this.tagDetail.id, {'page': this.currentPage})
+      .then(resp => {
+        this.$store.commit('MORE_RUTS', resp.data)
+      })
     },
     loadData () {
       let tagid = this.$route.params.id

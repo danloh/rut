@@ -33,7 +33,8 @@ export default {
   },
   methods: {
     loadmoreDemand () {
-      this.$store.commit('ADD_DEMANDS', this.currentD)
+      let params = {'type': this.type, 'userid': this.userid, 'page': this.currentD}
+      this.$store.dispatch('moreDemands', params)
     }
   },
   mounted () {

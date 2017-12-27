@@ -4,7 +4,7 @@ import {
 } from '@/api/api'
 
 // initial state
-const perPage = 15
+const perPage = 2
 const state = {
   allItems: [],
   currentItems: [],
@@ -12,6 +12,7 @@ const state = {
   currentItem: {},
   allReviews: [],
   newReviews: [],
+  hotReviews: [],
   currentReviews: [],
   currentR: 0,
   maxR: 0,
@@ -39,11 +40,11 @@ const mutations = {
     state.currentItem = data
     state.allReviews = data.hotreviews
     state.newReviews = data.newreviews
+    state.hotReviews = data.hotreviews
     state.inRuts = data.inruts
     state.currentR = 1
     state.maxR = Math.ceil(data.reviewcount / perPage)
-    let sliced = data.hotreviews.slice(0, perPage)
-    state.currentReviews = sliced
+    state.currentReviews = data.hotreviews
   },
   SET_ITEMS: (state, data) => {
     state.allItems = data.items
@@ -55,25 +56,20 @@ const mutations = {
   },
   NEW_REVIEWS: (state, order) => { // order ref: hot or new
     if (order === 'new') {
+      state.currentR = 1
       state.currentReviews = state.newReviews
     } else {
-      let sliced = state.allReviews.slice(0, perPage)
-      state.currentReviews = sliced
+      state.currentR = 1
+      state.currentReviews = state.hotReviews
     }
   },
-  ADD_REVIEWS: (state, page) => {
-    let start = page * perPage
-    let end = start + perPage
-    let nextReviews = state.allReviews.slice(start, end)
+  MORE_REVIEWS: (state, data) => {
     state.currentR += 1
-    state.currentReviews.push(...nextReviews)
+    state.currentReviews.push(...data)
   },
-  ADD_ITEMS: (state, page) => {
-    let start = page * perPage
-    let end = start + perPage
-    let nextItems = state.allItems.slice(start, end)
+  MORE_ITEMS (state, data) {
     state.currentR += 1
-    state.currentItems.push(...nextItems)
+    state.currentItems.push(...data)
   }
 }
 

@@ -122,6 +122,10 @@ const editTips = (cid, params) => {
 const fetchTag = (tagid, params) => { // !!
   return request(`${base}/tag/${tagid}`, params)
 }
+// fetch ruts of a Tag
+const fetchTagRuts = (tagid, params) => { // !!
+  return request(`${base}/tag/${tagid}/ruts`, params)
+}
 // edit tag
 const editTag = (tagid, params) => {
   return request(`${base}/edittag/${tagid}`, params, 'post')
@@ -137,6 +141,10 @@ const favTag = (action, tagid, params) => {
 // get Item
 const fetchItem = (itemid, params) => {
   return request(`${base}/item/${itemid}`, params)
+}
+// fetch reviews of the item
+const fetchItemReviews = (itemid, params) => {
+  return request(`${base}/item/${itemid}/reviews`, params)
 }
 // edit item
 const editItem = (itemid, params) => {
@@ -246,10 +254,12 @@ export {
   checkItem,
   editTips,
   fetchTag,
+  fetchTagRuts,
   editTag,
   checkFav,
   favTag,
   fetchItem,
+  fetchItemReviews,
   checkFlag,
   flagItem,
   editItem,

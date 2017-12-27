@@ -35,7 +35,9 @@ export default {
   },
   methods: {
     loadmoreClip () {
-      this.$store.commit('ADD_CLIPS', this.currentP)
+      let page = { 'page': this.currentP }
+      let params = Object.assign(page, this.param)
+      this.$store.dispatch('moreClips', params)
     }
   },
   mounted () {
