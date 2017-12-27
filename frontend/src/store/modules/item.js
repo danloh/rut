@@ -6,11 +6,9 @@ import {
 // initial state
 const perPage = 2
 const state = {
-  allItems: [],
   currentItems: [],
   totalItems: 0,
   currentItem: {},
-  allReviews: [],
   newReviews: [],
   hotReviews: [],
   currentReviews: [],
@@ -38,7 +36,6 @@ const actions = {
 const mutations = {
   SET_ITEM: (state, data) => {
     state.currentItem = data
-    state.allReviews = data.hotreviews
     state.newReviews = data.newreviews
     state.hotReviews = data.hotreviews
     state.inRuts = data.inruts
@@ -47,14 +44,12 @@ const mutations = {
     state.currentReviews = data.hotreviews
   },
   SET_ITEMS: (state, data) => {
-    state.allItems = data.items
     state.currentR = 1
     state.totalItems = data.total
     state.maxR = Math.ceil(data.total / perPage)
-    let sliced = data.items.slice(0, perPage)
-    state.currentItems = sliced
+    state.currentItems = data.items
   },
-  NEW_REVIEWS: (state, order) => { // order ref: hot or new
+  ALT_REVIEWS: (state, order) => { // order ref: hot or new
     if (order === 'new') {
       state.currentR = 1
       state.currentReviews = state.newReviews

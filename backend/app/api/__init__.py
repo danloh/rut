@@ -2,7 +2,6 @@
 # api  __init__
 
 from flask import Blueprint, current_app, request, g, jsonify, abort
-#from flask_login import login_required, current_user
 from flask_sqlalchemy import get_debug_queries
 from flask_httpauth import HTTPBasicAuth
 from .. import db

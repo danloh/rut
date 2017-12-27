@@ -8,7 +8,6 @@ import {
 // initial state
 const perPage = 2
 const state = {
-  allDemands: [],
   totalDemands: 0,
   currentD: 0,
   currentDemands: [],
@@ -53,12 +52,10 @@ const actions = {
 // mutations
 const mutations = {
   SET_DEMANDS (state, data) {
-    state.allDemands = data.demands
     state.totalDemands = data.total
     state.currentD = 1
     state.maxD = Math.ceil(data.total / perPage)
-    let sliced = data.demands.slice(0, perPage)
-    state.currentDemands = sliced
+    state.currentDemands = data.demands
   },
   MORE_DEMANDS (state, data) {
     state.currentD += 1

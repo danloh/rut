@@ -20,7 +20,6 @@ export default {
   components: { ItemList },
   computed: {
     ...mapGetters([
-      'allItems',
       'totalItems',
       'currentItems',
       'currentR',

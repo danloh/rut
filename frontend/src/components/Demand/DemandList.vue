@@ -20,7 +20,6 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'allDemands',
       'totalDemands',
       'currentD',
       'currentDemands',

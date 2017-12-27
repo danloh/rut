@@ -31,7 +31,7 @@ export default {
     }
   },
   created () {
-    this.$store.commit('NEW_REVIEWS', this.order)
+    this.$store.commit('ALT_REVIEWS', this.order)
   },
   methods: {
     loadmoreReviews () {

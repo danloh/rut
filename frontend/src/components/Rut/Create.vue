@@ -2,7 +2,7 @@
   <div class="create-page">
     <h3 class="title">Create New Readup Tips</h3>
     <p v-if="demandid"> As Answer To A <router-link :to="'/demand/' + demandid" target="_blank" rel="nofollow noopener noreferrer">Request</router-link></p>
-    <el-form class="create-form" :model="createForm" :rules="rules" ref="createForm" label-width="120px" size="mini">
+    <el-form class="create-form" :model="createForm" :rules="rules" ref="createForm" label-width="80px" size="mini">
       <el-form-item label="Title" prop="title">
         <el-input v-model="createForm.title"></el-input>
       </el-form-item>

@@ -22,7 +22,6 @@ export default {
   components: { Clip },
   computed: {
     ...mapGetters([
-      'allClips',
       'totalClips',
       'currentP',
       'currentClips',

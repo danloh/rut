@@ -8,7 +8,6 @@ import {
 // initial state
 const perPage = 2
 const state = {
-  allClips: [],
   totalClips: 0,
   currentP: 0,
   currentClips: [],
@@ -53,12 +52,10 @@ const actions = {
 // mutations
 const mutations = {
   SET_CLIPS (state, data) {
-    state.allClips = data.clips
     state.totalClips = data.total
     state.currentP = 1
     state.maxP = Math.ceil(data.total / perPage)
-    let sliced = data.clips.slice(0, perPage)
-    state.currentClips = sliced
+    state.currentClips = data.clips
   },
   MORE_CLIPS (state, data) {
     state.currentP += 1
