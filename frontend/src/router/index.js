@@ -22,7 +22,6 @@ import Forget from '@/components/Auth/Forget'
 import ResetPsw from '@/components/Auth/ResetPsw'
 import ChangePsw from '@/components/Auth/ChangePsw'
 import Login from '@/components/Auth/Login'
-import Connect from '@/components/Auth/Connect'
 import Create from '@/components/Rut/Create'
 import EditRut from '@/components/Rut/EditRut'
 import AddItem from '@/components/Rut/AddItem'
@@ -35,6 +34,8 @@ import createDemandList from '@/components/Demand/CreateDemandList'
 import createReviewList from '@/components/Item/CreateReviewList'
 import createProfileRuts from '@/components/Profile/CreateProfileRuts'
 import createProfileItems from '@/components/Profile/CreateProfileItems'
+import ProfileReviews from '@/components/Profile/ProfileReviews'
+import ProfileDemands from '@/components/Profile/ProfileDemands'
 import Setting from '@/components/Profile/Setting'
 import EditProfile from '@/components/Profile/EditProfile'
 import UserList from '@/components/Profile/UserList'
@@ -77,7 +78,6 @@ const router = new Router({
     { path: '/reset/:token', component: ResetPsw, name: 'ResetPsw' },
     { path: '/changepsw', component: ChangePsw, name: 'ChangePsw' },
     { path: '/login', component: Login, name: 'Login' },
-    { path: '/connect', component: Connect, name: 'Connect' },
     { path: '/tag/:id', component: TagView, name: 'Tag' },
     { path: '/create/:id(\\d+)?', component: Create, name: 'CreateRut', meta: {auth: true} },
     { path: '/readuplist/:id', component: RutView, name: 'Rutview' },
@@ -116,7 +116,7 @@ const router = new Router({
       component: Demands,
       children: [
         { path: '', name: 'defaultdemand', redirect: 'popular' },
-        { path: 'popular', name: 'Populardemand', component: createDemandList() },
+        { path: 'popular', name: 'Populardemand', component: createDemandList('popular') },
         { path: 'new', name: 'Newdemand', component: createDemandList('new') }
       ]
     },
@@ -141,6 +141,8 @@ const router = new Router({
         { path: 'working', name: 'WorkingItems', component: createProfileItems('doing') },
         { path: 'scheduled', name: 'ScheduledItems', component: createProfileItems('todo') },
         { path: 'havedone', name: 'DoneItems', component: createProfileItems('done') },
+        { path: 'reviews', name: 'Reviews', component: ProfileReviews },
+        { path: 'demands', name: 'Demands', component: ProfileDemands },
         { path: 'followeds', name: 'Followeds', component: UserList }
       ]
     },

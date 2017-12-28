@@ -1,16 +1,14 @@
 <template>
   <div class="rut-comment">
     <div class="comment-main">
-      <h2>Discuss: <router-link :to="'/readuplist/' + rut.id">{{ rut.title }}</router-link></h2>
+      <b>Discuss: </b><router-link :to="'/readuplist/' + rut.id">{{ rut.title }}</router-link>
     </div>
-    {{ commentCount }} Comments
     <div v-for="comment in comments" :key="comment.id">
       <comment :comment="comment"></comment>
     </div>
     <div v-if="hasMoreComment">
       <el-button class="blockbtn" @click="loadmoreComment" :disabled="!hasMoreComment">Show More Comments</el-button>
     </div>
-    <br>
     <div class="comment">
       <reply class="reply" :refer="refer" :show="true" @newreply="updateNew"></reply>
     </div>
@@ -74,10 +72,10 @@ export default {
 
 <style lang="stylus" scoped>
 .rut-comment
-  padding 10px 235px 10px 0px
+  padding 5px 235px 10px 0px
   position relative
   .comment-main
-    padding auto
+    padding 5px
   .comment-side
     position absolute
     top 10px

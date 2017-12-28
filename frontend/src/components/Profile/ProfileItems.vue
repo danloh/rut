@@ -1,5 +1,5 @@
 <template>
-  <div class="list-view">
+  <div>
     <b>{{flag.toUpperCase()}} {{totalItems}}</b>
     <div class="item-list">
       <item-list :items="currentItems" @loadmore="loadmoreItems"></item-list>

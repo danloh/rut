@@ -20,9 +20,7 @@
       </div>
     </div>
     <div class="demand-side">
-      <p class="right-item">If find nothing usefull, 
-      You can send a request here then Spread 
-      And invite someone to response</p>
+      <p class="right-item">Want Some Reading Tips on A Subject? Send Request Here, May Someone can Help</p>
     </div>
   </div>
 </template>

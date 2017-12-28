@@ -31,6 +31,10 @@
         <br>
         <router-link :to="'/profile/' + userid + '/havedone/'">Have Done</router-link>
         <br>
+        <router-link :to="'/profile/' + userid + '/reviews/'">Reviews</router-link>
+        <br>
+        <router-link :to="'/profile/' + userid + '/demands/'">Requests</router-link>
+        <br><br>
         <router-link :to="'/setting/' + userid" v-if="showSetting">
           <small style="outline: dotted 1px; background-color: #d5d5be">~Setting~</small>
         </router-link>

@@ -1,5 +1,5 @@
 <template>
-  <div class="itemsum">
+  <div class="item-sum">
     <div>
       <img class="thumb" :src="cover" alt="Cover">
     </div>
@@ -190,7 +190,7 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.itemsum
+.item-sum
   background-color #fff
   min-height 180px
   padding 10px 110px 10px 135px

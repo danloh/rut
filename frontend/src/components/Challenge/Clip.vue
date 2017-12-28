@@ -1,5 +1,5 @@
 <template>
-  <div class="clipmain">
+  <div class="clip-main">
     <div class="clipbody" v-html="clipContent"></div>
     <p class="meta">
       From <router-link :to="'/item/' + fromitem.id" :title="fromitem.title">{{ fromitem.title.slice(0, 60) }}...</router-link>
@@ -49,7 +49,7 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.clipmain
+.clip-main
   background-color lighten(#f6f6f1, 50%)
   padding 10px
   border-bottom 1px dotted #e09015

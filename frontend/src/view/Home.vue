@@ -1,14 +1,14 @@
 <template>
-  <div class="homepage">
+  <div class="home-page">
     <spinner :show="loading"></spinner>
-    <div class="rutlist">
+    <div class="rut-list">
       <keep-alive>
         <rut-list :rutlist="currentRuts" @loadmore="loadmoreRuts"></rut-list>
       </keep-alive>
     </div>
-    <div class="homeside">
-      <h4 class="righttitle">Top Topics</h4>
-      <div class="rightbody" v-for="(tag, index) in showTags" :key="index">
+    <div class="home-side">
+      <h4 class="right-title">Top Topics</h4>
+      <div class="right-body" v-for="(tag, index) in showTags" :key="index">
         <router-link :to="'/tag/' + tag.tagid">{{tag.tagname}}</router-link>
       </div>
     </div>
@@ -59,21 +59,21 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.homepage
+.home-page
   padding 10px 230px 10px 0px
   position relative
-  .rutlist
+  .rut-list
     padding auto
-  .homeside
+  .home-side
     position absolute
     top 10px
     right 0
     width 220px
     background-color white
-    .righttitle
+    .right-title
       background-color #e5ebe4
       padding 10px 15px
-    .rightbody
+    .right-body
       padding 5px 20px
       a
         &:hover

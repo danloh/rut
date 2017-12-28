@@ -1,6 +1,6 @@
 <template>
-  <div class="rutpage">
-    <div class="rutview">
+  <div class="rut-page">
+    <div class="rut-view">
       <div class="tagbar">
         <span class="tag" v-for="(tag, index) in tags" :key="index">
           <router-link :to="'/tag/' + tag.id">{{tag.tagname}}</router-link>
@@ -65,7 +65,7 @@
         <share-bar></share-bar>
       </div>
     </div> 
-    <div class="rutside">
+    <div class="rut-side">
       <div class="credential">
         <p class="credential-title"><b>Creator's Credential</b></p>
         <div class="credential-body">{{ credential || 'Not Introduce' }}</div>
@@ -289,10 +289,10 @@ export default {
 
 <style lang="stylus" scoped>
 $bgcolor = lighten(#f6f6f1, 50%)
-.rutpage
+.rut-page
   padding 10px 250px 10px 0px
   position relative
-  .rutview
+  .rut-view
     background-color lighten(#eceef1, 50%)
     padding auto
     .title
@@ -336,7 +336,7 @@ $bgcolor = lighten(#f6f6f1, 50%)
   .indicator
     font-size 0.7em
     color #668e66
-  .rutside
+  .rut-side
     position absolute
     right 0
     top 10px

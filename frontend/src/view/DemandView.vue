@@ -30,14 +30,14 @@
         </div>
       </el-dialog>
       <!-- dialog end -->
-      <div class="comment">
-        <reply class="reply" :refer="refer" :show="true" @newreply="updateNew"></reply>
-      </div>
       <div v-for="comment in comments" :key="comment.id">
         <comment :comment="comment"></comment>
       </div>
       <div v-if="hasMoreComment">
-        <el-button class="blockbtn" @click="loadmoreComment" :disabled="!hasMoreComment">More</el-button>
+        <el-button class="blockbtn" @click="loadmoreComment" :disabled="!hasMoreComment">Show More Comments</el-button>
+      </div>
+      <div class="comment">
+        <reply class="reply" :refer="refer" :show="true" @newreply="updateNew"></reply>
       </div>
     </div>
     <div class="demand-side">

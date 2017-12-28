@@ -3,8 +3,8 @@
     <div class="item-list">
       <item-sum v-for="item in items" :key="item.id" :item="item"></item-sum>
     </div>
-    <div>
-      <el-button class="blockbtn" @click="$emit('loadmore')" :disabled="!hasMore">More</el-button>
+    <div v-if="hasMore">
+      <el-button class="blockbtn" @click="$emit('loadmore')" :disabled="!hasMore">Show More</el-button>
     </div>
     <br>
   </div>

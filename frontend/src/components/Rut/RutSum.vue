@@ -1,5 +1,5 @@
 <template>
-  <div class="rutsum">
+  <div class="rut-sum">
     <router-link :to="'/readuplist/' + rut.id">
       <span>
         <img class="cover" :src="cover" style="width:80px; height:100px" alt="Cover">
@@ -34,7 +34,7 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.rutsum
+.rut-sum
   background-color #fff
   min-height 120px
   padding 10px 30px 10px 100px

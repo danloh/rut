@@ -1,5 +1,5 @@
 <template>
-  <div class="list-view">
+  <div>
     <b>{{action.toUpperCase()}} {{totalRuts}}</b>
     <div class="rut-list">
       <rut-list :rutlist="currentRuts" @loadmore="loadmoreRuts"></rut-list>
