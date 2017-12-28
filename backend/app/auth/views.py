@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# to be re-work
 
 from flask import g, render_template, redirect, request, session, url_for, flash,\
                   current_app, jsonify
@@ -85,7 +86,7 @@ def set_user(server_name, me):
         return redirect(url_for('main.edit_profile'))  #note!!
 
     login_user(user, remember=True)
-    next_url = session.pop('next',None) or url_for('main.index')
+    next_url = session.pop('next',None)
     return redirect(next_url)  #note!!
 
 
@@ -116,7 +117,7 @@ def set_tw_user(server_name,resp):
         return jsonify(user_dict)
 
     login_user(user, remember=True)
-    next_url = session.pop('next',None) or url_for('main.index')
+    next_url = session.pop('next',None)
     #return redirect(next_url)
     user_dict = user.to_dict()
     return jsonify(user_dict)
@@ -125,7 +126,7 @@ def set_tw_user(server_name,resp):
 def connect():
     next_c = get_redirect_target()
     session['next'] = next_c
-    return render_template('connect.html') 
+    return None #render_template('connect.html') 
 
 @auth.route('/login/<string:server_name>')
 def login(server_name):
@@ -229,4 +230,4 @@ def get_twitter_token():
 @auth.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('main.index'))  # note!!!
+    return None #redirect(url_for('main.index'))  # note!!!
