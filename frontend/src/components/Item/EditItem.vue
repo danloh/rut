@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import { editItem } from '@/api/api'
+import { editItem, fetchItem } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 
 export default {
@@ -132,6 +132,15 @@ export default {
               message: error.response.statusText
             })
           })
+        } else if (!checkAuth()) {
+          this.$message({
+            showClose: true,
+            message: 'Should Log in to Continue'
+          })
+          this.$router.push({
+            path: '/login',
+            query: {redirect: this.$route.fullPath}
+          })
         } else {
           this.$message({
             showClose: true,
@@ -144,25 +153,34 @@ export default {
     resetForm (formName) {
       this.$refs[formName].resetFields()
     },
+    setFormData (item) {
+      this.itemForm.cate = item.cate
+      this.itemForm.title = item.title
+      this.itemForm.uid = item.uid
+      this.itemForm.resUrl = item.resurl
+      this.itemForm.byline = item.byline
+      this.itemForm.cover = item.cover
+      this.itemForm.language = item.language
+      this.itemForm.publisher = item.publisher
+      this.itemForm.publishDate = item.pubdate
+      this.itemForm.level = item.level
+      this.itemForm.binding = item.binding
+      this.itemForm.price = item.price
+      this.itemForm.page = item.page
+      this.itemForm.details = item.details
+      this.itemId = item.id
+      this.itemTitle = item.title
+    },
     loadItemData () {
-      let item = this.$store.getters.currentItem
-      if (item.id === Number(this.$route.params.id)) {
-        this.itemForm.cate = item.cate
-        this.itemForm.title = item.title
-        this.itemForm.uid = item.uid
-        this.itemForm.resUrl = item.resurl
-        this.itemForm.byline = item.byline
-        this.itemForm.cover = item.cover
-        this.itemForm.language = item.language
-        this.itemForm.publisher = item.publisher
-        this.itemForm.publishDate = item.pubdate
-        this.itemForm.level = item.level
-        this.itemForm.binding = item.binding
-        this.itemForm.price = item.price
-        this.itemForm.page = item.page
-        this.itemForm.details = item.details
-        this.itemId = item.id
-        this.itemTitle = item.title
+      let itemG = this.$store.getters.currentItem
+      let itemid = this.$route.params.id
+      if (itemG && itemG.id === Number(itemid)) {
+        let item = itemG
+        this.setFormData(item)
+      } else {
+        fetchItem(itemid).then(resp => {
+          this.setFormData(resp.data)
+        })
       }
     }
   },

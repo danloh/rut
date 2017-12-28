@@ -77,6 +77,15 @@ export default {
               message: error.response.statusText
             })
           })
+        } else if (!checkAuth()) {
+          this.$message({
+            showClose: true,
+            message: 'Should Log in to Continue'
+          })
+          this.$router.push({
+            path: '/login',
+            query: {redirect: this.$route.fullPath}
+          })
         } else {
           this.$message({
             showClose: true,

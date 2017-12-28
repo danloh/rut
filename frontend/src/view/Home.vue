@@ -1,11 +1,11 @@
 <template>
   <div class="home-page">
-    <spinner :show="loading"></spinner>
     <div class="rut-list">
       <keep-alive>
         <rut-list :rutlist="currentRuts" @loadmore="loadmoreRuts"></rut-list>
       </keep-alive>
     </div>
+    <spinner :show="loading"></spinner>
     <div class="home-side">
       <h4 class="right-title">Top Topics</h4>
       <div class="right-body" v-for="(tag, index) in showTags" :key="index">
