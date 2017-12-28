@@ -206,6 +206,14 @@ const editReview = (reviewid, params) => {
 const upvoteReview = (reviewid, params) => {
   return request(`${base}/upvotereview/${reviewid}`, params)
 }
+// fetch user's review
+const fetchProfileReviews = (userid, params) => {
+  return request(`${base}/user/${userid}/reviews`, params)
+}
+// fetch user's demands
+const fetchProfileDemands = (userid, params) => {
+  return request(`${base}/user/${userid}/demands`, params)
+}
 // get demand list
 const fetchDemands = (params) => {
   return request(`${base}/demands`, params)
@@ -293,6 +301,8 @@ export {
   fetchReviewComments,
   editReview,
   upvoteReview,
+  fetchProfileReviews,
+  fetchProfileDemands,
   fetchDemands,
   fetchDemand,
   fetchDemandComments,

@@ -937,12 +937,58 @@ def upvote_review(reviewid):
         db.session.add(rvote)
         db.session.commit()
     return jsonify(review.vote)
+
+@rest.route('/user/<int:userid>/reviews')
+def get_user_reviews(userid):
+    #user = Users.query.get_or_404(userid)
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    reviews = Reviews.query.filter_by(creator_id=userid)
+    rs = reviews.order_by(Reviews.timestamp.desc())\
+                .offset(per_page * page).limit(per_page)
+    reviewcount = reviews.count()
+    review_list = [r.to_dict() for r in rs]
+    review_dict = {'reviewcount': reviewcount, 'reviews': review_list}
+    return jsonify(review_dict)
+
+@rest.route('/reviews')
+def get_reviews():
+    userid = request.args.get('userid','')
+    itemid = request.args.get('itemid','')
+    #user = Users.query.get_or_404(userid)
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    query = Reviews.query
+    if userid:
+        reviews = query.filter_by(creator_id=userid)
+    elif itemid:
+        reviews = query.filter_by(item_id=itemid)
+    else:
+        reviews = query
+    rs = reviews.order_by(Reviews.timestamp.desc())\
+                .offset(per_page * page).limit(per_page)
+    review_list = [r.to_dict() for r in rs]
+    review_dict = {'reviewcount': reviews.count(), 'reviews': review_list}
+    return jsonify(review_dict)
+
+@rest.route('/user/<int:userid>/demands')
+def get_user_demands(userid):
+    #user = Users.query.get_or_404(userid)
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    demands = Demands.query.filter_by(requestor_id=userid)
+    ds = demands.order_by(Demands.timestamp.desc())\
+                .offset(per_page * page).limit(per_page)
+    demandcount = demands.count()
+    d_list = [d.to_dict() for d in ds]
+    demand_dict = {'demandcount': demandcount, 'demands': d_list}
+    return jsonify(demand_dict)
     
 @rest.route('/demands')
 def get_demands():
     query = Demands.query
     userid = request.args.get('userid','')
-    ref = request.args.get('type','popular')
+    ref = request.args.get('type','')
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     if userid:
@@ -951,6 +997,8 @@ def get_demands():
         demands = query.order_by(Demands.timestamp.desc())
     elif ref == "popular":  # popular
         demands = query.order_by(Demands.vote.desc())
+    else:
+        demands = query
     ds = demands.offset(per_page * page).limit(per_page)
     demands_dict = {
         'demands': [d.to_dict() for d in ds],

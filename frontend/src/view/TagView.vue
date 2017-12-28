@@ -1,6 +1,6 @@
 <template>
-  <div class="tagpage">
-    <div class="tagside">
+  <div class="tag-page">
+    <div class="tag-side">
       <h4 class="sidetitle">Related Tags</h4>
       <div class="sidebody" v-for="(tag, index) in showTags" :key="index">
         <router-link :to="'/tag/' + tag.tagid">{{tag.tagname}}</router-link>
@@ -13,7 +13,7 @@
       </div>
       <el-button class="fbtn" type="success" size="mini" plain @click="favTag">{{action}} {{favCount}}</el-button>
     </div>
-    <div class="rutlist">
+    <div class="rut-list">
       <rut-list :rutlist="currentRuts" @loadmore="loadmoreRuts"></rut-list>
     </div>
     <!-- dialog -->
@@ -189,10 +189,10 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.tagpage
+.tag-page
   padding 10px 230px 10px 0px
   position relative
-  .tagside
+  .tag-side
     position absolute
     right 0
     width 220px
@@ -215,6 +215,6 @@ export default {
       position absolute
       top 10px
       right 5px
-  .rutlist
+  .rut-list
     padding auto
 </style>

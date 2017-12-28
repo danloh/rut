@@ -13,7 +13,7 @@ import { fetchItemReviews } from '@/api/api'
 import { mapGetters } from 'vuex'
 
 export default {
-  name: 'item-list',
+  name: 'review-list',
   components: { ReviewSum },
   props: {
     order: String
@@ -46,20 +46,6 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.item-page
-  padding 10px 230px 10px 0px
-  position relative
-  .item-side
-    position absolute
-    top 10px
-    right 0
-    width 220px
-    background-color white
-    .lefttitle
-      background-color #e5ebe4
-      padding 10px 15px
-    .leftbody
-      padding 5px 20px
-  .review-list
-    padding auto
+.review-list
+  padding auto
 </style>

@@ -69,31 +69,31 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-  #share
-    text-align right
-    .share-bar
-      > .share-link
-        cursor: pointer
-        display: inline-block
-        text-align: center
+#share
+  text-align right
+  .share-bar
+    > .share-link
+      cursor: pointer
+      display: inline-block
+      text-align: center
 
-        &.evernote:hover
-          background-color: rgb(139, 224, 86)
+      &.evernote:hover
+        background-color: rgb(139, 224, 86)
 
-        &.twitter:hover
-          background-color: rgb(85, 172, 238)
+      &.twitter:hover
+        background-color: rgb(85, 172, 238)
 
-        &.facebook:hover
-          background-color: rgb(59, 89, 152)
+      &.facebook:hover
+        background-color: rgb(59, 89, 152)
 
-        &.google-plus:hover
-          background-color: rgb(221, 75, 57)
+      &.google-plus:hover
+        background-color: rgb(221, 75, 57)
 
-        &.linkedin:hover
-          background-color: rgb(0, 123, 181)
+      &.linkedin:hover
+        background-color: rgb(0, 123, 181)
 
-        .icon
-          padding 5px
-          width 16px
-          height 16px
+      .icon
+        padding 5px
+        width 16px
+        height 16px
 </style>
