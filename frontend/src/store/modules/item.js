@@ -4,7 +4,7 @@ import {
 } from '@/api/api'
 
 // initial state
-const perPage = 2
+const perPage = 20
 const state = {
   currentItems: [],
   totalItems: 0,
@@ -61,6 +61,9 @@ const mutations = {
   MORE_REVIEWS: (state, data) => {
     state.currentR += 1
     state.currentReviews.push(...data)
+  },
+  MORE_INRUTS: (state, data) => {
+    state.inRuts.push(...data)
   },
   MORE_ITEMS (state, data) {
     state.currentR += 1

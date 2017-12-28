@@ -2,21 +2,15 @@
 # app __init__.py
 
 from flask import Flask 
-from flask_bootstrap import Bootstrap 
 from flask_sqlalchemy import SQLAlchemy
 from flask_caching import Cache
 from flask_mail import Mail
 from flask_oauthlib.client import OAuth
 from flask_login import LoginManager
-from flask_moment import Moment
-from flask_pagedown import PageDown
 from flask_cors import CORS
 
 from config import config 
-
-bootstrap = Bootstrap()  # to be init_ed later
-moment = Moment()
-pagedown = PageDown() 
+ 
 db = SQLAlchemy()
 cache = Cache(config={
     'CACHE_TYPE': 'simple',
@@ -24,9 +18,7 @@ cache = Cache(config={
     })
 mail = Mail()
 oauth = OAuth()
-login_manager = LoginManager()
-login_manager.session_protection = 'strong'
-login_manager.login_view = 'auth.connect'
+login_manager = LoginManager() # to be deleted
 cors = CORS()
 
 def create_app(config_name):
@@ -36,28 +28,22 @@ def create_app(config_name):
     config[config_name].init_app(app)
 
     #load extension
-    bootstrap.init_app(app)
-    moment.init_app(app)
-    pagedown.init_app(app)
     db.init_app(app)
     cache.init_app(app)
     mail.init_app(app)
     oauth.init_app(app)
-    login_manager.init_app(app)
+    #login_manager.init_app(app)
     cors.init_app(app)
 
     #load blueprints
-    from .main import main as main_blueprint
-    app.register_blueprint(main_blueprint)
-
-    from .auth import auth as auth_blueprint
-    app.register_blueprint(auth_blueprint)
-
     from .api import rest as rest_blueprint
     app.register_blueprint(rest_blueprint, url_prefix='/api')
 
     from .bot import bot as bot_blueprint
     app.register_blueprint(bot_blueprint)
+
+    from .auth import auth as auth_blueprint
+    app.register_blueprint(auth_blueprint)
     
     return app
 

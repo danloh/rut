@@ -138,7 +138,10 @@ export default {
             })
           })
         } else {
-          console.log('error submit!!')
+          this.$message({
+            showClose: true,
+            message: 'error!! Please Check'
+          })
           return false
         }
       })
@@ -171,7 +174,10 @@ export default {
             })
           })
         } else {
-          console.log('error submit!!')
+          this.$message({
+            showClose: true,
+            message: 'error!! Please Check'
+          })
           return false
         }
       })

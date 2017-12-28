@@ -44,9 +44,15 @@ export default {
           })
           this.resetForm(formName)
           this.$emit('update:show', false)
-        } else {
-          console.log('error submit!!')
-          return false
+        } else if (!checkAuth()) {
+          this.$message({
+            showClose: true,
+            message: 'Should Log in to post Comment'
+          })
+          this.$router.push({
+            path: '/login',
+            query: {redirect: this.$route.fullPath}
+          })
         }
       })
     },

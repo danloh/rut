@@ -6,7 +6,7 @@ import {
 } from '@/api/api'
 
 // initial state
-const perPage = 2
+const perPage = 20
 const state = {
   totalDemands: 0,
   currentD: 0,

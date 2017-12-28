@@ -525,6 +525,7 @@ class Posts(db.Model):
             'starcount': self.starers.count(),
             'challengecount': self.challengers.count(),
             'commentcount': self.comments.count(),
+            'demandcount': self.demands.count(),
             'cover': self.post_cover,
             'editable': self.editable,
             'creator': creator,
@@ -782,8 +783,7 @@ class Tags(db.Model):
     @staticmethod
     @cache.memoize()
     def get_tags():
-        return Tags.query.order_by(Tags.vote.desc()).\
-                        order_by(db.func.rand()).limit(20).all()
+        return Tags.query.order_by(Tags.vote.desc()).limit(20).all()
 
     def cal_vote(self,i=None,p=None,d=None,f=None):
         i = i or self.items.count()

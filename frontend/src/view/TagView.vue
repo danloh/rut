@@ -128,9 +128,15 @@ export default {
               message: error.response.statusText
             })
           })
-        } else {
-          console.log('error submit!!')
-          return false
+        } else if (!checkAuth()) {
+          this.$message({
+            showClose: true,
+            message: 'Should Log in to Continue'
+          })
+          this.$router.push({
+            path: '/login',
+            query: {redirect: this.$route.fullPath}
+          })
         }
       })
     },

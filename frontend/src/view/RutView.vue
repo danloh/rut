@@ -75,6 +75,9 @@
         <p class="demand-title" v-for="(demand, index) in demands" :key="index" :demand="demand">
           - <router-link :to="'/demand/' + demand.id"> {{ demand.demand.slice(0, 60) }}...</router-link>
         </p>
+        <div v-if="hasMoreDemand">
+          <el-button size="mini" @click="loadmoreDemand" :disabled="!hasMoreDemand">Show More</el-button>
+        </div>
       </div>
     </div>
   </div>
@@ -85,7 +88,7 @@ import Spinner from '@/components/Misc/Spinner.vue'
 import ItemSum from '@/components/Item/ItemSum.vue'
 import Comment from '@/components/Comment/Comment.vue'
 import ShareBar from '@/components/Misc/ShareBar.vue'
-import { scRut, checkSC, editTags } from '@/api/api'  // sc: star and challenge
+import { scRut, checkSC, editTags, fetchRutDemands } from '@/api/api'  // sc: star and challenge
 import { checkAuth } from '@/util/auth'
 import { mapGetters } from 'vuex'
 
@@ -98,6 +101,8 @@ export default {
       challengeAction: this.checkChallenge(), // || 'Challenge',
       starCount: 0,
       challengeCount: 0,
+      demands: [],
+      currentDP: 1,
       demandCount: 0,
       creatorid: null,
       creatorname: '',
@@ -122,9 +127,6 @@ export default {
     tags () {
       return this.rutDetail.tags
     },
-    demands () {
-      return this.rutDetail.demands
-    },
     creator () {
       return this.rutDetail.creator
     },
@@ -143,6 +145,9 @@ export default {
     },
     canDelete () {
       return this.creatorid === this.currentUserID // ?
+    },
+    hasMoreDemand () {
+      return this.demands.length < this.demandCount
     }
   },
   title () {
@@ -160,7 +165,17 @@ export default {
         this.creatorname = data.creator.name
         this.currentUserID = this.$store.getters.currentUserID
         this.newTags = data.tags.map(t => t.tagname)
-        this.demandCount = data.demands.length
+        this.demands = data.demands
+        this.demandCount = data.demandcount
+      })
+    },
+    loadmoreDemand () {
+      let rutid = this.$route.params.id
+      let params = {'page': this.currentDP}
+      fetchRutDemands(rutid, params)
+      .then(resp => {
+        this.demands.push(...resp.data)
+        this.currentDP += 1
       })
     },
     checkStar () {

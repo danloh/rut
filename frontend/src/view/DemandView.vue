@@ -8,6 +8,9 @@
         <p class="title" v-for="(rut, index) in answers" :key="index" :rut="rut">
           - <router-link :to="'/readuplist/' + rut.id" :title="rut.title"> {{ rut.title.slice(0, 160) }}...</router-link>
         </p>
+        <div v-if="hasMoreAnswer">
+          <el-button size="mini" @click="loadmoreAnswer" :disabled="!hasMoreAnswer">Show More</el-button>
+        </div>
       </div>
       <div class="share">
         <share-bar></share-bar>
@@ -33,6 +36,9 @@
       <div v-for="comment in comments" :key="comment.id">
         <comment :comment="comment"></comment>
       </div>
+      <div v-if="hasMoreComment">
+        <el-button class="blockbtn" @click="loadmoreComment" :disabled="!hasMoreComment">More</el-button>
+      </div>
     </div>
     <div class="demand-side">
     </div>
@@ -44,7 +50,7 @@ import Demand from '@/components/Demand/Demand.vue'
 import Comment from '@/components/Comment/Comment.vue'
 import Reply from '@/components/Comment/Reply.vue'
 import ShareBar from '@/components/Misc/ShareBar.vue'
-import { fetchProfileRuts, rutAsAnswer } from '@/api/api'
+import { fetchProfileRuts, rutAsAnswer, fetchDemandComments, fetchDemandAnswers } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { mapGetters } from 'vuex'
 
@@ -58,7 +64,11 @@ export default {
     return {
       refer: { re: 'demand', id: this.$route.params.id },
       answers: [],
+      answerCount: 0,
+      currentaPage: 1,
       comments: [],
+      commentCount: 0,
+      currentPage: 1,
       showDialog: false,
       asForm: {
         selectRutID: null
@@ -69,7 +79,13 @@ export default {
   computed: {
     ...mapGetters([
       'demandDetail'
-    ])
+    ]),
+    hasMoreComment () {
+      return this.comments.length < this.commentCount
+    },
+    hasMoreAnswer () {
+      return this.answers.length < this.answerCount
+    }
   },
   methods: {
     loadDemandData () {
@@ -78,11 +94,29 @@ export default {
       .then(resp => {
         let data = resp.data
         this.answers = data.answers
+        this.answerCount = data.answercount
         this.comments = data.comments
+        this.commentCount = data.commentcount
       })
     },
     updateNew (data) {
       this.comments.unshift(data)
+    },
+    loadmoreComment () {
+      let params = {'page': this.currentPage}
+      fetchDemandComments(this.demandDetail.id, params)
+      .then(resp => {
+        this.comments.push(...resp.data)
+        this.currentPage += 1
+      })
+    },
+    loadmoreAnswer () {
+      let params = {'page': this.currentaPage}
+      fetchDemandAnswers(this.demandDetail.id, params)
+      .then(resp => {
+        this.answers.push(...resp.data)
+        this.currentaPage += 1
+      })
     },
     // get created ruts then link to demand as answer
     loadCreatedThenAsAnswer () {
@@ -106,6 +140,13 @@ export default {
       }
     },
     asAnswer (formName, form) {
+      if (!form.selectRutID) {
+        this.$message({
+          showClose: true,
+          message: 'Please Select One'
+        })
+        return false
+      }
       this.$refs[formName].validate((valid) => {
         if (valid && checkAuth()) {
           let rutid = form.selectRutID
@@ -120,11 +161,15 @@ export default {
             })
             this.answers.push(resp.data)
           })
-        } else {
+        } else if (!checkAuth()) {
           this.showDialog = false
           this.$message({
             showClose: true,
-            message: 'Should Log in to Access'
+            message: 'Should Log in to Continue'
+          })
+          this.$router.push({
+            path: '/login',
+            query: {redirect: this.$route.fullPath}
           })
         }
       })

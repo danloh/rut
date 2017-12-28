@@ -14,7 +14,7 @@ from .errors import error_response
 rest = Blueprint('rest', __name__)
 auth = HTTPBasicAuth()
 
-PER_PAGE = 2
+PER_PAGE = 20
 
 @rest.route('/register', methods = ['POST'])
 def register():
@@ -242,9 +242,20 @@ def get_rut(rutid):
     order_tips = sorted(tips, key=itemgetter('order'))
     rut_dict['tips'] = order_tips
     # attach demands respon to
-    demands = [{'id': r.demand_id, 'demand': r.demand.body} for r in rut.demands]
+    r_demands = rut.demands.order_by(Respon.timestamp.desc()).limit(PER_PAGE)
+    demands = [{'id': r.demand_id, 'demand': r.demand.body} for r in r_demands]
     rut_dict['demands'] = demands
     return jsonify(rut_dict)
+
+@rest.route('/rut/<int:rutid>/demands')
+def get_rut_demands(rutid):
+    rut = Posts.query.get_or_404(rutid)
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    r_demands = rut.demands.order_by(Respon.timestamp.desc()).limit(PER_PAGE)\
+                .offset(page*per_page).limit(per_page)
+    demands = [{'id': r.demand_id, 'demand': r.demand.body} for r in r_demands]
+    return jsonify(demands)
 
 @rest.route('/challengerut')  # challenging rut !!
 @auth.login_required
@@ -686,13 +697,13 @@ def get_item(itemid):
     item_dict['hotreviews'] = hot_reviews
     item_dict['newreviews'] = new_reviews
     # attach included ruts
-    ruts = [c.post for c in item.posts.order_by(Collect.timestamp.desc())]
+    ruts = [c.post for c in item.posts.order_by(Collect.timestamp.desc()).limit(PER_PAGE)]
     included_ruts = [{'id':r.id, 'title': r.title} for r in ruts]
     item_dict['inruts'] = included_ruts
     return jsonify(item_dict)
 
 @rest.route('/item/<int:itemid>/reviews')
-def get_item_review(itemid):
+def get_item_reviews(itemid):
     item = Items.query.get_or_404(itemid)
     # request param: {page: int|current_page, ref: hot or new}
     page = request.args.get('page', 0, type=int)
@@ -706,6 +717,17 @@ def get_item_review(itemid):
         newreviews = reviews.order_by(Reviews.timestamp.desc()).offset(per_page * page).limit(per_page)
         review_dict = [r.to_dict() for r in newreviews]
     return jsonify(review_dict)
+
+@rest.route('/item/<int:itemid>/inruts')
+def get_item_inruts(itemid):
+    item = Items.query.get_or_404(itemid)
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    included_ruts = item.posts.order_by(Collect.timestamp.desc())\
+                    .offset(per_page * page).limit(per_page)
+    ruts_list = [c.post for c in included_ruts]
+    in_ruts = [{'id':r.id, 'title': r.title} for r in ruts_list]
+    return jsonify(in_ruts)
 
 @rest.route('/edititem/<int:itemid>', methods=['POST'])
 @auth.login_required
@@ -883,10 +905,21 @@ def get_review(reviewid):
     review = Reviews.query.get_or_404(reviewid)
     review_dict = review.to_dict()
     #attach comments
-    comments = [c.to_dict() for c in review.comments]
-    comments.reverse()
+    rev_comments = review.comments.order_by(Comments.timestamp.desc())
+    review_dict['commentcount'] = rev_comments.count()
+    comments = [c.to_dict() for c in rev_comments.limit(50)]
     review_dict['comments'] = comments
     return jsonify(review_dict)
+
+@rest.route('/review/<int:reviewid>/comments')
+def get_review_comments(reviewid):
+    review = Reviews.query.get_or_404(reviewid)
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', 50, type=int)
+    rev_comments = review.comments.order_by(Comments.timestamp.desc())\
+                   .offset(page*per_page).limit(per_page)
+    comments = [c.to_dict() for c in rev_comments]
+    return jsonify(comments)
 
 @rest.route('/upvotereview/<int:reviewid>')
 @auth.login_required
@@ -930,14 +963,37 @@ def get_demand(demandid):
     demand = Demands.query.get_or_404(demandid)
     demand_dict = demand.to_dict()
     #attach answers to demand
-    respons = [r.post for r in demand.posts]
+    resps = demand.posts.order_by(Respon.timestamp.desc()).limit(PER_PAGE)
+    respons = [r.post for r in resps]
     answers = [{'id':p.id,'title':p.title} for p in respons]
     demand_dict['answers'] = answers
     #attach comments
-    comments = [c.to_dict() for c in demand.comments]
-    comments.reverse()
+    d_comments = demand.comments.order_by(Comments.timestamp.desc()).limit(50)
+    comments = [c.to_dict() for c in d_comments]
+    ##comments.reverse()
     demand_dict['comments'] = comments
     return jsonify(demand_dict)
+
+@rest.route('/demand/<int:demandid>/comments')
+def get_demand_comments(demandid):
+    demand = Demands.query.get_or_404(demandid)
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', 50, type=int)
+    d_comments = demand.comments.order_by(Comments.timestamp.desc())\
+                 .offset(page*per_page).limit(per_page)
+    comments = [c.to_dict() for c in d_comments]
+    return jsonify(comments)
+
+@rest.route('/demand/<int:demandid>/answers')
+def get_demand_answers(demandid):
+    demand = Demands.query.get_or_404(demandid)
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    d_resps = demand.posts.order_by(Respon.timestamp.desc())\
+                 .offset(page*per_page).limit(per_page)
+    d_respons = [r.post for r in d_resps]
+    answers = [{'id':p.id,'title':p.title} for p in d_respons]
+    return jsonify(answers)
 
 @rest.route('/upvotedemand/<int:demandid>')
 @auth.login_required
@@ -1094,12 +1150,17 @@ def new_comment(demandid=None,rutid=None,commentid=None,itemid=None,reviewid=Non
     comment_dict = comment.to_dict()
     return jsonify(comment_dict)
 
-@rest.route('/commentonrut/<int:rutid>')
-def get_comment_rut(rutid):
+@rest.route('/commentsonrut/<int:rutid>')
+def get_comments_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     rut_dict = {'id': rut.id, 'title': rut.title}
-    comments = [c.to_dict() for c in rut.comments]
-    comments.reverse()
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', 50, type=int)
+    r_comments = rut.comments
+    rut_dict['commentcount'] = r_comments.count()
+    rut_comments = r_comments.order_by(Comments.timestamp.desc())\
+                   .offset(page*per_page).limit(per_page)
+    comments = [c.to_dict() for c in rut_comments]
     rut_dict['comments'] = comments
     return jsonify(rut_dict)
 
