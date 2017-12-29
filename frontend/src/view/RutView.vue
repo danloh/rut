@@ -33,32 +33,23 @@
         <div v-html="rutDetail.intro"></div>
       </div>
       <div class="toolbar">
-        <el-button size="mini" plain v-if="canEdit">
-          <router-link :to="'/edit/readuplist/' + rutid">...Edit</router-link>
-        </el-button>
-        <el-button size="mini" plain v-if="canEdit">
-          <router-link :to="'/additemto/readuplist/' + rutid">Add Item...</router-link>
-        </el-button>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <el-button type="success" size="mini" plain @click="starRut"><b>{{ starAction }} {{ starCount }}</b></el-button>
-        <el-button type="success" size="mini" plain @click="challengeRut"><b>{{ challengeAction }} {{ challengeCount }}</b></el-button>
+        <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit">...Edit</router-link>&nbsp;&nbsp;&nbsp;&nbsp;
+        <router-link class="editlink" :to="'/additemto/readuplist/' + rutid" v-if="canEdit">Add Item...</router-link> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <el-button type="success" size="mini" plain @click="starRut"><b>{{ starAction }}&nbsp;{{ starCount }}</b></el-button>
+        <el-button type="success" size="mini" plain @click="challengeRut"><b>{{ challengeAction }}&nbsp;{{ challengeCount }}</b></el-button>
       </div>
       <div class="itemtip" v-for="tip in tips" :key="tip.cid">
         <item-sum class="itemsum" :item="tip.item" :key="tip.itemid"></item-sum>
-        <b class="indicator">&nbsp;&nbsp;Tips:&nbsp;</b> 
-        <el-button type="text" size="mini" v-if="canEdit">
-          <router-link :to="'/edit/readuptips/' + tip.cid">...Edit</router-link>
-        </el-button>
+        <b class="indicator">&nbsp;&nbsp;#{{tip.order}}&nbsp;&nbsp;</b> 
+        <router-link class="editlink" :to="'/edit/readuptips/' + tip.cid" v-if="canEdit">...Edit</router-link>
         <div class="tip">
           <div v-html="tip.tip" v-show="!tip.spoiler || !short"></div>
           <el-button type="text" size="mini" @click="short = !short" v-if="tip.spoiler && short">... Spoilers Ahead! Continue?</el-button>
         </div>
       </div>
       <div class="epilog">
-        <b class="indicator">Epilog:&nbsp;</b>
-        <el-button type="text" size="mini" v-if="canEdit">
-          <router-link :to="'/edit/readuplist/' + rutid">...Edit</router-link>
-        </el-button>
+        <b class="indicator">Epilog:&nbsp;&nbsp;</b>
+        <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit">...Edit</router-link>
         <div v-html="rutDetail.epilog"></div>
       </div>
       <div class="bottombar">
@@ -336,6 +327,9 @@ $bgcolor = lighten(#f6f6f1, 50%)
   .indicator
     font-size 0.7em
     color #668e66
+  .editlink
+    font-size 0.7em
+    font-weight 600
   .rut-side
     position absolute
     right 0

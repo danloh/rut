@@ -31,7 +31,6 @@ import NewReview from '@/components/Item/NewReview'
 import EditReview from '@/components/Item/EditReview'
 import createClipList from '@/components/Challenge/CreateClipList'
 import createDemandList from '@/components/Demand/CreateDemandList'
-import createReviewList from '@/components/Item/CreateReviewList'
 import createProfileRuts from '@/components/Profile/CreateProfileRuts'
 import createProfileItems from '@/components/Profile/CreateProfileItems'
 import ProfileReviews from '@/components/Profile/ProfileReviews'
@@ -100,14 +99,7 @@ const router = new Router({
       beforeEnter
     },
     { path: '/commenton/rut/:id', component: RutComment, name: 'RutComment' },
-    { path: '/item/:id',
-      component: ItemView,
-      children: [
-        { path: '', name: 'defaultreview', redirect: 'hotreview' },
-        { path: 'hotreview', name: 'Hotreview', component: createReviewList('hot') },
-        { path: 'newreview', name: 'Newreview', component: createReviewList('new') }
-      ]
-    },
+    { path: '/item/:id', component: ItemView, name: 'Item' },
     { path: '/edit/item/:id', component: EditItem, name: 'EditItem', meta: {auth: true} },
     { path: '/review/item/:id', component: NewReview, name: 'NewReview', meta: {auth: true} },
     { path: '/editreview/:id', component: EditReview, name: 'EditReview', meta: {auth: true} },

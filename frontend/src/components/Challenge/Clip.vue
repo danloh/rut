@@ -5,7 +5,7 @@
       From <router-link :to="'/item/' + fromitem.id" :title="fromitem.title">{{ fromitem.title.slice(0, 60) }}...</router-link>
       via <router-link :to="'/profile/' + creator.id">{{ creator.name.slice(0, 20) }}</router-link>
       | {{ clip.timestamp | toMDY }}
-      | {{ vote }} <el-button type="text"><span @click="upClip">Like</span></el-button>
+      | {{ vote }}&nbsp;<el-button type="text" @click="upClip">Like</el-button>
     </p>
   </div>
 </template>

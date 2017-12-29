@@ -1,8 +1,8 @@
 <template>
   <div class="review-main" v-if="creator">
-    <h2 class="title">
+    <h3 class="title">
       <router-link :to="'/review/' + review.id">{{ review.heading }}</router-link>
-    </h2>
+    </h3>
     <p class="meta">
       By <router-link :to="'/profile/' + creator.id">{{ creator.name }}</router-link>
       | {{ review.timestamp | toMDY }}
@@ -14,7 +14,7 @@
     </div>
     <div class="bar">
       <router-link :to="'/editreview/' + review.id" v-if="canEdit">...Edit |</router-link>
-      <el-button type="text"><span @click="upReview">Helpful</span></el-button> {{ vote }}
+      <el-button type="text" @click="upReview">Helpful</el-button>&nbsp;{{ vote }}
     </div>
   </div>
 </template>

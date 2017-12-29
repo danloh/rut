@@ -67,7 +67,32 @@ axios.interceptors.request.use(
 // Response interceptor
 axios.interceptors.response.use(
   response => {
-    // console.log(response.config)
+    if (response.status >= 400) {
+      switch (response.status) {
+        case 401:
+          store.commit('DEL_TOKEN')
+          new Vue().$message('Oops...Access Denied, Need To Log in')
+          if (router.currentRoute.path !== '/login') {
+            router.push({
+              path: '/login',
+              query: {redirect: router.currentRoute.fullPath}
+            })
+          }
+          break
+        case 403:
+          new Vue().$message('Oops...Operation Forbidden')
+          break
+        case 404:
+          new Vue().$message('The Resource You Requested Was Not Found')
+          router.replace({ path: '/404' })
+          break
+        case 500:
+          new Vue().$message('Oops...Internal Server Error')
+          router.replace({ path: '/' })
+          break
+      }
+      return false
+    }
     return response
   },
   error => {
@@ -82,15 +107,8 @@ axios.interceptors.response.use(
             })
           }
           break
-        case 403:
-          error.message = 'Forbidden 403'
-          break
         case 404:
-          error.message = 'Not Found Page 404'
           router.replace({ path: '/404' })
-          break
-        case 500:
-          error.message = 'Internal Server Error 500'
           break
       }
     }

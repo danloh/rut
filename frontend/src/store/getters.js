@@ -31,7 +31,6 @@ const getters = {
   totalItems: state => state.item.totalItems,
   currentItems: state => state.item.currentItems,
   currentItem: state => state.item.currentItem,
-  currentReviews: state => state.item.currentReviews,
   currentR: state => state.item.currentR,
   perR: state => state.item.perR,
   maxR: state => state.item.maxR,

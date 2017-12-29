@@ -1,6 +1,6 @@
 <template>
   <div class="review-list">
-    <review-sum v-for="review in currentReviews" :key="review.id" :review="review" :less="true"></review-sum>
+    <review-sum v-for="review in reviews" :key="review.id" :review="review" :less="true"></review-sum>
     <div v-if="hasMore">
       <el-button class="blockbtn" @click="loadmoreReviews" :disabled="!hasMore">More</el-button>
     </div>
@@ -10,42 +10,52 @@
 <script>
 import ReviewSum from './ReviewSum.vue'
 import { fetchItemReviews } from '@/api/api'
-import { mapGetters } from 'vuex'
 
 export default {
   name: 'review-list',
   components: { ReviewSum },
   props: {
-    order: String
+    param: Object // {ref: new|hot, page:, itemid: }
   },
-  computed: {
-    ...mapGetters([
-      'currentItem',
-      'currentReviews',
-      'currentR',
-      'maxR',
-      'perR'
-    ]),
-    hasMore () {
-      return Math.ceil(this.currentReviews.length / this.perR) < this.maxR
+  data () {
+    return {
+      reviews: [],
+      reviewCount: 0,
+      currentPage: 1
     }
   },
-  created () {
-    this.$store.commit('ALT_REVIEWS', this.order)
+  computed: {
+    hasMore () {
+      return this.reviews.length < this.reviewCount
+    }
   },
   methods: {
     loadmoreReviews () {
-      let params = {'page': this.currentR, 'ref': this.order}
-      fetchItemReviews(this.currentItem.id, params)
+      let itemid = this.param.itemid
+      let params = {'ref': this.param.ref, 'page': this.currentPage}
+      fetchItemReviews(itemid, params)
       .then(resp => {
-        this.$store.commit('MORE_REVIEWS', resp.data)
+        this.reviews.push(...resp.data.reviews)
+        this.currentPage += 1
+      })
+    },
+    loadReviews () {
+      let itemid = this.param.itemid
+      let params = {'ref': this.param.ref}
+      fetchItemReviews(itemid, params)
+      .then(resp => {
+        this.reviews = resp.data.reviews
+        this.reviewCount = resp.data.reviewcount
       })
     }
+  },
+  created () {
+    this.loadReviews()
   }
 }
 </script>
 
 <style lang="stylus" scoped>
 .review-list
-  padding auto
+  padding 5px
 </style>

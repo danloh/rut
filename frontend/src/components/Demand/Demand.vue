@@ -3,9 +3,9 @@
     <div class="demand-body">{{demand.body}}</div>
     <div class="demand-bar">
       Requseted by <router-link :to="'/profile/' + requestor.id">{{ requestor.name }}</router-link>
-      | {{ vote }} <el-button type="text"><span @click="upDemand">Upvote</span></el-button>
-      | {{ answercount }}<el-button type="text"><router-link :to="'/create/' + demand.id"><b>Answer</b></router-link></el-button>
-      | {{demand.commentcount}} <router-link :to="'/demand/' + demand.id">Discuss</router-link>
+      | {{ vote }}&nbsp;<el-button type="text" @click="upDemand">Upvote</el-button>
+      | {{ answercount }}&nbsp;<router-link :to="'/create/' + demand.id"><b>Answer</b></router-link>
+      | {{demand.commentcount}}&nbsp;<router-link :to="'/demand/' + demand.id">Discuss</router-link>
     </div>
   </div>
 </template>
