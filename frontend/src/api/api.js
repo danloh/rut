@@ -250,8 +250,13 @@ const newComment = (ref, id, params) => {
 const fetchRutComments = (rutid, params) => {
   return request(`${base}/commentsonrut/${rutid}`, params)
 }
+// just for error test
+const testError = (params) => {
+  return request(`${base}/testerror`, params)
+}
 
 export {
+  testError,
   axios,
   register,
   confirm,

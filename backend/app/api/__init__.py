@@ -1218,13 +1218,6 @@ def after_request(response):
                 % (query.statement, query.parameters, query.duration, query.context))
     return response
 
-#################################################
-## just for test
-@rest.route('/testerror')
-#@auth.login_required
-def test_error():
-    abort(403)
-##################################################
 @rest.errorhandler(400)
 @rest.errorhandler(401)
 @rest.errorhandler(403)
@@ -1238,3 +1231,11 @@ def error_handler(error):
         msg = error.message
         code = 500
     return error_response(code, message=msg)
+
+#################################################
+## just for test
+@rest.route('/testerror')
+#@auth.login_required
+def test_error():
+    abort(500)
+##################################################
