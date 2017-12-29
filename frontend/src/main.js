@@ -38,6 +38,7 @@ const editorOption = {
   }
 }
 Vue.use(VueQuillEditor, editorOption)
+
 // progress bar, reder off-document and append afterwards
 const bar = Vue.prototype.$bar = new Vue(ProgressBar).$mount()
 document.body.appendChild(bar.$el)
@@ -67,8 +68,11 @@ axios.interceptors.request.use(
 // Response interceptor
 axios.interceptors.response.use(
   response => {
-    if (response.status >= 400) {
-      switch (response.status) {
+    return response
+  },
+  error => {
+    if (error.response) {
+      switch (error.response.status) {
         case 401:
           store.commit('DEL_TOKEN')
           new Vue().$message('Oops...Access Denied, Need To Log in')
@@ -86,33 +90,16 @@ axios.interceptors.response.use(
           new Vue().$message('The Resource You Requested Was Not Found')
           router.replace({ path: '/404' })
           break
+        case 418:
+          new Vue().$message('Eureka! 42')
+          break
         case 500:
           new Vue().$message('Oops...Internal Server Error')
           router.replace({ path: '/' })
           break
       }
-      return false
     }
-    return response
-  },
-  error => {
-    if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          store.commit('DEL_TOKEN')
-          if (router.currentRoute.path !== '/login') {
-            router.replace({
-              path: '/login',
-              query: {redirect: router.currentRoute.fullPath}
-            })
-          }
-          break
-        case 404:
-          router.replace({ path: '/404' })
-          break
-      }
-    }
-    console.log(error.response.data)
+    // console.log(error.response.data)
     return Promise.reject(error)
   }
 )
@@ -140,11 +127,12 @@ router.beforeEach((to, from, next) => {
     next()
   }
 })
-
+// finish bar after route
 router.afterEach(() => {
   bar.finish()
 })
 
+// register axios as default http client
 Vue.prototype.$axios = axios
 export default axios
 

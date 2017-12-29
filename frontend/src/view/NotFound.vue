@@ -13,7 +13,7 @@ export default {
   title: '404 Page Not Found',
   methods: {
     testWrapAPI () {
-      testError().then(resp => { // wrapped api, interceptors nor work why??
+      testError().then(resp => { // wrapped api, interceptors nor work why?? api default validateStatus option
         console.log('From Component')
         console.log(resp.data)
         console.log(resp.status)
