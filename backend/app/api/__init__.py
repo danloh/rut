@@ -186,6 +186,8 @@ def check_follow(userid):
 @auth.login_required
 def follow_user(userid):
     user = g.user
+    if user.followed.count() >= 35:
+        abort(403)
     fo_user = Users.query.get_or_404(userid)
     user.follow(fo_user)
     return jsonify('UnFollow')
@@ -688,15 +690,6 @@ def flag_item_done(itemid):
 def get_item(itemid):
     item = Items.query.get_or_404(itemid)
     item_dict = item.to_dict()
-    # attach reviews
-    reviews = item.reviews
-    hotreviews = reviews.order_by(Reviews.vote.desc()).limit(PER_PAGE)
-    newreviews = reviews.order_by(Reviews.timestamp.desc()).limit(PER_PAGE)
-    hot_reviews = [r.to_dict() for r in hotreviews]
-    new_reviews = [r.to_dict() for r in newreviews]
-    item_dict['hotreviews'] = hot_reviews
-    item_dict['newreviews'] = new_reviews
-    # attach included ruts
     ruts = [c.post for c in item.posts.order_by(Collect.timestamp.desc()).limit(PER_PAGE)]
     included_ruts = [{'id':r.id, 'title': r.title} for r in ruts]
     item_dict['inruts'] = included_ruts
@@ -704,18 +697,18 @@ def get_item(itemid):
 
 @rest.route('/item/<int:itemid>/reviews')
 def get_item_reviews(itemid):
-    item = Items.query.get_or_404(itemid)
-    # request param: {page: int|current_page, ref: hot or new}
+    #item = Items.query.get_or_404(itemid)
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    ref = request.args.get('ref', 'hot') # hot or new
-    reviews = item.reviews
+    ref = request.args.get('ref', '') # hot or new
+    reviews = Reviews.query.filter_by(item_id=itemid) #item.reviews # 
     if ref == 'hot':
         hotreviews = reviews.order_by(Reviews.vote.desc()).offset(per_page * page).limit(per_page)
-        review_dict = [r.to_dict() for r in hotreviews]
+        review_list = [r.to_dict() for r in hotreviews]
     if ref == 'new':
         newreviews = reviews.order_by(Reviews.timestamp.desc()).offset(per_page * page).limit(per_page)
-        review_dict = [r.to_dict() for r in newreviews]
+        review_list = [r.to_dict() for r in newreviews]
+    review_dict = {'reviewcount': reviews.count(), 'reviews': review_list}
     return jsonify(review_dict)
 
 @rest.route('/item/<int:itemid>/inruts')
@@ -1225,6 +1218,13 @@ def after_request(response):
                 % (query.statement, query.parameters, query.duration, query.context))
     return response
 
+#################################################
+## just for test
+@rest.route('/testerror')
+#@auth.login_required
+def test_error():
+    abort(403)
+##################################################
 @rest.errorhandler(400)
 @rest.errorhandler(401)
 @rest.errorhandler(403)
@@ -1238,9 +1238,3 @@ def error_handler(error):
         msg = error.message
         code = 500
     return error_response(code, message=msg)
-
-## just for test
-@rest.route('/testerror')
-#@auth.login_required
-def test_error():
-    abort(405)

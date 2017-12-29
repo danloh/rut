@@ -10,18 +10,15 @@
         <div v-html="currentItem.details">...</div>
       </div>
       <div class="submenu">
-        <b>>></b>&nbsp;&nbsp;<router-link :to="'/item/' + currentItem.id + '/hotreview'">Hot Reviews</router-link>
-        <router-link :to="'/item/' + currentItem.id + '/newreview'">Latest Reviews</router-link> &nbsp;&nbsp;&nbsp;
-        <router-link class="editlink" style="color: #337ab7" :to="'/review/item/' + currentItem.id">...Post Review</router-link>
+        <b>>></b>&nbsp;&nbsp;<b style="color: orange">Reviews</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <router-link class="editlink" :to="'/review/item/' + currentItem.id">...Post Review</router-link>
       </div>
-      <div class="review-view">
-        <router-view></router-view>
-      </div>
-      <div class="clips">
+      <review-list :param="reviewsParam"></review-list>
+      <div class="submenu">
         <b>>></b>&nbsp;&nbsp;<b style="color: orange">Clips</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <router-link class="editlink" to="/challenge">...Excerpt Quote</router-link>
-        <clip-list :param="cliplistParam"></clip-list>
       </div>
+      <clip-list :param="cliplistParam"></clip-list>
     </div>
     <div class="item-side">
       <div class="include">
@@ -39,6 +36,7 @@
 
 <script>
 import ItemSum from '@/components/Item/ItemSum.vue'
+import ReviewList from '@/components/Item/ReviewList.vue'
 import ClipList from '@/components/Challenge/ClipList.vue'
 import { fetchInRuts } from '@/api/api'
 import { mapGetters } from 'vuex'
@@ -48,10 +46,11 @@ export default {
   title () {
     return this.currentItem.title
   },
-  components: { ItemSum, ClipList },
+  components: { ItemSum, ClipList, ReviewList },
   data () {
     return {
       cliplistParam: {},
+      reviewsParam: {},
       currentPage: 1
     }
   },
@@ -78,6 +77,7 @@ export default {
   beforeMount () {
     let itemid = this.$route.params.id
     this.cliplistParam = {'itemid': itemid}
+    this.reviewsParam = {'itemid': itemid, 'ref': 'hot'}
     this.$store.dispatch('getItem', itemid)
   }
 }
@@ -92,22 +92,9 @@ export default {
     .item-detail
       background-color white
       padding 5px
-    .clips
-      margin 5px 0
-      padding 5px
-    .review-view
-      padding 5px
     .submenu
         margin 5px 0
         padding 5px
-        a
-          color grey
-          margin-right 0.85em
-          &:hover
-            color darkgreen
-          &.router-link-active
-            color orange
-            font-weight 800
   .editlink
     font-size 0.75em
     font-weight 600

@@ -1,8 +1,8 @@
 <template>
   <div class="review-main" v-if="creator">
-    <h2 class="title">
+    <h3 class="title">
       <router-link :to="'/review/' + review.id">{{ review.heading }}</router-link>
-    </h2>
+    </h3>
     <p class="meta">
       By <router-link :to="'/profile/' + creator.id">{{ creator.name }}</router-link>
       | {{ review.timestamp | toMDY }}
