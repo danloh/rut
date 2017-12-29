@@ -4,24 +4,22 @@
       <item-sum :item="currentItem" :key="currentItem.id"></item-sum> <!--key to re-render-->
       <div>
         <b>More Details</b> &nbsp;&nbsp;&nbsp;
-        <router-link :to="'/edit/item/' + currentItem.id">...Edit</router-link>
+        <router-link class="editlink" :to="'/edit/item/' + currentItem.id">...Edit Detail</router-link>
       </div>
       <div class="item-detail">
         <div v-html="currentItem.details">...</div>
       </div>
       <div class="submenu">
-        <router-link :to="'/item/' + currentItem.id + '/hotreview'">Hot Reviews</router-link>
-        <router-link :to="'/item/' + currentItem.id + '/newreview'">Latest Reviews</router-link>
-        &nbsp;&nbsp;&nbsp;
-        <router-link style="color: #337ab7" :to="'/review/item/' + currentItem.id">...Post Review</router-link>
+        <b>>></b>&nbsp;&nbsp;<router-link :to="'/item/' + currentItem.id + '/hotreview'">Hot Reviews</router-link>
+        <router-link :to="'/item/' + currentItem.id + '/newreview'">Latest Reviews</router-link> &nbsp;&nbsp;&nbsp;
+        <router-link class="editlink" style="color: #337ab7" :to="'/review/item/' + currentItem.id">...Post Review</router-link>
       </div>
       <div class="review-view">
         <router-view></router-view>
       </div>
       <div class="clips">
-        <b style="color: orange">Clips</b>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <router-link to="/challenge">...Excerpt Quote</router-link>
+        <b>>></b>&nbsp;&nbsp;<b style="color: orange">Clips</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <router-link class="editlink" to="/challenge">...Excerpt Quote</router-link>
         <clip-list :param="cliplistParam"></clip-list>
       </div>
     </div>
@@ -95,6 +93,7 @@ export default {
       background-color white
       padding 5px
     .clips
+      margin 5px 0
       padding 5px
     .review-view
       padding 5px
@@ -109,6 +108,9 @@ export default {
           &.router-link-active
             color orange
             font-weight 800
+  .editlink
+    font-size 0.75em
+    font-weight 600
   .item-side
     position absolute
     top 10px
@@ -129,4 +131,3 @@ export default {
           &:hover
             color #ff6600
 </style>
-
