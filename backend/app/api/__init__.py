@@ -140,11 +140,11 @@ def verify_password(username_or_token, password):
     if request.path == "/api/login":
         user = Users.query.filter_by(name=username_or_token).first()
         if not user or not user.verify_password(password):
-            abort(401) #return False  # how to hadle error?
+            abort(401) #return False
     else:
         user = Users.verify_auth_token(username_or_token)
         if not user:
-            abort(401) #return False # how to hadle error?
+            abort(401) #return False
     g.user = user
     return True
 
@@ -186,8 +186,8 @@ def check_follow(userid):
 @auth.login_required
 def follow_user(userid):
     user = g.user
-    if user.followed.count() >= 35:
-        abort(403)
+    if user.followed.count() >= 42:
+        abort(418)
     fo_user = Users.query.get_or_404(userid)
     user.follow(fo_user)
     return jsonify('UnFollow')
@@ -343,9 +343,6 @@ def get_challege_ruts(userid):
         'total': challengeruts.count(),
         'tags': []
     })
-   
-    # elif ref == 'contribute':
-    #     q = [c.contribute_post for c in user.contribute_posts]
 
 @rest.route('/checkstar/rut/<int:rutid>')
 @auth.login_required
@@ -428,7 +425,7 @@ def edit_rut(rutid):
     user = g.user
     rut = Posts.query.get_or_404(rutid)
     if rut.creator != user:
-        abort(403)  #how to tacle error?
+        abort(403)
     rut.title = request.json.get('title'),
     rut.intro = request.json.get('intro'),
     rut.rating = request.json.get('rating'),
@@ -474,7 +471,7 @@ def edit_tips(cid):
     post_id = tip_collect.post_id
     rut = Posts.query.get_or_404(post_id)
     if rut.creator != user:
-        abort(403) #return jsonify('Error')  #how to tacle error?
+        abort(403) #return jsonify('Error')
     # get the data
     order = request.json.get('order')
     tips = request.json.get('tips')
@@ -1222,6 +1219,7 @@ def after_request(response):
 @rest.errorhandler(401)
 @rest.errorhandler(403)
 @rest.errorhandler(404)
+@rest.errorhandler(418)
 @rest.errorhandler(500)
 def error_handler(error):
     if hasattr(error, 'name'):
@@ -1237,5 +1235,5 @@ def error_handler(error):
 @rest.route('/testerror')
 #@auth.login_required
 def test_error():
-    abort(500)
+    abort(401)
 ##################################################

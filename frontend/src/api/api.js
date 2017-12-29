@@ -3,7 +3,7 @@ import axios from '@/main'
 let base = '/api'
 const request = (url, options = {}, method = 'get') => {
   let key = ~['delete', 'get', 'head'].indexOf(method) ? 'params' : 'data' // bitwise NOT: ~N -> -(N+1)
-  return axios(Object.assign({'url': url, 'method': method, 'validateStatus': false}, {[key]: options}))
+  return axios(Object.assign({'url': url, 'method': method}, {[key]: options}))
   .then(res => res)
 }
 
