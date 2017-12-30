@@ -191,7 +191,7 @@ export default {
 
 <style lang="stylus" scoped>
 .item-sum
-  background-color #fff
+  background-color lighten(#deecec, 85%)
   min-height 180px
   padding 10px 110px 10px 135px
   border-bottom 1px solid #eee

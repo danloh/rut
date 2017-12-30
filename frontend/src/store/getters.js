@@ -10,7 +10,6 @@ const getters = {
   currentRuts: state => state.rut.currentRuts,
   maxPage: state => state.rut.maxPage,
   perPage: state => state.rut.perPage,
-  allTags: state => state.rut.allTags,
   showTags: state => state.rut.showTags,
   rutDetail: state => state.rut.rutDetail,
   tagDetail: state => state.rut.tagDetail,

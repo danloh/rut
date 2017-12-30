@@ -41,6 +41,7 @@
       </div>
     </div>
     <div class="demand-side">
+      Would You Help?
     </div>
   </div>
 </template>
@@ -183,7 +184,7 @@ export default {
 
 <style lang="stylus" scoped>
 .demand-page
-  padding 10px 255px 10px 0px
+  padding 10px 260px 10px 0px
   position relative
   .demand-main
     padding auto
@@ -199,18 +200,7 @@ export default {
     position absolute
     top 10px
     right 0
-    width 245px
-    .include
-      margin-top 0px
-      padding 5px
-      background-color #f0f3f0
-      .in-title
-        padding 2px 5px
-        color green
-      .in-item
-        padding 2px 5px
-        font-size 0.85em
-        background-color white
+    width 240px
 .el-select
   width 100%
 </style>

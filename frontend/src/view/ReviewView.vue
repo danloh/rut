@@ -20,7 +20,6 @@
 
 <script>
 import { fetchReview, fetchReviewComments } from '@/api/api'
-// import { checkAuth } from '@/util/auth'
 import ReviewSum from '@/components/Item/ReviewSum.vue'
 import Comment from '@/components/Comment/Comment.vue'
 import Reply from '@/components/Comment/Reply.vue'

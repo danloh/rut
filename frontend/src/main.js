@@ -84,19 +84,21 @@ axios.interceptors.response.use(
           }
           break
         case 403:
-          new Vue().$message('Oops...Operation Forbidden')
+          new Vue().$message('Oops...Forbidden')
           break
         case 404:
-          new Vue().$message('The Resource You Requested Was Not Found')
+          new Vue().$message('The Resource Was Not Found')
           router.replace({ path: '/404' })
           break
         case 418:
           new Vue().$message('Eureka! 42')
           break
         case 500:
-          new Vue().$message('Oops...Internal Server Error')
+          new Vue().$message('Oops...Error')
           router.replace({ path: '/' })
           break
+        default:
+          new Vue().$message('Oops...Something Failed: ' + error.response.statusText)
       }
     }
     // console.log(error.response.data)

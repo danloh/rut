@@ -16,7 +16,6 @@ const state = {
   currentRuts: [],
   maxPage: 0,
   perPage: perPage,
-  allTags: [],
   showTags: [],
   tagDetail: {},
   rutDetail: {}
@@ -86,10 +85,7 @@ const mutations = {
     state.maxPage = Math.ceil(data.total / perPage)
     let sliced = data.ruts.slice(0, perPage)
     state.currentRuts = sliced
-    let dtags = data.tags
-    state.allTags = dtags
-    let sometags = dtags.slice(0, perPage)
-    state.showTags = sometags
+    state.showTags = data.tags.slice(0, perPage)
   },
   MORE_RUTS (state, data) {
     state.currentPage += 1

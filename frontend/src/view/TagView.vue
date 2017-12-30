@@ -122,11 +122,6 @@ export default {
               message: resp.data,
               type: 'success'
             })
-          }).catch(error => {
-            this.$message({
-              showClose: true,
-              message: error.response.statusText
-            })
           })
         } else if (!checkAuth()) {
           this.$message({
@@ -196,7 +191,7 @@ export default {
     position absolute
     right 0
     width 220px
-    background-color white
+    background-color lighten(#e5ebe4, 80%)
     .sidetitle
       background-color #e5ebe4
       padding 5px 10px

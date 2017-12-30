@@ -71,11 +71,6 @@ export default {
           editReview(reviewid, data)
           .then(() => {
             this.$router.push(`/review/${reviewid}`)
-          }).catch(error => {
-            this.$message({
-              showClose: true,
-              message: error.response.statusText
-            })
           })
         } else if (!checkAuth()) {
           this.$message({

@@ -99,5 +99,4 @@ export default {
     .right-item
       padding 2px 5px
       font-size 0.8em
-      background-color white
 </style>

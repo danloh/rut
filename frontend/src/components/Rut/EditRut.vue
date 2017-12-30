@@ -94,15 +94,6 @@ export default {
           .then(() => {
             let id = this.rutId
             this.$router.push(`/readuplist/${id}`)
-            // this.$message({
-            //   showClose: true,
-            //   message: 'Edit Done'
-            // })
-          }).catch(error => {
-            this.$message({
-              showClose: true,
-              message: error.response.statusText
-            })
           })
         } else {
           this.$message({

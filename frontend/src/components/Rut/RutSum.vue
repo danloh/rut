@@ -35,7 +35,7 @@ export default {
 
 <style lang="stylus" scoped>
 .rut-sum
-  background-color #fff
+  background-color lighten(#e5ebe4, 90%)
   min-height 120px
   padding 10px 30px 10px 100px
   border-bottom 1px solid #eee

@@ -86,6 +86,10 @@ const fetchProfileRuts = (action, userid, params) => {  // act: created, challen
 const fetchRut = (rutid, params) => { // !!
   return request(`${base}/rut/${rutid}`, params)
 }
+// get more tips of a rut
+const fetchRutTips = (rutid, params) => {
+  return request(`${base}/rut/${rutid}/tips`, params)
+}
 // get demands of a rut response to
 const fetchRutDemands = (rutid, params) => {
   return request(`${base}/rut/${rutid}/demands`, params)
@@ -278,6 +282,7 @@ export {
   setDeadline,
   fetchProfileRuts,
   fetchRut,
+  fetchRutTips,
   fetchRutDemands,
   checkSC,
   scRut,

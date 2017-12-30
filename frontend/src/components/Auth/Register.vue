@@ -118,11 +118,6 @@ export default {
               showClose: true,
               message: 'Welcome! A confirmation email has been sent to you by email.'
             })
-          }).catch(error => {
-            this.$message({
-              showClose: true,
-              message: error.response.statusText
-            })
           })
         } else {
           this.$message({

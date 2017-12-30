@@ -171,7 +171,7 @@ export default {
     .right-item
       padding 0 0 0 10px
       font-size 0.85em
-      background-color white
+      background-color lighten(#f0f3f0, 45%)
     a
       &:hover
         color #ff6600

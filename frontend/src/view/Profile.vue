@@ -147,7 +147,7 @@ export default {
     top 10px
     right 0
     width 220px
-    background-color white
+    background-color lighten(#e5ebe4, 75%)
     .right-avatar
       background-color #e5ebe4
       min-height 80px

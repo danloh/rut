@@ -69,7 +69,7 @@ export default {
     top 10px
     right 0
     width 220px
-    background-color white
+    background-color lighten(#e5ebe4, 80%)
     .right-title
       background-color #e5ebe4
       padding 10px 15px

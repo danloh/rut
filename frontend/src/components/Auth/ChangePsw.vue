@@ -83,11 +83,6 @@ export default {
               message: resp.data
             })
             this.$router.push('/login')
-          }).catch(error => {
-            this.$message({
-              showClose: true,
-              message: error.response.statusText
-            })
           })
         } else {
           this.$message({

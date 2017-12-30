@@ -126,11 +126,6 @@ export default {
               message: resp.data,
               type: 'success'
             })
-          }).catch(error => {
-            this.$message({
-              showClose: true,
-              message: error.response.statusText
-            })
           })
         } else if (!checkAuth()) {
           this.$message({
