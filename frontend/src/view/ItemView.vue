@@ -90,7 +90,7 @@ export default {
   .item-main
     padding auto
     .item-detail
-      background-color white
+      background-color lighten(#f0f3f0, 45%)
       padding 5px
     .submenu
         margin 5px 0
@@ -113,7 +113,7 @@ export default {
       .in-item
         padding 2px 5px
         font-size 0.85em
-        background-color white
+        background-color lighten(#f0f3f0, 45%)
         a
           &:hover
             color #ff6600

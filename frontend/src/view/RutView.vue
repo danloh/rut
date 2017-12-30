@@ -47,6 +47,9 @@
           <el-button type="text" size="mini" @click="short = !short" v-if="tip.spoiler && short">... Spoilers Ahead! Continue?</el-button>
         </div>
       </div>
+      <div v-if="hasMoreTips">
+        <el-button class="blockbtn" size="mini" @click="loadmoreTips" :disabled="!hasMoreTips">Show More Items</el-button>
+      </div>
       <div class="epilog">
         <b class="indicator">Epilog:&nbsp;&nbsp;</b>
         <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit">...Edit</router-link>
@@ -79,7 +82,7 @@ import Spinner from '@/components/Misc/Spinner.vue'
 import ItemSum from '@/components/Item/ItemSum.vue'
 import Comment from '@/components/Comment/Comment.vue'
 import ShareBar from '@/components/Misc/ShareBar.vue'
-import { scRut, checkSC, editTags, fetchRutDemands } from '@/api/api'  // sc: star and challenge
+import { scRut, checkSC, editTags, fetchRutDemands, fetchRutTips } from '@/api/api'  // sc: star and challenge
 import { checkAuth } from '@/util/auth'
 import { mapGetters } from 'vuex'
 
@@ -92,6 +95,9 @@ export default {
       challengeAction: this.checkChallenge(), // || 'Challenge',
       starCount: 0,
       challengeCount: 0,
+      tips: [],
+      currentTP: 1,
+      tipsCount: 0,
       demands: [],
       currentDP: 1,
       demandCount: 0,
@@ -112,14 +118,8 @@ export default {
     rutid () {
       return this.rutDetail.id
     },
-    tips () {
-      return this.rutDetail.tips
-    },
     tags () {
       return this.rutDetail.tags
-    },
-    creator () {
-      return this.rutDetail.creator
     },
     // contributors () {
     //   return this.rutDetail.contributors
@@ -130,12 +130,15 @@ export default {
     credential () {
       return this.rutDetail.credential
     },
-    canEdit () {  // ???
+    canEdit () {
       return this.creatorid === this.currentUserID
       // || this.rutDetail.editable === 'Everyone' || this.currentUserID in this.contributorIDList
     },
-    canDelete () {
-      return this.creatorid === this.currentUserID // ?
+    // canDelete () {
+    //   return this.creatorid === this.currentUserID
+    // },
+    hasMoreTips () {
+      return this.tips.length < this.tipsCount
     },
     hasMoreDemand () {
       return this.demands.length < this.demandCount
@@ -156,8 +159,19 @@ export default {
         this.creatorname = data.creator.name
         this.currentUserID = this.$store.getters.currentUserID
         this.newTags = data.tags.map(t => t.tagname)
+        this.tips = data.tips
+        this.tipsCount = data.itemcount
         this.demands = data.demands
         this.demandCount = data.demandcount
+      })
+    },
+    loadmoreTips () {
+      let rutid = this.$route.params.id
+      let params = {'page': this.currentTP}
+      fetchRutTips(rutid, params)
+      .then(resp => {
+        this.tips.push(...resp.data)
+        this.currentTP += 1
       })
     },
     loadmoreDemand () {

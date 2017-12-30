@@ -63,11 +63,6 @@ export default {
               showClose: true,
               message: resp.data
             })
-          }).catch(error => {
-            this.$message({
-              showClose: true,
-              message: error.response.statusText
-            })
           })
         } else {
           this.$message({

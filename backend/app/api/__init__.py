@@ -14,7 +14,7 @@ from .errors import error_response
 rest = Blueprint('rest', __name__)
 auth = HTTPBasicAuth()
 
-PER_PAGE = 20
+PER_PAGE = 20 # for pagination except items in rut--42
 
 @rest.route('/register', methods = ['POST'])
 def register():
@@ -41,7 +41,11 @@ def register():
                     'email/confirm', name=user.name, url=url)
     # log in once register successfully
     auth_token = user.generate_auth_token()
-    return jsonify({ 'username': user.name, 'userid': user.id, 'token': auth_token.decode('ascii') })
+    return jsonify({
+        'username': user.name, 
+        'userid': user.id, 
+        'token': auth_token.decode('ascii') 
+    })
 
 @rest.route('/editprofile', methods = ['POST'])
 @auth.login_required
@@ -140,11 +144,11 @@ def verify_password(username_or_token, password):
     if request.path == "/api/login":
         user = Users.query.filter_by(name=username_or_token).first()
         if not user or not user.verify_password(password):
-            abort(401) #return False
+            abort(401)
     else:
         user = Users.verify_auth_token(username_or_token)
         if not user:
-            abort(401) #return False
+            abort(401)
     g.user = user
     return True
 
@@ -227,37 +231,61 @@ def get_ruts():
     ruts = Posts.select_posts()
     total = len(ruts) #ruts.count() #
     tag_set = Tags.get_tags()
-    return jsonify({  # need to optimize
+    ruts_dict = {  # need to optimize
         'ruts': ruts, #[r.to_dict() for r in ruts],
         'total': total,
         'tags': [{'tagid': t.id,'tagname': t.tag} for t in tag_set] 
-    })
+    }
+    return jsonify(ruts_dict)
 
+@rest.route('/all/ruts')
+def get_all_ruts():
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    all_ruts = Posts.query
+    ruts = all_ruts.offset(page*per_page).limit(per_page)
+    ruts_dict = {
+        'ruts': [r.to_dict() for r in ruts],
+        'total': all_ruts.count(),
+        'currentpage': page
+    }
+    return jsonify(ruts_dict)
+    
 @rest.route('/rut/<int:rutid>')
 def get_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     rut_dict = rut.to_dict()
-    #attach tips and items included in rut 
-    tips = [t.to_dict() for t in rut.items]  # in Collect model
-    # sort tips per order-key in collect-dict
-    from operator import itemgetter
-    order_tips = sorted(tips, key=itemgetter('order'))
-    rut_dict['tips'] = order_tips
+    #attach tips and items included in rut
+    r_items = rut.items.order_by(Collect.order).limit(42)
+    tips = [t.to_dict() for t in r_items]  # in Collect model
+    ## sort tips per order-key in collect-dict -- deprecated way
+    # from operator import itemgetter
+    # order_tips = sorted(tips, key=itemgetter('order'))
+    rut_dict['tips'] = tips #order_tips
     # attach demands respon to
-    r_demands = rut.demands.order_by(Respon.timestamp.desc()).limit(PER_PAGE)
+    r_demands = rut.demands.limit(PER_PAGE)
     demands = [{'id': r.demand_id, 'demand': r.demand.body} for r in r_demands]
     rut_dict['demands'] = demands
     return jsonify(rut_dict)
+
+@rest.route('/rut/<int:rutid>/tips')
+def get_rut_tips(rutid):
+    rut = Posts.query.get_or_404(rutid)
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', 42, type=int)
+    r_items = rut.items.order_by(Collect.order)\
+                       .offset(page*per_page).limit(per_page)
+    tips_list = [t.to_dict() for t in r_items]
+    return jsonify(tips_list)
 
 @rest.route('/rut/<int:rutid>/demands')
 def get_rut_demands(rutid):
     rut = Posts.query.get_or_404(rutid)
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    r_demands = rut.demands.order_by(Respon.timestamp.desc()).limit(PER_PAGE)\
-                .offset(page*per_page).limit(per_page)
-    demands = [{'id': r.demand_id, 'demand': r.demand.body} for r in r_demands]
-    return jsonify(demands)
+    r_demands = rut.demands.offset(page*per_page).limit(per_page)
+    demands_list = [{'id': r.demand_id, 'demand': r.demand.body} for r in r_demands]
+    return jsonify(demands_list)
 
 @rest.route('/challengerut')  # challenging rut !!
 @auth.login_required
@@ -289,8 +317,8 @@ def get_challege_items():
     user = g.user
     doing_flags = user.flag_items.filter_by(flag_label=2).limit(5) # note the order
     doing_items = [f.flag_item for f in doing_flags]
-    doing_dict_list = [{'id':item.id, 'title': item.title} for item in doing_items]
-    return jsonify(doing_dict_list)
+    doing_list = [{'id':item.id, 'title': item.title} for item in doing_items]
+    return jsonify(doing_list)
 
 @rest.route('/setdeadline')
 @auth.login_required
@@ -307,42 +335,46 @@ def set_deadline():
 @rest.route('/<int:userid>/created/ruts')
 def get_created_ruts(userid):
     user = Users.query.get_or_404(int(userid))
-    createruts = user.posts.order_by(Posts.timestamp.desc())
+    created_ruts = user.posts.order_by(Posts.timestamp.desc())
+    #created_ruts = Posts.query.filter_by(creator_id=userid).order_by(Posts.timestamp.desc())
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    ruts = createruts.offset(page * per_page).limit(per_page)
-    return jsonify({
+    ruts = created_ruts.offset(page * per_page).limit(per_page)
+    ruts_dict = {
         'ruts': [r.to_dict() for r in ruts],
-        'total': createruts.count(),
+        'total': created_ruts.count(),
         'tags': []
-    })
+    }
+    return jsonify(ruts_dict)
 
 @rest.route('/<int:userid>/star/ruts')
 def get_star_ruts(userid):
     user = Users.query.get_or_404(userid)
-    starruts = user.star_posts.order_by(Star.timestamp.desc())
+    star_ruts = user.star_posts.order_by(Star.timestamp.desc())
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    ruts = [s.star_post for s in starruts.offset(page * per_page).limit(per_page)]
-    return jsonify({
+    ruts = [s.star_post for s in star_ruts.offset(page * per_page).limit(per_page)]
+    ruts_dict = {
         'ruts': [r.to_dict() for r in ruts],
-        'total': starruts.count(),
+        'total': star_ruts.count(),
         'tags': []
-    })
+    }
+    return jsonify(ruts_dict)
 
 @rest.route('/<int:userid>/challenge/ruts')
 def get_challege_ruts(userid):
     user = Users.query.get_or_404(userid)
-    challengeruts = user.challenge_posts.order_by(Challenge.timestamp.desc())
+    challenge_ruts = user.challenge_posts.order_by(Challenge.timestamp.desc())
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    #ruts.reverse()  # other way,list reverse
-    ruts = [c.challenge_post for c in challengeruts.offset(page * per_page).limit(per_page)]
-    return jsonify({
+    ruts = [c.challenge_post \
+        for c in challenge_ruts.offset(page * per_page).limit(per_page)]
+    ruts_dict = {
         'ruts': [r.to_dict() for r in ruts],
-        'total': challengeruts.count(),
+        'total': challenge_ruts.count(),
         'tags': []
-    })
+    }
+    return jsonify(ruts_dict)
 
 @rest.route('/checkstar/rut/<int:rutid>')
 @auth.login_required
@@ -407,7 +439,7 @@ def new_rut(demandid=None):
     )
     db.session.add(post)
     post.tag_to_db()
-    # link to demand if come from demand
+    # link to demand as answer if come from demand
     if demandid:
         demand = Demands.query.get(demandid)
         if demand:
@@ -417,7 +449,7 @@ def new_rut(demandid=None):
             )
             db.session.add(respon)
     db.session.commit()
-    return jsonify({'id':post.id})
+    return jsonify({'id':post.id, 'title': post.title})
 
 @rest.route('/editrut/<int:rutid>', methods=['POST'])
 @auth.login_required
@@ -431,14 +463,15 @@ def edit_rut(rutid):
     rut.rating = request.json.get('rating'),
     rut.credential = request.json.get('credential'),
     rut.epilog = request.json.get('epilog')
-    rut.renew() # renew the update time and add to db
+    # renew the update time and add to db
+    rut.renew()
     #db.session.add(rut)
     db.session.commit()
     return jsonify(rut.to_dict())
 
 @rest.route('/edittags/<int:rutid>', methods=['POST'])
 @auth.login_required
-def edit_tags(rutid):
+def edit_rut_tags(rutid):
     rut = Posts.query.get_or_404(rutid)
     old = request.json.get('old')
     new = request.json.get('new')
@@ -460,8 +493,8 @@ def edit_tags(rutid):
         _tag = _query.filter_by(tag=tg).first()
         _tag.posts.remove(rut)
     db.session.commit()
-    new_tags = [t.to_dict() for t in rut.tags]
-    return jsonify(new_tags)
+    new_tags_list = [t.to_dict() for t in rut.tags]
+    return jsonify(new_tags_list)
 
 @rest.route('/edittips/<int:cid>', methods=['POST'])
 @auth.login_required
@@ -471,12 +504,12 @@ def edit_tips(cid):
     post_id = tip_collect.post_id
     rut = Posts.query.get_or_404(post_id)
     if rut.creator != user:
-        abort(403) #return jsonify('Error')
+        abort(403)
     # get the data
     order = request.json.get('order')
     tips = request.json.get('tips')
     if not order or not tips:
-        abort(403) #return jsonify('Error') # cannot be null
+        abort(403) # cannot be None
     item = Items.query.get_or_404(tip_collect.item_id)
     # get the spoiler
     spoiler_text = request.json.get('spoiler')
@@ -499,13 +532,15 @@ def add_item_to_rut(rutid):
     user = g.user
     rut = Posts.query.get_or_404(rutid)
     if rut.creator != user:
-        abort(403) #return jsonify('Error')
+        abort(403)
+    # get data in request
     uid = request.json.get('uid').replace('-','').replace(' ','')
-    old_item = Items.query.filter_by(uid=uid).first()
     res_url = request.json.get('resUrl','').strip()
     tips = request.json.get('tips','No Tips Yet')
     spoiler_text = request.json.get('spoiler')
     spoiler = True if spoiler_text == 'Spoiler Ahead' else False
+    # check item if existing per the uid or url
+    old_item = Items.query.filter_by(uid=uid).first()
     if res_url:
         online_item = Items.query.filter_by(res_url=res_url).first()
     else:
@@ -537,7 +572,6 @@ def add_item_to_rut(rutid):
     elif online_item is not None:
         rut.collecting(online_item,tips,user,spoiler)
     db.session.commit()
-
     return jsonify('Done')
 
 @rest.route('/item/<int:itemid>/torut/<int:rutid>')
@@ -547,7 +581,7 @@ def item_to_rut(itemid, rutid):
     user = g.user
     rut = Posts.query.get_or_404(rutid)
     if rut.creator != user:
-        abort(403) #return jsonify('Error')
+        abort(403)
     item = Items.query.get_or_404(itemid)
     rut.collecting(item,'No Tips Yet',user)
     db.session.commit()
@@ -556,21 +590,23 @@ def item_to_rut(itemid, rutid):
 
 @rest.route('/checkitemtoadd/<int:rutid>', methods=['POST'])
 @auth.login_required
-def check_item_for_add(rutid):
+def check_item_to_add(rutid):
+    """get item info via Spider or query in db per uid"""
     user = g.user
     rut = Posts.query.get_or_404(rutid)
     if rut.creator != user:
-        abort(403) #return jsonify('Error')
+        abort(403)
     #regexp prepare
     re_url=r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
     #re_uid=r'([-]*(1[03])*[ ]*(: ){0,1})*(([0-9Xx][- ]*){13}|([0-9Xx][- ]*){10})'
     reg_url = re.compile(re_url,0)
     tips="No Tips Yet" # default
+    # get checker, via url_or_uid
+    checker = request.json.get('url')
     # by spider 
-    checker = request.json.get('url') #url_or_uid
     if reg_url.match(checker):
         pure_url = checker.split('/ref=')[0] #for amazon url
-        # check if the url has been spidered, 
+        # check if the url has been spider-ed, 
         # if not, to spider
         # if so,query item and add to post directly
         lst = Items.query.filter(Items.res_url.in_((checker,pure_url))).all()
@@ -580,7 +616,7 @@ def check_item_for_add(rutid):
             db.session.commit()
             return jsonify('Done')
         else:
-            d = spider.parse_html(checker)
+            d = spider.parse_html(checker) # if any error??
             new_item = Items(
                 uid = d.get('uid').replace('-','').replace(' ',''),
                 title = d.get('title'),
@@ -612,7 +648,20 @@ def check_item_for_add(rutid):
             db.session.commit()
             return jsonify('Done')
         else:
-            return jsonify('Back') #redirect(url_for('.check_item', id=id))
+            return jsonify('Back') # if None by uid, back to try again
+
+@rest.route('/all/items')
+def get_all_items():
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    all_items = Items.query
+    items = all_items.offset(page*per_page).limit(per_page)
+    items_dict = {
+        'items': [i.to_dict() for i in items],
+        'total': all_items.count(),
+        'currentpage': page
+    }
+    return jsonify(items_dict)
 
 @rest.route('/<int:userid>/doing/items')
 def get_doing_items(userid):
@@ -620,12 +669,12 @@ def get_doing_items(userid):
     flags = user.flag_items.filter_by(flag_label=2).order_by(Flag.timestamp.desc())
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    items = [d.flag_item for d in flags.offset(page * per_page).limit(per_page) ]
-    #items.reverse()
-    return jsonify({
+    items = [d.flag_item for d in flags.offset(page * per_page).limit(per_page)]
+    items_dict = {
         'items': [i.to_dict() for i in items],
         'total': flags.count()
-    })
+    }
+    return jsonify(items_dict)
 
 @rest.route('/<int:userid>/todo/items')
 def get_todo_items(userid):
@@ -633,11 +682,12 @@ def get_todo_items(userid):
     flags = user.flag_items.filter_by(flag_label=1).order_by(Flag.timestamp.desc())
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    items = [d.flag_item for d in flags.offset(page * per_page).limit(per_page) ]
-    return jsonify({
+    items = [d.flag_item for d in flags.offset(page * per_page).limit(per_page)]
+    items_dict = {
         'items': [i.to_dict() for i in items],
         'total': flags.count()
-    })
+    }
+    return jsonify(items_dict)
 
 @rest.route('/<int:userid>/done/items')
 def get_done_items(userid):
@@ -645,11 +695,12 @@ def get_done_items(userid):
     flags = user.flag_items.filter_by(flag_label=3).order_by(Flag.timestamp.desc())
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    items = [d.flag_item for d in flags.offset(page * per_page).limit(per_page) ]
-    return jsonify({
+    items = [d.flag_item for d in flags.offset(page * per_page).limit(per_page)]
+    items_dict = {
         'items': [i.to_dict() for i in items],
         'total': flags.count()
-    })
+    }
+    return jsonify(items_dict)
 
 @rest.route('/checkflag/item/<int:itemid>')
 @auth.login_required
@@ -687,7 +738,8 @@ def flag_item_done(itemid):
 def get_item(itemid):
     item = Items.query.get_or_404(itemid)
     item_dict = item.to_dict()
-    ruts = [c.post for c in item.posts.order_by(Collect.timestamp.desc()).limit(PER_PAGE)]
+    ruts = [c.post \
+        for c in item.posts.order_by(Collect.timestamp.desc()).limit(PER_PAGE)]
     included_ruts = [{'id':r.id, 'title': r.title} for r in ruts]
     item_dict['inruts'] = included_ruts
     return jsonify(item_dict)
@@ -700,13 +752,18 @@ def get_item_reviews(itemid):
     ref = request.args.get('ref', '') # hot or new
     reviews = Reviews.query.filter_by(item_id=itemid) #item.reviews # 
     if ref == 'hot':
-        hotreviews = reviews.order_by(Reviews.vote.desc()).offset(per_page * page).limit(per_page)
+        hotreviews = reviews.order_by(Reviews.vote.desc())\
+                            .offset(per_page * page).limit(per_page)
         review_list = [r.to_dict() for r in hotreviews]
     if ref == 'new':
-        newreviews = reviews.order_by(Reviews.timestamp.desc()).offset(per_page * page).limit(per_page)
+        newreviews = reviews.order_by(Reviews.timestamp.desc())\
+                            .offset(per_page * page).limit(per_page)
         review_list = [r.to_dict() for r in newreviews]
-    review_dict = {'reviewcount': reviews.count(), 'reviews': review_list}
-    return jsonify(review_dict)
+    reviews_dict = {
+        'reviewcount': reviews.count(), 
+        'reviews': review_list
+    }
+    return jsonify(reviews_dict)
 
 @rest.route('/item/<int:itemid>/inruts')
 def get_item_inruts(itemid):
@@ -714,10 +771,10 @@ def get_item_inruts(itemid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     included_ruts = item.posts.order_by(Collect.timestamp.desc())\
-                    .offset(per_page * page).limit(per_page)
+                              .offset(per_page * page).limit(per_page)
     ruts_list = [c.post for c in included_ruts]
-    in_ruts = [{'id':r.id, 'title': r.title} for r in ruts_list]
-    return jsonify(in_ruts)
+    in_ruts_list = [{'id':r.id, 'title': r.title} for r in ruts_list]
+    return jsonify(in_ruts_list)
 
 @rest.route('/edititem/<int:itemid>', methods=['POST'])
 @auth.login_required
@@ -726,7 +783,7 @@ def edit_item(itemid):
     item = query.get_or_404(itemid)
     uid = request.json.get('uid').replace('-','').replace(' ','')
     if query.filter_by(uid=uid).first() and item.uid != uid:
-        abort(403) #return jsonify('Error') # can not be duplicated uid
+        abort(403) # can not be duplicated uid
     #update item 
     item.uid = uid
     item.cate = request.json.get('cate')
@@ -782,6 +839,19 @@ def edit_item(itemid):
     db.session.commit()
     return jsonify('The item info Updated, Thank You')
 
+@rest.route('/all/clips')
+def get_all_clips():
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    all_clips = Clips.query
+    clips = all_clips.offset(page*per_page).limit(per_page)
+    clips_dict = {
+        'clips': [c.to_dict() for c in clips],
+        'total': all_clips.count(),
+        'currentpage': page
+    }
+    return jsonify(clips_dict)
+
 @rest.route('/clips')
 @auth.login_required
 def get_clips():
@@ -798,12 +868,13 @@ def get_clips():
         query = q.filter_by(creator_id=user.id)
     order_query = query.order_by(Clips.timestamp.desc())\
                   .offset(page * per_page).limit(per_page)
-    return jsonify({
+    clips_dict = {
         'clips': [c.to_dict() for c in order_query],
         'total': query.count()
-    })
+    }
+    return jsonify(clips_dict)
 
-@rest.route('/iuclips')
+@rest.route('/iuclips') # per item or user or any
 def get_iuclips():
     userid = request.args.get('userid','')
     itemid = request.args.get('itemid','')
@@ -816,12 +887,15 @@ def get_iuclips():
         query = q.filter_by(creator_id=userid)
     elif itemid:
         query = q.filter_by(item_id=itemid)
+    else:
+        query = q
     order_query = query.order_by(Clips.timestamp.desc())\
-                  .offset(page * per_page).limit(per_page)
-    return jsonify({
+                       .offset(page * per_page).limit(per_page)
+    clips_dict = {
         'clips': [c.to_dict() for c in order_query],
         'total': query.count()
-    })
+    }
+    return jsonify(clips_dict)
 
 @rest.route('/newclip', methods=['POST'])
 @auth.login_required
@@ -907,7 +981,7 @@ def get_review_comments(reviewid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', 50, type=int)
     rev_comments = review.comments.order_by(Comments.timestamp.desc())\
-                   .offset(page*per_page).limit(per_page)
+                                .offset(page*per_page).limit(per_page)
     comments = [c.to_dict() for c in rev_comments]
     return jsonify(comments)
 
@@ -941,14 +1015,15 @@ def get_user_reviews(userid):
     review_dict = {'reviewcount': reviewcount, 'reviews': review_list}
     return jsonify(review_dict)
 
-@rest.route('/reviews')
+@rest.route('/reviews') # per user, item or any
 def get_reviews():
     userid = request.args.get('userid','')
     itemid = request.args.get('itemid','')
-    #user = Users.query.get_or_404(userid)
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     query = Reviews.query
+    if userid and itemid:
+        reviews = query.filter_by(creator_id=userid,item_id=itemid)
     if userid:
         reviews = query.filter_by(creator_id=userid)
     elif itemid:
@@ -958,8 +1033,21 @@ def get_reviews():
     rs = reviews.order_by(Reviews.timestamp.desc())\
                 .offset(per_page * page).limit(per_page)
     review_list = [r.to_dict() for r in rs]
-    review_dict = {'reviewcount': reviews.count(), 'reviews': review_list}
-    return jsonify(review_dict)
+    reviews_dict = {'reviewcount': reviews.count(), 'reviews': review_list}
+    return jsonify(reviews_dict)
+
+@rest.route('/all/reviews')
+def get_all_reviews():
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    all_reviews = Reviews.query
+    reviews = all_reviews.offset(page*per_page).limit(per_page)
+    reviews_dict = {
+        'reviews': [rev.to_dict() for rev in reviews],
+        'total': all_reviews.count(),
+        'currentpage': page
+    }
+    return jsonify(reviews_dict)
 
 @rest.route('/user/<int:userid>/demands')
 def get_user_demands(userid):
@@ -973,7 +1061,8 @@ def get_user_demands(userid):
     d_list = [d.to_dict() for d in ds]
     demand_dict = {'demandcount': demandcount, 'demands': d_list}
     return jsonify(demand_dict)
-    
+
+@rest.route('/all/demands')   
 @rest.route('/demands')
 def get_demands():
     query = Demands.query
@@ -982,7 +1071,8 @@ def get_demands():
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     if userid:
-        demands = query.filter_by(requestor_id=int(userid)).order_by(Demands.timestamp.desc())
+        demands = query.filter_by(requestor_id=int(userid))\
+                       .order_by(Demands.timestamp.desc())
     elif ref == "new":
         demands = query.order_by(Demands.timestamp.desc())
     elif ref == "popular":  # popular
@@ -1018,7 +1108,7 @@ def get_demand_comments(demandid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', 50, type=int)
     d_comments = demand.comments.order_by(Comments.timestamp.desc())\
-                 .offset(page*per_page).limit(per_page)
+                                .offset(page*per_page).limit(per_page)
     comments = [c.to_dict() for c in d_comments]
     return jsonify(comments)
 
@@ -1028,7 +1118,7 @@ def get_demand_answers(demandid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     d_resps = demand.posts.order_by(Respon.timestamp.desc())\
-                 .offset(page*per_page).limit(per_page)
+                          .offset(page*per_page).limit(per_page)
     d_respons = [r.post for r in d_resps]
     answers = [{'id':p.id,'title':p.title} for p in d_respons]
     return jsonify(answers)
@@ -1085,23 +1175,36 @@ def rut_as_answer(rutid, demandid):
     answer = {'id': rut.id, 'title': rut.title}
     return jsonify(answer)
 
+@rest.route('/all/tags')
+def get_all_tags():
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    all_tags = Tags.query
+    tags = all_tags.offset(page*per_page).limit(per_page)
+    tags_dict = {
+        'tags': [t.to_dict() for t in tags],
+        'total': all_tags.count(),
+        'currentpage': page
+    }
+    return jsonify(tags_dict)
+
 @rest.route('/tag/<int:tagid>')
 def get_tag(tagid):
     tag = Tags.query.get_or_404(tagid)
     tag_dict = tag.to_dict()
     #attach ruts included in tag 
-    tagruts = [p.to_dict() for p in tag.posts.order_by(Posts.timestamp.desc()).limit(PER_PAGE)]
+    tagruts = [p.to_dict() \
+            for p in tag.posts.order_by(Posts.timestamp.desc()).limit(PER_PAGE)]
     #tagruts.reverse()  # as order_by, which is faster?
     tag_dict['ruts'] = tagruts
     tag_dict['total'] = tag.posts.count() #len(tagruts)
     # related tags
-    parent_tags = [t.parent_tag for t in tag.parent_tags.\
-                order_by(db.func.rand()).limit(5)]
+    parent_tags = [t.parent_tag \
+                for t in tag.parent_tags.order_by(db.func.rand()).limit(5)]
     tags = parent_tags
     for tg in parent_tags:
-        child_tags = [t.child_tag for t in Clan.query.\
-                filter_by(parent_tag_id=tg.id).\
-                order_by(db.func.rand()).limit(5)]
+        child_tags = [t.child_tag \
+                    for t in tg.child_tags.order_by(db.func.rand()).limit(5)]
         tags += child_tags
     tag_dict['tags'] = [{'tagid': t.id,'tagname': t.tag} for t in set(tags)]
     return jsonify(tag_dict)
@@ -1112,10 +1215,42 @@ def get_tag_ruts(tagid):
     # request param {page: int}
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    posts = tag.posts.order_by(Posts.timestamp.desc()).offset(per_page * page).limit(per_page)
+    posts = tag.posts.order_by(Posts.timestamp.desc())\
+                    .offset(per_page * page).limit(per_page)
     tagruts = [p.to_dict() for p in posts]
     #tagruts.reverse()
     return jsonify(tagruts)
+
+@rest.route('/tag/<int:tagid>/demands')
+def get_tag_demands(tagid):
+    tag = Tags.query.get_or_404(tagid)
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    demands = tag.demands.order_by(Demands.timestamp.desc())\
+                        .offset(per_page * page).limit(per_page)
+    tag_demands = [d.to_dict() for d in demands]
+    return jsonify(tag_demands)
+
+@rest.route('/tag/<int:tagid>/relates')
+def get_tag_relates(tagid):
+    #page = request.args.get('page', 0, type=int)
+    #per_page = request.args.get('perPage', PER_PAGE, type=int)
+    tag = Tags.query.get_or_404(tagid)
+    parent_tags = [t.parent_tag for t in tag.parent_tags]
+    related_tags = []
+    for tg in parent_tags:
+        c_tags = [t.child_tag for t in tg.child_tags]
+        related_tags += c_tags
+    child_tags = [t.child_tag for t in tag.child_tags]
+    tags_dict = {
+        'parents': [t.to_dict() for t in parent_tags],
+        'totalparents': len(parent_tags),
+        'children': [t.to_dict() for t in child_tags],
+        'totalchildren': len(child_tags),
+        'relates': [t.to_dict() for t in related_tags],
+        'totalrelates': len(related_tags)
+    }
+    return jsonify(tags_dict) 
 
 @rest.route('/edittag/<int:tagid>', methods=['POST'])
 @auth.login_required
@@ -1127,9 +1262,9 @@ def edit_tag(tagid):
     parent = request.json.get('parent').strip()
     description = request.json.get('description').strip()
     if not name:
-        abort(403) #return jsonify('Error')
+        abort(403)
     if tag.tag != name and query.filter_by(tag=name).first():
-        abort(403) #return jsonify('Duplicated Tag Name')
+        abort(403) # no Duplicated Tag Name
     tag.tag = name
     tag.descript = description
     db.session.add(tag)
@@ -1189,7 +1324,7 @@ def new_comment(demandid=None,rutid=None,commentid=None,itemid=None,reviewid=Non
     return jsonify(comment_dict)
 
 @rest.route('/commentsonrut/<int:rutid>')
-def get_comments_rut(rutid):
+def get_rut_comments(rutid):
     rut = Posts.query.get_or_404(rutid)
     rut_dict = {'id': rut.id, 'title': rut.title}
     page = request.args.get('page', 0, type=int)
@@ -1197,10 +1332,94 @@ def get_comments_rut(rutid):
     r_comments = rut.comments
     rut_dict['commentcount'] = r_comments.count()
     rut_comments = r_comments.order_by(Comments.timestamp.desc())\
-                   .offset(page*per_page).limit(per_page)
+                            .offset(page*per_page).limit(per_page)
     comments = [c.to_dict() for c in rut_comments]
     rut_dict['comments'] = comments
     return jsonify(rut_dict)
+
+@rest.route('/<int:userid>/comments')
+def get_user_comments(userid):
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    all_comments = Comments.query.filter_by(creator_id=userid)\
+                           .order_by(Comments.timestamp.desc())
+    comments = all_comments.offset(page*per_page).limit(per_page)
+    comments_dict = {
+        'comments': [c.to_dict() for c in comments],
+        'total': all_comments.count(),
+        'currentpage': page
+    }
+    return jsonify(comments_dict)
+
+@rest.route('/all/comments')
+def get_all_comments():
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    all_comments = Comments.query
+    comments = all_comments.offset(page*per_page).limit(per_page)
+    comments_dict = {
+        'comments': [c.to_dict() for c in comments],
+        'total': all_comments.count(),
+        'currentpage': page
+    }
+    return jsonify(comments_dict)
+
+@rest.route('/<int:userid>/voted/demands')
+def get_voted_demands(userid):
+    #user = Users.query.get_or_404(userid) #which is better?
+    #vote_demands = user.vote_demands.order_by(Dvote.timestamp.desc()) 
+    vote_demands = Dvote.query.filter_by(user_id=userid)\
+                        .order_by(Dvote.timestamp.desc())
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    demands = [d.vote_demand \
+            for d in vote_demands.offset(page * per_page).limit(per_page)]
+    demands_dict = {
+        'demands': [d.to_dict() for d in demands],
+        'total': vote_demands.count()
+    }
+    return jsonify(demands_dict)
+
+@rest.route('/<int:userid>/voted/clips')
+def get_voted_clips(userid):
+    vote_clips = Cvote.query.filter_by(user_id=userid)\
+                            .order_by(Cvote.timestamp.desc())
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    clips = [c.vote_clip \
+            for c in vote_clips.offset(page * per_page).limit(per_page)]
+    clips_dict = {
+        'clips': [c.to_dict() for c in clips],
+        'total': vote_clips.count()
+    }
+    return jsonify(clips_dict)
+
+@rest.route('/<int:userid>/voted/reviews')
+def get_voted_reviews(userid):
+    vote_reviews = Rvote.query.filter_by(user_id=userid)\
+                        .order_by(Rvote.timestamp.desc())
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    reviews = [c.vote_review \
+            for c in vote_reviews.offset(page * per_page).limit(per_page)]
+    reviews_dict = {
+        'reviews': [c.to_dict() for c in reviews],
+        'total': vote_reviews.count()
+    }
+    return jsonify(reviews_dict)
+
+@rest.route('/<int:userid>/fav/tags')
+def get_fav_tags(userid):
+    fav_tags = Fav.query.filter_by(user_id=userid)\
+                        .order_by(Fav.timestamp.desc())
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    tags = [t.fav_tag for t in fav_tags.offset(page * per_page).limit(per_page)]
+    tags_dict = {
+        'tags': [t.to_dict() for t in tags],
+        'total': fav_tags.count()
+    }
+    return jsonify(tags_dict)
 
 
 @rest.after_request
@@ -1235,5 +1454,5 @@ def error_handler(error):
 @rest.route('/testerror')
 #@auth.login_required
 def test_error():
-    abort(401)
+    abort(502)
 ##################################################

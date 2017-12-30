@@ -145,6 +145,7 @@ p
         font-weight 700
 .blockbtn
   display block
+  margin 5px 0
   width 100%
   text-align center
 .view

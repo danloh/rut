@@ -57,7 +57,7 @@ export default {
       },
       rules: {
         title: [
-          { required: true, message: 'Please give a title', trigger: 'blur' }
+          { required: true, message: 'Please Name it', trigger: 'blur' }
         ],
         intro: [
           { required: true, message: 'Need an introduction', trigger: 'blur' }
@@ -90,16 +90,10 @@ export default {
           return newRut(data, demandid)
           .then((resp) => {
             let id = resp.data.id
-            // this.$store.commit('SET_', data)
             this.$router.push(`/readuplist/${id}`)
             this.$message({
               showClose: true,
-              message: 'A New tips Created, Now you can add item to it'
-            })
-          }).catch(error => {
-            this.$message({
-              showClose: true,
-              message: error.response.statusText
+              message: 'New List Created, Now Add item to it'
             })
           })
         } else {

@@ -63,11 +63,6 @@ export default {
           newReview(itemid, data)
           .then(() => {
             this.$router.push(`/item/${itemid}`)
-          }).catch(error => {
-            this.$message({
-              showClose: true,
-              message: error.response.statusText
-            })
           })
         } else {
           this.$message({

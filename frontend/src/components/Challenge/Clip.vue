@@ -50,7 +50,7 @@ export default {
 
 <style lang="stylus" scoped>
 .clip-main
-  background-color lighten(#f6f6f1, 50%)
+  background-color #f6f6f1
   padding 10px
   border-bottom 1px dotted #e09015
   position relative
@@ -61,10 +61,10 @@ export default {
       &:hover
         color red
   .clipbody
-    background-color #f6f6f1
+    background-color lighten(#f6f6f1, 60%)
     padding 10px
     font-size 1.05em
-    color #0192b5
+    color #2b2117
 li
   list-style-type none
 </style>

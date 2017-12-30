@@ -126,16 +126,11 @@ export default {
             if (resp.data === 'Back') {
               this.$message({
                 showClose: true,
-                message: 'Faill to add, no such item, You can Try again via an Amazon url'
+                message: 'Failed, Please change the URL or UID and Try again'
               })
             }
             this.loading = false
             this.$router.push(`/readuplist/${id}`)
-          }).catch(error => {
-            this.$message({
-              showClose: true,
-              message: error.response.statusText
-            })
           })
         } else {
           this.$message({
@@ -163,15 +158,6 @@ export default {
           .then(() => {
             let id = this.rutId
             this.$router.push(`/readuplist/${id}`)
-            // this.$message({
-            //   showClose: true,
-            //   message: 'add Done'
-            // })
-          }).catch(error => {
-            this.$message({
-              showClose: true,
-              message: error.response.statusText
-            })
           })
         } else {
           this.$message({
