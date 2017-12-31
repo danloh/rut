@@ -53,7 +53,7 @@ export default {
 
 <style lang="stylus" scoped>
 .comment
-  border-top 1px dotted green
+  border-top 1px dotted lightgreen
   padding 0.2em 1em
   background-color lighten(#f3f3ed, 60%)
   position relative

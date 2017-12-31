@@ -7,7 +7,7 @@
             <el-input type="textarea" v-model="demandForm.demand" placeholder="Request something, Support #hashtag"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button size="mini" @click="submitDemand('demandForm', demandForm)">Submit</el-button>
+            <el-button type="primary" size="mini" @click="submitDemand('demandForm', demandForm)">Send Request</el-button>
           </el-form-item>
         </el-form>
       </div>

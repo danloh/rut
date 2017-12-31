@@ -12,7 +12,7 @@
             </el-select>
           </el-form-item>
           <el-form-item>
-            <el-button size="mini" @click="submitClip('clipForm', clipForm)">Submit</el-button>
+            <el-button type="success" size="mini" @click="submitClip('clipForm', clipForm)">Submit</el-button>
           </el-form-item>
         </el-form>
       </div>

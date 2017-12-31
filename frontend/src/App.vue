@@ -29,9 +29,9 @@
               </el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
-          <div class="login" v-else>
-            <router-link to="/register">SIGNUP</router-link>
-            <router-link to="/login">LOGIN</router-link>
+          <div v-else>
+            <router-link to="/register"><b class="login">SIGNUP</b></router-link>
+            <router-link to="/login"><b class="login">LOGIN</b></router-link>
           </div>
         </div>
       </nav>
@@ -120,6 +120,12 @@ p
     box-sizing border-box
     margin 0px auto
     padding 8px 0px
+    .rightmenu
+      float right
+      .login
+        color green
+        font-size 1.0em
+        font-weight 700
   a
     color grey
     line-height 24px
@@ -133,16 +139,6 @@ p
     &.router-link-active
       color green
       font-weight 800
-  .rightmenu
-    float right
-    .profile
-      width 14px
-      height 14px
-    .login
-      a
-        color green
-        font-size 1.0em
-        font-weight 700
 .blockbtn
   display block
   margin 5px 0
@@ -151,7 +147,7 @@ p
 .view
   max-width 960px
   min-width 800px
-  width 90%
+  width 100%
   margin 0 auto
   position relative
 .bottom

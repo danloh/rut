@@ -34,6 +34,4 @@ export default {
 <style lang="stylus">
 .rut-list
   width 100%
-  li
-    list-style-type none
 </style>

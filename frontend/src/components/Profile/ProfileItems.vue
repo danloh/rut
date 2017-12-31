@@ -50,6 +50,4 @@ export default {
 .item-list
   width 100%
   margin-top 5px
-  li
-    list-style-type none
 </style>

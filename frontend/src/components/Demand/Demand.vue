@@ -45,12 +45,12 @@ export default {
 <style lang="stylus" scoped>
 .demand-main
   padding 5px
-  background-color lighten(#f6f5f2, 50%)
+  background-color lighten(#f1f3f5, 50%)
   border-bottom 1px dotted #689f38
   .demand-body
-    background-color #f6f5f2
+    background-color #f1f3f5
     padding 10px
-    color #3ac
+    color #00838f
     font-size 1.15em
   .demand-bar
     text-align right
