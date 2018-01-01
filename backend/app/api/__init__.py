@@ -20,7 +20,7 @@ PER_PAGE = 20 # for pagination except items in rut--42
 def register():
     username = request.json.get('username')
     password = request.json.get('password')
-    email = request.json.get('email')
+    email = request.json.get('email','').strip()
     if username is None or password is None:
         abort(400) # missing arguments
     if Users.query.filter_by(name = username).first() is not None:
@@ -51,11 +51,11 @@ def register():
 @auth.login_required
 def edit_profile():
     user = g.user
-    user.nickname = request.json.get('nickname')
-    user.location = request.json.get('location')
-    user.avatar = request.json.get('avatarUrl')
-    user.about_me = request.json.get('about')
-    user.links = request.json.get('url')
+    user.nickname = request.json.get('nickname','').strip()
+    user.location = request.json.get('location','').strip()
+    user.avatar = request.json.get('avatarUrl','').strip()
+    user.about_me = request.json.get('about','').strip()
+    user.links = request.json.get('url','').strip()
     db.session.add(user)
     db.session.commit()
     return jsonify('Your Profile Updated')
@@ -129,7 +129,7 @@ def password_reset_request():
     else:
         return jsonify('Invalid username or email.')
 
-@rest.route('/reset/<token>', methods=['GET', 'POST'])
+@rest.route('/reset/<string:token>', methods=['GET', 'POST'])
 def password_reset(token):
     token = token.replace('@', '.')
     new_psw = request.json.get('newpsw')
@@ -428,13 +428,17 @@ def unchallenge_rut(rutid):
 @rest.route('/create/<int:demandid>', methods=['POST'])
 @auth.login_required
 def new_rut(demandid=None):
+    title = request.json.get('title','').strip()
+    intro = request.json.get('intro','').strip()
+    if not title or not intro:
+        abort(403) # cannot be ''
     post = Posts(
         creator = g.user,
-        title = request.json.get('title'),
-        intro = request.json.get('intro'),
-        tag_str = request.json.get('tag'),
+        title = title,
+        intro = intro,
+        tag_str = request.json.get('tag','').strip(),
         rating = request.json.get('rating'),
-        credential = request.json.get('credential'),
+        credential = request.json.get('credential','').strip(),
         editable = request.json.get('editable')
     )
     db.session.add(post)
@@ -458,11 +462,16 @@ def edit_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     if rut.creator != user:
         abort(403)
-    rut.title = request.json.get('title'),
-    rut.intro = request.json.get('intro'),
+    # check not-null column can not be ''
+    title = request.json.get('title','').strip()
+    intro = request.json.get('intro','').strip()
+    if not title or not intro:
+        abort(403) # cannot be ''
+    rut.title = title,
+    rut.intro = intro,
     rut.rating = request.json.get('rating'),
-    rut.credential = request.json.get('credential'),
-    rut.epilog = request.json.get('epilog')
+    rut.credential = request.json.get('credential','').strip(),
+    rut.epilog = request.json.get('epilog','').strip()
     # renew the update time and add to db
     rut.renew()
     #db.session.add(rut)
@@ -507,7 +516,7 @@ def edit_tips(cid):
         abort(403)
     # get the data
     order = request.json.get('order')
-    tips = request.json.get('tips')
+    tips = request.json.get('tips','').strip()
     if not order or not tips:
         abort(403) # cannot be None
     item = Items.query.get_or_404(tip_collect.item_id)
@@ -534,7 +543,10 @@ def add_item_to_rut(rutid):
     if rut.creator != user:
         abort(403)
     # get data in request
-    uid = request.json.get('uid').replace('-','').replace(' ','')
+    title = request.json.get('title','').strip()
+    uid = request.json.get('uid','').replace('-','').replace(' ','')
+    if not title or not uid:
+        abort(403) # cannot be None
     res_url = request.json.get('resUrl','').strip()
     tips = request.json.get('tips','No Tips Yet')
     spoiler_text = request.json.get('spoiler')
@@ -548,19 +560,19 @@ def add_item_to_rut(rutid):
     if old_item is None and online_item is None:
         new_item = Items(
             uid = uid,
-            title = request.json.get('title'),
+            title = title,
             res_url = res_url,
-            author = request.json.get('byline',''),
-            cover = request.json.get('cover',''),
+            author = request.json.get('byline','').strip(),
+            cover = request.json.get('cover','').strip(),
             cate = request.json.get('cate','Book'),
-            publisher = request.json.get('publisher',''),
-            pub_date = request.json.get('pubdate',''),
-            language = request.json.get('language',''),
-            binding = request.json.get('binding','Paperback'),
-            page = request.json.get('page',''),
-            level = request.json.get('level',''),
-            price = request.json.get('price',''),
-            details = request.json.get('detail','')
+            publisher = request.json.get('publisher','').strip(),
+            pub_date = request.json.get('pubdate','').strip(),
+            language = request.json.get('language','').strip(),
+            binding = request.json.get('binding','Paperback').strip(),
+            page = request.json.get('page','').strip(),
+            level = request.json.get('level','').strip(),
+            price = request.json.get('price','').strip(),
+            details = request.json.get('detail','').strip()
         )
         db.session.add(new_item)            
         rut.collecting(new_item,tips,user,spoiler)
@@ -602,7 +614,7 @@ def check_item_to_add(rutid):
     reg_url = re.compile(re_url,0)
     tips="No Tips Yet" # default
     # get checker, via url_or_uid
-    checker = request.json.get('url')
+    checker = request.json.get('url','').strip()
     # by spider 
     if reg_url.match(checker):
         pure_url = checker.split('/ref=')[0] #for amazon url
@@ -618,7 +630,7 @@ def check_item_to_add(rutid):
         else:
             d = spider.parse_html(checker) # if any error??
             new_item = Items(
-                uid = d.get('uid').replace('-','').replace(' ',''),
+                uid = d.get('uid','').replace('-','').replace(' ',''),
                 title = d.get('title'),
                 res_url = d.get('res_url',''),
                 author = d.get('author',''),
@@ -628,7 +640,7 @@ def check_item_to_add(rutid):
                 pub_date = d.get('Publication Date') or d.get('publish_date',''),
                 language = d.get('Language','English'),
                 binding = d.get('binding','Paperback'),
-                page = d.get('page') or d.get('Print Length', '') ,
+                page = d.get('page') or d.get('Print Length', ''),
                 level = d.get('Level',''),
                 price = d.get('price',''),
                 details = d.get('details','')
@@ -779,31 +791,34 @@ def get_item_inruts(itemid):
 @rest.route('/edititem/<int:itemid>', methods=['POST'])
 @auth.login_required
 def edit_item(itemid):
+    uid = request.json.get('uid','').replace('-','').replace(' ','')
+    title = request.json.get('title','').strip()
+    if not uid or not title:
+        abort(403)
     query = Items.query
     item = query.get_or_404(itemid)
-    uid = request.json.get('uid').replace('-','').replace(' ','')
     if query.filter_by(uid=uid).first() and item.uid != uid:
         abort(403) # can not be duplicated uid
     #update item 
     item.uid = uid
     item.cate = request.json.get('cate')
-    item.title = request.json.get('title')
-    item.author = request.json.get('byline')
-    item.cover = request.json.get('cover')
-    item.res_url = request.json.get('resUrl')
-    item.publisher = request.json.get('publisher','')
-    item.pub_date = request.json.get('publishDate','')
-    item.language = request.json.get('language','')
-    item.binding = request.json.get('binding','')
-    item.page = request.json.get('page','')
-    item.level = request.json.get('level','')
-    item.price = request.json.get('price','')
-    item.details = request.json.get('details','')
+    item.title = title
+    item.author = request.json.get('byline','').strip()
+    item.cover = request.json.get('cover','').strip()
+    item.res_url = request.json.get('resUrl','').strip()
+    item.publisher = request.json.get('publisher','').strip()
+    item.pub_date = request.json.get('publishDate','').strip()
+    item.language = request.json.get('language','').strip()
+    item.binding = request.json.get('binding','').strip()
+    item.page = request.json.get('page','').strip()
+    item.level = request.json.get('level','').strip()
+    item.price = request.json.get('price','').strip()
+    item.details = request.json.get('details','').strip()
     #edit author  byline
     old_str = item.author
     old_d = str_to_dict(old_str)
     old_set = set(k for k in old_d if k is not "None")
-    new_str = request.json.get('byline')
+    new_str = request.json.get('byline','').strip()
     new_d = str_to_dict(new_str)
     new_set = set(k for k in new_d)
     add_name = new_set - old_set
@@ -900,11 +915,14 @@ def get_iuclips():
 @rest.route('/newclip', methods=['POST'])
 @auth.login_required
 def new_clip():
+    body = request.json.get('clip','').strip()
+    if not body:
+        abort(403)
     itemid = request.json.get('itemid')
     clip = Clips(
         creator = g.user,
-        body = request.json.get('clip'),
-        item = Items.query.get(itemid) 
+        body = body,
+        item = Items.query.get(itemid)
     )
     db.session.add(clip)
     db.session.commit()
@@ -930,13 +948,17 @@ def upvote_clip(clipid):
 @rest.route('/newreview/<int:itemid>', methods=['POST'])
 @auth.login_required
 def new_review(itemid):
+    body = request.json.get('review','').strip()
+    heading = request.json.get('title','').strip()
+    if not body or not heading:
+        abort(403)
     user = g.user
     item = Items.query.get_or_404(itemid)
     spoiler_text = request.json.get('spoiler')
     spoiler = True if spoiler_text == 'Spoiler Ahead' else False
     review = Reviews(
-        heading = request.json.get('title'),
-        body = request.json.get('review'),
+        heading = heading,
+        body = body,
         spoiler = spoiler,
         item = item,
         creator = user
@@ -950,12 +972,16 @@ def new_review(itemid):
 @rest.route('/editreview/<int:reviewid>', methods=['POST'])
 @auth.login_required
 def edit_review(reviewid):
+    body = request.json.get('review','').strip()
+    heading = request.json.get('title','').strip()
+    if not body or not heading:
+        abort(403)
     user = g.user
     review = Reviews.query.get_or_404(reviewid)
     if user != review.creator:
-        abort(403) #return jsonify('Error, No Permission')
-    review.heading = request.json.get('title')
-    review.body = request.json.get('review')
+        abort(403) #No Permission
+    review.heading = heading
+    review.body = body
     spoiler_text = request.json.get('spoiler')
     spoiler = True if spoiler_text == 'Spoiler Ahead' else False
     review.spoiler = spoiler
@@ -1144,9 +1170,12 @@ def upvote_demand(demandid):
 @rest.route('/newdemand', methods=['POST'])
 @auth.login_required
 def new_demand():
-    sp = request.json.get('demand').split('#') + ['42']
+    text = request.json.get('demand','').strip()
+    if not text:
+        abort(403)
+    sp = text.split('#') + ['42']
     body = sp[0]
-    tag_str = sp[1]
+    tag_str = sp[1].strip() or '42'
     demand = Demands(
         requestor = g.user,
         body = body,
@@ -1258,9 +1287,9 @@ def edit_tag(tagid):
     query = Tags.query
     tag = query.get_or_404(tagid)
     # get data
-    name = request.json.get('name').strip()
-    parent = request.json.get('parent').strip()
-    description = request.json.get('description').strip()
+    name = request.json.get('name','').strip()
+    parent = request.json.get('parent','').strip()
+    description = request.json.get('description','').strip()
     if not name:
         abort(403)
     if tag.tag != name and query.filter_by(tag=name).first():
@@ -1308,9 +1337,12 @@ def unfav_tag(tagid):
 @rest.route('/comment/review/<int:reviewid>', methods=['POST'])
 @auth.login_required
 def new_comment(demandid=None,rutid=None,commentid=None,itemid=None,reviewid=None):
+    body = request.json.get('comment','').strip()
+    if not body:
+        abort(403)
     user = g.user
     comment = Comments(
-        body = request.json.get('comment'),
+        body = body,
         demand = Demands.query.get(demandid) if demandid else None,
         post = Posts.query.get(rutid) if rutid else None,
         item = Items.query.get(itemid) if itemid else None,

@@ -28,6 +28,7 @@
 
 <script>
 import { newReview } from '@/api/api'
+import { trimValid } from '@/util/filters'
 
 export default {
   name: 'new-review',
@@ -41,10 +42,10 @@ export default {
       },
       rules: {
         title: [
-          { required: true, message: 'Required', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Required', trigger: 'blur' }
         ],
         review: [
-          { required: true, message: 'Required', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Required', trigger: 'blur' }
         ]
       },
       itemId: this.$route.params.id
@@ -55,8 +56,8 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           let data = {
-            title: form.title,
-            review: form.review,
+            title: form.title.trim(),
+            review: form.review.trim(),
             spoiler: form.spoiler
           }
           let itemid = this.$route.params.id

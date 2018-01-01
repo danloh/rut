@@ -50,11 +50,11 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid && checkAuth() && this.canSetting) {
           let data = {
-            nickname: form.nickname,
-            location: form.location,
-            avatarUrl: form.avatarUrl,
-            about: form.about,
-            url: form.url
+            nickname: form.nickname.trim(),
+            location: form.location.trim(),
+            avatarUrl: form.avatarUrl.trim(),
+            about: form.about.trim(),
+            url: form.url.trim()
           }
           editProfile(data)
           .then((resp) => {
@@ -80,7 +80,7 @@ export default {
       let user = this.$store.getters.currentUser
       this.userid = user.id
       if (user.id === Number(this.$route.params.id)) {
-        this.settingForm.nickname = user.name // no nickname from api
+        this.settingForm.nickname = user.nickname
         this.settingForm.location = user.location
         this.settingForm.avatarUrl = user.avatar
         this.settingForm.about = user.about_me

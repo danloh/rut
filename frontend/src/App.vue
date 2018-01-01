@@ -162,5 +162,6 @@ p
   .ql-toolbar
     padding 2px
   .ql-container
+    z-index 999 // !!toolbar upper layer
     min-height 8em
 </style>

@@ -41,6 +41,7 @@
 
 <script>
 import { newRut } from '@/api/api'
+import { trimValid } from '@/util/filters'
 
 export default {
   name: 'create',
@@ -57,13 +58,13 @@ export default {
       },
       rules: {
         title: [
-          { required: true, message: 'Please Name it', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Please Name it', trigger: 'blur' }
         ],
         intro: [
-          { required: true, message: 'Need an introduction', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Need an introduction', trigger: 'blur' }
         ],
         tag: [
-          { required: true, message: 'Please set some tags', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Please set some tags', trigger: 'blur' }
         ]
       },
       ratings: [
@@ -79,11 +80,11 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           let data = {
-            title: form.title,
-            intro: form.intro,
-            tag: form.tag,
+            title: form.title.trim(),
+            intro: form.intro.trim(),
+            tag: form.tag.trim(),
             rating: form.rating,
-            credential: form.credential,
+            credential: form.credential.trim(),
             editable: 'Creator' // form.editable
           }
           let demandid = this.$route.params.id || ''

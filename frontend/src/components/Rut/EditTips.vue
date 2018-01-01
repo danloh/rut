@@ -31,6 +31,7 @@
 <script>
 import { editTips } from '@/api/api'
 import { checkAuth } from '@/util/auth'
+import { trimValid } from '@/util/filters'
 
 export default {
   name: 'edit-tips',
@@ -44,10 +45,10 @@ export default {
       },
       rules: {
         order: [
-          { required: true, message: 'Required', trigger: 'change' }
+          { required: true, message: 'Required', trigger: 'blur' }
         ],
         tips: [
-          { required: true, message: 'Required', trigger: 'change' }
+          { required: true, validator: trimValid, message: 'Required', trigger: 'blur' }
         ]
       },
       rutId: null,
@@ -61,7 +62,7 @@ export default {
         if (valid && checkAuth() && this.canEdit) {
           let data = {
             order: form.order,
-            tips: form.tips,
+            tips: form.tips.trim(),
             spoiler: form.spoiler
           }
           let cid = this.$route.params.id

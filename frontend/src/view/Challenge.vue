@@ -56,6 +56,7 @@
 <script>
 import ClipList from '@/components/Challenge/ClipList.vue'
 import { fetchChallengeItems, setDeadline } from '@/api/api'
+import { trimValid } from '@/util/filters'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -69,7 +70,7 @@ export default {
         doingItemID: null
       },
       rules: {
-        clip: [{ required: true, message: 'Required', trigger: 'blur' }],
+        clip: [{ required: true, validator: trimValid, message: 'Required', trigger: 'blur' }],
         doingItemID: [{ required: true, message: 'Required', trigger: 'change' }]
       },
       items: null,
@@ -96,7 +97,7 @@ export default {
     submitClip (formName, form) {
       this.$refs[formName].validate((valid) => {
         if (valid && form.doingItemID !== null) {
-          let data = { clip: form.clip, itemid: form.doingItemID }
+          let data = { clip: form.clip.trim(), itemid: form.doingItemID }
           this.$store.dispatch('postClip', data)
           this.resetForm(formName)
         } else {

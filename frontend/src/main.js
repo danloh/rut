@@ -24,15 +24,14 @@ Vue.use(ElementUI, { locale })
 
 // rich Text editor
 const editorOption = {
-  theme: 'snow',
-  placeholder: 'Compose...',
+  theme: 'bubble',
+  placeholder: 'Compose..., Rich Text Support',
   modules: {
     toolbar: [
       ['bold', 'underline'],
       [{ 'list': 'ordered' }, { 'list': 'bullet' }],
       [{ 'color': [] }, { 'background': [] }],
       ['blockquote'],
-      ['link'],
       ['clean']
     ]
   }

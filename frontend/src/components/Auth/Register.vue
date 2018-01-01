@@ -44,7 +44,7 @@ export default {
     }
     var validateEmail = (rule, value, callback) => {
       let regEmail = /^[a-zA-Z0-9_-]+([-_.][A-Za-z0-9]+)*@[a-zA-Z0-9_-]+(\.[a-zA-Z]+)+$/
-      if (regEmail.test(value)) {
+      if (regEmail.test(value.trim())) {
         this.checkEmail().then(resp => {
           if (resp.data) {
             callback()
@@ -105,7 +105,7 @@ export default {
         if (valid) {
           let data = {
             username: form.username,
-            email: form.email,
+            email: form.email.trim(),
             password: form.password
           }
           this.$axios.post('api/register', data)

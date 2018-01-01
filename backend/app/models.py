@@ -1083,6 +1083,7 @@ class Demands(db.Model):
             'requestor': {'id': requestor.id, 'name': requestor.nickname or requestor.name},
             'body': self.body,
             'vote': self.vote,
+            'tagStr': self.dtag_str,
             'answercount': self.posts.count(),
             'commentcount': self.comments.count(),
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
@@ -1599,6 +1600,8 @@ class Users(UserMixin, db.Model):
         user_dict = {
             'id': self.id,
             'name': self.nickname or self.name,
+            'nickname': self.nickname,
+            'username': self.name,
             'role': self.role.duty,
             'avatar': self.user_avatar,
             'location': self.location,
