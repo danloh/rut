@@ -126,7 +126,11 @@ const checkItem = (rutid, params) => {
 const editTips = (cid, params) => {
   return request(`${base}/edittips/${cid}`, params, 'post')
 }
-
+// delete Tips
+const deleteTips = (cid, params) => {
+  return request(`${base}/del/tips/${cid}`, params)
+}
+// get tag
 const fetchTag = (tagid, params) => { // !!
   return request(`${base}/tag/${tagid}`, params)
 }
@@ -292,6 +296,7 @@ export {
   itemToRut,
   checkItem,
   editTips,
+  deleteTips,
   fetchTag,
   fetchTagRuts,
   editTag,

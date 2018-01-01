@@ -27,7 +27,7 @@
           - <router-link :to="'/readuplist/' + rut.id" :title="rut.title"> {{ rut.title.slice(0, 60) }}...</router-link>
         </p>
         <div v-if="hasMoreRut">
-          <el-button size="mini" class="blockbtn" @click="loadmoreRuts" :disabled="!hasMoreRut">Show More</el-button>
+          <el-button class="blockbtn" size="mini" @click="loadmoreRuts" :disabled="!hasMoreRut">Show More</el-button>
         </div>
       </div>
     </div>

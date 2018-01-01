@@ -20,7 +20,7 @@ PER_PAGE = 20 # for pagination except items in rut--42
 def register():
     username = request.json.get('username')
     password = request.json.get('password')
-    email = request.json.get('email')
+    email = request.json.get('email','').strip()
     if username is None or password is None:
         abort(400) # missing arguments
     if Users.query.filter_by(name = username).first() is not None:
@@ -51,11 +51,11 @@ def register():
 @auth.login_required
 def edit_profile():
     user = g.user
-    user.nickname = request.json.get('nickname')
-    user.location = request.json.get('location')
-    user.avatar = request.json.get('avatarUrl')
-    user.about_me = request.json.get('about')
-    user.links = request.json.get('url')
+    user.nickname = request.json.get('nickname','').strip()
+    user.location = request.json.get('location','').strip()
+    user.avatar = request.json.get('avatarUrl','').strip()
+    user.about_me = request.json.get('about','').strip()
+    user.links = request.json.get('url','').strip()
     db.session.add(user)
     db.session.commit()
     return jsonify('Your Profile Updated')
@@ -129,7 +129,7 @@ def password_reset_request():
     else:
         return jsonify('Invalid username or email.')
 
-@rest.route('/reset/<token>', methods=['GET', 'POST'])
+@rest.route('/reset/<string:token>', methods=['GET', 'POST'])
 def password_reset(token):
     token = token.replace('@', '.')
     new_psw = request.json.get('newpsw')
@@ -428,13 +428,17 @@ def unchallenge_rut(rutid):
 @rest.route('/create/<int:demandid>', methods=['POST'])
 @auth.login_required
 def new_rut(demandid=None):
+    title = request.json.get('title','').strip()
+    intro = request.json.get('intro','').strip()
+    if not title or not intro:
+        abort(403) # cannot be ''
     post = Posts(
         creator = g.user,
-        title = request.json.get('title'),
-        intro = request.json.get('intro'),
-        tag_str = request.json.get('tag'),
+        title = title,
+        intro = intro,
+        tag_str = request.json.get('tag','').strip(),
         rating = request.json.get('rating'),
-        credential = request.json.get('credential'),
+        credential = request.json.get('credential','').strip(),
         editable = request.json.get('editable')
     )
     db.session.add(post)
@@ -449,20 +453,28 @@ def new_rut(demandid=None):
             )
             db.session.add(respon)
     db.session.commit()
-    return jsonify({'id':post.id, 'title': post.title})
+    return jsonify({
+        'id':post.id,
+        'title': post.title
+    })
 
 @rest.route('/editrut/<int:rutid>', methods=['POST'])
 @auth.login_required
 def edit_rut(rutid):
     user = g.user
     rut = Posts.query.get_or_404(rutid)
-    if rut.creator != user:
+    if rut.creator != user and user.role != 'Admin':
         abort(403)
-    rut.title = request.json.get('title'),
-    rut.intro = request.json.get('intro'),
+    # check not-null column can not be ''
+    title = request.json.get('title','').strip()
+    intro = request.json.get('intro','').strip()
+    if not title or not intro:
+        abort(403) # cannot be ''
+    rut.title = title,
+    rut.intro = intro,
     rut.rating = request.json.get('rating'),
-    rut.credential = request.json.get('credential'),
-    rut.epilog = request.json.get('epilog')
+    rut.credential = request.json.get('credential','').strip(),
+    rut.epilog = request.json.get('epilog','').strip()
     # renew the update time and add to db
     rut.renew()
     #db.session.add(rut)
@@ -503,11 +515,11 @@ def edit_tips(cid):
     tip_collect = Collect.query.filter_by(id=cid).first_or_404()  #collect 's id
     post_id = tip_collect.post_id
     rut = Posts.query.get_or_404(post_id)
-    if rut.creator != user:
+    if rut.creator != user and user.role != 'Admin':
         abort(403)
     # get the data
     order = request.json.get('order')
-    tips = request.json.get('tips')
+    tips = request.json.get('tips','').strip()
     if not order or not tips:
         abort(403) # cannot be None
     item = Items.query.get_or_404(tip_collect.item_id)
@@ -534,7 +546,10 @@ def add_item_to_rut(rutid):
     if rut.creator != user:
         abort(403)
     # get data in request
-    uid = request.json.get('uid').replace('-','').replace(' ','')
+    title = request.json.get('title','').strip()
+    uid = request.json.get('uid','').replace('-','').replace(' ','')
+    if not title or not uid:
+        abort(403) # cannot be None
     res_url = request.json.get('resUrl','').strip()
     tips = request.json.get('tips','No Tips Yet')
     spoiler_text = request.json.get('spoiler')
@@ -548,19 +563,19 @@ def add_item_to_rut(rutid):
     if old_item is None and online_item is None:
         new_item = Items(
             uid = uid,
-            title = request.json.get('title'),
+            title = title,
             res_url = res_url,
-            author = request.json.get('byline',''),
-            cover = request.json.get('cover',''),
+            author = request.json.get('byline','').strip(),
+            cover = request.json.get('cover','').strip(),
             cate = request.json.get('cate','Book'),
-            publisher = request.json.get('publisher',''),
-            pub_date = request.json.get('pubdate',''),
-            language = request.json.get('language',''),
-            binding = request.json.get('binding','Paperback'),
-            page = request.json.get('page',''),
-            level = request.json.get('level',''),
-            price = request.json.get('price',''),
-            details = request.json.get('detail','')
+            publisher = request.json.get('publisher','').strip(),
+            pub_date = request.json.get('pubdate','').strip(),
+            language = request.json.get('language','').strip(),
+            binding = request.json.get('binding','Paperback').strip(),
+            page = request.json.get('page','').strip(),
+            level = request.json.get('level','').strip(),
+            price = request.json.get('price','').strip(),
+            details = request.json.get('detail','').strip()
         )
         db.session.add(new_item)            
         rut.collecting(new_item,tips,user,spoiler)
@@ -602,7 +617,7 @@ def check_item_to_add(rutid):
     reg_url = re.compile(re_url,0)
     tips="No Tips Yet" # default
     # get checker, via url_or_uid
-    checker = request.json.get('url')
+    checker = request.json.get('url','').strip()
     # by spider 
     if reg_url.match(checker):
         pure_url = checker.split('/ref=')[0] #for amazon url
@@ -618,7 +633,7 @@ def check_item_to_add(rutid):
         else:
             d = spider.parse_html(checker) # if any error??
             new_item = Items(
-                uid = d.get('uid').replace('-','').replace(' ',''),
+                uid = d.get('uid','').replace('-','').replace(' ',''),
                 title = d.get('title'),
                 res_url = d.get('res_url',''),
                 author = d.get('author',''),
@@ -628,7 +643,7 @@ def check_item_to_add(rutid):
                 pub_date = d.get('Publication Date') or d.get('publish_date',''),
                 language = d.get('Language','English'),
                 binding = d.get('binding','Paperback'),
-                page = d.get('page') or d.get('Print Length', '') ,
+                page = d.get('page') or d.get('Print Length', ''),
                 level = d.get('Level',''),
                 price = d.get('price',''),
                 details = d.get('details','')
@@ -649,6 +664,65 @@ def check_item_to_add(rutid):
             return jsonify('Done')
         else:
             return jsonify('Back') # if None by uid, back to try again
+
+@rest.route('/del/tips/<int:cid>')
+@auth.login_required
+def del_tips_in_rut(cid):
+    """Del tips, re-ordering items"""
+    user = g.user
+    #collect 's id,but not get_or_404, for 3 primary key
+    tip_c = Collect.query.filter_by(id=cid).first_or_404()
+    if user != tip_c.tip_creator and user.role != 'Admin':
+        abort(403)
+    #once delete an item. need to re-ordering,
+    #order the to-be-del item to the last, then del
+    item = Items.query.get_or_404(tip_c.item_id)
+    rut = Posts.query.get_or_404(tip_c.post_id)
+    n = rut.items.count()
+    rut.ordering(item, n)
+    db.session.delete(tip_c)
+    db.session.commit()
+    rutid = rut.id
+    return jsonify(rutid)
+
+@rest.route('/disable/rut/<int:rutid>')
+@auth.login_required
+def disable_rut(rutid):
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    if ((rut.creator != user and user.role != 'Admin')
+        or rut.starers.count() != 0
+        or rut.challengers.count() != 0):
+        abort(403)
+    rut.disabled = True
+    db.session.add(rut)
+    db.session.commit()
+    return jsonify('Disabled')
+
+@rest.route('/recover/rut/<int:rutid>')
+@auth.login_required
+def recover_rut(rutid):
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    if rut.creator != user and user.role != 'Admin':
+        abort(403)
+    rut.disabled = False #enable
+    db.session.add(rut)
+    db.session.commit()
+    return jsonify('Enabled')
+
+@rest.route('/delete/rut/<int:rutid>')
+@auth.login_required
+def delete_rut(rutid):
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    if ((rut.creator != user and user.role != 'Admin')
+        or rut.starers.count() != 0
+        or rut.challengers.count() != 0):
+        abort(403)
+    db.session.delete(rut)
+    db.session.commit()
+    return jsonify('Deleted')
 
 @rest.route('/all/items')
 def get_all_items():
@@ -779,31 +853,34 @@ def get_item_inruts(itemid):
 @rest.route('/edititem/<int:itemid>', methods=['POST'])
 @auth.login_required
 def edit_item(itemid):
+    uid = request.json.get('uid','').replace('-','').replace(' ','')
+    title = request.json.get('title','').strip()
+    if not uid or not title:
+        abort(403)
     query = Items.query
     item = query.get_or_404(itemid)
-    uid = request.json.get('uid').replace('-','').replace(' ','')
     if query.filter_by(uid=uid).first() and item.uid != uid:
         abort(403) # can not be duplicated uid
     #update item 
     item.uid = uid
     item.cate = request.json.get('cate')
-    item.title = request.json.get('title')
-    item.author = request.json.get('byline')
-    item.cover = request.json.get('cover')
-    item.res_url = request.json.get('resUrl')
-    item.publisher = request.json.get('publisher','')
-    item.pub_date = request.json.get('publishDate','')
-    item.language = request.json.get('language','')
-    item.binding = request.json.get('binding','')
-    item.page = request.json.get('page','')
-    item.level = request.json.get('level','')
-    item.price = request.json.get('price','')
-    item.details = request.json.get('details','')
+    item.title = title
+    item.author = request.json.get('byline','').strip()
+    item.cover = request.json.get('cover','').strip()
+    item.res_url = request.json.get('resUrl','').strip()
+    item.publisher = request.json.get('publisher','').strip()
+    item.pub_date = request.json.get('publishDate','').strip()
+    item.language = request.json.get('language','').strip()
+    item.binding = request.json.get('binding','').strip()
+    item.page = request.json.get('page','').strip()
+    item.level = request.json.get('level','').strip()
+    item.price = request.json.get('price','').strip()
+    item.details = request.json.get('details','').strip()
     #edit author  byline
     old_str = item.author
     old_d = str_to_dict(old_str)
     old_set = set(k for k in old_d if k is not "None")
-    new_str = request.json.get('byline')
+    new_str = request.json.get('byline','').strip()
     new_d = str_to_dict(new_str)
     new_set = set(k for k in new_d)
     add_name = new_set - old_set
@@ -838,6 +915,41 @@ def edit_item(itemid):
     db.session.add(item)
     db.session.commit()
     return jsonify('The item info Updated, Thank You')
+
+@rest.route('/delete/item/<int:itemid>')
+@auth.login_required
+def del_item(itemid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    item = Items.query.get_or_404(itemid)
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify('Deleted')
+
+@rest.route('/disable/item/<int:itemid>')
+@auth.login_required
+def disable_item(itemid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    item = Items.query.get_or_404(itemid)
+    item.disabled = True
+    db.session.add(item)
+    db.session.commit()
+    return jsonify('Disabled')
+
+@rest.route('/recover/item/<int:itemid>')
+@auth.login_required
+def recover_item(itemid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    item = Items.query.get_or_404(itemid)
+    item.disabled = False #enable
+    db.session.add(item)
+    db.session.commit()
+    return jsonify('Enabled')
 
 @rest.route('/all/clips')
 def get_all_clips():
@@ -900,11 +1012,14 @@ def get_iuclips():
 @rest.route('/newclip', methods=['POST'])
 @auth.login_required
 def new_clip():
+    body = request.json.get('clip','').strip()
+    if not body:
+        abort(403)
     itemid = request.json.get('itemid')
     clip = Clips(
         creator = g.user,
-        body = request.json.get('clip'),
-        item = Items.query.get(itemid) 
+        body = body,
+        item = Items.query.get(itemid)
     )
     db.session.add(clip)
     db.session.commit()
@@ -927,16 +1042,55 @@ def upvote_clip(clipid):
         db.session.commit()
     return jsonify(clip.vote)
 
+@rest.route('/delete/clip/<int:clipid>')
+@auth.login_required
+def del_clip(clipid):
+    user = g.user
+    clip = Clips.query.get_or_404(clipid)
+    if clip.creator != user and user.role != 'Admin':
+        abort(403)
+    db.session.delete(clip)
+    db.session.commit()
+    return jsonify('Deleted')
+
+@rest.route('/disable/clip/<int:clipid>')
+@auth.login_required
+def disable_clip(clipid):
+    user = g.user
+    clip = Clips.query.get_or_404(clipid)
+    if clip.creator != user and user.role != 'Admin':
+        abort(403)
+    clip.disabled = True
+    db.session.add(clip)
+    db.session.commit()
+    return jsonify('Disabled')
+
+@rest.route('/recover/clip/<int:clipid>')
+@auth.login_required
+def recover_clip(clipid):
+    user = g.user
+    clip = Clips.query.get_or_404(clipid)
+    if clip.creator != user and user.role != 'Admin':
+        abort(403)
+    clip.disabled = False #enable
+    db.session.add(clip)
+    db.session.commit()
+    return jsonify('Enabled')
+
 @rest.route('/newreview/<int:itemid>', methods=['POST'])
 @auth.login_required
 def new_review(itemid):
+    body = request.json.get('review','').strip()
+    heading = request.json.get('title','').strip()
+    if not body or not heading:
+        abort(403)
     user = g.user
     item = Items.query.get_or_404(itemid)
     spoiler_text = request.json.get('spoiler')
     spoiler = True if spoiler_text == 'Spoiler Ahead' else False
     review = Reviews(
-        heading = request.json.get('title'),
-        body = request.json.get('review'),
+        heading = heading,
+        body = body,
         spoiler = spoiler,
         item = item,
         creator = user
@@ -950,12 +1104,16 @@ def new_review(itemid):
 @rest.route('/editreview/<int:reviewid>', methods=['POST'])
 @auth.login_required
 def edit_review(reviewid):
+    body = request.json.get('review','').strip()
+    heading = request.json.get('title','').strip()
+    if not body or not heading:
+        abort(403)
     user = g.user
     review = Reviews.query.get_or_404(reviewid)
-    if user != review.creator:
-        abort(403) #return jsonify('Error, No Permission')
-    review.heading = request.json.get('title')
-    review.body = request.json.get('review')
+    if user != review.creator and user.role != 'Admin':
+        abort(403) #No Permission
+    review.heading = heading
+    review.body = body
     spoiler_text = request.json.get('spoiler')
     spoiler = True if spoiler_text == 'Spoiler Ahead' else False
     review.spoiler = spoiler
@@ -963,6 +1121,41 @@ def edit_review(reviewid):
     db.session.commit()
     review_dict = review.to_dict()
     return jsonify(review_dict)
+
+@rest.route('/delete/review/<int:reviewid>')
+@auth.login_required
+def del_review(reviewid):
+    user = g.user
+    review = Reviews.query.get_or_404(reviewid)
+    if review.creator != user and user.role != 'Admin':
+        abort(403)
+    db.session.delete(review)
+    db.session.commit()
+    return jsonify('Deleted')
+
+@rest.route('/disable/review/<int:reviewid>')
+@auth.login_required
+def disable_review(reviewid):
+    user = g.user
+    review = Reviews.query.get_or_404(reviewid)
+    if review.creator != user and user.role != 'Admin':
+        abort(403)
+    review.disabled = True
+    db.session.add(review)
+    db.session.commit()
+    return jsonify('Disabled')
+
+@rest.route('/recover/review/<int:reviewid>')
+@auth.login_required
+def recover_review(reviewid):
+    user = g.user
+    review = Reviews.query.get_or_404(reviewid)
+    if review.creator != user and user.role != 'Admin':
+        abort(403)
+    review.disabled = False #enable
+    db.session.add(review)
+    db.session.commit()
+    return jsonify('Enabled')
 
 @rest.route('/review/<int:reviewid>')
 def get_review(reviewid):
@@ -1093,7 +1286,7 @@ def get_demand(demandid):
     #attach answers to demand
     resps = demand.posts.order_by(Respon.timestamp.desc()).limit(PER_PAGE)
     respons = [r.post for r in resps]
-    answers = [{'id':p.id,'title':p.title} for p in respons]
+    answers = [{'id':p.id,'title':p.title,'intro':p.intro} for p in respons]
     demand_dict['answers'] = answers
     #attach comments
     d_comments = demand.comments.order_by(Comments.timestamp.desc()).limit(50)
@@ -1120,7 +1313,7 @@ def get_demand_answers(demandid):
     d_resps = demand.posts.order_by(Respon.timestamp.desc())\
                           .offset(page*per_page).limit(per_page)
     d_respons = [r.post for r in d_resps]
-    answers = [{'id':p.id,'title':p.title} for p in d_respons]
+    answers = [{'id':p.id,'title':p.title,'intro':p.intro} for p in d_respons]
     return jsonify(answers)
 
 @rest.route('/upvotedemand/<int:demandid>')
@@ -1144,9 +1337,12 @@ def upvote_demand(demandid):
 @rest.route('/newdemand', methods=['POST'])
 @auth.login_required
 def new_demand():
-    sp = request.json.get('demand').split('#') + ['42']
+    text = request.json.get('demand','').strip()
+    if not text:
+        abort(403)
+    sp = text.split('#') + ['42']
     body = sp[0]
-    tag_str = sp[1]
+    tag_str = sp[1].strip() or '42'
     demand = Demands(
         requestor = g.user,
         body = body,
@@ -1163,7 +1359,7 @@ def rut_as_answer(rutid, demandid):
     """link  Rut to  a demand as Answer"""
     user = g.user
     rut = Posts.query.get_or_404(rutid)
-    if rut.creator != user:
+    if rut.creator != user and user.role != 'Admin':
         abort(403) #no permission
     demand = Demands.query.get_or_404(demandid)
     respon = Respon(
@@ -1174,6 +1370,41 @@ def rut_as_answer(rutid, demandid):
     db.session.commit()
     answer = {'id': rut.id, 'title': rut.title}
     return jsonify(answer)
+
+@rest.route('/delete/demand/<int:demandid>')
+@auth.login_required
+def del_demand(demandid):
+    user = g.user
+    demand = Demands.query.get_or_404(demandid)
+    if demand.requestor != user and user.role != 'Admin':
+        abort(403)
+    db.session.delete(demand)
+    db.session.commit()
+    return jsonify('Deleted')
+
+@rest.route('/disable/demand/<int:demandid>')
+@auth.login_required
+def disable_demand(demandid):
+    user = g.user
+    demand = Demands.query.get_or_404(demandid)
+    if demand.requestor != user and user.role != 'Admin':
+        abort(403)
+    demand.disabled = True
+    db.session.add(demand)
+    db.session.commit()
+    return jsonify('Disabled')
+
+@rest.route('/recover/demand/<int:demandid>')
+@auth.login_required
+def recover_demand(demandid):
+    user = g.user
+    demand = Demands.query.get_or_404(demandid)
+    if demand.requestor != user and user.role != 'Admin':
+        abort(403)
+    demand.disabled = False #enable
+    db.session.add(demand)
+    db.session.commit()
+    return jsonify('Enabled')
 
 @rest.route('/all/tags')
 def get_all_tags():
@@ -1258,9 +1489,9 @@ def edit_tag(tagid):
     query = Tags.query
     tag = query.get_or_404(tagid)
     # get data
-    name = request.json.get('name').strip()
-    parent = request.json.get('parent').strip()
-    description = request.json.get('description').strip()
+    name = request.json.get('name','').strip()
+    parent = request.json.get('parent','').strip()
+    description = request.json.get('description','').strip()
     if not name:
         abort(403)
     if tag.tag != name and query.filter_by(tag=name).first():
@@ -1276,6 +1507,41 @@ def edit_tag(tagid):
     tag.parent(parent_tag)
     db.session.commit()
     return jsonify('Tag Info Updated, Thank You')
+
+@rest.route('/delete/tag/<int:tagid>')
+@auth.login_required
+def del_tag(tagid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    tag = Tags.query.get_or_404(tagid)
+    db.session.delete(tag)
+    db.session.commit()
+    return jsonify('Deleted')
+
+@rest.route('/disable/tag/<int:tagid>')
+@auth.login_required
+def disable_tag(tagid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    tag = Tags.query.get_or_404(tagid)
+    tag.disabled = True
+    db.session.add(tag)
+    db.session.commit()
+    return jsonify('Disabled')
+
+@rest.route('/recover/tag/<int:tagid>')
+@auth.login_required
+def recover_tag(tagid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    tag = Tags.query.get_or_404(tagid)
+    tag.disabled = False #enable
+    db.session.add(tag)
+    db.session.commit()
+    return jsonify('Enabled')
 
 @rest.route('/checkfavtag/<int:tagid>')
 @auth.login_required
@@ -1308,9 +1574,12 @@ def unfav_tag(tagid):
 @rest.route('/comment/review/<int:reviewid>', methods=['POST'])
 @auth.login_required
 def new_comment(demandid=None,rutid=None,commentid=None,itemid=None,reviewid=None):
+    body = request.json.get('comment','').strip()
+    if not body:
+        abort(403)
     user = g.user
     comment = Comments(
-        body = request.json.get('comment'),
+        body = body,
         demand = Demands.query.get(demandid) if demandid else None,
         post = Posts.query.get(rutid) if rutid else None,
         item = Items.query.get(itemid) if itemid else None,
@@ -1322,6 +1591,41 @@ def new_comment(demandid=None,rutid=None,commentid=None,itemid=None,reviewid=Non
     db.session.commit()
     comment_dict = comment.to_dict()
     return jsonify(comment_dict)
+
+@rest.route('/delete/comment/<int:commentid>')
+@auth.login_required
+def del_comment(commentid):
+    user = g.user
+    comment = Comments.query.get_or_404(commentid)
+    if comment.creator != user and user.role != 'Admin':
+        abort(403)
+    db.session.delete(comment)
+    db.session.commit()
+    return jsonify('Deleted')
+
+@rest.route('/disable/comment/<int:commentid>')
+@auth.login_required
+def disable_comment(commentid):
+    user = g.user
+    comment = Comments.query.get_or_404(commentid)
+    if comment.creator != user and user.role != 'Admin':
+        abort(403)
+    comment.disabled = True
+    db.session.add(comment)
+    db.session.commit()
+    return jsonify('Disabled')
+
+@rest.route('/recover/comment/<int:commentid>')
+@auth.login_required
+def recover_comment(commentid):
+    user = g.user
+    comment = Comments.query.get_or_404(commentid)
+    if comment.creator != user and user.role != 'Admin':
+        abort(403)
+    comment.disabled = False #enable
+    db.session.add(comment)
+    db.session.commit()
+    return jsonify('Enabled')
 
 @rest.route('/commentsonrut/<int:rutid>')
 def get_rut_comments(rutid):

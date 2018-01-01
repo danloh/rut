@@ -63,6 +63,7 @@
 <script>
 import { editItem, fetchItem } from '@/api/api'
 import { checkAuth } from '@/util/auth'
+import { trimValid } from '@/util/filters'
 
 export default {
   name: 'edit-item',
@@ -87,10 +88,10 @@ export default {
       },
       rules: {
         title: [
-          { required: true, message: 'Please give a title', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Please give a title', trigger: 'blur' }
         ],
         uid: [
-          { required: true, message: 'Need an uid', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Need an uid', trigger: 'blur' }
         ]
       },
       itemId: null,
@@ -103,19 +104,19 @@ export default {
         if (valid && checkAuth()) {
           let data = {
             cate: form.cate,
-            title: form.title,
-            uid: form.uid,
-            resUrl: form.resUrl,
-            byline: form.byline,
-            cover: form.cover,
-            language: form.language,
-            publisher: form.publisher,
-            publishDate: form.publishDate,
-            level: form.level,
-            binding: form.binding,
-            page: form.page,
-            price: form.price,
-            details: form.details
+            title: form.title.trim(),
+            uid: form.uid.trim(),
+            resUrl: form.resUrl.trim(),
+            byline: form.byline.trim(),
+            cover: form.cover.trim(),
+            language: form.language.trim(),
+            publisher: form.publisher.trim(),
+            publishDate: form.publishDate.trim(),
+            level: form.level.trim(),
+            binding: form.binding.trim(),
+            page: form.page.trim(),
+            price: form.price.trim(),
+            details: form.details.trim()
           }
           editItem(this.itemId, data)
           .then((resp) => {

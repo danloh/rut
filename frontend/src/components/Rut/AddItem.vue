@@ -36,7 +36,7 @@
       <el-form-item label="UID" prop="uid">
         <el-input v-model="addForm.uid"></el-input>
       </el-form-item>
-      <el-form-item label="Resource URL" prop="resurl">
+      <el-form-item label="Resource URL" prop="resUrl">
         <el-input v-model="addForm.resUrl"></el-input>
       </el-form-item>
       <el-form-item label="Byline" prop="byline">
@@ -69,6 +69,7 @@
 <script>
 import { checkItem, addItem } from '@/api/api'
 import { checkAuth } from '@/util/auth'
+import { trimValid } from '@/util/filters'
 import Spinner from '@/components/Misc/Spinner.vue'
 
 export default {
@@ -92,16 +93,13 @@ export default {
       },
       addRules: {
         title: [
-          { required: true, message: 'Please give a title', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Please give a title', trigger: 'blur' }
         ],
         uid: [
-          { required: true, message: 'Need an UID', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Need an UID', trigger: 'blur' }
         ],
         tips: [
-          { required: true, message: 'Required', trigger: 'blur' }
-        ],
-        resUrl: [
-          { required: true, message: 'Required', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Required', trigger: 'blur' }
         ]
       },
       show: false,
@@ -117,8 +115,13 @@ export default {
       this.loading = true
       this.$refs[formName].validate((valid) => {
         if (valid && checkAuth() && this.canEdit) {
+          if (!form.url.trim()) {
+            this.loading = false
+            this.$message('Please Input')
+            return false
+          }
           let data = {
-            url: form.url
+            url: form.url.trim() // url or uid
           }
           checkItem(this.rutId, data)
           .then(resp => {
@@ -146,12 +149,12 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid && checkAuth() && this.canEdit) {
           let data = {
-            title: form.title,
-            uid: form.uid,
-            resUrl: form.resUrl,
-            byline: form.byline,
-            cover: form.cover,
-            tips: form.tips,
+            title: form.title.trim(),
+            uid: form.uid.trim(),
+            resUrl: form.resUrl.trim(),
+            byline: form.byline.trim(),
+            cover: form.cover.trim(),
+            tips: form.tips.trim(),
             spoiler: form.spoiler
           }
           addItem(this.rutId, data)

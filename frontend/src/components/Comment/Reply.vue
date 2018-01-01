@@ -2,7 +2,7 @@
   <div class="reply" v-show="show">
     <el-form :model="commentForm" :rules="rules" ref="commentForm">
       <el-form-item prop="comment" style="margin-bottom:4px">
-        <el-input type="textarea" v-model="commentForm.comment" placeholder="Post a Comment"></el-input>
+        <el-input type="textarea" :rows="1" v-model="commentForm.comment" placeholder="Post a Comment"></el-input>
       </el-form-item>
       <el-form-item>
         <el-button size="mini" @click="reply('commentForm', commentForm)">Submit</el-button>
@@ -14,6 +14,7 @@
 <script>
 import { newComment } from '@/api/api'
 import { checkAuth } from '@/util/auth'
+import { trimValid } from '@/util/filters'
 
 export default {
   name: 'reply',
@@ -27,7 +28,7 @@ export default {
         comment: ''
       },
       rules: {
-        comment: [{ required: true, message: 'Required', trigger: 'blur' }]
+        comment: [{ required: true, validator: trimValid, message: 'Required', trigger: 'blur' }]
       }
     }
   },
@@ -35,9 +36,9 @@ export default {
     reply (formName, form) {
       this.$refs[formName].validate((valid) => {
         if (valid && checkAuth()) {
-          let data = { comment: form.comment }
-          let re = this.refer.re
-          let id = this.refer.id
+          let data = { comment: form.comment.trim() }
+          let re = this.refer.re // demand or rut or review or comment
+          let id = this.refer.id // id of above
           newComment(re, id, data)
           .then(resp => {
             this.$emit('newreply', resp.data)
@@ -65,5 +66,5 @@ export default {
 
 <style lang="stylus" scoped>
 .reply
-  padding auto
+  padding 5px 0
 </style>

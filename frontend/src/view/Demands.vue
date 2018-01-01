@@ -7,7 +7,7 @@
             <el-input type="textarea" v-model="demandForm.demand" placeholder="Request something, Support #hashtag"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button size="mini" @click="submitDemand('demandForm', demandForm)">Submit</el-button>
+            <el-button type="primary" size="mini" @click="submitDemand('demandForm', demandForm)">Send Request</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -27,6 +27,7 @@
 
 <script>
 import { checkAuth } from '@/util/auth'
+import { trimValid } from '@/util/filters'
 
 export default {
   name: 'demands',
@@ -37,7 +38,7 @@ export default {
         demand: ''
       },
       rules: {
-        demand: [{ required: true, message: 'Required', trigger: 'blur' }]
+        demand: [{ required: true, validator: trimValid, message: 'Required', trigger: 'blur' }]
       },
       items: null,
       dueDate: ''
@@ -49,7 +50,7 @@ export default {
     submitDemand (formName, form) {
       this.$refs[formName].validate((valid) => {
         if (valid && checkAuth()) {
-          let data = { demand: form.demand }
+          let data = { demand: form.demand.trim() }
           this.$store.dispatch('postDemand', data)
           this.resetForm(formName)
         } else if (!checkAuth()) {

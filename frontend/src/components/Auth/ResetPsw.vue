@@ -23,7 +23,7 @@ export default {
   title: 'Reset Password',
   data () {
     var validatePass = (rule, value, callback) => {
-      if (value === '') {
+      if (value.trim() === '') {
         callback(new Error('Please input the password'))
       } else {
         if (this.resetpswForm.repassword !== '') {
@@ -33,7 +33,7 @@ export default {
       }
     }
     var validaterePass = (rule, value, callback) => {
-      if (value === '') {
+      if (value.trim() === '') {
         callback(new Error('Please input the password again'))
       } else if (value !== this.resetpswForm.password) {
         callback(new Error('Two inputs do not match!'))

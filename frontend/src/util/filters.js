@@ -45,3 +45,12 @@ export function showLess (content, least = 152, less = true) {
     return content
   }
 }
+
+// trim input and valid
+export function trimValid (rule, value, callback) {
+  if (value.trim() === '') {
+    callback(new Error('Blank Value'))
+  } else {
+    callback()
+  }
+}

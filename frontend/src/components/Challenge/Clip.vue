@@ -1,12 +1,15 @@
 <template>
   <div class="clip-main">
-    <div class="clipbody" v-html="clipContent"></div>
-    <p class="meta">
-      From <router-link :to="'/item/' + fromitem.id" :title="fromitem.title">{{ fromitem.title.slice(0, 60) }}...</router-link>
-      via <router-link :to="'/profile/' + creator.id">{{ creator.name.slice(0, 20) }}</router-link>
+    <div class="clipbody">
+      <span class="quoteleft">“</span>
+      <span v-html="clipContent"></span>
+    </div>
+    <div class="meta">
+      From <router-link :to="'/item/' + fromitem.id" :title="fromitem.title">{{ fromitem.title.slice(0, 40) }}...</router-link>
+      via <router-link :to="'/profile/' + creator.id">{{ creator.name.slice(0, 15) }}</router-link>
       | {{ clip.timestamp | toMDY }}
       | {{ vote }}&nbsp;<el-button type="text" @click="upClip">Like</el-button>
-    </p>
+    </div>
   </div>
 </template>
 
@@ -51,7 +54,7 @@ export default {
 <style lang="stylus" scoped>
 .clip-main
   background-color #f6f6f1
-  padding 10px
+  padding 5px
   border-bottom 1px dotted #e09015
   position relative
   .meta
@@ -62,9 +65,13 @@ export default {
         color red
   .clipbody
     background-color lighten(#f6f6f1, 60%)
-    padding 10px
+    padding 8px
     font-size 1.05em
     color #2b2117
-li
-  list-style-type none
+    position relative
+    .quoteleft
+      position absolute
+      top 10px
+      left 0px
+      color grey
 </style>

@@ -216,6 +216,4 @@ export default {
     right 2px
 .el-select
   width 100%
-li
-  list-style-type none
 </style>

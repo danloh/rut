@@ -4,9 +4,6 @@
     <div class="user-list">
       <user-sum v-for="user in users" :key="user.id" :user="user"></user-sum>
     </div>
-    <!-- <div>
-      <el-button class="blockbtn" @click="loadmore" :disabled="!hasMore">More</el-button>
-    </div> -->
     <br>
   </div>
 </template>

@@ -2,7 +2,7 @@
   <div class="review-list">
     <review-sum v-for="review in reviews" :key="review.id" :review="review" :less="true"></review-sum>
     <div v-if="hasMore">
-      <el-button class="blockbtn" @click="loadmoreReviews" :disabled="!hasMore">More</el-button>
+      <el-button class="blockbtn" size="mini" @click="loadmoreReviews" :disabled="!hasMore">More</el-button>
     </div>
   </div>
 </template>

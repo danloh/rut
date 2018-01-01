@@ -29,6 +29,7 @@
 <script>
 import { editReview, fetchReview } from '@/api/api'
 import { checkAuth } from '@/util/auth'
+import { trimValid } from '@/util/filters'
 
 export default {
   name: 'edit-review',
@@ -42,10 +43,10 @@ export default {
       },
       rules: {
         title: [
-          { required: true, message: 'Required', trigger: 'change' }
+          { required: true, validator: trimValid, message: 'Required', trigger: 'change' }
         ],
         review: [
-          { required: true, message: 'Required', trigger: 'change' }
+          { required: true, validator: trimValid, message: 'Required', trigger: 'change' }
         ]
       },
       canEdit: false
@@ -63,8 +64,8 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid && checkAuth() && this.canEdit) {
           let data = {
-            title: form.title,
-            review: form.review,
+            title: form.title.trim(),
+            review: form.review.trim(),
             spoiler: form.spoiler
           }
           let reviewid = this.$route.params.id
@@ -109,13 +110,6 @@ export default {
   },
   created () {
     this.loadReviewData()
-    // if (!this.canEdit) {
-    //   this.$router.push(`/review/${this.$route.params.id}`)
-    //   this.$message({
-    //     showClose: true,
-    //     message: 'No Permission to Edit'
-    //   })
-    // }
   }
 }
 </script>

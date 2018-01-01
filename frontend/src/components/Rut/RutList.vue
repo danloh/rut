@@ -4,7 +4,7 @@
       <rut-sum v-for="rut in rutlist" :key="rut.id" :rut="rut"></rut-sum>
     </div>
     <div v-if="hasMore">
-      <el-button class="blockbtn" @click="$emit('loadmore')" :disabled="!hasMore">Show More</el-button>
+      <el-button class="blockbtn" size="mini" @click="$emit('loadmore')" :disabled="!hasMore">Show More</el-button>
     </div>
     <br>
   </div>
@@ -34,6 +34,4 @@ export default {
 <style lang="stylus">
 .rut-list
   width 100%
-  li
-    list-style-type none
 </style>

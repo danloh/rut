@@ -47,6 +47,7 @@
 <script>
 import { editRut } from '@/api/api'
 import { checkAuth } from '@/util/auth'
+import { trimValid } from '@/util/filters'
 
 export default {
   name: 'edit-rut',
@@ -56,17 +57,16 @@ export default {
       editForm: {
         title: '',
         intro: '',
-        tag: '',
         rating: '',
         credential: '',
         epilog: ''
       },
       rules: {
         title: [
-          { required: true, message: 'Please give a title', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Please give a title', trigger: 'blur' }
         ],
         intro: [
-          { required: true, message: 'Need an introduction', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Need an introduction', trigger: 'blur' }
         ]
       },
       ratings: [
@@ -84,11 +84,11 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid && checkAuth() && this.canEdit) {
           let data = {
-            title: form.title,
-            intro: form.intro,
+            title: form.title.trim(),
+            intro: form.intro.trim(),
             rating: form.rating,
-            credential: form.credential,
-            epilog: form.epilog
+            credential: form.credential.trim(),
+            epilog: form.epilog.trim()
           }
           editRut(this.rutId, data)
           .then(() => {
