@@ -453,14 +453,17 @@ def new_rut(demandid=None):
             )
             db.session.add(respon)
     db.session.commit()
-    return jsonify({'id':post.id, 'title': post.title})
+    return jsonify({
+        'id':post.id,
+        'title': post.title
+    })
 
 @rest.route('/editrut/<int:rutid>', methods=['POST'])
 @auth.login_required
 def edit_rut(rutid):
     user = g.user
     rut = Posts.query.get_or_404(rutid)
-    if rut.creator != user:
+    if rut.creator != user and user.role != 'Admin':
         abort(403)
     # check not-null column can not be ''
     title = request.json.get('title','').strip()
@@ -512,7 +515,7 @@ def edit_tips(cid):
     tip_collect = Collect.query.filter_by(id=cid).first_or_404()  #collect 's id
     post_id = tip_collect.post_id
     rut = Posts.query.get_or_404(post_id)
-    if rut.creator != user:
+    if rut.creator != user and user.role != 'Admin':
         abort(403)
     # get the data
     order = request.json.get('order')
@@ -661,6 +664,65 @@ def check_item_to_add(rutid):
             return jsonify('Done')
         else:
             return jsonify('Back') # if None by uid, back to try again
+
+@rest.route('/del/tips/<int:cid>')
+@auth.login_required
+def del_tips_in_rut(cid):
+    """Del tips, re-ordering items"""
+    user = g.user
+    #collect 's id,but not get_or_404, for 3 primary key
+    tip_c = Collect.query.filter_by(id=cid).first_or_404()
+    if user != tip_c.tip_creator and user.role != 'Admin':
+        abort(403)
+    #once delete an item. need to re-ordering,
+    #order the to-be-del item to the last, then del
+    item = Items.query.get_or_404(tip_c.item_id)
+    rut = Posts.query.get_or_404(tip_c.post_id)
+    n = rut.items.count()
+    rut.ordering(item, n)
+    db.session.delete(tip_c)
+    db.session.commit()
+    rutid = rut.id
+    return jsonify(rutid)
+
+@rest.route('/disable/rut/<int:rutid>')
+@auth.login_required
+def disable_rut(rutid):
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    if ((rut.creator != user and user.role != 'Admin')
+        or rut.starers.count() != 0
+        or rut.challengers.count() != 0):
+        abort(403)
+    rut.disabled = True
+    db.session.add(rut)
+    db.session.commit()
+    return jsonify('Disabled')
+
+@rest.route('/recover/rut/<int:rutid>')
+@auth.login_required
+def recover_rut(rutid):
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    if rut.creator != user and user.role != 'Admin':
+        abort(403)
+    rut.disabled = False #enable
+    db.session.add(rut)
+    db.session.commit()
+    return jsonify('Enabled')
+
+@rest.route('/delete/rut/<int:rutid>')
+@auth.login_required
+def delete_rut(rutid):
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    if ((rut.creator != user and user.role != 'Admin')
+        or rut.starers.count() != 0
+        or rut.challengers.count() != 0):
+        abort(403)
+    db.session.delete(rut)
+    db.session.commit()
+    return jsonify('Deleted')
 
 @rest.route('/all/items')
 def get_all_items():
@@ -854,6 +916,41 @@ def edit_item(itemid):
     db.session.commit()
     return jsonify('The item info Updated, Thank You')
 
+@rest.route('/delete/item/<int:itemid>')
+@auth.login_required
+def del_item(itemid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    item = Items.query.get_or_404(itemid)
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify('Deleted')
+
+@rest.route('/disable/item/<int:itemid>')
+@auth.login_required
+def disable_item(itemid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    item = Items.query.get_or_404(itemid)
+    item.disabled = True
+    db.session.add(item)
+    db.session.commit()
+    return jsonify('Disabled')
+
+@rest.route('/recover/item/<int:itemid>')
+@auth.login_required
+def recover_item(itemid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    item = Items.query.get_or_404(itemid)
+    item.disabled = False #enable
+    db.session.add(item)
+    db.session.commit()
+    return jsonify('Enabled')
+
 @rest.route('/all/clips')
 def get_all_clips():
     page = request.args.get('page', 0, type=int)
@@ -945,6 +1042,41 @@ def upvote_clip(clipid):
         db.session.commit()
     return jsonify(clip.vote)
 
+@rest.route('/delete/clip/<int:clipid>')
+@auth.login_required
+def del_clip(clipid):
+    user = g.user
+    clip = Clips.query.get_or_404(clipid)
+    if clip.creator != user and user.role != 'Admin':
+        abort(403)
+    db.session.delete(clip)
+    db.session.commit()
+    return jsonify('Deleted')
+
+@rest.route('/disable/clip/<int:clipid>')
+@auth.login_required
+def disable_clip(clipid):
+    user = g.user
+    clip = Clips.query.get_or_404(clipid)
+    if clip.creator != user and user.role != 'Admin':
+        abort(403)
+    clip.disabled = True
+    db.session.add(clip)
+    db.session.commit()
+    return jsonify('Disabled')
+
+@rest.route('/recover/clip/<int:clipid>')
+@auth.login_required
+def recover_clip(clipid):
+    user = g.user
+    clip = Clips.query.get_or_404(clipid)
+    if clip.creator != user and user.role != 'Admin':
+        abort(403)
+    clip.disabled = False #enable
+    db.session.add(clip)
+    db.session.commit()
+    return jsonify('Enabled')
+
 @rest.route('/newreview/<int:itemid>', methods=['POST'])
 @auth.login_required
 def new_review(itemid):
@@ -978,7 +1110,7 @@ def edit_review(reviewid):
         abort(403)
     user = g.user
     review = Reviews.query.get_or_404(reviewid)
-    if user != review.creator:
+    if user != review.creator and user.role != 'Admin':
         abort(403) #No Permission
     review.heading = heading
     review.body = body
@@ -989,6 +1121,41 @@ def edit_review(reviewid):
     db.session.commit()
     review_dict = review.to_dict()
     return jsonify(review_dict)
+
+@rest.route('/delete/review/<int:reviewid>')
+@auth.login_required
+def del_review(reviewid):
+    user = g.user
+    review = Reviews.query.get_or_404(reviewid)
+    if review.creator != user and user.role != 'Admin':
+        abort(403)
+    db.session.delete(review)
+    db.session.commit()
+    return jsonify('Deleted')
+
+@rest.route('/disable/review/<int:reviewid>')
+@auth.login_required
+def disable_review(reviewid):
+    user = g.user
+    review = Reviews.query.get_or_404(reviewid)
+    if review.creator != user and user.role != 'Admin':
+        abort(403)
+    review.disabled = True
+    db.session.add(review)
+    db.session.commit()
+    return jsonify('Disabled')
+
+@rest.route('/recover/review/<int:reviewid>')
+@auth.login_required
+def recover_review(reviewid):
+    user = g.user
+    review = Reviews.query.get_or_404(reviewid)
+    if review.creator != user and user.role != 'Admin':
+        abort(403)
+    review.disabled = False #enable
+    db.session.add(review)
+    db.session.commit()
+    return jsonify('Enabled')
 
 @rest.route('/review/<int:reviewid>')
 def get_review(reviewid):
@@ -1119,7 +1286,7 @@ def get_demand(demandid):
     #attach answers to demand
     resps = demand.posts.order_by(Respon.timestamp.desc()).limit(PER_PAGE)
     respons = [r.post for r in resps]
-    answers = [{'id':p.id,'title':p.title} for p in respons]
+    answers = [{'id':p.id,'title':p.title,'intro':p.intro} for p in respons]
     demand_dict['answers'] = answers
     #attach comments
     d_comments = demand.comments.order_by(Comments.timestamp.desc()).limit(50)
@@ -1146,7 +1313,7 @@ def get_demand_answers(demandid):
     d_resps = demand.posts.order_by(Respon.timestamp.desc())\
                           .offset(page*per_page).limit(per_page)
     d_respons = [r.post for r in d_resps]
-    answers = [{'id':p.id,'title':p.title} for p in d_respons]
+    answers = [{'id':p.id,'title':p.title,'intro':p.intro} for p in d_respons]
     return jsonify(answers)
 
 @rest.route('/upvotedemand/<int:demandid>')
@@ -1192,7 +1359,7 @@ def rut_as_answer(rutid, demandid):
     """link  Rut to  a demand as Answer"""
     user = g.user
     rut = Posts.query.get_or_404(rutid)
-    if rut.creator != user:
+    if rut.creator != user and user.role != 'Admin':
         abort(403) #no permission
     demand = Demands.query.get_or_404(demandid)
     respon = Respon(
@@ -1203,6 +1370,41 @@ def rut_as_answer(rutid, demandid):
     db.session.commit()
     answer = {'id': rut.id, 'title': rut.title}
     return jsonify(answer)
+
+@rest.route('/delete/demand/<int:demandid>')
+@auth.login_required
+def del_demand(demandid):
+    user = g.user
+    demand = Demands.query.get_or_404(demandid)
+    if demand.requestor != user and user.role != 'Admin':
+        abort(403)
+    db.session.delete(demand)
+    db.session.commit()
+    return jsonify('Deleted')
+
+@rest.route('/disable/demand/<int:demandid>')
+@auth.login_required
+def disable_demand(demandid):
+    user = g.user
+    demand = Demands.query.get_or_404(demandid)
+    if demand.requestor != user and user.role != 'Admin':
+        abort(403)
+    demand.disabled = True
+    db.session.add(demand)
+    db.session.commit()
+    return jsonify('Disabled')
+
+@rest.route('/recover/demand/<int:demandid>')
+@auth.login_required
+def recover_demand(demandid):
+    user = g.user
+    demand = Demands.query.get_or_404(demandid)
+    if demand.requestor != user and user.role != 'Admin':
+        abort(403)
+    demand.disabled = False #enable
+    db.session.add(demand)
+    db.session.commit()
+    return jsonify('Enabled')
 
 @rest.route('/all/tags')
 def get_all_tags():
@@ -1306,6 +1508,41 @@ def edit_tag(tagid):
     db.session.commit()
     return jsonify('Tag Info Updated, Thank You')
 
+@rest.route('/delete/tag/<int:tagid>')
+@auth.login_required
+def del_tag(tagid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    tag = Tags.query.get_or_404(tagid)
+    db.session.delete(tag)
+    db.session.commit()
+    return jsonify('Deleted')
+
+@rest.route('/disable/tag/<int:tagid>')
+@auth.login_required
+def disable_tag(tagid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    tag = Tags.query.get_or_404(tagid)
+    tag.disabled = True
+    db.session.add(tag)
+    db.session.commit()
+    return jsonify('Disabled')
+
+@rest.route('/recover/tag/<int:tagid>')
+@auth.login_required
+def recover_tag(tagid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    tag = Tags.query.get_or_404(tagid)
+    tag.disabled = False #enable
+    db.session.add(tag)
+    db.session.commit()
+    return jsonify('Enabled')
+
 @rest.route('/checkfavtag/<int:tagid>')
 @auth.login_required
 def check_fav(tagid):
@@ -1354,6 +1591,41 @@ def new_comment(demandid=None,rutid=None,commentid=None,itemid=None,reviewid=Non
     db.session.commit()
     comment_dict = comment.to_dict()
     return jsonify(comment_dict)
+
+@rest.route('/delete/comment/<int:commentid>')
+@auth.login_required
+def del_comment(commentid):
+    user = g.user
+    comment = Comments.query.get_or_404(commentid)
+    if comment.creator != user and user.role != 'Admin':
+        abort(403)
+    db.session.delete(comment)
+    db.session.commit()
+    return jsonify('Deleted')
+
+@rest.route('/disable/comment/<int:commentid>')
+@auth.login_required
+def disable_comment(commentid):
+    user = g.user
+    comment = Comments.query.get_or_404(commentid)
+    if comment.creator != user and user.role != 'Admin':
+        abort(403)
+    comment.disabled = True
+    db.session.add(comment)
+    db.session.commit()
+    return jsonify('Disabled')
+
+@rest.route('/recover/comment/<int:commentid>')
+@auth.login_required
+def recover_comment(commentid):
+    user = g.user
+    comment = Comments.query.get_or_404(commentid)
+    if comment.creator != user and user.role != 'Admin':
+        abort(403)
+    comment.disabled = False #enable
+    db.session.add(comment)
+    db.session.commit()
+    return jsonify('Enabled')
 
 @rest.route('/commentsonrut/<int:rutid>')
 def get_rut_comments(rutid):

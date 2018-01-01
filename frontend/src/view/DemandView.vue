@@ -5,9 +5,10 @@
       <div class="answer">
         <b>Answers to This Demand:</b>
         <el-button size="mini" type="text" @click="loadCreatedThenAsAnswer">...Link To Answer</el-button>
-        <p class="title" v-for="(rut, index) in answers" :key="index" :rut="rut">
-          - <router-link :to="'/readuplist/' + rut.id" :title="rut.title"> {{ rut.title.slice(0, 160) }}...</router-link>
-        </p>
+        <div class="title" v-for="(rut, index) in answers" :key="index" :rut="rut">
+          -- <router-link :to="'/readuplist/' + rut.id" :title="rut.title"><b>{{ rut.title.slice(0, 160) }} ...</b></router-link>
+          <!-- <p v-html="rut.intro"></p> -->
+        </div>
         <div v-if="hasMoreAnswer">
           <el-button size="mini" @click="loadmoreAnswer" :disabled="!hasMoreAnswer">Show More</el-button>
         </div>
@@ -40,9 +41,7 @@
         <reply class="reply" :refer="refer" :show="true" @newreply="updateNew"></reply>
       </div>
     </div>
-    <div class="demand-side">
-      Would You Help?
-    </div>
+    <div class="demand-side"></div>
   </div>
 </template>
 

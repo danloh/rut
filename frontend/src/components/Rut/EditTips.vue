@@ -21,15 +21,26 @@
         </el-radio-group>
       </el-form-item>
       <el-form-item>
-        <el-button type="success" size="medium" @click="onEdit('editForm', editForm)">Done and Submit</el-button>
+        <el-button type="success" size="medium" @click="onEdit('editForm', editForm)">Edit and Submit</el-button>
         <!-- <el-button @click="resetForm('editForm')">Reset</el-button> -->
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <el-button type="danger" plain size="mini" @click="showDialog = true">Delete Tips</el-button>
       </el-form-item>
     </el-form>
+    <!-- confirm delete dialog -->
+    <el-dialog title="Confirm Delete Tips?" :visible.sync="showDialog" width="30%">
+      <span>Confirm Delete? Can not recover</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="showDialog = false">Cancel</el-button>
+        <el-button type="danger" size="mini" @click="delTips">Confirm Delete</el-button>
+      </span>
+    </el-dialog>
+    <!-- dialog end -->
   </div>
 </template>
 
 <script>
-import { editTips } from '@/api/api'
+import { editTips, deleteTips } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { trimValid } from '@/util/filters'
 
@@ -51,6 +62,7 @@ export default {
           { required: true, validator: trimValid, message: 'Required', trigger: 'blur' }
         ]
       },
+      showDialog: false,
       rutId: null,
       rutTitle: null,
       canEdit: false
@@ -78,6 +90,13 @@ export default {
           })
           return false
         }
+      })
+    },
+    delTips () {
+      let cid = this.$route.params.id
+      deleteTips(cid).then(() => {
+        let id = this.rutId
+        this.$router.push(`/readuplist/${id}`)
       })
     },
     resetForm (formName) {
