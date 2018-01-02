@@ -264,8 +264,16 @@ export default {
       }
     },
     addNewTag () {
-      this.newTags.push(this.newTag)
-      this.newTag = ''
+      let newT = this.newTag.trim()
+      if (newT) {
+        this.newTags.push(newT)
+        this.newTag = ''
+      } else {
+        this.$message({
+          showClose: true,
+          message: 'Invalid Input'
+        })
+      }
     },
     editTag () {
       if (checkAuth()) {

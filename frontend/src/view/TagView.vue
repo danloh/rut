@@ -43,6 +43,7 @@ import RutList from '@/components/Rut/RutList.vue'
 import { mapGetters } from 'vuex'
 import { editTag, checkFav, favTag, fetchTagRuts } from '@/api/api'
 import { checkAuth } from '@/util/auth'
+import { trimValid } from '@/util/filters'
 
 export default {
   name: 'tag-view',
@@ -61,10 +62,10 @@ export default {
       },
       rules: {
         name: [
-          { required: true, message: 'Please give a tag name', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Please give tag a name', trigger: 'blur' }
         ],
         description: [
-          { required: true, message: 'Descript it', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Please Descript it', trigger: 'blur' }
         ]
       }
     }
@@ -108,9 +109,9 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid && checkAuth()) {
           let data = {
-            name: form.name,
-            parent: form.parent,
-            description: form.description
+            name: form.name.trim(),
+            parent: form.parent.trim(),
+            description: form.description.trim()
           }
           let tagid = this.tagDetail.id
           editTag(tagid, data)

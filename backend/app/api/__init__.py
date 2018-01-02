@@ -492,15 +492,20 @@ def edit_rut_tags(rutid):
     add_tags = new_set - old_set
     del_tags = old_set - new_set
     _query = Tags.query
-    for t in add_tags:
+    for tg in add_tags:
+        t = tg.strip()
+        if not t:
+            continue # if t is '' then next element
         _tag = _query.filter_by(tag=t).first()
         if _tag is None:
             new_tag = Tags(tag=t)
             new_tag.posts.append(rut)
-            db.session.add(new_tag)
+            new_tag.cal_vote()
+            #db.session.add(new_tag) # add when cal
         else:
             _tag.posts.append(rut)
-            db.session.add(_tag)
+            _tag.cal_vote()
+            #db.session.add(_tag)
     for tg in del_tags:
         _tag = _query.filter_by(tag=tg).first()
         _tag.posts.remove(rut)
