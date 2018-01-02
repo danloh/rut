@@ -30,8 +30,9 @@ const editorOption = {
     toolbar: [
       ['bold', 'underline'],
       [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      [{ 'color': [] }, { 'background': [] }],
+      [{ 'color': [] }],
       ['blockquote'],
+      ['link'],
       ['clean']
     ]
   }

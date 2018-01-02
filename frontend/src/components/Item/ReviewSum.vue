@@ -9,7 +9,9 @@
       | on <router-link :to="'/item/' + review.item.id">{{ review.item.title.slice(0, 60) }}..</router-link>
     </p>
     <div class="review-body">
-      <div v-html="reviewContent"></div>
+      <div class="ql-snow">
+        <div class="ql-editor" style="font-size:16px;padding:2px" v-html="reviewContent"></div>
+      </div>
       <el-button type="text" size="mini" @click="showFull" v-if="spoiler || short">{{ readMore }}</el-button>
     </div>
     <div class="bar">

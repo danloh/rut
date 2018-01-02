@@ -30,7 +30,9 @@
       </div>
       <div class="intro">
         <b class="indicator">Preface:&nbsp;</b>
-        <div v-html="rutDetail.intro"></div>
+        <div class="ql-snow">
+          <div class="ql-editor" style="font-size:16px;padding:2px" v-html="rutDetail.intro"></div>
+        </div>
       </div>
       <div class="toolbar">
         <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit">...Edit</router-link>&nbsp;&nbsp;&nbsp;&nbsp;
@@ -43,7 +45,9 @@
         <b class="indicator">&nbsp;&nbsp;#{{tip.order}}&nbsp;&nbsp;</b> 
         <router-link class="editlink" :to="'/edit/readuptips/' + tip.cid" v-if="canEdit">...Edit</router-link>
         <div class="tip">
-          <div v-html="tip.tip" v-show="!tip.spoiler || !short"></div>
+          <div class="ql-snow">
+            <div class="ql-editor" style="font-size:16px;padding:2px" v-html="tip.tip" v-show="!tip.spoiler || !short"></div>
+          </div>
           <el-button type="text" size="mini" @click="short = !short" v-if="tip.spoiler && short">... Spoilers Ahead! Continue?</el-button>
         </div>
       </div>
@@ -53,7 +57,9 @@
       <div class="epilog">
         <b class="indicator">Epilog:&nbsp;&nbsp;</b>
         <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit">...Edit</router-link>
-        <div v-html="rutDetail.epilog"></div>
+        <div class="ql-snow">
+          <div class="ql-editor" style="font-size:16px;padding:2px" v-html="rutDetail.epilog"></div>
+        </div>
       </div>
       <div class="bottombar">
         <share-bar></share-bar>
