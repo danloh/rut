@@ -1505,11 +1505,12 @@ def edit_tag(tagid):
     tag.descript = description
     db.session.add(tag)
     # update parent tag
-    parent_tag = query.filter_by(tag=parent).first()
-    if not parent_tag:
-        parent_tag = Tags(tag=parent)
-        db.session.add(parent_tag)
-    tag.parent(parent_tag)
+    if parent:
+        parent_tag = query.filter_by(tag=parent).first()
+        if not parent_tag:
+            parent_tag = Tags(tag=parent)
+            db.session.add(parent_tag)
+        tag.parent(parent_tag)
     db.session.commit()
     return jsonify('Tag Info Updated, Thank You')
 

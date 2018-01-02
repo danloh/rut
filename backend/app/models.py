@@ -774,7 +774,7 @@ class Tags(db.Model):
             parent_tag_id=tag.id).first() is not None
 
     def parent(self, tag):
-        if not self.parent_is(tag):
+        if tag and (not self.parent_is(tag)):
             c = Clan(child_tag=self, parent_tag=tag)
             db.session.add(c)
             #db.session.commit()
