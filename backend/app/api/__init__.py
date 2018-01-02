@@ -287,6 +287,39 @@ def get_rut_demands(rutid):
     demands_list = [{'id': r.demand_id, 'demand': r.demand.body} for r in r_demands]
     return jsonify(demands_list)
 
+@rest.route('/rut/<int:rutid>/challengers')
+def get_rut_challengers(rutid):
+    #rut = Posts.query.get_or_404(rutid)  #other way: rut.challengers
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    challengers = Challenge.query.filter_by(post_id=rutid)
+    challengercount = challengers.count()
+    r_challengers = challengers.offset(page*per_page).limit(per_page)
+    challengers_list = [u.challenger.to_dict() for u in r_challengers]
+    challengers_dict = {
+        'challengers': challengers_list,
+         'challengercount': challengercount
+    }
+    return jsonify(challengers_dict)
+
+@rest.route('/commentsonrut/<int:rutid>')
+def get_rut_comments(rutid):
+    rut = Posts.query.get_or_404(rutid)
+    rut_dict = {
+        'id': rut.id, 
+        'title': rut.title, 
+        'challengecount': rut.challengers.count()
+    }
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', 50, type=int)
+    r_comments = rut.comments
+    rut_dict['commentcount'] = r_comments.count()
+    rut_comments = r_comments.order_by(Comments.timestamp.desc())\
+                            .offset(page*per_page).limit(per_page)
+    comments = [c.to_dict() for c in rut_comments]
+    rut_dict['comments'] = comments
+    return jsonify(rut_dict)
+
 @rest.route('/challengerut')  # challenging rut !!
 @auth.login_required
 def get_challege_rut():
@@ -1632,20 +1665,6 @@ def recover_comment(commentid):
     db.session.add(comment)
     db.session.commit()
     return jsonify('Enabled')
-
-@rest.route('/commentsonrut/<int:rutid>')
-def get_rut_comments(rutid):
-    rut = Posts.query.get_or_404(rutid)
-    rut_dict = {'id': rut.id, 'title': rut.title}
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', 50, type=int)
-    r_comments = rut.comments
-    rut_dict['commentcount'] = r_comments.count()
-    rut_comments = r_comments.order_by(Comments.timestamp.desc())\
-                            .offset(page*per_page).limit(per_page)
-    comments = [c.to_dict() for c in rut_comments]
-    rut_dict['comments'] = comments
-    return jsonify(rut_dict)
 
 @rest.route('/<int:userid>/comments')
 def get_user_comments(userid):

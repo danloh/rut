@@ -94,6 +94,10 @@ const fetchRutTips = (rutid, params) => {
 const fetchRutDemands = (rutid, params) => {
   return request(`${base}/rut/${rutid}/demands`, params)
 }
+// get challengers of a rut response to
+const fetchRutChallengers = (rutid, params) => {
+  return request(`${base}/rut/${rutid}/challengers`, params)
+}
 // check if user star or challenge a rut
 const checkSC = (rutid, action, params) => {
   return request(`${base}/check${action}/rut/${rutid}`, params)
@@ -288,6 +292,8 @@ export {
   fetchRut,
   fetchRutTips,
   fetchRutDemands,
+  fetchRutComments,
+  fetchRutChallengers,
   checkSC,
   scRut,
   editRut,
@@ -327,6 +333,5 @@ export {
   newDemand,
   upvoteDemand,
   rutAsAnswer,
-  newComment,
-  fetchRutComments
+  newComment
 }

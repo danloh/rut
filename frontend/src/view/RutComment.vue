@@ -12,6 +12,9 @@
     <div class="comment">
       <reply class="reply" :refer="refer" :show="true" @newreply="updateNew"></reply>
     </div>
+    <div v-if="hasChallenge">
+      <challenge-list></challenge-list>
+    </div>
   </div>
 </template>
 
@@ -19,13 +22,14 @@
 import { fetchRutComments } from '@/api/api'
 import Comment from '@/components/Comment/Comment.vue'
 import Reply from '@/components/Comment/Reply.vue'
+import ChallengeList from '@/components/Rut/ChallengeList.vue'
 
 export default {
   name: 'rut-comment',
   title () {
     return 'Discuss: ' + this.rut.title
   },
-  components: { Comment, Reply },
+  components: { Comment, Reply, ChallengeList },
   data () {
     return {
       rut: {},
@@ -38,6 +42,9 @@ export default {
   computed: {
     hasMoreComment () {
       return this.comments.length < this.commentCount
+    },
+    hasChallenge () {
+      return this.rut.challengecount > 0
     }
   },
   methods: {
@@ -72,7 +79,7 @@ export default {
 
 <style lang="stylus" scoped>
 .rut-comment
-  padding 5px 235px 10px 0px
+  padding 5px 240px 10px 0px
   position relative
   .comment-main
     padding 5px
@@ -80,5 +87,5 @@ export default {
     position absolute
     top 10px
     right 0
-    width 225px
+    width 220px
 </style>

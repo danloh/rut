@@ -1608,8 +1608,7 @@ class Users(UserMixin, db.Model):
             'about': self.about_me,
             'followercount': self.followers.count(), 
             'followedcount': self.followed.count(), # following other
-            'exlink': self.links,
-            'url': '/profile/'+str(self.id)
+            'exlink': self.links
         }
         return user_dict
 

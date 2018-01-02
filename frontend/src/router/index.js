@@ -37,7 +37,7 @@ import ProfileReviews from '@/components/Profile/ProfileReviews'
 import ProfileDemands from '@/components/Profile/ProfileDemands'
 import Setting from '@/components/Profile/Setting'
 import EditProfile from '@/components/Profile/EditProfile'
-import UserList from '@/components/Profile/UserList'
+import FollowedList from '@/components/Profile/FollowedList'
 
 // for go back / forward scrollBehavior
 const scrollBehavior = (to, from, savedPosition) => {
@@ -135,7 +135,7 @@ const router = new Router({
         { path: 'havedone', name: 'DoneItems', component: createProfileItems('done') },
         { path: 'reviews', name: 'Reviews', component: ProfileReviews },
         { path: 'demands', name: 'Demands', component: ProfileDemands },
-        { path: 'followeds', name: 'Followeds', component: UserList }
+        { path: 'followeds', name: 'Followeds', component: FollowedList }
       ]
     },
     { path: '/setting/:id',

@@ -9,7 +9,7 @@
       </span>&nbsp;&nbsp;
       <span class="location">{{ user.location || '' }}</span>
       <br>
-      <span>{{ user.about || 'Not Introduce Self Yet' }} </span>
+      <span>{{ user.about ? user.about.slice(0, 255) : 'Not Introduce Self Yet' }} </span>
     </div>
     <div class="operate">
       <el-button size="mini" @click="followTa">{{ action }}</el-button>
@@ -78,8 +78,8 @@ export default {
 <style lang="stylus" scoped>
 .user-sum
   background-color #fff
-  min-height 80px
-  padding 10px 110px 10px 80px
+  min-height 65px
+  padding 10px 100px 10px 70px
   border-bottom 1px solid #eee
   position relative
   .thumb
