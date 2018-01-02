@@ -31,7 +31,7 @@ export default {
 }
 </script>
 
-<style lang="stylus">
+<style lang="stylus" scoped>
 .rut-list
   width 100%
 </style>

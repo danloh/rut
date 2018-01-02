@@ -2,8 +2,9 @@
 A Service for sharing reading list to read up on sth, welcome to join 
 
 ## in developing V2.0
-1. Frontend: Vue, webpack
-2. Backend: Flask RESTful API  
+1. Frontend: Vue + vue-route + Vuex ,
+2. Backend: Flask API
+3. UI: element, CSS-stylus
 
 
 ## Changelog

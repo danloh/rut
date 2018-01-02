@@ -127,7 +127,7 @@ p
         font-size 1.0em
         font-weight 700
   a
-    color grey
+    color #080400
     line-height 24px
     display inline-block
     vertical-align middle

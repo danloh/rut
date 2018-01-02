@@ -3,14 +3,17 @@
     <h1>404 Page Not Found</h1>
     <!-- <button @click="test">click test</button>
     <button @click="testWrapAPI">click wrap</button> -->
+    <!-- <editor></editor> -->
   </div>
 </template>
 
 <script>
 import { testError } from '@/api/api'
+import Editor from '@/components/Misc/Editor'
 export default {
   name: 'not-found',
   title: '404 Page Not Found',
+  components: { Editor },
   methods: {
     testWrapAPI () {
       testError().then(resp => { // wrapped api, interceptors nor work why?? api default validateStatus option
