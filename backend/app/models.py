@@ -273,6 +273,7 @@ class Posts(db.Model):
                           default=datetime.utcnow)
     editable = db.Column(db.String(32),default='Creator')
     edit_start = db.Column(db.DateTime,default=None)
+    editing_id = db.Column(db.Integer)
     disabled = db.Column(db.Boolean)
     vote = db.Column(db.Integer, default=0)
     refer = db.Column(db.String(32))  # to mark off some special list
@@ -403,30 +404,27 @@ class Posts(db.Model):
                     db.session.add(_tag)
         #db.session.commit()
     
-    #check if can be edited
-    @property
-    def uneditable(self):
-        contribute = self.contributors.filter_by(
-            user_id=current_user.id,
-            disabled=False
-        ).first()
-        if (current_user != self.creator and
-                contribute is None and
-                self.editable != 'Everyone'):
+    #check if can be edited, permission
+    def uneditable(self, user):
+        if (user != self.creator 
+        and self.editable != 'Everyone' 
+        and user.role.duty != 'Admin'):
             return True
         else:
             return False
 
     # lock and unlock status in/after edit: a stopgap
-    def lock(self):
+    def lock(self, user):
+        # set a start time and id  to indicate in editing
         self.edit_start = datetime.utcnow()
+        self.editing_id = user.id
         db.session.add(self)
-        # set a value to indicate in editing
         db.session.commit()
     def unlock(self):
-        self.edit_start = None
-        db.session.add(self)
         # reset eidt_start to None, after edit done
+        self.edit_start = None
+        self.editing_id = None
+        db.session.add(self)
         db.session.commit()
     def force_unlock(self, start=None, timeout=2400):
         # sometime user forget submit, need to force unlock
@@ -436,26 +434,21 @@ class Posts(db.Model):
             delta = now - start
             if delta.seconds >= timeout:
                 self.unlock()
-    def check_locked(self):
+    def check_locked(self, userid):
         # if eidt_start is not None, it is locked as editing
         start = self.edit_start
-        if start:
+        if start and self.editing_id != userid:
             #force_unlock firstly
             self.force_unlock(start=start)
             return bool(self.edit_start)
         else:
             return False
-    def mod_locked(self):
-        # GET: lock and  render edit tpl, POST: unlock
-        if request.method == "GET":
-            if self.check_locked():
-                flash('This Content is in Editing, to Avoid Conflict, Please Try later, up to 40min')
-                return True
-            # set edit_start as indict editing
-            self.lock()
-        # on_submit as edit done POST
-        if request.method == "POST":
-            self.unlock()
+    def check_editable(self, user):
+        """permission and unlocked"""
+        is_uneditable = self.uneditable(user)
+        is_locked = self.check_locked(user.id)
+        can_edit =  (not is_locked) and (not is_uneditable)
+        return can_edit
 
     def renew(self):
         self.renewal = datetime.utcnow()

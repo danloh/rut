@@ -12,7 +12,7 @@
         </el-form>
       </div>
       <div class="submenu">
-        <router-link to="/demands/popular">Popular</router-link>
+        <router-link to="/demands/popular">Hot</router-link>
         <router-link to="/demands/new">New</router-link>
       </div>
       <div class="demand-view">
@@ -20,7 +20,7 @@
       </div>
     </div>
     <div class="demand-side">
-      <p class="right-item">Want Some Reading Tips on A Subject? Send Request Here, May Someone can Help</p>
+      <p class="right-item">What is Your Question? Send Request Here, May Someone can Help</p>
     </div>
   </div>
 </template>
@@ -93,7 +93,7 @@ export default {
     top 10px
     right 0
     width 180px
-    background-color #e5ebe4
+    background-color lighten(#e5ebe4, 50%)
     padding 5px
     .right-title
       padding 2px 5px

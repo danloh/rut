@@ -24,13 +24,13 @@
           <el-option v-for="r in ratings" :key="r.value" :label="r.label" :value="r.value"></el-option>
         </el-select>
       </el-form-item>
-      <!-- <el-form-item label="Who Can Edit?" prop="editable">
+      <el-form-item label="Who Can Edit?" prop="editable">
         <el-radio-group v-model="createForm.editable">
           <el-radio-button label="Creator"></el-radio-button>
-          <el-radio-button label="Contributors"></el-radio-button>
+          <!-- <el-radio-button label="Contributors"></el-radio-button> -->
           <el-radio-button label="Everyone"></el-radio-button>
         </el-radio-group>
-      </el-form-item> -->
+      </el-form-item>
       <el-form-item>
         <el-button type="success" size="medium" @click="onCreate('createForm', createForm)">Create New Then Add Item Later</el-button>
         <!-- <el-button @click="resetForm('createForm')">Reset</el-button> -->

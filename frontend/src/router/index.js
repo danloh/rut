@@ -49,11 +49,16 @@ const scrollBehavior = (to, from, savedPosition) => {
   }
 }
 // for auth edit rut
+import { checkEditable } from '@/api/api'
 const beforeEnter = (to, from, next) => {
   let currentUserID = store.getters.currentUserID
-  let creatorID = store.getters.rutDetail.creator.id
-  if (currentUserID === creatorID) {
-    next()
+  let rut = store.getters.rutDetail
+  if (currentUserID) {
+    checkEditable(currentUserID, rut.id).then(res => {
+      if (res.data.canedit) {
+        next()
+      }
+    })
   }
 }
 // for profile setting

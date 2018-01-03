@@ -2,7 +2,7 @@
   <div class="profile-page">
     <div class="profile-head">
       <b>{{user.name}}</b>
-      <p class="aboutme">{{user.about || 'Not Introduce Self Yet'}}</p>
+      <p class="aboutme">{{user.about || '...'}}</p>
       <div class="fobar">
         <span>Following 
           <router-link :to="'/profile/' + userid + '/followeds'">{{ followedCount }} </router-link>

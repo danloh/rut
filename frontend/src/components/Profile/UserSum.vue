@@ -9,7 +9,7 @@
       </span>&nbsp;&nbsp;
       <span class="location">{{ user.location || '' }}</span>
       <br>
-      <span>{{ user.about ? user.about.slice(0, 255) : 'Not Introduce Self Yet' }} </span>
+      <span>{{ user.about ? user.about.slice(0, 255) : '...' }} </span>
     </div>
     <div class="operate">
       <el-button size="mini" @click="followTa">{{ action }}</el-button>

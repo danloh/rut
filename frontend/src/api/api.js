@@ -106,6 +106,18 @@ const checkSC = (rutid, action, params) => {
 const scRut = (action, rutid, params) => {
   return request(`${base}/${action}/rut/${rutid}`, params)
 }
+// check rut if editable i.e. unlocked and permitted
+const checkEditable = (userid, rutid, params) => {
+  return request(`${base}/checkif/${userid}/canedit/${rutid}`, params)
+}
+// lock rut
+const lockRut = (rutid, params) => {
+  return request(`${base}/lockrut/${rutid}`, params)
+}
+// lock rut
+const unlockRut = (rutid, params) => {
+  return request(`${base}/unlockrut/${rutid}`, params)
+}
 // edit rut
 const editRut = (rutid, params) => {
   return request(`${base}/editrut/${rutid}`, params, 'post')
@@ -296,6 +308,9 @@ export {
   fetchRutChallengers,
   checkSC,
   scRut,
+  checkEditable,
+  lockRut,
+  unlockRut,
   editRut,
   editTags,
   addItem,

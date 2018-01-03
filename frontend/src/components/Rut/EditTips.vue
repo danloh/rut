@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import { editTips, deleteTips } from '@/api/api'
+import { editTips, deleteTips, lockRut, unlockRut } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { trimValid } from '@/util/filters'
 
@@ -64,14 +64,13 @@ export default {
       },
       showDialog: false,
       rutId: null,
-      rutTitle: null,
-      canEdit: false
+      rutTitle: null
     }
   },
   methods: {
     onEdit (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid && checkAuth() && this.canEdit) {
+        if (valid && checkAuth()) {
           let data = {
             order: form.order,
             tips: form.tips.trim(),
@@ -81,6 +80,7 @@ export default {
           editTips(cid, data)
           .then(() => {
             let id = this.rutId
+            unlockRut(id)
             this.$router.push(`/readuplist/${id}`)
           })
         } else {
@@ -114,9 +114,7 @@ export default {
       this.editForm.spoiler = tip.spoiler ? 'Spoiler Ahead' : 'No Spoiler'
       this.rutId = rut.id
       this.rutTitle = rut.title
-      let creatorID = rut.creator.id
-      let currentUserID = this.$store.getters.currentUserID
-      this.canEdit = Number(creatorID) === Number(currentUserID)
+      lockRut(rut.id)
     }
   },
   created () {

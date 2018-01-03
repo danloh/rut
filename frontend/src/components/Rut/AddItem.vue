@@ -67,7 +67,7 @@
 </template>
 
 <script>
-import { checkItem, addItem } from '@/api/api'
+import { checkItem, addItem, lockRut, unlockRut } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { trimValid } from '@/util/filters'
 import Spinner from '@/components/Misc/Spinner.vue'
@@ -105,8 +105,7 @@ export default {
       show: false,
       loading: false,
       rutId: null,
-      rutTitle: null,
-      canEdit: false
+      rutTitle: null
     }
   },
   methods: {
@@ -114,7 +113,7 @@ export default {
     onCheck (formName, form) {
       this.loading = true
       this.$refs[formName].validate((valid) => {
-        if (valid && checkAuth() && this.canEdit) {
+        if (valid && checkAuth()) {
           if (!form.url.trim()) {
             this.loading = false
             this.$message('Please Input')
@@ -126,6 +125,7 @@ export default {
           checkItem(this.rutId, data)
           .then(resp => {
             let id = this.rutId
+            unlockRut(id)
             if (resp.data === 'Back') {
               this.$message({
                 showClose: true,
@@ -147,7 +147,7 @@ export default {
     // manually add
     onAdd (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid && checkAuth() && this.canEdit) {
+        if (valid && checkAuth()) {
           let data = {
             title: form.title.trim(),
             uid: form.uid.trim(),
@@ -160,6 +160,7 @@ export default {
           addItem(this.rutId, data)
           .then(() => {
             let id = this.rutId
+            unlockRut(id)
             this.$router.push(`/readuplist/${id}`)
           })
         } else {
@@ -176,12 +177,10 @@ export default {
     },
     loadRutData () {
       let rut = this.$store.getters.rutDetail
-      let creatorID = rut.creator.id
-      let currentUserID = this.$store.getters.currentUserID
-      this.canEdit = Number(creatorID) === Number(currentUserID)
       if (rut.id === Number(this.$route.params.id)) {
         this.rutId = rut.id
         this.rutTitle = rut.title
+        lockRut(rut.id)
       }
     }
   },

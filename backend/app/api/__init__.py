@@ -491,12 +491,47 @@ def new_rut(demandid=None):
         'title': post.title
     })
 
+@rest.route('/lockrut/<int:rutid>')
+@auth.login_required
+def lock_rut(rutid):
+    user = g.user
+    rut = Posts.query.get_or_404(rutid)
+    rut.lock(user)
+    return jsonify('Locked')
+@rest.route('/unlockrut/<int:rutid>')
+def unlock_rut(rutid):
+    rut = Posts.query.get_or_404(rutid)
+    rut.unlock()
+    return jsonify('UnLocked')
+@rest.route('/checkif/<int:rutid>/lockedto/<int:userid>')
+def check_rut_if_locked(rutid, userid):
+    rut = Posts.query.get_or_404(rutid)
+    is_locked = rut.check_locked(userid)
+    return jsonify(is_locked)
+@rest.route('/checkif/<userid>/canedit/<int:rutid>')
+#@auth.login_required
+def check_rut_editable(userid, rutid):
+    if not userid:
+        return jsonify(False)
+    user = Users.query.get_or_404(userid)
+    if not user:
+        return jsonify(False)
+    rut = Posts.query.get_or_404(rutid)
+    can_edit = rut.check_editable(user)
+    who = Users.query.get(rut.editing_id) if rut.editing_id else None
+    if who:
+        can_dict = {'id': who.id, 'name': who.nickname or who.name}
+    else:
+        can_dict = {'id': None, 'name': None}
+    can_dict['canedit'] = can_edit
+    return jsonify(can_dict)
+
 @rest.route('/editrut/<int:rutid>', methods=['POST'])
 @auth.login_required
 def edit_rut(rutid):
     user = g.user
     rut = Posts.query.get_or_404(rutid)
-    if rut.creator != user and user.role != 'Admin':
+    if not rut.check_editable(user):
         abort(403)
     # check not-null column can not be ''
     title = request.json.get('title','').strip()
@@ -506,6 +541,7 @@ def edit_rut(rutid):
     rut.title = title,
     rut.intro = intro,
     rut.rating = request.json.get('rating'),
+    rut.editable = request.json.get('editable'),
     rut.credential = request.json.get('credential','').strip(),
     rut.epilog = request.json.get('epilog','').strip()
     # renew the update time and add to db
@@ -553,7 +589,7 @@ def edit_tips(cid):
     tip_collect = Collect.query.filter_by(id=cid).first_or_404()  #collect 's id
     post_id = tip_collect.post_id
     rut = Posts.query.get_or_404(post_id)
-    if rut.creator != user and user.role != 'Admin':
+    if not rut.check_editable(user):
         abort(403)
     # get the data
     order = request.json.get('order')
@@ -581,7 +617,7 @@ def add_item_to_rut(rutid):
     """
     user = g.user
     rut = Posts.query.get_or_404(rutid)
-    if rut.creator != user:
+    if not rut.check_editable(user):
         abort(403)
     # get data in request
     title = request.json.get('title','').strip()
@@ -589,7 +625,7 @@ def add_item_to_rut(rutid):
     if not title or not uid:
         abort(403) # cannot be None
     res_url = request.json.get('resUrl','').strip()
-    tips = request.json.get('tips','No Tips Yet')
+    tips = request.json.get('tips','...')
     spoiler_text = request.json.get('spoiler')
     spoiler = True if spoiler_text == 'Spoiler Ahead' else False
     # check item if existing per the uid or url
@@ -633,10 +669,10 @@ def item_to_rut(itemid, rutid):
     """Add existing item to Rut"""
     user = g.user
     rut = Posts.query.get_or_404(rutid)
-    if rut.creator != user:
+    if not rut.check_editable(user):
         abort(403)
     item = Items.query.get_or_404(itemid)
-    rut.collecting(item,'No Tips Yet',user)
+    rut.collecting(item,'...',user)
     db.session.commit()
     return jsonify('Done')
 
@@ -647,13 +683,13 @@ def check_item_to_add(rutid):
     """get item info via Spider or query in db per uid"""
     user = g.user
     rut = Posts.query.get_or_404(rutid)
-    if rut.creator != user:
+    if not rut.check_editable(user):
         abort(403)
     #regexp prepare
     re_url=r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
     #re_uid=r'([-]*(1[03])*[ ]*(: ){0,1})*(([0-9Xx][- ]*){13}|([0-9Xx][- ]*){10})'
     reg_url = re.compile(re_url,0)
-    tips="No Tips Yet" # default
+    tips="..." # default
     # get checker, via url_or_uid
     checker = request.json.get('url','').strip()
     # by spider 
