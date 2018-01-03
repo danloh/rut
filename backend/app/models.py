@@ -512,6 +512,7 @@ class Posts(db.Model):
             'rating': self.rating,
             'epilog': self.epilog,
             'createat': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            # OR .strftime('%Y-%m-%dT%H:%M:%SZ') # as timezone
             #'renewat': self.renewal.strftime('%Y-%m-%d %H:%M:%S'),
             'score': self.score,
             'itemcount': self.items.count(),
