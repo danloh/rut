@@ -4,7 +4,7 @@
     <p v-if="demandid"> As Answer To A <router-link :to="'/demand/' + demandid" target="_blank" rel="nofollow noopener noreferrer">Request</router-link></p>
     <el-form class="create-form" :model="createForm" :rules="rules" ref="createForm" label-width="80px" size="mini">
       <el-form-item label="Title" prop="title">
-        <el-input v-model="createForm.title"></el-input>
+        <el-input v-model="createForm.title" clearable></el-input>
       </el-form-item>
       <el-form-item label="Preface" prop="intro">
         <!-- <el-input type="textarea" :rows="3" v-model="createForm.intro"></el-input> -->
@@ -14,7 +14,7 @@
         </quill-editor>
       </el-form-item>
       <el-form-item label="Tag" prop="tag">
-        <el-input v-model="createForm.tag"></el-input>
+        <el-input v-model="createForm.tag" clearable></el-input>
       </el-form-item>
       <el-form-item label="Credential" prop="credential">
         <el-input type="textarea" v-model="createForm.credential"></el-input>

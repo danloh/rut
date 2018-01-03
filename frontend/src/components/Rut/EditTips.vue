@@ -1,7 +1,7 @@
 <template>
   <div class="edit-page">
     <h3 class="title"> Edit Read-up-Tips:
-      <router-link class="title" :to="'/readuplist/' + rutId">{{rutTitle}}</router-link>
+      <el-button type="text" @click="cancelnReturn"><b>{{rutTitle}}</b> <small>...Cancel and Return</small></el-button>
     </h3>
     <el-form class="edit-form" :model="editForm" :rules="rules" ref="editForm" label-width="120px" size="mini">
       <el-form-item label="Change Order" prop="order">
@@ -98,6 +98,11 @@ export default {
         let id = this.rutId
         this.$router.push(`/readuplist/${id}`)
       })
+    },
+    cancelnReturn () {
+      let id = this.rutId
+      unlockRut(id)
+      this.$router.push(`/readuplist/${id}`)
     },
     resetForm (formName) {
       this.$refs[formName].resetFields()

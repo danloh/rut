@@ -28,7 +28,7 @@ export default {
   components: { Reply },
   data () {
     return {
-      open: true,
+      open: false,
       showRe: false,
       hasChild: this.comment.children.length > 0,
       childComments: this.comment.children,

@@ -1,7 +1,7 @@
 <template>
   <div class="add-page">
     <h3 class="title"> Add Item to Readup Tips:
-      <router-link class="title" :to="'/readuplist/' + rutId">{{rutTitle}}</router-link>
+      <el-button type="text" @click="cancelnReturn"><b>{{rutTitle}}</b> <small>...Cancel and Return</small></el-button>
     </h3>
     <spinner :show="loading"></spinner>
     <el-button size="small" type="primary">
@@ -171,6 +171,11 @@ export default {
           return false
         }
       })
+    },
+    cancelnReturn () {
+      let id = this.rutId
+      unlockRut(id)
+      this.$router.push(`/readuplist/${id}`)
     },
     resetForm (formName) {
       this.$refs[formName].resetFields()
