@@ -9,7 +9,7 @@
       {{ showRe ? 'Hide' : 'Reply' }}
     </el-button>
     <span class="toggle" :class="{ open }" v-if="hasChild">
-      <a @click="open = !open">{{ open ? '[-]' : '[+]' }} </a>
+      <a @click="open = !open">{{ open ? '[-]' : '[+] ' + childComments.length + ' collapsed' }} </a>
     </span>
     <reply class="reply" :refer="refer" :show.sync="showRe" @newreply="updateNew"></reply> <!--sync, hide input once submit-->
     <div class="comment-children" v-show="open">
@@ -45,6 +45,7 @@ export default {
   },
   methods: {
     updateNew (data) {
+      this.open = true
       this.childComments.unshift(data)
     }
   }
@@ -74,8 +75,8 @@ export default {
     pre
       white-space pre-wrap
   .toggle
-    background-color #fffbf2
-    padding 0.2em 0.5em
+    background-color #eef2f5
+    padding 0.1em 0.5em
     border-radius 4px
     a
       color #828282
