@@ -46,11 +46,7 @@
         <el-input v-model="addForm.cover"></el-input>
       </el-form-item>
       <el-form-item label="Tips" prop="tips">
-        <!-- <el-input type="textarea" :rows="12" v-model="addForm.tips"></el-input> -->
-        <quill-editor v-model="addForm.tips"
-                      ref="TextEditor"
-                      class="quill-editor">
-        </quill-editor>
+        <el-input type="textarea" :rows="12" v-model="addForm.tips"></el-input>
       </el-form-item>
       <el-form-item label="in Tips" prop="spoiler">
         <el-radio-group v-model="addForm.spoiler">

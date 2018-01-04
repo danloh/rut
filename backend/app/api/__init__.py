@@ -471,7 +471,7 @@ def new_rut(demandid=None):
         intro = intro,
         tag_str = request.json.get('tag','').strip(),
         rating = request.json.get('rating'),
-        credential = request.json.get('credential','').strip(),
+        credential = request.json.get('credential','...').strip(),
         editable = request.json.get('editable')
     )
     db.session.add(post)
@@ -542,7 +542,7 @@ def edit_rut(rutid):
     rut.intro = intro,
     rut.rating = request.json.get('rating'),
     rut.editable = request.json.get('editable'),
-    rut.credential = request.json.get('credential','').strip(),
+    rut.credential = request.json.get('credential','...').strip(),
     rut.epilog = request.json.get('epilog','').strip()
     # renew the update time and add to db
     rut.renew()

@@ -6,11 +6,7 @@
         <el-input v-model="reviewForm.title"></el-input>
       </el-form-item>
       <el-form-item prop="review">
-        <!-- <el-input type="textarea" :rows="16" v-model="reviewForm.review"></el-input> -->
-        <quill-editor v-model="reviewForm.review"
-                      ref="TextEditor"
-                      class="quill-editor">
-        </quill-editor>
+        <el-input type="textarea" :rows="12" v-model="reviewForm.review"></el-input>
       </el-form-item>
       <el-form-item prop="spoiler">
         <el-radio-group v-model="reviewForm.spoiler">
@@ -116,7 +112,7 @@ export default {
 
 <style lang="stylus" scoped>
 .review-page
-  padding 10px 160px
+  padding 10px 120px
   position relative
   .review-form
     padding 20px

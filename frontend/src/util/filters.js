@@ -35,7 +35,7 @@ export function toMDY (date) {
 }
 
 // showLess
-export function showLess (content, least = 152, less = true) {
+export function showLess (content, least = 155, less = true) {
   if (!content) return ''
   if (content.length > least && less) {
     let lessContent = content.substring(0, least)

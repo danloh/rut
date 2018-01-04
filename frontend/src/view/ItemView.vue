@@ -7,7 +7,7 @@
         <router-link class="editlink" :to="'/edit/item/' + currentItem.id">...Edit Detail</router-link>
       </div>
       <div class="item-detail">
-        <div v-html="currentItem.details">...</div>
+        <div v-html="itemDetail"></div>
       </div>
       <div class="submenu">
         <b>>></b>&nbsp;&nbsp;<b style="color: orange">Reviews</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -39,6 +39,7 @@ import ItemSum from '@/components/Item/ItemSum.vue'
 import ReviewList from '@/components/Item/ReviewList.vue'
 import ClipList from '@/components/Challenge/ClipList.vue'
 import { fetchInRuts } from '@/api/api'
+import marked from '@/util/marked'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -59,6 +60,9 @@ export default {
       'currentItem',
       'inRuts'
     ]),
+    itemDetail () {
+      return marked(this.currentItem.details)
+    },
     hasMoreRut () {
       return this.inRuts.length < this.currentItem.rutcount
     }

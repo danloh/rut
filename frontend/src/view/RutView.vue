@@ -29,9 +29,7 @@
       </div>
       <div class="intro">
         <b class="indicator">Preface:&nbsp;</b>
-        <div class="ql-snow">
-          <div class="ql-editor" style="font-size:16px;padding:2px" v-html="rutDetail.intro"></div>
-        </div>
+        <div v-html="md(rutDetail.intro)"></div>
       </div>
       <div class="toolbar">
         <router-link class="editlink" :to="'/profile/' + whoEdit.id" v-if="whoEdit.id">{{whoEdit.name}} is Editing</router-link>&nbsp;&nbsp;&nbsp;&nbsp;
@@ -45,9 +43,7 @@
         <b class="indicator">&nbsp;&nbsp;#{{tip.order}}&nbsp;&nbsp;</b> 
         <router-link class="editlink" :to="'/edit/readuptips/' + tip.cid" v-if="canEdit">...Edit</router-link>
         <div class="tip">
-          <div class="ql-snow">
-            <div class="ql-editor" style="font-size:16px;padding:2px" v-html="tip.tip" v-show="!tip.spoiler || !short"></div>
-          </div>
+          <div v-html="md(tip.tip)" v-show="!tip.spoiler || !short"></div>
           <el-button type="text" size="mini" @click="short = !short" v-if="tip.spoiler && short">... Spoilers Ahead! Continue?</el-button>
         </div>
       </div>
@@ -57,9 +53,7 @@
       <div class="epilog">
         <b class="indicator">Epilog:&nbsp;&nbsp;</b>
         <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit">...Edit</router-link>
-        <div class="ql-snow">
-          <div class="ql-editor" style="font-size:16px;padding:2px" v-html="rutDetail.epilog"></div>
-        </div>
+        <div v-html="md(rutDetail.epilog)"></div>
       </div>
       <div class="bottombar">
         <share-bar></share-bar>
@@ -69,7 +63,7 @@
       <div class="credential">
         <p class="credential-title"><b>Creator's Credential</b></p>
         <div class="credential-body">
-          {{ credential || '...' }}
+          <div v-html="md(rutDetail.credential)"></div>
           <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit">...Edit</router-link> 
         </div>
       </div>
@@ -95,6 +89,7 @@ import ShareBar from '@/components/Misc/ShareBar.vue'
 import { scRut, checkSC, editTags, fetchRutDemands, fetchRutTips, checkEditable } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { mapGetters } from 'vuex'
+import marked from '@/util/marked'
 
 export default {
   name: 'rut-view',
@@ -138,9 +133,6 @@ export default {
     // contributorIDList () {
     //   return this.rutDetail.contributoridlist
     // },
-    credential () {
-      return this.rutDetail.credential
-    },
     isEveryone () {
       return this.rutDetail.editable === 'Everyone'
     },
@@ -307,6 +299,9 @@ export default {
           query: {redirect: this.$route.fullPath}
         })
       }
+    },
+    md (content) {
+      return marked(content)
     }
   },
   watch: {

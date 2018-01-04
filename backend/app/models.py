@@ -510,11 +510,10 @@ class Posts(db.Model):
             'intro': self.intro,
             'credential': self.credential,
             'rating': self.rating,
-            'epilog': self.epilog,
+            'epilog': self.epilog or '',
             'createat': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             # OR .strftime('%Y-%m-%dT%H:%M:%SZ') # as timezone
             #'renewat': self.renewal.strftime('%Y-%m-%d %H:%M:%S'),
-            'score': self.score,
             'itemcount': self.items.count(),
             'starcount': self.starers.count(),
             'challengecount': self.challengers.count(),
@@ -675,21 +674,21 @@ class Items(db.Model):
             'cate': self.cate,
             'title': self.title,
             'uid': self.uid,
-            'byline': self.author, 
+            'byline': self.author or '', 
             'rutcount': self.posts.count(),
             'reviewcount': self.reviews.count(),
             'clipcount': self.clips.count(),
             'commentcount': self.comments.count(),
             'cover': self.item_cover,
-            'publisher': self.publisher,
-            'pubdate': self.pub_date,
-            'language': self.language,
-            'page': self.page,
-            'level': self.level,
-            'binding': self.binding,
-            'price': self.price,
-            'resurl': self.res_url,
-            'details': self.details
+            'publisher': self.publisher or '',
+            'pubdate': self.pub_date or '',
+            'language': self.language or '',
+            'page': self.page or '',
+            'level': self.level or '',
+            'binding': self.binding or '',
+            'price': self.price or '',
+            'resurl': self.res_url or '',
+            'details': self.details or ''
         }
         return item_dict
 
@@ -792,7 +791,7 @@ class Tags(db.Model):
         tag_dict = {
             'id': self.id,
             'tagname': self.tag,
-            'descript': self.descript,
+            'descript': self.descript or '',
             'favcount': self.favers.count()
         }
         return tag_dict
@@ -873,7 +872,7 @@ class Comments(db.Model):
     def to_dict(self):
         comment_dict = {
             'id': self.id,
-            'heading': self.heading,
+            'heading': self.heading or '',
             'body': self.body,
             'vote': self.vote,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
@@ -1077,7 +1076,7 @@ class Demands(db.Model):
             'requestor': {'id': requestor.id, 'name': requestor.nickname or requestor.name},
             'body': self.body,
             'vote': self.vote,
-            'tagStr': self.dtag_str,
+            'tagStr': self.dtag_str or '',
             'answercount': self.posts.count(),
             'commentcount': self.comments.count(),
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
@@ -1594,15 +1593,15 @@ class Users(UserMixin, db.Model):
         user_dict = {
             'id': self.id,
             'name': self.nickname or self.name,
-            'nickname': self.nickname,
+            'nickname': self.nickname or '',
             'username': self.name,
             'role': self.role.duty,
             'avatar': self.user_avatar,
-            'location': self.location,
-            'about': self.about_me,
+            'location': self.location or '',
+            'about': self.about_me or '',
             'followercount': self.followers.count(), 
             'followedcount': self.followed.count(), # following other
-            'exlink': self.links
+            'exlink': self.links or ''
         }
         return user_dict
 

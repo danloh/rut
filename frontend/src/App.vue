@@ -106,6 +106,12 @@ h2, h3, h4
   margin 8px 0
 p
   margin 5px 0
+pre
+  background-color #f0f0f0
+blockquote
+  border-left: 4px solid #ccc
+  margin: 5px
+  padding-left: 12px
 .header
   background-color #fafafa
   position fixed
@@ -156,12 +162,4 @@ p
   margin 5px auto
   padding 8px 0px
   font-size 0.75em
-.quill-editor
-  border: 1px solid #ccc
-  background-color white
-  .ql-toolbar
-    padding 2px
-  .ql-container
-    z-index 999 // !!toolbar upper layer
-    min-height 8em
 </style>

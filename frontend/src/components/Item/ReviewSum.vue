@@ -9,9 +9,7 @@
       | on <router-link :to="'/item/' + review.item.id">{{ review.item.title.slice(0, 60) }}..</router-link>
     </p>
     <div class="review-body">
-      <div class="ql-snow">
-        <div class="ql-editor" style="font-size:16px;padding:2px" v-html="reviewContent"></div>
-      </div>
+      <div v-html="reviewContent"></div>
       <el-button type="text" size="mini" @click="showFull" v-if="spoiler || short">{{ readMore }}</el-button>
     </div>
     <div class="bar">
@@ -25,6 +23,7 @@
 import { upvoteReview } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { showLess } from '@/util/filters'
+import marked from '@/util/marked'
 
 export default {
   name: 'review-sum',
@@ -44,7 +43,7 @@ export default {
       return this.review.creator
     },
     reviewContent () {
-      let content = this.review.body
+      let content = marked(this.review.body)
       let least = this.spoiler ? 0 : 255
       return this.short || this.spoiler ? showLess(content, least) : content
     },

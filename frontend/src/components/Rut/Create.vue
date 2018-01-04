@@ -2,16 +2,13 @@
   <div class="create-page">
     <h3 class="title">Create New Readup Tips</h3>
     <p v-if="demandid"> As Answer To A <router-link :to="'/demand/' + demandid" target="_blank" rel="nofollow noopener noreferrer">Request</router-link></p>
-    <el-form class="create-form" :model="createForm" :rules="rules" ref="createForm" label-width="80px" size="mini">
+    <el-form class="create-form" :model="createForm" :rules="rules" ref="createForm" label-width="120px" size="mini">
       <el-form-item label="Title" prop="title">
         <el-input v-model="createForm.title" clearable></el-input>
       </el-form-item>
       <el-form-item label="Preface" prop="intro">
-        <!-- <el-input type="textarea" :rows="3" v-model="createForm.intro"></el-input> -->
-        <quill-editor v-model="createForm.intro"
-                      ref="TextEditor"
-                      class="quill-editor">
-        </quill-editor>
+        <el-input type="textarea" :rows="3" v-model="createForm.intro"></el-input>
+        <md-tool :pretext="createForm.intro" @insertmd="updateM"></md-tool>
       </el-form-item>
       <el-form-item label="Tag" prop="tag">
         <el-input v-model="createForm.tag" clearable></el-input>
@@ -42,10 +39,12 @@
 <script>
 import { newRut } from '@/api/api'
 import { trimValid } from '@/util/filters'
+import MdTool from '@/components/Misc/MdTool.vue'
 
 export default {
   name: 'create',
   title: 'Create New',
+  components: { MdTool },
   data () {
     return {
       createForm: {
@@ -108,6 +107,9 @@ export default {
     },
     resetForm (formName) {
       this.$refs[formName].resetFields()
+    },
+    updateM (data) {
+      this.createForm.intro += data
     }
   }
 }

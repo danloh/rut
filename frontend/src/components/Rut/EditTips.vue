@@ -8,11 +8,7 @@
         <el-input v-model="editForm.order"></el-input>
       </el-form-item>
       <el-form-item label="Edit Tips" prop="tips">
-        <!-- <el-input type="textarea" v-model="editForm.tips"></el-input> -->
-        <quill-editor v-model="editForm.tips"
-                      ref="TextEditor"
-                      class="quill-editor">
-        </quill-editor>
+        <el-input type="textarea" :rows="12" v-model="editForm.tips"></el-input>
       </el-form-item>
       <el-form-item label="Reminder" prop="spoiler">
         <el-radio-group v-model="editForm.spoiler">
