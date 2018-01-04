@@ -9,7 +9,6 @@
           -- <router-link :to="'/readuplist/' + rut.id" :title="rut.title"><b>{{ rut.title.slice(0, 160) }} ...</b></router-link>
           <!-- <p v-html="rut.intro"></p> -->
         </div>
-        <spinner :show="loading"></spinner>
         <div v-if="hasMoreAnswer">
           <el-button size="mini" @click="loadmoreAnswer" :disabled="!hasMoreAnswer">Show More</el-button>
         </div>
@@ -51,7 +50,6 @@ import Demand from '@/components/Demand/Demand.vue'
 import Comment from '@/components/Comment/Comment.vue'
 import Reply from '@/components/Comment/Reply.vue'
 import ShareBar from '@/components/Misc/ShareBar.vue'
-import Spinner from '@/components/Misc/Spinner.vue'
 import { fetchProfileRuts, rutAsAnswer, fetchDemandComments, fetchDemandAnswers } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { mapGetters } from 'vuex'
@@ -61,10 +59,9 @@ export default {
   title () {
     return this.demandDetail.body
   },
-  components: { Demand, Comment, Reply, ShareBar, Spinner },
+  components: { Demand, Comment, Reply, ShareBar },
   data () {
     return {
-      loading: true, // for spinner
       refer: { re: 'demand', id: this.$route.params.id },
       answers: [],
       answerCount: 0,
@@ -180,7 +177,6 @@ export default {
   },
   created () {
     this.loadDemandData()
-    this.loading = false
   }
 }
 </script>

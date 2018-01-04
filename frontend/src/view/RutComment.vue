@@ -6,7 +6,6 @@
     <div v-for="comment in comments" :key="comment.id">
       <comment :comment="comment"></comment>
     </div>
-    <spinner :show="loading"></spinner>
     <div v-if="hasMoreComment">
       <el-button class="blockbtn" size="mini" @click="loadmoreComment" :disabled="!hasMoreComment">Show More Comments</el-button>
     </div>
@@ -24,17 +23,15 @@ import { fetchRutComments } from '@/api/api'
 import Comment from '@/components/Comment/Comment.vue'
 import Reply from '@/components/Comment/Reply.vue'
 import ChallengeList from '@/components/Rut/ChallengeList.vue'
-import Spinner from '@/components/Misc/Spinner.vue'
 
 export default {
   name: 'rut-comment',
   title () {
     return 'Discuss: ' + this.rut.title
   },
-  components: { Comment, Reply, ChallengeList, Spinner },
+  components: { Comment, Reply, ChallengeList },
   data () {
     return {
-      loading: true, // for spinner
       rut: {},
       comments: [],
       commentCount: 0,
@@ -76,7 +73,6 @@ export default {
   },
   created () {
     this.loadCommentData()
-    this.loading = false
   }
 }
 </script>

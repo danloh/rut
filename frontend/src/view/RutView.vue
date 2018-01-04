@@ -38,7 +38,6 @@
         <el-button type="success" size="mini" plain @click="starRut"><b>{{ starAction }}&nbsp;{{ starCount }}</b></el-button>
         <el-button type="success" size="mini" plain @click="challengeRut"><b>{{ challengeAction }}&nbsp;{{ challengeCount }}</b></el-button>
       </div>
-      <spinner :show="loading"></spinner>
       <div class="itemtip" v-for="tip in tips" :key="tip.cid">
         <item-sum class="itemsum" :item="tip.item" :key="tip.itemid"></item-sum>
         <b class="indicator">&nbsp;&nbsp;#{{tip.order}}&nbsp;&nbsp;</b> 
@@ -82,7 +81,6 @@
 </template>
 
 <script>
-import Spinner from '@/components/Misc/Spinner.vue'
 import ItemSum from '@/components/Item/ItemSum.vue'
 import Comment from '@/components/Comment/Comment.vue'
 import ShareBar from '@/components/Misc/ShareBar.vue'
@@ -94,7 +92,7 @@ import marked from '@/util/marked'
 
 export default {
   name: 'rut-view',
-  components: { ItemSum, Spinner, Comment, ShareBar },
+  components: { ItemSum, Comment, ShareBar },
   data () {
     return {
       starAction: this.checkStar(), // || 'Star',
@@ -115,8 +113,7 @@ export default {
       canEdit: false,
       whoEdit: {},
       canTag: checkAuth(),
-      short: true,
-      loading: true
+      short: true
     }
   },
   computed: {
@@ -312,7 +309,6 @@ export default {
   created () {
     this.loadRutData()
     this.checkCanEdit()
-    this.loading = false
   }
 }
 </script>
