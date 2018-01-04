@@ -99,6 +99,7 @@ body
   color #34495e
   overflow-y scroll
   overflow-x scroll
+  overflow-wrap break-word
 a
   color #337ab7
   text-decoration none

@@ -4,7 +4,7 @@
       <router-link :to="'/profile/' + creator.id">{{ creator.name }}</router-link>
       ~ {{ comment.timestamp | timeAgo }}
     </div>
-    <div class="text" v-html="commentContent"></div>
+    <div class="content" v-html="commentContent"></div>
     <el-button type="text" size="mini" @click="showRe = !showRe">
       {{ showRe ? 'Hide' : 'Reply' }}
     </el-button>
@@ -59,21 +59,18 @@ export default {
   background-color lighten(#f3f3ed, 60%)
   position relative
   .by, .toggle
-    font-size 0.75em
+    font-size 0.7em
     margin 0.2em 0
   .by
     color #828282
     a
       color #828282
       text-decoration underline
-  .text
-    overflow-wrap break-word
-    font-size 1.05em
-    margin 0.3em 0
+  .content
+    font-size 1.1em
+    margin 0.2em 0
     a:hover
       color #ff6600
-    pre
-      white-space pre-wrap
   .toggle
     background-color #eef2f5
     padding 0.1em 0.5em
