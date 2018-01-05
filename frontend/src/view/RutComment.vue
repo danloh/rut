@@ -1,7 +1,7 @@
 <template>
   <div class="rut-comment">
     <div class="comment-main">
-      <b>Discuss: </b><router-link :to="'/readuplist/' + rut.id">{{ rut.title }}</router-link>
+      <b style="font-size: 1.5em">Discuss: </b><router-link :to="'/readuplist/' + rut.id">{{ rut.title }}</router-link>
     </div>
     <div v-for="comment in comments" :key="comment.id">
       <comment :comment="comment"></comment>

@@ -20,7 +20,7 @@
 export default {
   name: 'banner',
   data: () => ({
-    show: true
+    show: false
   })
 }
 </script>
@@ -34,7 +34,7 @@ export default {
   position relative
   .intro
     padding 5px
-    background-color lighten(#eceff1, 50%)
+    background-color lighten(#eceff1, 60%)
     color #828282
     h4
       margin 2px 0
