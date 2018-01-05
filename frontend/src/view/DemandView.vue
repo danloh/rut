@@ -31,6 +31,7 @@
         </div>
       </el-dialog>
       <!-- dialog end -->
+      <b>Discuss</b>
       <div v-for="comment in comments" :key="comment.id">
         <comment :comment="comment"></comment>
       </div>

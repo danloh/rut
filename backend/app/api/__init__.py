@@ -331,17 +331,15 @@ def get_challege_rut():
         rut_dict = rut.to_dict()
         items = [t.item.to_dict() for t in rut.items]
         return jsonify({
-            'ruts': [rut_dict],
-            'total': 1,
-            'tags': [],
+            'rut': rut_dict,
             'items': items,
-            'deadline': deadline
+            'deadline': deadline or ''
         })
     except:
         return jsonify({
-            'ruts': [],
-            'total': 0,
-            'tags': []
+            'rut': {},
+            'items': [],
+            'deadline': ''
         })
 
 @rest.route('/challengeitems')  # challenging items !!
@@ -1352,6 +1350,12 @@ def get_demands():
         'total': demands.count()
     }
     return jsonify(demands_dict)
+
+@rest.route('/onlydemand/<int:demandid>')
+def get_demand_only(demandid):
+    demand = Demands.query.get_or_404(demandid)
+    demand_dict = demand.to_dict()
+    return jsonify(demand_dict)
 
 @rest.route('/demand/<int:demandid>')
 def get_demand(demandid):

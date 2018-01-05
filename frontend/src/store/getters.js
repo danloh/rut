@@ -33,7 +33,8 @@ const getters = {
   currentR: state => state.item.currentR,
   perR: state => state.item.perR,
   maxR: state => state.item.maxR,
-  inRuts: state => state.item.inRuts
+  inRuts: state => state.item.inRuts,
+  reviewDetail: state => state.item.reviewDetail
 }
 
 export default getters

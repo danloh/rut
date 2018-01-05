@@ -1,7 +1,11 @@
 <template>
   <div class="create-page">
     <h3 class="title">Create New Readup Tips</h3>
-    <p v-if="demandid"> As Answer To A <router-link :to="'/demand/' + demandid" target="_blank" rel="nofollow noopener noreferrer">Request</router-link></p>
+    <p v-if="demandid"> As Answer To The 
+      <router-link :to="'/demand/' + demandid" target="_blank" rel="nofollow noopener noreferrer">
+      {{ 'Request:  ' + demandBody || 'Request' }}
+      </router-link>
+    </p>
     <el-form class="create-form" :model="createForm" :rules="rules" ref="createForm" label-width="120px" size="mini">
       <el-form-item label="Title" prop="title">
         <el-input v-model="createForm.title" clearable></el-input>
@@ -37,7 +41,7 @@
 </template>
 
 <script>
-import { newRut } from '@/api/api'
+import { newRut, fetchOnlyDemand } from '@/api/api'
 import { trimValid } from '@/util/filters'
 import MdTool from '@/components/Misc/MdTool.vue'
 
@@ -71,7 +75,8 @@ export default {
         {value: 'College', label: 'College'}, {value: 'Elementary', label: 'Elementary'},
         {value: 'Preschool', label: 'Preschool'}, {value: 'Professional', label: 'Professional'}
       ],
-      demandid: this.$route.params.id || ''
+      demandid: this.$route.params.id || '',
+      demandBody: ''
     }
   },
   methods: {
@@ -110,7 +115,25 @@ export default {
     },
     updateM (data) {
       this.createForm.intro += data
+    },
+    loadDemand () {
+      let demandid = this.$route.params.id
+      if (!demandid) {
+        return
+      } else {
+        let demandG = this.$store.getters.demandDetail
+        if (demandG && demandG.id === Number(demandid)) {
+          this.demandBody = demandG.body.slice(0, 160)
+        } else {
+          fetchOnlyDemand(demandid).then(resp => {
+            this.demandBody = resp.data.body.slice(0, 160)
+          })
+        }
+      }
     }
+  },
+  created () {
+    this.loadDemand()
   }
 }
 </script>

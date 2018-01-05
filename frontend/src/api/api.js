@@ -242,6 +242,10 @@ const fetchProfileDemands = (userid, params) => {
 const fetchDemands = (params) => {
   return request(`${base}/demands`, params)
 }
+// get a demand only
+const fetchOnlyDemand = (demandid, params) => {
+  return request(`${base}/onlydemand/${demandid}`, params)
+}
 // get specific demand
 const fetchDemand = (demandid, params) => {
   return request(`${base}/demand/${demandid}`, params)
@@ -340,6 +344,7 @@ export {
   fetchProfileReviews,
   fetchProfileDemands,
   fetchDemands,
+  fetchOnlyDemand,
   fetchDemand,
   fetchDemandComments,
   fetchDemandAnswers,

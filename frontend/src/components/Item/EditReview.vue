@@ -90,18 +90,26 @@ export default {
     resetForm (formName) {
       this.$refs[formName].resetFields()
     },
+    setFormData (review) {
+      this.reviewForm.title = review.heading
+      this.reviewForm.review = review.body
+      this.reviewForm.spoiler = review.spoiler ? 'Spoiler Ahead' : 'No Spoiler'
+      let creatorID = review.creator.id
+      let currentUserID = this.$store.getters.currentUserID
+      this.canEdit = Number(creatorID) === Number(currentUserID)
+    },
     loadReviewData () {
       let reviewid = this.$route.params.id
-      fetchReview(reviewid)
-      .then(resp => {
-        let data = resp.data
-        this.reviewForm.title = data.heading
-        this.reviewForm.review = data.body
-        this.reviewForm.spoiler = data.spoiler ? 'Spoiler Ahead' : 'No Spoiler'
-        let creatorID = data.creator.id
-        let currentUserID = this.$store.getters.currentUserID
-        this.canEdit = Number(creatorID) === Number(currentUserID)
-      })
+      let reviewG = this.$store.getters.reviewDetail
+      if (reviewG && reviewG.id === Number(reviewid)) {
+        let review = reviewG
+        this.setFormData(review)
+      } else {
+        fetchReview(reviewid).then(resp => {
+          let review = resp.data
+          this.setFormData(review)
+        })
+      }
     }
   },
   created () {

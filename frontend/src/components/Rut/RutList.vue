@@ -21,8 +21,7 @@ export default {
   computed: {
     ...mapGetters([
       'currentPage',
-      'maxPage',
-      'perPage'
+      'maxPage'
     ]),
     hasMore () {
       return this.currentPage < this.maxPage

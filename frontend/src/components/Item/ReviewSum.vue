@@ -13,7 +13,7 @@
       <el-button type="text" size="mini" @click="showFull" v-if="spoiler || short">{{ readMore }}</el-button>
     </div>
     <div class="bar">
-      <router-link :to="'/editreview/' + review.id" v-if="canEdit">...Edit |</router-link>
+      <router-link :to="'/editreview/' + review.id" v-if="canEdit">...Edit |</router-link> <!--if not show edit in list, && !less-->
       <el-button type="text" @click="upReview">Helpful</el-button>&nbsp;{{ vote }}
     </div>
   </div>

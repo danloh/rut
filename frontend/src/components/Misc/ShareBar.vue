@@ -1,37 +1,35 @@
 <template>
-  <div id="share">
-    <div class="share-bar">
-      <a title="Twitter" 
-         rel="nofollow noopener"
-         class="share-link twitter"
-         @click.prevent="shareWindow(`http://twitter.com/share?text=${title()}&url=${url}`)">
-        <img alt="TW" src="/static/pic/twitter.svg" class="icon">
-      </a>
-      <a title="Facebook" 
-         rel="nofollow noopener"
-         class="share-link facebook"
-         @click.prevent="shareWindow(`https://www.facebook.com/sharer/sharer.php?u=${url}`)">
-        <img alt="FB" src="/static/pic/facebook.svg" class="icon">
-      </a>
-      <a title="Linkedin" 
-         rel="nofollow noopener"
-         class="share-link linkedin"
-         @click.prevent="shareWindow(`http://www.linkedin.com/shareArticle?mini=true&url=${url}&title=${title()}`)">
-        <img alt="Linkedin" src="/static/pic/linkedin.svg" class="icon">
-      </a>
-      <a title="Google+" 
-         rel="nofollow noopener"
-         class="share-link google-plus"
-         @click.prevent="shareWindow(`https://plus.google.com/share?url=${url}`)">
-        <img alt="G+" src="/static/pic/gplus.svg" class="icon">
-      </a>
-      <a title="Evernote" 
-         rel="nofollow noopener"
-         class="share-link evernote"
-         @click.prevent="shareWindow(`https://www.evernote.com/clip.action?url=${url}&title=${title()}`)">
-        <img alt="Evernote" src="/static/pic/evernote.svg" class="icon">
-      </a>
-    </div>
+  <div id="social-share-bar">
+    <a title="Twitter" 
+        rel="nofollow noopener"
+        class="share-link twitter"
+        @click.prevent="shareWindow(`http://twitter.com/share?text=${title()}&url=${url}`)">
+      <img alt="TW" src="/static/pic/twitter.svg" class="icon">
+    </a>
+    <a title="Facebook" 
+        rel="nofollow noopener"
+        class="share-link facebook"
+        @click.prevent="shareWindow(`https://www.facebook.com/sharer/sharer.php?u=${url}`)">
+      <img alt="FB" src="/static/pic/facebook.svg" class="icon">
+    </a>
+    <a title="Linkedin" 
+        rel="nofollow noopener"
+        class="share-link linkedin"
+        @click.prevent="shareWindow(`http://www.linkedin.com/shareArticle?mini=true&url=${url}&title=${title()}`)">
+      <img alt="Linkedin" src="/static/pic/linkedin.svg" class="icon">
+    </a>
+    <a title="Google+" 
+        rel="nofollow noopener"
+        class="share-link google-plus"
+        @click.prevent="shareWindow(`https://plus.google.com/share?url=${url}`)">
+      <img alt="G+" src="/static/pic/gplus.svg" class="icon">
+    </a>
+    <a title="Evernote" 
+        rel="nofollow noopener"
+        class="share-link evernote"
+        @click.prevent="shareWindow(`https://www.evernote.com/clip.action?url=${url}&title=${title()}`)">
+      <img alt="Evernote" src="/static/pic/evernote.svg" class="icon">
+    </a>
   </div>
 </template>
 
@@ -69,31 +67,24 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-#share
+#social-share-bar
   text-align right
-  .share-bar
-    > .share-link
-      cursor: pointer
-      display: inline-block
-      text-align: center
-
-      &.evernote:hover
-        background-color: rgb(139, 224, 86)
-
-      &.twitter:hover
-        background-color: rgb(85, 172, 238)
-
-      &.facebook:hover
-        background-color: rgb(59, 89, 152)
-
-      &.google-plus:hover
-        background-color: rgb(221, 75, 57)
-
-      &.linkedin:hover
-        background-color: rgb(0, 123, 181)
-
-      .icon
-        padding 5px
-        width 16px
-        height 16px
+  > .share-link
+    cursor: pointer
+    display: inline-block
+    text-align: center
+    &.evernote:hover
+      background-color: rgb(139, 224, 86)
+    &.twitter:hover
+      background-color: rgb(85, 172, 238)
+    &.facebook:hover
+      background-color: rgb(59, 89, 152)
+    &.google-plus:hover
+      background-color: rgb(221, 75, 57)
+    &.linkedin:hover
+      background-color: rgb(0, 123, 181)
+    .icon
+      padding 5px
+      width 16px
+      height 16px
 </style>

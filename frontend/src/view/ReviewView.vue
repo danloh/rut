@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import { fetchReview, fetchReviewComments } from '@/api/api'
+import { fetchReviewComments } from '@/api/api'
 import ReviewSum from '@/components/Item/ReviewSum.vue'
 import Comment from '@/components/Comment/Comment.vue'
 import Reply from '@/components/Comment/Reply.vue'
@@ -48,7 +48,7 @@ export default {
   methods: {
     loadReviewData () {
       let reviewid = this.$route.params.id
-      fetchReview(reviewid)
+      this.$store.dispatch('getReview', reviewid)
       .then(resp => {
         let data = resp.data
         this.review = data

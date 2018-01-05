@@ -22,8 +22,7 @@ export default {
     ...mapGetters([
       'totalItems',
       'currentItems',
-      'currentR',
-      'maxR'
+      'currentR'
     ])
   },
   methods: {

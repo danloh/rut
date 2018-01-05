@@ -19,21 +19,21 @@
         <p class="user-info">From: {{user.location || 'Unknown'}}</p>
       </div>
       <div class="right-nav">
-        <router-link :to="'/profile/' + userid + '/created/'">Created</router-link>
+        <router-link :to="'/profile/' + userid + '/created/'">* Created</router-link>
         <br>
-        <router-link :to="'/profile/' + userid + '/challenge/'">Challenge</router-link>
+        <router-link :to="'/profile/' + userid + '/challenge/'">* Challenge</router-link>
         <br>
-        <router-link :to="'/profile/' + userid + '/star/'">Star</router-link>
+        <router-link :to="'/profile/' + userid + '/star/'">* Star</router-link>
         <br>
-        <router-link :to="'/profile/' + userid + '/working/'">Working On</router-link>
+        <router-link :to="'/profile/' + userid + '/working/'">- Working On</router-link>
         <br>
-        <router-link :to="'/profile/' + userid + '/scheduled/'">scheduled</router-link>
+        <router-link :to="'/profile/' + userid + '/scheduled/'">- scheduled</router-link>
         <br>
-        <router-link :to="'/profile/' + userid + '/havedone/'">Have Done</router-link>
+        <router-link :to="'/profile/' + userid + '/havedone/'">- Have Done</router-link>
         <br>
-        <router-link :to="'/profile/' + userid + '/reviews/'">Reviews</router-link>
+        <router-link :to="'/profile/' + userid + '/reviews/'"> > Notes / Reviews</router-link>
         <br>
-        <router-link :to="'/profile/' + userid + '/demands/'">Requests</router-link>
+        <router-link :to="'/profile/' + userid + '/demands/'"> > Requests</router-link>
         <br><br>
         <router-link :to="'/setting/' + userid" v-if="showSetting">
           <small style="outline: dotted 1px; background-color: #d5d5be">~Setting~</small>

@@ -2,7 +2,6 @@
 import {
   fetchRuts,
   fetchProfileRuts,
-  fetchChallengeRut,
   fetchRut,
   fetchTag
 } from '@/api/api'
@@ -38,17 +37,6 @@ const actions = {
     return fetchProfileRuts(params['action'], params['userid'])
     .then(resp => {
       commit('SET_RUTS', resp.data)
-    })
-  },
-  getChallengeRut: ({commit, state}, param = {}) => {
-    return new Promise((resolve, reject) => {   // use case of Promise !!
-      fetchChallengeRut(param)
-      .then(resp => {
-        commit('SET_RUTS', resp.data)
-        resolve(resp)
-      }).catch(error => {
-        reject(error)
-      })
     })
   },
   getRut: ({commit, state}, rutid) => {

@@ -72,12 +72,8 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'allRuts',
-      'totalRuts',
       'currentPage',
       'currentRuts',
-      'maxPage',
-      'perPage',
       'showTags',
       'tagDetail'
     ])
