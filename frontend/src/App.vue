@@ -109,6 +109,7 @@ p
   margin 5px 0
 pre
   background-color #f0f0f0
+  padding 5px
 blockquote
   border-left: 4px solid #ccc
   margin: 5px

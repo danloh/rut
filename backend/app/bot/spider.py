@@ -57,7 +57,6 @@ def fakeheader():
     return fakeheader
 
 def get_html(url):
-
     try:
         r = requests.get(url,headers=fakeheader(),timeout=30)
         r.raise_for_status()
@@ -97,9 +96,7 @@ def down_img(imgUrl,filename):
 
 
 def parse_html_amazon(url):
-    
     soup = get_soup(url)
-    
     # init a dict to store info
     d = {}
     d['res_url'] = url.split('/ref=')[0] #discard the ref part in amazon url
@@ -160,7 +157,7 @@ def parse_html_amazon(url):
     d['binding'] = binding
     d['price'] = price
 
-    #get detail info : paperback, Publisher, Language, etc
+    #get detail info :ISBN, paperback, Publisher, Language, etc
     detailTable = soup.find(
         'table',
         id='productDetailsTable'
@@ -212,23 +209,25 @@ def parse_html_amazon(url):
     d['back'] = back_img_url
     '''
 
-    #download img
+    #uid
     asin = d.get('ASIN')
-    uid=d.get('ISBN-13',asin).replace('-','').replace(' ','') \
-        if d.get('ISBN-13',asin) else None
-    d['uid']=uid
-    if front_img_url:
-        filename = str(uid)
-        try:
-            down_img(front_img_url,filename)
-        except:
-            pass
+    isbn10 = d.get('ISBN-10')
+    isbn13 = d.get('ISBN-13')
+    uid = isbn13 or isbn10 or asin or random_uid()
+    d['uid'] = uid.replace('-','').replace(' ','')
+   
+    # #download img
+    # if front_img_url:
+    #     filename = str(uid)
+    #     try:
+    #         down_img(front_img_url,filename)
+    #     except:
+    #         pass
 
     return d 
 
 
 def parse_html_edx(url):
-     
     soup = get_soup(url)
     
     # init a dict to store info
@@ -286,22 +285,20 @@ def parse_html_edx(url):
     cover_img = imgUrl if validUrl(imgUrl) else ""
     d['cover'] = cover_img
 
-    uid=random_uid()
-    d['uid'] = uid
+    d['uid'] = random_uid()
 
-    #download img
-    if cover_img:
-        filename = str(uid)
-        try:
-            down_img(cover_img,filename)
-        except:
-            pass
+    # #download img
+    # if cover_img:
+    #     filename = str(uid)
+    #     try:
+    #         down_img(cover_img,filename)
+    #     except:
+    #         pass
 
     return d 
 
 
 def parse_html_coursera(url):
-    
     soup = get_soup(url)
     
     # init a dict to store info
@@ -383,22 +380,20 @@ def parse_html_coursera(url):
     cover_img = imgUrl if validUrl(imgUrl) else ""
     d['cover'] = cover_img
 
-    uid=random_uid()
-    d['uid'] = uid
+    d['uid'] = random_uid()
 
-    #download img
-    if cover_img:
-        filename = str(uid)
-        try:
-            down_img(cover_img,filename)
-        except:
-            pass
+    # #download img
+    # if cover_img:
+    #     filename = str(uid)
+    #     try:
+    #         down_img(cover_img,filename)
+    #     except:
+    #         pass
 
     return d 
 
 
 def parse_html_other(url):
-  
     soup = get_soup(url)
     
     # init a dict to store info
@@ -423,21 +418,19 @@ def parse_html_other(url):
     cover_img = imgUrl if validUrl(imgUrl) else ""
     d['cover'] = cover_img
 
-    uid=random_uid()
-    d['uid'] = uid
+    d['uid'] = random_uid()
 
-    #download img
-    if cover_img:
-        filename = str(uid)
-        try:
-            down_img(cover_img,filename)
-        except:
-            pass
+    # #download img
+    # if cover_img:
+    #     filename = str(uid)
+    #     try:
+    #         down_img(cover_img,filename)
+    #     except:
+    #         pass
 
     return d
 
 def parse_html(url):
-
     re_amazon = re.compile(r'^https?://(www\.)?(amazon){1}(.*)',0)
     re_edx = re.compile(r'^https?://(www\.)?(edx){1}(.*)',0)
     re_coursera = re.compile(r'^https?://(www\.)?(coursera){1}(.*)',0)
@@ -458,29 +451,20 @@ def parse_html(url):
 
 
 def store(d=None,url=''):
-
     d = d or parse_html(url)
-    
     try:
-        title=d['title']
-        uid=d['uid'] 
+        title = d['title']
+        uid = d['uid'] 
     except:
         return 'Something Wrong'
     else:
-
         #store or update item
-        uid=uid.replace('-','').replace(' ','') if uid else None
-        isbn_10=d.get('ISBN-10').replace('-','').replace(' ','') \
-                if d.get('ISBN-10') else None
-        asin_=d.get('ASIN').replace('-','').replace(' ','') \
-              if d.get('ASIN') else None
-        item = Items.query.filter_by(uid=uid).first()   
+        uid = uid.replace('-','').replace(' ','') if uid else None
+        item = Items.query.filter_by(uid=uid).first()
         if item is None:
             item = Items(
                 title=title,
                 uid=uid,
-                isbn10=isbn_10,
-                asin=asin_,
                 author=d.get('author'),
                 cover=d.get('cover'),
                 res_url=d.get('res_url'),
@@ -510,7 +494,7 @@ def store(d=None,url=''):
         a_query = Authors.query        
         b_query = Byline.query
         for name, contibution in authors.items():
-            author=a_query.filter_by(name=name).first()
+            author = a_query.filter_by(name=name).first()
             if author is None:
                 author=Authors(name=name)
                 db.session.add(author)
