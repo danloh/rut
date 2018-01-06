@@ -8,9 +8,9 @@ from ..utils import split_str, str_to_dict, str_to_set
 
 from . import db, rest, auth, PER_PAGE
 
-@rest.route('/ruts')
+@rest.route('/index/ruts')
 #@auth.login_required
-def get_ruts():
+def get_index_ruts():
     # #personalized ruts
     # user = g.user
     # #get related tags set and fav tags
@@ -33,19 +33,6 @@ def get_ruts():
         'ruts': ruts, #[r.to_dict() for r in ruts],
         'total': total,
         'tags': [{'tagid': t.id,'tagname': t.tag} for t in tag_set] 
-    }
-    return jsonify(ruts_dict)
-
-@rest.route('/all/ruts')
-def get_all_ruts():
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    all_ruts = Posts.query
-    ruts = all_ruts.offset(page*per_page).limit(per_page)
-    ruts_dict = {
-        'ruts': [r.to_dict() for r in ruts],
-        'total': all_ruts.count(),
-        'currentpage': page
     }
     return jsonify(ruts_dict)
     
@@ -100,6 +87,25 @@ def get_rut_challengers(rutid):
     }
     return jsonify(challengers_dict)
 
+@rest.route('/rut/<int:rutid>/stars')
+def get_rut_stars(rutid):
+    #rut = Posts.query.get_or_404(rutid)  #other way: rut.stars
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    stars = Star.query.filter_by(post_id=rutid)
+    starcount = stars.count()
+    r_stars = stars.offset(page*per_page).limit(per_page)
+    stars_list = [u.starer.to_dict() for u in r_stars]
+    stars_dict = {
+        'stars': stars_list,
+        'starcount': starcount
+    }
+    return jsonify(stars_dict)
+
+@rest.route('/rut/<int:rutid>/contributors')
+def get_rut_contributors(rutid):
+    pass
+
 @rest.route('/commentsonrut/<int:rutid>')
 def get_rut_comments(rutid):
     rut = Posts.query.get_or_404(rutid)
@@ -118,7 +124,8 @@ def get_rut_comments(rutid):
     rut_dict['comments'] = comments
     return jsonify(rut_dict)
 
-@rest.route('/challengerut')  # challenging rut !!
+# for challenge page
+@rest.route('/challengerut')  # challenging rut
 @auth.login_required
 def get_challege_rut():
     user = g.user
@@ -160,48 +167,21 @@ def set_deadline():
     db.session.commit()
     due = challenge_rut.deadline
     return jsonify(due)
+# end for challenge page
 
-@rest.route('/<int:userid>/created/ruts')
-def get_created_ruts(userid):
-    user = Users.query.get_or_404(int(userid))
-    created_ruts = user.posts.order_by(Posts.timestamp.desc())
-    #created_ruts = Posts.query.filter_by(creator_id=userid).order_by(Posts.timestamp.desc())
+@rest.route('/ruts')
+def get_all_ruts():
+    #yield query
+    ruts = Posts.query
+    #pagination
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    ruts = created_ruts.offset(page * per_page).limit(per_page)
+    rs = ruts.offset(page*per_page).limit(per_page)
+    #yield result: a dict
     ruts_dict = {
-        'ruts': [r.to_dict() for r in ruts],
-        'total': created_ruts.count(),
-        'tags': []
-    }
-    return jsonify(ruts_dict)
-
-@rest.route('/<int:userid>/star/ruts')
-def get_star_ruts(userid):
-    user = Users.query.get_or_404(userid)
-    star_ruts = user.star_posts.order_by(Star.timestamp.desc())
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    ruts = [s.star_post for s in star_ruts.offset(page * per_page).limit(per_page)]
-    ruts_dict = {
-        'ruts': [r.to_dict() for r in ruts],
-        'total': star_ruts.count(),
-        'tags': []
-    }
-    return jsonify(ruts_dict)
-
-@rest.route('/<int:userid>/challenge/ruts')
-def get_challege_ruts(userid):
-    user = Users.query.get_or_404(userid)
-    challenge_ruts = user.challenge_posts.order_by(Challenge.timestamp.desc())
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    ruts = [c.challenge_post \
-        for c in challenge_ruts.offset(page * per_page).limit(per_page)]
-    ruts_dict = {
-        'ruts': [r.to_dict() for r in ruts],
-        'total': challenge_ruts.count(),
-        'tags': []
+        'ruts': [r.to_dict() for r in rs],
+        'total': ruts.count(),
+        'currentpage': page
     }
     return jsonify(ruts_dict)
 
@@ -294,16 +274,19 @@ def lock_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     rut.lock(user)
     return jsonify('Locked')
+
 @rest.route('/unlockrut/<int:rutid>')
 def unlock_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     rut.unlock()
     return jsonify('UnLocked')
+
 @rest.route('/checkif/<int:rutid>/lockedto/<int:userid>')
 def check_rut_if_locked(rutid, userid):
     rut = Posts.query.get_or_404(rutid)
     is_locked = rut.check_locked(userid)
     return jsonify(is_locked)
+
 @rest.route('/checkif/<userid>/canedit/<int:rutid>')
 #@auth.login_required
 def check_rut_editable(userid, rutid):

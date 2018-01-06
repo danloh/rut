@@ -1,6 +1,6 @@
 // import axios from '@/main'
 import {
-  fetchRuts,
+  fetchIndexRuts,
   fetchProfileRuts,
   fetchRut,
   fetchTag
@@ -24,7 +24,7 @@ const state = {
 const actions = {
   getRuts: ({commit, state}, param = {}) => {
     return new Promise((resolve, reject) => {
-      fetchRuts(param)
+      fetchIndexRuts(param)
       .then(resp => {
         commit('SET_RUTS', resp.data)
         resolve(resp)

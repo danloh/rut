@@ -63,8 +63,8 @@ const newRut = (params, demandid) => {
   return request(`${base}/create/${demandid}`, params, 'post')
 }
 
-const fetchRuts = params => {
-  return request(`${base}/ruts`, params)
+const fetchIndexRuts = params => {
+  return request(`${base}/index/ruts`, params)
 }
 // get one challenge rut
 const fetchChallengeRut = params => {
@@ -300,7 +300,7 @@ export {
   checkFollowing,
   followOne,
   newRut,
-  fetchRuts,
+  fetchIndexRuts,
   fetchChallengeRut,
   fetchChallengeItems,
   setDeadline,

@@ -3,9 +3,84 @@
 
 from flask import current_app, request, g, jsonify, abort
 from ..models import *
-from ..utils import split_str, str_to_dict, str_to_set
 
 from . import db, rest, auth, PER_PAGE
+
+@rest.route('/reviews') # per user, item or any
+def get_reviews():
+    userid = request.args.get('userid','')
+    itemid = request.args.get('itemid','')
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    query = Reviews.query
+    if userid and itemid:
+        reviews = query.filter_by(creator_id=userid,item_id=itemid)
+    if userid:
+        reviews = query.filter_by(creator_id=userid)
+    elif itemid:
+        reviews = query.filter_by(item_id=itemid)
+    else:
+        reviews = query
+    rs = reviews.order_by(Reviews.timestamp.desc())\
+                .offset(per_page * page).limit(per_page)
+    review_list = [r.to_dict() for r in rs]
+    reviews_dict = {'reviewcount': reviews.count(), 'reviews': review_list}
+    return jsonify(reviews_dict)
+
+@rest.route('/all/reviews')
+def get_all_reviews():
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    all_reviews = Reviews.query
+    reviews = all_reviews.offset(page*per_page).limit(per_page)
+    reviews_dict = {
+        'reviews': [rev.to_dict() for rev in reviews],
+        'total': all_reviews.count(),
+        'currentpage': page
+    }
+    return jsonify(reviews_dict)
+
+@rest.route('/review/<int:reviewid>')
+def get_review(reviewid):
+    review = Reviews.query.get_or_404(reviewid)
+    review_dict = review.to_dict()
+    #attach comments
+    rev_comments = review.comments.order_by(Comments.timestamp.desc())
+    review_dict['commentcount'] = rev_comments.count()
+    comments = [c.to_dict() for c in rev_comments.limit(50)]
+    review_dict['comments'] = comments
+    return jsonify(review_dict)
+
+@rest.route('/review/<int:reviewid>/comments')
+def get_review_comments(reviewid):
+    review = Reviews.query.get_or_404(reviewid)
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', 50, type=int)
+    rev_comments = review.comments.order_by(Comments.timestamp.desc())\
+                                .offset(page*per_page).limit(per_page)
+    comments = [c.to_dict() for c in rev_comments]
+    return jsonify(comments)
+
+@rest.route('/review/<int:reviewid>/voters')
+def get_review_voters(reviewid):
+    pass
+
+@rest.route('/upvotereview/<int:reviewid>')
+@auth.login_required
+def upvote_review(reviewid):
+    user = g.user
+    review = Reviews.query.get_or_404(reviewid)
+    voted = Rvote.query.filter_by(user_id=user.id,review_id=reviewid).first()
+    if user != review.creator and voted is None:
+        review.vote = review.vote + 1 
+        db.session.add(review)
+        rvote = Rvote(
+            voter=user,
+            vote_review=review
+        )
+        db.session.add(rvote)
+        db.session.commit()
+    return jsonify(review.vote)
 
 @rest.route('/newreview/<int:itemid>', methods=['POST'])
 @auth.login_required
@@ -86,88 +161,3 @@ def recover_review(reviewid):
     db.session.add(review)
     db.session.commit()
     return jsonify('Enabled')
-
-@rest.route('/review/<int:reviewid>')
-def get_review(reviewid):
-    review = Reviews.query.get_or_404(reviewid)
-    review_dict = review.to_dict()
-    #attach comments
-    rev_comments = review.comments.order_by(Comments.timestamp.desc())
-    review_dict['commentcount'] = rev_comments.count()
-    comments = [c.to_dict() for c in rev_comments.limit(50)]
-    review_dict['comments'] = comments
-    return jsonify(review_dict)
-
-@rest.route('/review/<int:reviewid>/comments')
-def get_review_comments(reviewid):
-    review = Reviews.query.get_or_404(reviewid)
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', 50, type=int)
-    rev_comments = review.comments.order_by(Comments.timestamp.desc())\
-                                .offset(page*per_page).limit(per_page)
-    comments = [c.to_dict() for c in rev_comments]
-    return jsonify(comments)
-
-@rest.route('/upvotereview/<int:reviewid>')
-@auth.login_required
-def upvote_review(reviewid):
-    user = g.user
-    review = Reviews.query.get_or_404(reviewid)
-    voted = Rvote.query.filter_by(user_id=user.id,review_id=reviewid).first()
-    if user != review.creator and voted is None:
-        review.vote = review.vote + 1 
-        db.session.add(review)
-        rvote = Rvote(
-            voter=user,
-            vote_review=review
-        )
-        db.session.add(rvote)
-        db.session.commit()
-    return jsonify(review.vote)
-
-@rest.route('/user/<int:userid>/reviews')
-def get_user_reviews(userid):
-    #user = Users.query.get_or_404(userid)
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    reviews = Reviews.query.filter_by(creator_id=userid)
-    rs = reviews.order_by(Reviews.timestamp.desc())\
-                .offset(per_page * page).limit(per_page)
-    reviewcount = reviews.count()
-    review_list = [r.to_dict() for r in rs]
-    review_dict = {'reviewcount': reviewcount, 'reviews': review_list}
-    return jsonify(review_dict)
-
-@rest.route('/reviews') # per user, item or any
-def get_reviews():
-    userid = request.args.get('userid','')
-    itemid = request.args.get('itemid','')
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    query = Reviews.query
-    if userid and itemid:
-        reviews = query.filter_by(creator_id=userid,item_id=itemid)
-    if userid:
-        reviews = query.filter_by(creator_id=userid)
-    elif itemid:
-        reviews = query.filter_by(item_id=itemid)
-    else:
-        reviews = query
-    rs = reviews.order_by(Reviews.timestamp.desc())\
-                .offset(per_page * page).limit(per_page)
-    review_list = [r.to_dict() for r in rs]
-    reviews_dict = {'reviewcount': reviews.count(), 'reviews': review_list}
-    return jsonify(reviews_dict)
-
-@rest.route('/all/reviews')
-def get_all_reviews():
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    all_reviews = Reviews.query
-    reviews = all_reviews.offset(page*per_page).limit(per_page)
-    reviews_dict = {
-        'reviews': [rev.to_dict() for rev in reviews],
-        'total': all_reviews.count(),
-        'currentpage': page
-    }
-    return jsonify(reviews_dict)

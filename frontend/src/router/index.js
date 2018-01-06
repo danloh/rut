@@ -29,6 +29,7 @@ import EditTips from '@/components/Rut/EditTips'
 import EditItem from '@/components/Item/EditItem'
 import NewReview from '@/components/Item/NewReview'
 import EditReview from '@/components/Item/EditReview'
+import MyItemRC from '@/components/Item/MyItemRC'
 import createClipList from '@/components/Challenge/CreateClipList'
 import createDemandList from '@/components/Demand/CreateDemandList'
 import createProfileRuts from '@/components/Profile/CreateProfileRuts'
@@ -105,6 +106,7 @@ const router = new Router({
     },
     { path: '/commenton/rut/:id', component: RutComment, name: 'RutComment' },
     { path: '/item/:id', component: ItemView, name: 'Item' },
+    { path: '/myrc/item/:itemid', component: MyItemRC, name: 'MyRc', props: true, meta: {auth: true} },
     { path: '/edit/item/:id', component: EditItem, name: 'EditItem', meta: {auth: true} },
     { path: '/review/item/:id', component: NewReview, name: 'NewReview', meta: {auth: true} },
     { path: '/editreview/:id', component: EditReview, name: 'EditReview', meta: {auth: true} },

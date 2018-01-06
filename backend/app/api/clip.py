@@ -42,28 +42,15 @@ def get_clips():
     }
     return jsonify(clips_dict)
 
-@rest.route('/iuclips') # per item or user or any
-def get_iuclips():
-    userid = request.args.get('userid','')
-    itemid = request.args.get('itemid','')
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    q = Clips.query
-    if userid and itemid:
-        query =q.filter_by(creator_id=userid,item_id=itemid)
-    elif userid:
-        query = q.filter_by(creator_id=userid)
-    elif itemid:
-        query = q.filter_by(item_id=itemid)
-    else:
-        query = q
-    order_query = query.order_by(Clips.timestamp.desc())\
-                       .offset(page * per_page).limit(per_page)
-    clips_dict = {
-        'clips': [c.to_dict() for c in order_query],
-        'total': query.count()
-    }
-    return jsonify(clips_dict)
+@rest.route('/clip/<int:clipid>')
+def get_clip(clipid):        
+    clip = Clips.query.get_or_404(clipid)
+    clip_dict = clip.to_dict()
+    return jsonify(clip_dict)
+
+@rest.route('/clip/<int:clipid>/voters')
+def get_clip_voters(clipid):
+    pass
 
 @rest.route('/newclip', methods=['POST'])
 @auth.login_required

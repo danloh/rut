@@ -24,3 +24,10 @@ def after_request(response):
     return response
 
 from . import authen, errors, rut, item, clip, review, demand, comment, tag, user
+
+# #get request params
+# userid = request.args.get('userid', '')
+# action = request.args.get('action', '') 
+# demandid = request.args.get('demandid', '')
+# itemid = request.args.get('itemid', '')
+# tagid = request.args.get('tagid', '')

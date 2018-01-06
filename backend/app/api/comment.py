@@ -7,6 +7,25 @@ from ..utils import split_str, str_to_dict, str_to_set
 
 from . import db, rest, auth, PER_PAGE
 
+@rest.route('/all/comments')
+def get_all_comments():
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    all_comments = Comments.query
+    comments = all_comments.offset(page*per_page).limit(per_page)
+    comments_dict = {
+        'comments': [c.to_dict() for c in comments],
+        'total': all_comments.count(),
+        'currentpage': page
+    }
+    return jsonify(comments_dict)
+
+@rest.route('/comment/<int:commentid>')
+def get_comment(commentid):        
+    commt = Comments.query.get_or_404(commentid)
+    commt_dict = commt.to_dict()
+    return jsonify(commt_dict)
+
 @rest.route('/comment/rut/<int:rutid>', methods=['POST'])
 @rest.route('/comment/demand/<int:demandid>', methods=['POST'])
 @rest.route('/comment/comment/<int:commentid>', methods=['POST'])
@@ -66,30 +85,3 @@ def recover_comment(commentid):
     db.session.add(comment)
     db.session.commit()
     return jsonify('Enabled')
-
-@rest.route('/<int:userid>/comments')
-def get_user_comments(userid):
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    all_comments = Comments.query.filter_by(creator_id=userid)\
-                           .order_by(Comments.timestamp.desc())
-    comments = all_comments.offset(page*per_page).limit(per_page)
-    comments_dict = {
-        'comments': [c.to_dict() for c in comments],
-        'total': all_comments.count(),
-        'currentpage': page
-    }
-    return jsonify(comments_dict)
-
-@rest.route('/all/comments')
-def get_all_comments():
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    all_comments = Comments.query
-    comments = all_comments.offset(page*per_page).limit(per_page)
-    comments_dict = {
-        'comments': [c.to_dict() for c in comments],
-        'total': all_comments.count(),
-        'currentpage': page
-    }
-    return jsonify(comments_dict)

@@ -20,44 +20,88 @@ def get_all_items():
     }
     return jsonify(items_dict)
 
-@rest.route('/<int:userid>/doing/items')
-def get_doing_items(userid):
-    user = Users.query.get_or_404(userid)
-    flags = user.flag_items.filter_by(flag_label=2).order_by(Flag.timestamp.desc())
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    items = [d.flag_item for d in flags.offset(page * per_page).limit(per_page)]
-    items_dict = {
-        'items': [i.to_dict() for i in items],
-        'total': flags.count()
-    }
-    return jsonify(items_dict)
+@rest.route('/item/<int:itemid>')
+def get_item(itemid):
+    item = Items.query.get_or_404(itemid)
+    item_dict = item.to_dict()
+    ruts = [c.post \
+        for c in item.posts.order_by(Collect.timestamp.desc()).limit(PER_PAGE)]
+    included_ruts = [{'id':r.id, 'title': r.title} for r in ruts]
+    item_dict['inruts'] = included_ruts
+    return jsonify(item_dict)
 
-@rest.route('/<int:userid>/todo/items')
-def get_todo_items(userid):
-    user = Users.query.get_or_404(userid)
-    flags = user.flag_items.filter_by(flag_label=1).order_by(Flag.timestamp.desc())
+@rest.route('/item/<int:itemid>/reviews')
+def get_item_reviews(itemid):
+    #item = Items.query.get_or_404(itemid)
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    items = [d.flag_item for d in flags.offset(page * per_page).limit(per_page)]
-    items_dict = {
-        'items': [i.to_dict() for i in items],
-        'total': flags.count()
+    userid = request.args.get('userid', '')
+    ref = request.args.get('ref', '') # hot or new
+    reviews = Reviews.query.filter_by(item_id=itemid) #item.reviews # 
+    if userid:
+        myreviews = reviews.filter_by(creator_id=userid)\
+                            .offset(per_page * page).limit(per_page)
+        review_list = [r.to_dict() for r in myreviews]
+    if ref == 'hot':
+        hotreviews = reviews.order_by(Reviews.vote.desc())\
+                            .offset(per_page * page).limit(per_page)
+        review_list = [r.to_dict() for r in hotreviews]
+    if ref == 'new':
+        newreviews = reviews.order_by(Reviews.timestamp.desc())\
+                            .offset(per_page * page).limit(per_page)
+        review_list = [r.to_dict() for r in newreviews]
+    reviews_dict = {
+        'reviewcount': reviews.count(),
+        'reviews': review_list
     }
-    return jsonify(items_dict)
+    return jsonify(reviews_dict)
 
-@rest.route('/<int:userid>/done/items')
-def get_done_items(userid):
-    user = Users.query.get_or_404(userid)
-    flags = user.flag_items.filter_by(flag_label=3).order_by(Flag.timestamp.desc())
+@rest.route('/item/<int:itemid>/inruts')
+def get_item_inruts(itemid):
+    item = Items.query.get_or_404(itemid)
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    items = [d.flag_item for d in flags.offset(page * per_page).limit(per_page)]
-    items_dict = {
-        'items': [i.to_dict() for i in items],
-        'total': flags.count()
+    included_ruts = item.posts.order_by(Collect.timestamp.desc())\
+                              .offset(per_page * page).limit(per_page)
+    ruts_list = [c.post for c in included_ruts]
+    in_ruts_list = [{'id':r.id, 'title': r.title} for r in ruts_list]
+    return jsonify(in_ruts_list)
+
+@rest.route('/iuclips') # per item or user or any
+def get_iu_clips():
+    userid = request.args.get('userid','')
+    itemid = request.args.get('itemid','')
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    q = Clips.query
+    if userid and itemid:
+        query =q.filter_by(creator_id=userid,item_id=itemid)
+    elif userid:
+        query = q.filter_by(creator_id=userid)
+    elif itemid:
+        query = q.filter_by(item_id=itemid)
+    else:
+        query = q
+    order_query = query.order_by(Clips.timestamp.desc())\
+                       .offset(page * per_page).limit(per_page)
+    clips_dict = {
+        'clips': [c.to_dict() for c in order_query],
+        'total': query.count()
     }
-    return jsonify(items_dict)
+    return jsonify(clips_dict)
+
+# who todo /doing / done the item
+@rest.route('/item/<int:itemid>/todos')
+def get_item_todos(itemid):
+    pass
+
+@rest.route('/item/<int:itemid>/doings')
+def get_item_doings(itemid):
+    pass
+
+@rest.route('/item/<int:itemid>/dones')
+def get_item_dones(itemid):
+    pass
 
 @rest.route('/checkflag/item/<int:itemid>')
 @auth.login_required
@@ -90,48 +134,6 @@ def flag_item_done(itemid):
     item = Items.query.get_or_404(itemid)
     user.flag(item,3)
     return jsonify('Done')
-
-@rest.route('/item/<int:itemid>')
-def get_item(itemid):
-    item = Items.query.get_or_404(itemid)
-    item_dict = item.to_dict()
-    ruts = [c.post \
-        for c in item.posts.order_by(Collect.timestamp.desc()).limit(PER_PAGE)]
-    included_ruts = [{'id':r.id, 'title': r.title} for r in ruts]
-    item_dict['inruts'] = included_ruts
-    return jsonify(item_dict)
-
-@rest.route('/item/<int:itemid>/reviews')
-def get_item_reviews(itemid):
-    #item = Items.query.get_or_404(itemid)
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    ref = request.args.get('ref', '') # hot or new
-    reviews = Reviews.query.filter_by(item_id=itemid) #item.reviews # 
-    if ref == 'hot':
-        hotreviews = reviews.order_by(Reviews.vote.desc())\
-                            .offset(per_page * page).limit(per_page)
-        review_list = [r.to_dict() for r in hotreviews]
-    if ref == 'new':
-        newreviews = reviews.order_by(Reviews.timestamp.desc())\
-                            .offset(per_page * page).limit(per_page)
-        review_list = [r.to_dict() for r in newreviews]
-    reviews_dict = {
-        'reviewcount': reviews.count(), 
-        'reviews': review_list
-    }
-    return jsonify(reviews_dict)
-
-@rest.route('/item/<int:itemid>/inruts')
-def get_item_inruts(itemid):
-    item = Items.query.get_or_404(itemid)
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    included_ruts = item.posts.order_by(Collect.timestamp.desc())\
-                              .offset(per_page * page).limit(per_page)
-    ruts_list = [c.post for c in included_ruts]
-    in_ruts_list = [{'id':r.id, 'title': r.title} for r in ruts_list]
-    return jsonify(in_ruts_list)
 
 @rest.route('/edititem/<int:itemid>', methods=['POST'])
 @auth.login_required

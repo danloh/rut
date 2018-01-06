@@ -50,7 +50,6 @@ def get_tag_ruts(tagid):
     posts = tag.posts.order_by(Posts.timestamp.desc())\
                     .offset(per_page * page).limit(per_page)
     tagruts = [p.to_dict() for p in posts]
-    #tagruts.reverse()
     return jsonify(tagruts)
 
 @rest.route('/tag/<int:tagid>/demands')

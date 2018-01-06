@@ -7,19 +7,6 @@ from ..utils import split_str, str_to_dict, str_to_set
 
 from . import db, rest, auth, PER_PAGE
 
-@rest.route('/user/<int:userid>/demands')
-def get_user_demands(userid):
-    #user = Users.query.get_or_404(userid)
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    demands = Demands.query.filter_by(requestor_id=userid)
-    ds = demands.order_by(Demands.timestamp.desc())\
-                .offset(per_page * page).limit(per_page)
-    demandcount = demands.count()
-    d_list = [d.to_dict() for d in ds]
-    demand_dict = {'demandcount': demandcount, 'demands': d_list}
-    return jsonify(demand_dict)
-
 @rest.route('/all/demands')   
 @rest.route('/demands')
 def get_demands():
@@ -86,6 +73,10 @@ def get_demand_answers(demandid):
     d_respons = [r.post for r in d_resps]
     answers = [{'id':p.id,'title':p.title,'intro':p.intro} for p in d_respons]
     return jsonify(answers)
+
+@rest.route('/demand/<int:demandid>/voters')
+def get_demand_voters(demandid):
+    pass
 
 @rest.route('/upvotedemand/<int:demandid>')
 @auth.login_required
