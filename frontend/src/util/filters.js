@@ -49,6 +49,11 @@ export function showLess (content, least = 155, less = true) {
   }
 }
 
+// pluralise
+export function pluralise (n, unit) {
+  return n + ' ' + unit + (n <= 1 ? '' : 's')
+}
+
 // trim input and valid
 export function trimValid (rule, value, callback) {
   if (value.trim() === '') {

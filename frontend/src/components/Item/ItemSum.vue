@@ -10,7 +10,7 @@
       <span><b>Byline:</b> {{ item.byline }} </span><br>
       <span><b>Published:</b> {{ item.publisher }} - {{ item.pubdate }} - {{ item.language }}</span><br>
       <span><b>UID/ISBN:</b> {{ item.uid }} <a :href="item.resurl" v-if="item.resurl"> .....</a> </span><br>
-      <span><b>included:</b> {{ item.rutcount }} </span>
+      <span><b>Listed:</b> {{ item.rutcount }} </span>
     </div>
     <div class="operate">
       <el-dropdown>

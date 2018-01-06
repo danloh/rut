@@ -76,7 +76,7 @@ export default {
 .review-main
   background-color lighten(#f4f7f3, 50%)
   padding 5px
-  border-bottom 1px dotted #e09015
+  border-bottom 1px solid #eee
   position relative
   .title
     font-weight 700
