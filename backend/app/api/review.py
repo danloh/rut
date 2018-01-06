@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 # review: a note, review or mindmap on a item
 
-from flask import current_app, request, g, jsonify, abort
+from flask import request, g, jsonify, abort
 from ..models import *
-
 from . import db, rest, auth, PER_PAGE
 
 @rest.route('/reviews') # per user, item or any

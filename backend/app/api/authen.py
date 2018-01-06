@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 # register, log in,  etc.
 
-from flask import current_app, request, g, jsonify, abort
+from flask import request, g, jsonify, abort
 from ..models import *
-from ..utils import split_str, str_to_dict, str_to_set
 from ..task.email import send_email
-
 from . import db, rest, auth, PER_PAGE
 
 @rest.route('/register', methods = ['POST'])

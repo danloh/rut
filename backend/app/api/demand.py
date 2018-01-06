@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 # demand: a request to get a rut like book list on a subject
 
-from flask import current_app, request, g, jsonify, abort
+from flask import request, g, jsonify, abort
 from ..models import *
-from ..utils import split_str, str_to_dict, str_to_set
-
 from . import db, rest, auth, PER_PAGE
 
 @rest.route('/all/demands')   

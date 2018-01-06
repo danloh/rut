@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 # rut is readup tips, included an item list and tips for each item
 
-from flask import current_app, request, g, jsonify, abort
+from flask import request, g, jsonify, abort
 from ..models import *
 from ..bot import spider
-from ..utils import split_str, str_to_dict, str_to_set
-
 from . import db, rest, auth, PER_PAGE
 
 @rest.route('/index/ruts')

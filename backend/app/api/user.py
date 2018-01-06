@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 # user 
 
-from flask import current_app, request, g, jsonify, abort
+from flask import request, g, jsonify, abort
 from ..models import *
-from ..utils import split_str, str_to_dict, str_to_set
-
 from . import db, rest, auth, PER_PAGE
 
-@rest.route('/currentuser') 
+@rest.route('/currentuser')
 @auth.login_required  
 def get_current_user(): # for authed-user to re-get info
     user = g.user
