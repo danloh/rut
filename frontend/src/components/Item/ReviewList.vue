@@ -32,7 +32,8 @@ export default {
   methods: {
     loadmoreReviews () {
       let itemid = this.param.itemid
-      let params = {'ref': this.param.ref, 'page': this.currentPage}
+      let page = { 'page': this.currentPage }
+      let params = Object.assign(page, this.param)
       fetchItemReviews(itemid, params)
       .then(resp => {
         this.reviews.push(...resp.data.reviews)
@@ -41,7 +42,7 @@ export default {
     },
     loadReviews () {
       let itemid = this.param.itemid
-      let params = {'ref': this.param.ref}
+      let params = this.param
       fetchItemReviews(itemid, params)
       .then(resp => {
         this.reviews = resp.data.reviews

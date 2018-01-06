@@ -29,6 +29,7 @@ import EditTips from '@/components/Rut/EditTips'
 import EditItem from '@/components/Item/EditItem'
 import NewReview from '@/components/Item/NewReview'
 import EditReview from '@/components/Item/EditReview'
+import MyItemRC from '@/components/Item/MyItemRC'
 import createClipList from '@/components/Challenge/CreateClipList'
 import createDemandList from '@/components/Demand/CreateDemandList'
 import createProfileRuts from '@/components/Profile/CreateProfileRuts'
@@ -37,7 +38,7 @@ import ProfileReviews from '@/components/Profile/ProfileReviews'
 import ProfileDemands from '@/components/Profile/ProfileDemands'
 import Setting from '@/components/Profile/Setting'
 import EditProfile from '@/components/Profile/EditProfile'
-import UserList from '@/components/Profile/UserList'
+import FollowedList from '@/components/Profile/FollowedList'
 
 // for go back / forward scrollBehavior
 const scrollBehavior = (to, from, savedPosition) => {
@@ -49,11 +50,16 @@ const scrollBehavior = (to, from, savedPosition) => {
   }
 }
 // for auth edit rut
+import { checkEditable } from '@/api/api'
 const beforeEnter = (to, from, next) => {
   let currentUserID = store.getters.currentUserID
-  let creatorID = store.getters.rutDetail.creator.id
-  if (currentUserID === creatorID) {
-    next()
+  let rut = store.getters.rutDetail
+  if (currentUserID) {
+    checkEditable(currentUserID, rut.id).then(res => {
+      if (res.data.canedit) {
+        next()
+      }
+    })
   }
 }
 // for profile setting
@@ -100,6 +106,7 @@ const router = new Router({
     },
     { path: '/commenton/rut/:id', component: RutComment, name: 'RutComment' },
     { path: '/item/:id', component: ItemView, name: 'Item' },
+    { path: '/myrc/item/:itemid', component: MyItemRC, name: 'MyRc', props: true, meta: {auth: true} },
     { path: '/edit/item/:id', component: EditItem, name: 'EditItem', meta: {auth: true} },
     { path: '/review/item/:id', component: NewReview, name: 'NewReview', meta: {auth: true} },
     { path: '/editreview/:id', component: EditReview, name: 'EditReview', meta: {auth: true} },
@@ -135,7 +142,7 @@ const router = new Router({
         { path: 'havedone', name: 'DoneItems', component: createProfileItems('done') },
         { path: 'reviews', name: 'Reviews', component: ProfileReviews },
         { path: 'demands', name: 'Demands', component: ProfileDemands },
-        { path: 'followeds', name: 'Followeds', component: UserList }
+        { path: 'followeds', name: 'Followeds', component: FollowedList }
       ]
     },
     { path: '/setting/:id',

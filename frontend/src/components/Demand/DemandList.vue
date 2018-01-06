@@ -20,11 +20,9 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'totalDemands',
-      'currentD',
       'currentDemands',
-      'maxD',
-      'perD'
+      'currentD',
+      'maxD'
     ]),
     hasMore () {
       return this.currentD < this.maxD

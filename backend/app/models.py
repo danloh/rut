@@ -273,6 +273,7 @@ class Posts(db.Model):
                           default=datetime.utcnow)
     editable = db.Column(db.String(32),default='Creator')
     edit_start = db.Column(db.DateTime,default=None)
+    editing_id = db.Column(db.Integer)
     disabled = db.Column(db.Boolean)
     vote = db.Column(db.Integer, default=0)
     refer = db.Column(db.String(32))  # to mark off some special list
@@ -403,30 +404,27 @@ class Posts(db.Model):
                     db.session.add(_tag)
         #db.session.commit()
     
-    #check if can be edited
-    @property
-    def uneditable(self):
-        contribute = self.contributors.filter_by(
-            user_id=current_user.id,
-            disabled=False
-        ).first()
-        if (current_user != self.creator and
-                contribute is None and
-                self.editable != 'Everyone'):
+    #check if can be edited, permission
+    def uneditable(self, user):
+        if (user != self.creator 
+        and self.editable != 'Everyone' 
+        and user.role.duty != 'Admin'):
             return True
         else:
             return False
 
     # lock and unlock status in/after edit: a stopgap
-    def lock(self):
+    def lock(self, user):
+        # set a start time and id  to indicate in editing
         self.edit_start = datetime.utcnow()
+        self.editing_id = user.id
         db.session.add(self)
-        # set a value to indicate in editing
         db.session.commit()
     def unlock(self):
-        self.edit_start = None
-        db.session.add(self)
         # reset eidt_start to None, after edit done
+        self.edit_start = None
+        self.editing_id = None
+        db.session.add(self)
         db.session.commit()
     def force_unlock(self, start=None, timeout=2400):
         # sometime user forget submit, need to force unlock
@@ -436,26 +434,21 @@ class Posts(db.Model):
             delta = now - start
             if delta.seconds >= timeout:
                 self.unlock()
-    def check_locked(self):
+    def check_locked(self, userid):
         # if eidt_start is not None, it is locked as editing
         start = self.edit_start
-        if start:
+        if start and self.editing_id != userid:
             #force_unlock firstly
             self.force_unlock(start=start)
             return bool(self.edit_start)
         else:
             return False
-    def mod_locked(self):
-        # GET: lock and  render edit tpl, POST: unlock
-        if request.method == "GET":
-            if self.check_locked():
-                flash('This Content is in Editing, to Avoid Conflict, Please Try later, up to 40min')
-                return True
-            # set edit_start as indict editing
-            self.lock()
-        # on_submit as edit done POST
-        if request.method == "POST":
-            self.unlock()
+    def check_editable(self, user):
+        """permission and unlocked"""
+        is_uneditable = self.uneditable(user)
+        is_locked = self.check_locked(user.id)
+        can_edit =  (not is_locked) and (not is_uneditable)
+        return can_edit
 
     def renew(self):
         self.renewal = datetime.utcnow()
@@ -517,10 +510,10 @@ class Posts(db.Model):
             'intro': self.intro,
             'credential': self.credential,
             'rating': self.rating,
-            'epilog': self.epilog,
+            'epilog': self.epilog or '',
             'createat': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            # OR .strftime('%Y-%m-%dT%H:%M:%SZ') # as timezone
             #'renewat': self.renewal.strftime('%Y-%m-%d %H:%M:%S'),
-            'score': self.score,
             'itemcount': self.items.count(),
             'starcount': self.starers.count(),
             'challengecount': self.challengers.count(),
@@ -681,21 +674,21 @@ class Items(db.Model):
             'cate': self.cate,
             'title': self.title,
             'uid': self.uid,
-            'byline': self.author, 
+            'byline': self.author or '', 
             'rutcount': self.posts.count(),
             'reviewcount': self.reviews.count(),
             'clipcount': self.clips.count(),
             'commentcount': self.comments.count(),
             'cover': self.item_cover,
-            'publisher': self.publisher,
-            'pubdate': self.pub_date,
-            'language': self.language,
-            'page': self.page,
-            'level': self.level,
-            'binding': self.binding,
-            'price': self.price,
-            'resurl': self.res_url,
-            'details': self.details
+            'publisher': self.publisher or '',
+            'pubdate': self.pub_date or '',
+            'language': self.language or '',
+            'page': self.page or '',
+            'level': self.level or '',
+            'binding': self.binding or '',
+            'price': self.price or '',
+            'resurl': self.res_url or '',
+            'details': self.details or ''
         }
         return item_dict
 
@@ -774,7 +767,7 @@ class Tags(db.Model):
             parent_tag_id=tag.id).first() is not None
 
     def parent(self, tag):
-        if not self.parent_is(tag):
+        if tag and (not self.parent_is(tag)):
             c = Clan(child_tag=self, parent_tag=tag)
             db.session.add(c)
             #db.session.commit()
@@ -798,7 +791,7 @@ class Tags(db.Model):
         tag_dict = {
             'id': self.id,
             'tagname': self.tag,
-            'descript': self.descript,
+            'descript': self.descript or '',
             'favcount': self.favers.count()
         }
         return tag_dict
@@ -879,7 +872,7 @@ class Comments(db.Model):
     def to_dict(self):
         comment_dict = {
             'id': self.id,
-            'heading': self.heading,
+            'heading': self.heading or '',
             'body': self.body,
             'vote': self.vote,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
@@ -1083,7 +1076,7 @@ class Demands(db.Model):
             'requestor': {'id': requestor.id, 'name': requestor.nickname or requestor.name},
             'body': self.body,
             'vote': self.vote,
-            'tagStr': self.dtag_str,
+            'tagStr': self.dtag_str or '',
             'answercount': self.posts.count(),
             'commentcount': self.comments.count(),
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
@@ -1600,16 +1593,15 @@ class Users(UserMixin, db.Model):
         user_dict = {
             'id': self.id,
             'name': self.nickname or self.name,
-            'nickname': self.nickname,
+            'nickname': self.nickname or '',
             'username': self.name,
             'role': self.role.duty,
             'avatar': self.user_avatar,
-            'location': self.location,
-            'about': self.about_me,
+            'location': self.location or '',
+            'about': self.about_me or '',
             'followercount': self.followers.count(), 
             'followedcount': self.followed.count(), # following other
-            'exlink': self.links,
-            'url': '/profile/'+str(self.id)
+            'exlink': self.links or ''
         }
         return user_dict
 

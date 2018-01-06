@@ -21,8 +21,7 @@ export default {
   computed: {
     ...mapGetters([
       'currentPage',
-      'maxPage',
-      'perPage'
+      'maxPage'
     ]),
     hasMore () {
       return this.currentPage < this.maxPage
@@ -31,7 +30,7 @@ export default {
 }
 </script>
 
-<style lang="stylus">
+<style lang="stylus" scoped>
 .rut-list
   width 100%
 </style>

@@ -20,12 +20,9 @@ export default {
   components: { RutList },
   computed: {
     ...mapGetters([
-      'allRuts',
       'totalRuts',
       'currentPage',
-      'currentRuts',
-      'maxPage',
-      'perPage'
+      'currentRuts'
     ])
   },
   methods: {

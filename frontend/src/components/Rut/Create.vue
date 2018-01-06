@@ -1,20 +1,21 @@
 <template>
   <div class="create-page">
     <h3 class="title">Create New Readup Tips</h3>
-    <p v-if="demandid"> As Answer To A <router-link :to="'/demand/' + demandid" target="_blank" rel="nofollow noopener noreferrer">Request</router-link></p>
-    <el-form class="create-form" :model="createForm" :rules="rules" ref="createForm" label-width="80px" size="mini">
+    <p v-if="demandid"> As Answer To The 
+      <router-link :to="'/demand/' + demandid" target="_blank" rel="nofollow noopener noreferrer">
+      {{ 'Request:  ' + demandBody || 'Request' }}
+      </router-link>
+    </p>
+    <el-form class="create-form" :model="createForm" :rules="rules" ref="createForm" label-width="120px" size="mini">
       <el-form-item label="Title" prop="title">
-        <el-input v-model="createForm.title"></el-input>
+        <el-input v-model="createForm.title" clearable></el-input>
       </el-form-item>
       <el-form-item label="Preface" prop="intro">
-        <!-- <el-input type="textarea" :rows="3" v-model="createForm.intro"></el-input> -->
-        <quill-editor v-model="createForm.intro"
-                      ref="TextEditor"
-                      class="quill-editor">
-        </quill-editor>
+        <el-input type="textarea" :rows="3" v-model="createForm.intro"></el-input>
+        <md-tool :pretext="createForm.intro" @insertmd="updateM"></md-tool>
       </el-form-item>
       <el-form-item label="Tag" prop="tag">
-        <el-input v-model="createForm.tag"></el-input>
+        <el-input v-model="createForm.tag" clearable></el-input>
       </el-form-item>
       <el-form-item label="Credential" prop="credential">
         <el-input type="textarea" v-model="createForm.credential"></el-input>
@@ -24,13 +25,13 @@
           <el-option v-for="r in ratings" :key="r.value" :label="r.label" :value="r.value"></el-option>
         </el-select>
       </el-form-item>
-      <!-- <el-form-item label="Who Can Edit?" prop="editable">
+      <el-form-item label="Who Can Edit?" prop="editable">
         <el-radio-group v-model="createForm.editable">
           <el-radio-button label="Creator"></el-radio-button>
-          <el-radio-button label="Contributors"></el-radio-button>
+          <!-- <el-radio-button label="Contributors"></el-radio-button> -->
           <el-radio-button label="Everyone"></el-radio-button>
         </el-radio-group>
-      </el-form-item> -->
+      </el-form-item>
       <el-form-item>
         <el-button type="success" size="medium" @click="onCreate('createForm', createForm)">Create New Then Add Item Later</el-button>
         <!-- <el-button @click="resetForm('createForm')">Reset</el-button> -->
@@ -40,12 +41,14 @@
 </template>
 
 <script>
-import { newRut } from '@/api/api'
+import { newRut, fetchOnlyDemand } from '@/api/api'
 import { trimValid } from '@/util/filters'
+import MdTool from '@/components/Misc/MdTool.vue'
 
 export default {
   name: 'create',
   title: 'Create New',
+  components: { MdTool },
   data () {
     return {
       createForm: {
@@ -72,7 +75,8 @@ export default {
         {value: 'College', label: 'College'}, {value: 'Elementary', label: 'Elementary'},
         {value: 'Preschool', label: 'Preschool'}, {value: 'Professional', label: 'Professional'}
       ],
-      demandid: this.$route.params.id || ''
+      demandid: this.$route.params.id || '',
+      demandBody: ''
     }
   },
   methods: {
@@ -108,7 +112,28 @@ export default {
     },
     resetForm (formName) {
       this.$refs[formName].resetFields()
+    },
+    updateM (data) {
+      this.createForm.intro += data
+    },
+    loadDemand () {
+      let demandid = this.$route.params.id
+      if (!demandid) {
+        return
+      } else {
+        let demandG = this.$store.getters.demandDetail
+        if (demandG && demandG.id === Number(demandid)) {
+          this.demandBody = demandG.body.slice(0, 160)
+        } else {
+          fetchOnlyDemand(demandid).then(resp => {
+            this.demandBody = resp.data.body.slice(0, 160)
+          })
+        }
+      }
     }
+  },
+  created () {
+    this.loadDemand()
   }
 }
 </script>

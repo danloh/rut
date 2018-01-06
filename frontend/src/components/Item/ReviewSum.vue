@@ -13,7 +13,7 @@
       <el-button type="text" size="mini" @click="showFull" v-if="spoiler || short">{{ readMore }}</el-button>
     </div>
     <div class="bar">
-      <router-link :to="'/editreview/' + review.id" v-if="canEdit">...Edit |</router-link>
+      <router-link :to="'/editreview/' + review.id" v-if="canEdit">...Edit |</router-link> <!--if not show edit in list, && !less-->
       <el-button type="text" @click="upReview">Helpful</el-button>&nbsp;{{ vote }}
     </div>
   </div>
@@ -23,6 +23,7 @@
 import { upvoteReview } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { showLess } from '@/util/filters'
+import marked from '@/util/marked'
 
 export default {
   name: 'review-sum',
@@ -42,7 +43,7 @@ export default {
       return this.review.creator
     },
     reviewContent () {
-      let content = this.review.body
+      let content = marked(this.review.body)
       let least = this.spoiler ? 0 : 255
       return this.short || this.spoiler ? showLess(content, least) : content
     },

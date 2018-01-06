@@ -5,7 +5,7 @@ marked.setOptions({
   renderer: new marked.Renderer(),
   gfm: true,
   tables: true,
-  breaks: false,
+  breaks: true,
   pedantic: false,
   sanitize: false,
   smartLists: true,
@@ -32,8 +32,8 @@ const imageParse = (src, title, alt) => {
   src = src.replace(/^http:\/\//ig, '/proxy/')
   return `<img src="${src}" 
                title="${title || alt || 'readup.tips'}" 
-               alt="${alt || title || src}" 
-               onclick="if(window.utils) window.utils.openImgPopup('${src}')"/>`.replace(/\s+/g, ' ').replace('\n', '')
+               style="width:10%; height:15%"
+               alt="${alt || title || src}"/>`.replace(/\s+/g, ' ').replace('\n', '')
 }
 
 renderer.link = linkParse

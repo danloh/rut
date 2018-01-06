@@ -13,7 +13,7 @@ import UserSum from './UserSum.vue'
 import { fetchFollows } from '@/api/api'
 
 export default {
-  name: 'user-list',
+  name: 'followed-list',
   // props: ['users'],
   components: { UserSum },
   data () {

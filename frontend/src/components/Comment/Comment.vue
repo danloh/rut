@@ -4,12 +4,12 @@
       <router-link :to="'/profile/' + creator.id">{{ creator.name }}</router-link>
       ~ {{ comment.timestamp | timeAgo }}
     </div>
-    <div class="text" v-html="commentContent"></div>
+    <div class="content" v-html="commentContent"></div>
     <el-button type="text" size="mini" @click="showRe = !showRe">
       {{ showRe ? 'Hide' : 'Reply' }}
     </el-button>
     <span class="toggle" :class="{ open }" v-if="hasChild">
-      <a @click="open = !open">{{ open ? '[-]' : '[+]' }} </a>
+      <a @click="open = !open">{{ open ? '[-]' : '[+] ' + childComments.length + ' collapsed' }} </a>
     </span>
     <reply class="reply" :refer="refer" :show.sync="showRe" @newreply="updateNew"></reply> <!--sync, hide input once submit-->
     <div class="comment-children" v-show="open">
@@ -28,7 +28,7 @@ export default {
   components: { Reply },
   data () {
     return {
-      open: true,
+      open: false,
       showRe: false,
       hasChild: this.comment.children.length > 0,
       childComments: this.comment.children,
@@ -45,6 +45,7 @@ export default {
   },
   methods: {
     updateNew (data) {
+      this.open = true
       this.childComments.unshift(data)
     }
   }
@@ -58,24 +59,21 @@ export default {
   background-color lighten(#f3f3ed, 60%)
   position relative
   .by, .toggle
-    font-size 0.75em
+    font-size 0.7em
     margin 0.2em 0
   .by
     color #828282
     a
       color #828282
       text-decoration underline
-  .text
-    overflow-wrap break-word
-    font-size 1.05em
-    margin 0.3em 0
+  .content
+    font-size 1.1em
+    margin 0.2em 0
     a:hover
       color #ff6600
-    pre
-      white-space pre-wrap
   .toggle
-    background-color #fffbf2
-    padding 0.2em 0.5em
+    background-color #eef2f5
+    padding 0.1em 0.5em
     border-radius 4px
     a
       color #828282

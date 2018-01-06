@@ -22,11 +22,9 @@ export default {
   components: { Clip },
   computed: {
     ...mapGetters([
-      'totalClips',
-      'currentP',
       'currentClips',
-      'maxP',
-      'perP'
+      'currentP',
+      'maxP'
     ]),
     hasMore () {
       return this.currentP < this.maxP

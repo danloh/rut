@@ -22,17 +22,17 @@
       <div class="title">
         <h2>{{ rutDetail.title }}</h2>
         <p class="meta">
-          By <router-link :to="'/profile/' + creatorid">{{ creatorname }}</router-link>
-          | {{ rutDetail.createat | toMDY }}
-          | include {{ rutDetail.itemcount }} items
+          <span v-if="!isEveryone">By <router-link :to="'/profile/' + creatorid">{{ creatorname }}</router-link> | </span> 
+          {{ rutDetail.createat | toMDY }} | include {{ rutDetail.itemcount }} items
           | {{ rutDetail.commentcount }} <router-link :to="'/commenton/rut/' + rutid">Comments</router-link>
         </p>
       </div>
       <div class="intro">
         <b class="indicator">Preface:&nbsp;</b>
-        <div v-html="rutDetail.intro"></div>
+        <div v-html="md(rutDetail.intro)"></div>
       </div>
       <div class="toolbar">
+        <router-link class="editlink" :to="'/profile/' + whoEdit.id" v-if="whoEdit.id">{{whoEdit.name}} is Editing</router-link>&nbsp;&nbsp;&nbsp;&nbsp;
         <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit">...Edit</router-link>&nbsp;&nbsp;&nbsp;&nbsp;
         <router-link class="editlink" :to="'/additemto/readuplist/' + rutid" v-if="canEdit">Add Item...</router-link> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <el-button type="success" size="mini" plain @click="starRut"><b>{{ starAction }}&nbsp;{{ starCount }}</b></el-button>
@@ -43,7 +43,7 @@
         <b class="indicator">&nbsp;&nbsp;#{{tip.order}}&nbsp;&nbsp;</b> 
         <router-link class="editlink" :to="'/edit/readuptips/' + tip.cid" v-if="canEdit">...Edit</router-link>
         <div class="tip">
-          <div v-html="tip.tip" v-show="!tip.spoiler || !short"></div>
+          <div v-html="md(tip.tip)" v-show="!tip.spoiler || !short"></div>
           <el-button type="text" size="mini" @click="short = !short" v-if="tip.spoiler && short">... Spoilers Ahead! Continue?</el-button>
         </div>
       </div>
@@ -53,7 +53,7 @@
       <div class="epilog">
         <b class="indicator">Epilog:&nbsp;&nbsp;</b>
         <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit">...Edit</router-link>
-        <div v-html="rutDetail.epilog"></div>
+        <div v-html="md(rutDetail.epilog)"></div>
       </div>
       <div class="bottombar">
         <share-bar></share-bar>
@@ -62,7 +62,10 @@
     <div class="rut-side">
       <div class="credential">
         <p class="credential-title"><b>Creator's Credential</b></p>
-        <div class="credential-body">{{ credential || 'Not Introduce' }}</div>
+        <div class="credential-body">
+          <div v-html="md(rutDetail.credential)"></div>
+          <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit">...Edit</router-link> 
+        </div>
       </div>
       <div class="demands" v-if="demandCount">
         <b>As Answer to Request:</b>
@@ -78,17 +81,18 @@
 </template>
 
 <script>
-import Spinner from '@/components/Misc/Spinner.vue'
 import ItemSum from '@/components/Item/ItemSum.vue'
 import Comment from '@/components/Comment/Comment.vue'
 import ShareBar from '@/components/Misc/ShareBar.vue'
-import { scRut, checkSC, editTags, fetchRutDemands, fetchRutTips } from '@/api/api'  // sc: star and challenge
+// sc: star and challenge
+import { scRut, checkSC, editTags, fetchRutDemands, fetchRutTips, checkEditable } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { mapGetters } from 'vuex'
+import marked from '@/util/marked'
 
 export default {
   name: 'rut-view',
-  components: { ItemSum, Spinner, Comment, ShareBar },
+  components: { ItemSum, Comment, ShareBar },
   data () {
     return {
       starAction: this.checkStar(), // || 'Star',
@@ -103,10 +107,11 @@ export default {
       demandCount: 0,
       creatorid: null,
       creatorname: '',
-      currentUserID: -1,
       showDialog: false,
       newTag: '',
       newTags: [],
+      canEdit: false,
+      whoEdit: {},
       canTag: checkAuth(),
       short: true
     }
@@ -127,16 +132,9 @@ export default {
     // contributorIDList () {
     //   return this.rutDetail.contributoridlist
     // },
-    credential () {
-      return this.rutDetail.credential
+    isEveryone () {
+      return this.rutDetail.editable === 'Everyone'
     },
-    canEdit () {
-      return this.creatorid === this.currentUserID
-      // || this.rutDetail.editable === 'Everyone' || this.currentUserID in this.contributorIDList
-    },
-    // canDelete () {
-    //   return this.creatorid === this.currentUserID
-    // },
     hasMoreTips () {
       return this.tips.length < this.tipsCount
     },
@@ -157,7 +155,6 @@ export default {
         this.challengeCount = data.challengecount
         this.creatorid = data.creator.id
         this.creatorname = data.creator.name
-        this.currentUserID = this.$store.getters.currentUserID
         this.newTags = data.tags.map(t => t.tagname)
         this.tips = data.tips
         this.tipsCount = data.itemcount
@@ -182,6 +179,18 @@ export default {
         this.demands.push(...resp.data)
         this.currentDP += 1
       })
+    },
+    checkCanEdit () {
+      let currentUserID = this.$store.getters.currentUserID
+      let crutid = this.$route.params.id
+      if (!currentUserID) {
+        this.canEdit = false
+      } else {
+        checkEditable(currentUserID, crutid).then(res => {
+          this.canEdit = res.data.canedit
+          this.whoEdit = { id: res.data.id, name: res.data.name }
+        })
+      }
     },
     checkStar () {
       if (checkAuth()) {
@@ -258,8 +267,16 @@ export default {
       }
     },
     addNewTag () {
-      this.newTags.push(this.newTag)
-      this.newTag = ''
+      let newT = this.newTag.trim()
+      if (newT) {
+        this.newTags.push(newT)
+        this.newTag = ''
+      } else {
+        this.$message({
+          showClose: true,
+          message: 'Invalid Input'
+        })
+      }
     },
     editTag () {
       if (checkAuth()) {
@@ -281,6 +298,9 @@ export default {
           query: {redirect: this.$route.fullPath}
         })
       }
+    },
+    md (content) {
+      return marked(content)
     }
   },
   watch: {
@@ -288,6 +308,7 @@ export default {
   },
   created () {
     this.loadRutData()
+    this.checkCanEdit()
   }
 }
 </script>

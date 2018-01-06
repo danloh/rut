@@ -55,9 +55,8 @@
 
 <script>
 import ClipList from '@/components/Challenge/ClipList.vue'
-import { fetchChallengeItems, setDeadline } from '@/api/api'
+import { fetchChallengeItems, fetchChallengeRut, setDeadline } from '@/api/api'
 import { trimValid } from '@/util/filters'
-import { mapGetters } from 'vuex'
 
 export default {
   name: 'challenge',
@@ -73,7 +72,8 @@ export default {
         clip: [{ required: true, validator: trimValid, message: 'Required', trigger: 'blur' }],
         doingItemID: [{ required: true, message: 'Required', trigger: 'change' }]
       },
-      items: null,
+      challengeRut: {},
+      items: [], // items in challenge rut
       dueDate: '',
       doingItems: [],
       showPicker: false,
@@ -83,14 +83,6 @@ export default {
         }
       },
       pickDate: null
-    }
-  },
-  computed: {
-    ...mapGetters([
-      'allRuts'
-    ]),
-    challengeRut () {
-      return this.allRuts[0]
     }
   },
   methods: {
@@ -107,6 +99,14 @@ export default {
           })
           return false
         }
+      })
+    },
+    getChallengeRut () {
+      return fetchChallengeRut()
+      .then(resp => {
+        this.challengeRut = resp.data.rut
+        this.items = resp.data.items
+        this.dueDate = resp.data.deadline
       })
     },
     getChallengeItems () {
@@ -128,11 +128,7 @@ export default {
     }
   },
   mounted () {
-    this.$store.dispatch('getChallengeRut')
-    .then(resp => {
-      this.items = resp.data.items
-      this.dueDate = resp.data.deadline
-    })
+    this.getChallengeRut()
     this.getChallengeItems()
   }
 }

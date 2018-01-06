@@ -99,6 +99,7 @@ body
   color #34495e
   overflow-y scroll
   overflow-x scroll
+  overflow-wrap break-word
 a
   color #337ab7
   text-decoration none
@@ -106,6 +107,12 @@ h2, h3, h4
   margin 8px 0
 p
   margin 5px 0
+pre
+  background-color #f0f0f0
+blockquote
+  border-left: 4px solid #ccc
+  margin: 5px
+  padding-left: 12px
 .header
   background-color #fafafa
   position fixed
@@ -127,7 +134,7 @@ p
         font-size 1.0em
         font-weight 700
   a
-    color grey
+    color #080400
     line-height 24px
     display inline-block
     vertical-align middle
@@ -156,12 +163,4 @@ p
   margin 5px auto
   padding 8px 0px
   font-size 0.75em
-.quill-editor
-  border: 1px solid #ccc
-  background-color white
-  .ql-toolbar
-    padding 2px
-  .ql-container
-    z-index 999 // !!toolbar upper layer
-    min-height 8em
 </style>

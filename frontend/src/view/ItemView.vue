@@ -3,11 +3,11 @@
     <div class="item-main">
       <item-sum :item="currentItem" :key="currentItem.id"></item-sum> <!--key to re-render-->
       <div>
-        <b>More Details</b> &nbsp;&nbsp;&nbsp;
+        <b>>></b>&nbsp;&nbsp;<b>More Details</b> &nbsp;&nbsp;&nbsp;
         <router-link class="editlink" :to="'/edit/item/' + currentItem.id">...Edit Detail</router-link>
       </div>
       <div class="item-detail">
-        <div v-html="currentItem.details">...</div>
+        <div v-html="itemDetail"></div>
       </div>
       <div class="submenu">
         <b>>></b>&nbsp;&nbsp;<b style="color: orange">Reviews</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -29,6 +29,8 @@
         <div v-if="hasMoreRut">
           <el-button class="blockbtn" size="mini" @click="loadmoreRuts" :disabled="!hasMoreRut">Show More</el-button>
         </div>
+        <br>
+        <router-link :to="'/myrc/item/' + currentItem.id">My Reviews or Quotes</router-link>
       </div>
     </div>
   </div>
@@ -39,6 +41,7 @@ import ItemSum from '@/components/Item/ItemSum.vue'
 import ReviewList from '@/components/Item/ReviewList.vue'
 import ClipList from '@/components/Challenge/ClipList.vue'
 import { fetchInRuts } from '@/api/api'
+import marked from '@/util/marked'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -59,6 +62,9 @@ export default {
       'currentItem',
       'inRuts'
     ]),
+    itemDetail () {
+      return marked(this.currentItem.details)
+    },
     hasMoreRut () {
       return this.inRuts.length < this.currentItem.rutcount
     }

@@ -17,6 +17,7 @@
 
 <script>
 import { showLess } from '@/util/filters'
+import marked from '@/util/marked'
 
 export default {
   name: 'rut-sum',
@@ -26,7 +27,7 @@ export default {
       return this.rut.cover
     },
     intro () {
-      let content = this.rut.intro
+      let content = marked(this.rut.intro)
       return showLess(content)
     }
   }

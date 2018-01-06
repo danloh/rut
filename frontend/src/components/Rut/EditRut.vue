@@ -1,36 +1,28 @@
 <template>
   <div class="edit-page">
     <h3 class="title"> Edit Readup Tips:
-      <router-link class="title" :to="'/readuplist/' + rutId">{{rutTitle}}</router-link>
+      <el-button type="text" @click="cancelnReturn"><b>{{rutTitle}}</b> <small>...Cancel and Return</small></el-button>
     </h3>
     <el-form class="edit-form" :model="editForm" :rules="rules" ref="editForm" label-width="120px" size="mini">
       <el-form-item label="Title" prop="title">
         <el-input v-model="editForm.title"></el-input>
       </el-form-item>
       <el-form-item label="Preface" prop="intro">
-        <!-- <el-input type="textarea" :rows="3" v-model="editForm.intro"></el-input> -->
-        <quill-editor v-model="editForm.intro"
-                      ref="TextEditor"
-                      class="quill-editor">
-        </quill-editor>
+        <el-input type="textarea" :rows="6" v-model="editForm.intro"></el-input>
       </el-form-item>
       <el-form-item label="Credential" prop="credential">
         <el-input type="textarea" v-model="editForm.credential"></el-input>
       </el-form-item>
       <el-form-item label="Epilog" prop="epilog">
-        <!-- <el-input type="textarea" :rows="3" v-model="editForm.epilog"></el-input> -->
-        <quill-editor v-model="editForm.epilog"
-                      ref="TextEditor"
-                      class="quill-editor">
-        </quill-editor>
+        <el-input type="textarea" :rows="6" v-model="editForm.epilog"></el-input>
       </el-form-item>
-      <!-- <el-form-item label="Who Can Edit?" prop="editable">
+      <el-form-item label="Who Can Edit?" prop="editable">
         <el-radio-group v-model="editForm.editable">
           <el-radio-button label="Creator"></el-radio-button>
-          <el-radio-button label="Contributors"></el-radio-button>
+          <!-- <el-radio-button label="Contributors"></el-radio-button> -->
           <el-radio-button label="Everyone"></el-radio-button>
         </el-radio-group>
-      </el-form-item> -->
+      </el-form-item>
       <el-form-item label="Rating" prop="rating">
         <el-select v-model="editForm.rating">
           <el-option v-for="r in ratings" :key="r.value" :label="r.label" :value="r.value"></el-option>
@@ -45,7 +37,7 @@
 </template>
 
 <script>
-import { editRut } from '@/api/api'
+import { editRut, lockRut, unlockRut } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { trimValid } from '@/util/filters'
 
@@ -59,7 +51,8 @@ export default {
         intro: '',
         rating: '',
         credential: '',
-        epilog: ''
+        epilog: '',
+        editable: ''
       },
       rules: {
         title: [
@@ -75,24 +68,25 @@ export default {
         {value: 'Preschool', label: 'Preschool'}, {value: 'Professional', label: 'Professional'}
       ],
       rutId: null,
-      rutTitle: null,
-      canEdit: false
+      rutTitle: null
     }
   },
   methods: {
     onEdit (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid && checkAuth() && this.canEdit) {
+        if (valid && checkAuth()) {
           let data = {
             title: form.title.trim(),
             intro: form.intro.trim(),
             rating: form.rating,
+            editable: form.editable,
             credential: form.credential.trim(),
             epilog: form.epilog.trim()
           }
           editRut(this.rutId, data)
           .then(() => {
             let id = this.rutId
+            unlockRut(id)
             this.$router.push(`/readuplist/${id}`)
           })
         } else {
@@ -107,19 +101,23 @@ export default {
     resetForm (formName) {
       this.$refs[formName].resetFields()
     },
+    cancelnReturn () {
+      let id = this.rutId
+      unlockRut(id)
+      this.$router.push(`/readuplist/${id}`)
+    },
     loadRutData () {
       let rut = this.$store.getters.rutDetail
       if (rut.id === Number(this.$route.params.id)) {
         this.editForm.title = rut.title
         this.editForm.intro = rut.intro
         this.editForm.rating = rut.rating
+        this.editForm.editable = rut.editable
         this.editForm.credential = rut.credential
         this.editForm.epilog = rut.epilog
         this.rutId = rut.id
         this.rutTitle = rut.title
-        let creatorID = rut.creator.id
-        let currentUserID = this.$store.getters.currentUserID
-        this.canEdit = Number(creatorID) === Number(currentUserID)
+        lockRut(rut.id)
       }
     }
   },

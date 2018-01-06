@@ -1,5 +1,6 @@
 import {
   fetchItem,
+  fetchReview,
   fetchProfileItems
 } from '@/api/api'
 
@@ -12,7 +13,8 @@ const state = {
   currentR: 0,
   maxR: 0,
   perR: perPage,
-  inRuts: []
+  inRuts: [],
+  reviewDetail: {}
 }
 // actions
 const actions = {
@@ -26,6 +28,16 @@ const actions = {
     return fetchProfileItems(params['flag'], params['userid'])
     .then(resp => {
       commit('SET_ITEMS', resp.data)
+    })
+  },
+  getReview: ({state, commit}, reviewid) => {
+    return new Promise((resolve, reject) => {
+      fetchReview(reviewid).then(resp => {
+        commit('SET_REVIEW', resp.data)
+        resolve(resp)
+      }).catch(error => {
+        reject(error)
+      })
     })
   }
 }
@@ -47,6 +59,9 @@ const mutations = {
   MORE_ITEMS (state, data) {
     state.currentR += 1
     state.currentItems.push(...data)
+  },
+  SET_REVIEW: (state, data) => {
+    state.reviewDetail = data
   }
 }
 

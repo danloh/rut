@@ -6,11 +6,7 @@
         <el-input v-model="reviewForm.title"></el-input>
       </el-form-item>
       <el-form-item prop="review">
-        <!-- <el-input type="textarea" :rows="16" v-model="reviewForm.review"></el-input> -->
-        <quill-editor v-model="reviewForm.review"
-                      ref="TextEditor"
-                      class="quill-editor">
-        </quill-editor>
+        <el-input type="textarea" :rows="12" v-model="reviewForm.review"></el-input>
       </el-form-item>
       <el-form-item prop="spoiler">
         <el-radio-group v-model="reviewForm.spoiler">
@@ -94,18 +90,26 @@ export default {
     resetForm (formName) {
       this.$refs[formName].resetFields()
     },
+    setFormData (review) {
+      this.reviewForm.title = review.heading
+      this.reviewForm.review = review.body
+      this.reviewForm.spoiler = review.spoiler ? 'Spoiler Ahead' : 'No Spoiler'
+      let creatorID = review.creator.id
+      let currentUserID = this.$store.getters.currentUserID
+      this.canEdit = Number(creatorID) === Number(currentUserID)
+    },
     loadReviewData () {
       let reviewid = this.$route.params.id
-      fetchReview(reviewid)
-      .then(resp => {
-        let data = resp.data
-        this.reviewForm.title = data.heading
-        this.reviewForm.review = data.body
-        this.reviewForm.spoiler = data.spoiler ? 'Spoiler Ahead' : 'No Spoiler'
-        let creatorID = data.creator.id
-        let currentUserID = this.$store.getters.currentUserID
-        this.canEdit = Number(creatorID) === Number(currentUserID)
-      })
+      let reviewG = this.$store.getters.reviewDetail
+      if (reviewG && reviewG.id === Number(reviewid)) {
+        let review = reviewG
+        this.setFormData(review)
+      } else {
+        fetchReview(reviewid).then(resp => {
+          let review = resp.data
+          this.setFormData(review)
+        })
+      }
     }
   },
   created () {
@@ -116,7 +120,7 @@ export default {
 
 <style lang="stylus" scoped>
 .review-page
-  padding 10px 160px
+  padding 10px 120px
   position relative
   .review-form
     padding 20px

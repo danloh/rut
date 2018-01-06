@@ -1,15 +1,18 @@
 <template>
-  <div class="home-page">
-    <div class="rut-list">
-      <keep-alive>
-        <rut-list :rutlist="currentRuts" @loadmore="loadmoreRuts"></rut-list>
-      </keep-alive>
-    </div>
-    <spinner :show="loading"></spinner>
-    <div class="home-side">
-      <h4 class="right-title">Top Topics</h4>
-      <div class="right-body" v-for="(tag, index) in showTags" :key="index">
-        <router-link :to="'/tag/' + tag.tagid">{{tag.tagname}}</router-link>
+  <div>
+    <banner></banner>
+    <div class="home-page">
+      <div class="rut-list">
+        <keep-alive>
+          <rut-list :rutlist="currentRuts" @loadmore="loadmoreRuts"></rut-list>
+        </keep-alive>
+      </div>
+      <spinner :show="loading"></spinner>
+      <div class="home-side">
+        <h4 class="right-title">Top Topics</h4>
+        <div class="right-body" v-for="(tag, index) in showTags" :key="index">
+          <router-link :to="'/tag/' + tag.tagid">{{tag.tagname}}</router-link>
+        </div>
       </div>
     </div>
   </div>
@@ -17,31 +20,23 @@
 
 <script>
 import Spinner from '@/components/Misc/Spinner.vue'
+import Banner from '@/components/Misc/Banner.vue'
 import RutList from '@/components/Rut/RutList.vue'
 import { mapGetters } from 'vuex'
 
 export default {
   name: 'home',
-  title: 'Readup.Tips - Share Reading List',
-  components: { RutList, Spinner },
+  title: 'Readup.Tips - Share Read List',
+  components: { RutList, Spinner, Banner },
   data: () => ({
     loading: true
   }),
   computed: {
     ...mapGetters([
-      'allRuts',
-      'totalRuts',
       'currentPage',
       'currentRuts',
-      'maxPage',
-      'perPage',
       'showTags'
-    ]),
-    nextPage () {
-      return {
-        page: this.currentPage + 1
-      }
-    }
+    ])
   },
   methods: {
     loadmoreRuts () {

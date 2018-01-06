@@ -1,18 +1,14 @@
 <template>
   <div class="edit-page">
     <h3 class="title"> Edit Read-up-Tips:
-      <router-link class="title" :to="'/readuplist/' + rutId">{{rutTitle}}</router-link>
+      <el-button type="text" @click="cancelnReturn"><b>{{rutTitle}}</b> <small>...Cancel and Return</small></el-button>
     </h3>
     <el-form class="edit-form" :model="editForm" :rules="rules" ref="editForm" label-width="120px" size="mini">
       <el-form-item label="Change Order" prop="order">
         <el-input v-model="editForm.order"></el-input>
       </el-form-item>
       <el-form-item label="Edit Tips" prop="tips">
-        <!-- <el-input type="textarea" v-model="editForm.tips"></el-input> -->
-        <quill-editor v-model="editForm.tips"
-                      ref="TextEditor"
-                      class="quill-editor">
-        </quill-editor>
+        <el-input type="textarea" :rows="12" v-model="editForm.tips"></el-input>
       </el-form-item>
       <el-form-item label="Reminder" prop="spoiler">
         <el-radio-group v-model="editForm.spoiler">
@@ -40,7 +36,7 @@
 </template>
 
 <script>
-import { editTips, deleteTips } from '@/api/api'
+import { editTips, deleteTips, lockRut, unlockRut } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { trimValid } from '@/util/filters'
 
@@ -64,14 +60,13 @@ export default {
       },
       showDialog: false,
       rutId: null,
-      rutTitle: null,
-      canEdit: false
+      rutTitle: null
     }
   },
   methods: {
     onEdit (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid && checkAuth() && this.canEdit) {
+        if (valid && checkAuth()) {
           let data = {
             order: form.order,
             tips: form.tips.trim(),
@@ -81,6 +76,7 @@ export default {
           editTips(cid, data)
           .then(() => {
             let id = this.rutId
+            unlockRut(id)
             this.$router.push(`/readuplist/${id}`)
           })
         } else {
@@ -99,6 +95,11 @@ export default {
         this.$router.push(`/readuplist/${id}`)
       })
     },
+    cancelnReturn () {
+      let id = this.rutId
+      unlockRut(id)
+      this.$router.push(`/readuplist/${id}`)
+    },
     resetForm (formName) {
       this.$refs[formName].resetFields()
     },
@@ -114,9 +115,7 @@ export default {
       this.editForm.spoiler = tip.spoiler ? 'Spoiler Ahead' : 'No Spoiler'
       this.rutId = rut.id
       this.rutTitle = rut.title
-      let creatorID = rut.creator.id
-      let currentUserID = this.$store.getters.currentUserID
-      this.canEdit = Number(creatorID) === Number(currentUserID)
+      lockRut(rut.id)
     }
   },
   created () {

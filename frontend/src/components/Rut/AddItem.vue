@@ -1,7 +1,7 @@
 <template>
   <div class="add-page">
     <h3 class="title"> Add Item to Readup Tips:
-      <router-link class="title" :to="'/readuplist/' + rutId">{{rutTitle}}</router-link>
+      <el-button type="text" @click="cancelnReturn"><b>{{rutTitle}}</b> <small>...Cancel and Return</small></el-button>
     </h3>
     <spinner :show="loading"></spinner>
     <el-button size="small" type="primary">
@@ -46,11 +46,7 @@
         <el-input v-model="addForm.cover"></el-input>
       </el-form-item>
       <el-form-item label="Tips" prop="tips">
-        <!-- <el-input type="textarea" :rows="12" v-model="addForm.tips"></el-input> -->
-        <quill-editor v-model="addForm.tips"
-                      ref="TextEditor"
-                      class="quill-editor">
-        </quill-editor>
+        <el-input type="textarea" :rows="12" v-model="addForm.tips"></el-input>
       </el-form-item>
       <el-form-item label="in Tips" prop="spoiler">
         <el-radio-group v-model="addForm.spoiler">
@@ -67,7 +63,7 @@
 </template>
 
 <script>
-import { checkItem, addItem } from '@/api/api'
+import { checkItem, addItem, lockRut, unlockRut } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { trimValid } from '@/util/filters'
 import Spinner from '@/components/Misc/Spinner.vue'
@@ -105,8 +101,7 @@ export default {
       show: false,
       loading: false,
       rutId: null,
-      rutTitle: null,
-      canEdit: false
+      rutTitle: null
     }
   },
   methods: {
@@ -114,7 +109,7 @@ export default {
     onCheck (formName, form) {
       this.loading = true
       this.$refs[formName].validate((valid) => {
-        if (valid && checkAuth() && this.canEdit) {
+        if (valid && checkAuth()) {
           if (!form.url.trim()) {
             this.loading = false
             this.$message('Please Input')
@@ -126,6 +121,7 @@ export default {
           checkItem(this.rutId, data)
           .then(resp => {
             let id = this.rutId
+            unlockRut(id)
             if (resp.data === 'Back') {
               this.$message({
                 showClose: true,
@@ -147,7 +143,7 @@ export default {
     // manually add
     onAdd (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid && checkAuth() && this.canEdit) {
+        if (valid && checkAuth()) {
           let data = {
             title: form.title.trim(),
             uid: form.uid.trim(),
@@ -160,6 +156,7 @@ export default {
           addItem(this.rutId, data)
           .then(() => {
             let id = this.rutId
+            unlockRut(id)
             this.$router.push(`/readuplist/${id}`)
           })
         } else {
@@ -171,17 +168,20 @@ export default {
         }
       })
     },
+    cancelnReturn () {
+      let id = this.rutId
+      unlockRut(id)
+      this.$router.push(`/readuplist/${id}`)
+    },
     resetForm (formName) {
       this.$refs[formName].resetFields()
     },
     loadRutData () {
       let rut = this.$store.getters.rutDetail
-      let creatorID = rut.creator.id
-      let currentUserID = this.$store.getters.currentUserID
-      this.canEdit = Number(creatorID) === Number(currentUserID)
       if (rut.id === Number(this.$route.params.id)) {
         this.rutId = rut.id
         this.rutTitle = rut.title
+        lockRut(rut.id)
       }
     }
   },

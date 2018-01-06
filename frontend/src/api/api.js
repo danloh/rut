@@ -63,8 +63,8 @@ const newRut = (params, demandid) => {
   return request(`${base}/create/${demandid}`, params, 'post')
 }
 
-const fetchRuts = params => {
-  return request(`${base}/ruts`, params)
+const fetchIndexRuts = params => {
+  return request(`${base}/index/ruts`, params)
 }
 // get one challenge rut
 const fetchChallengeRut = params => {
@@ -94,6 +94,10 @@ const fetchRutTips = (rutid, params) => {
 const fetchRutDemands = (rutid, params) => {
   return request(`${base}/rut/${rutid}/demands`, params)
 }
+// get challengers of a rut response to
+const fetchRutChallengers = (rutid, params) => {
+  return request(`${base}/rut/${rutid}/challengers`, params)
+}
 // check if user star or challenge a rut
 const checkSC = (rutid, action, params) => {
   return request(`${base}/check${action}/rut/${rutid}`, params)
@@ -101,6 +105,18 @@ const checkSC = (rutid, action, params) => {
 // tag star or challenge a rut
 const scRut = (action, rutid, params) => {
   return request(`${base}/${action}/rut/${rutid}`, params)
+}
+// check rut if editable i.e. unlocked and permitted
+const checkEditable = (userid, rutid, params) => {
+  return request(`${base}/checkif/${userid}/canedit/${rutid}`, params)
+}
+// lock rut
+const lockRut = (rutid, params) => {
+  return request(`${base}/lockrut/${rutid}`, params)
+}
+// lock rut
+const unlockRut = (rutid, params) => {
+  return request(`${base}/unlockrut/${rutid}`, params)
 }
 // edit rut
 const editRut = (rutid, params) => {
@@ -226,6 +242,10 @@ const fetchProfileDemands = (userid, params) => {
 const fetchDemands = (params) => {
   return request(`${base}/demands`, params)
 }
+// get a demand only
+const fetchOnlyDemand = (demandid, params) => {
+  return request(`${base}/onlydemand/${demandid}`, params)
+}
 // get specific demand
 const fetchDemand = (demandid, params) => {
   return request(`${base}/demand/${demandid}`, params)
@@ -280,7 +300,7 @@ export {
   checkFollowing,
   followOne,
   newRut,
-  fetchRuts,
+  fetchIndexRuts,
   fetchChallengeRut,
   fetchChallengeItems,
   setDeadline,
@@ -288,8 +308,13 @@ export {
   fetchRut,
   fetchRutTips,
   fetchRutDemands,
+  fetchRutComments,
+  fetchRutChallengers,
   checkSC,
   scRut,
+  checkEditable,
+  lockRut,
+  unlockRut,
   editRut,
   editTags,
   addItem,
@@ -319,6 +344,7 @@ export {
   fetchProfileReviews,
   fetchProfileDemands,
   fetchDemands,
+  fetchOnlyDemand,
   fetchDemand,
   fetchDemandComments,
   fetchDemandAnswers,
@@ -327,6 +353,5 @@ export {
   newDemand,
   upvoteDemand,
   rutAsAnswer,
-  newComment,
-  fetchRutComments
+  newComment
 }
