@@ -6,11 +6,11 @@ const request = (url, options = {}, method = 'get') => {
   return axios(Object.assign({'url': url, 'method': method}, {[key]: options}))
   .then(res => res)
 }
-
+// regsiter
 const register = data => {
   return request(`${base}/register`, data, 'post')
 }
-
+// confirm email
 const confirm = (token) => {
   return request(`${base}/confirm/${token}`)
 }
@@ -22,18 +22,10 @@ const change = (data) => {
 const reset = (token, data) => {
   return request(`${base}/reset/${token}`, data, 'post')
 }
-
+// login
 const login = () => {
   return request(`${base}/login`)
 }
-
-// const authUser = params => {
-//   return request(`${base}/user`, params)  // why cannot be frontend url?
-// }
-
-// const auth = (servername, params) => {
-//   return request(`${base}/auth/${servername}`, params)
-// }
 // get authed user info
 const fetchCurrentUser = params => {
   return request(`${base}/currentuser`, params)
@@ -62,7 +54,7 @@ const followOne = (action, userid, params) => {
 const newRut = (params, demandid) => {
   return request(`${base}/create/${demandid}`, params, 'post')
 }
-
+// get ruts for index page
 const fetchIndexRuts = params => {
   return request(`${base}/index/ruts`, params)
 }
@@ -291,8 +283,6 @@ export {
   change,
   reset,
   login,
-  // auth,
-  // authUser,
   fetchCurrentUser,
   fetchUser,
   fetchFollows,

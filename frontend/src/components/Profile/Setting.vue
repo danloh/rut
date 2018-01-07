@@ -1,46 +1,69 @@
 <template>
-  <div class="setting-page">
+  <div class="setting-page" v-if="userid">
     <div class="setting-view">
       <router-view></router-view>
     </div>
     <div class="setting-side">
       <div class="right-avatar">
-        <img class="avatar" :src="user.avatar" alt="Avatar">
-        <p class="user-info">From: {{user.location || 'Unknown'}}</p>
+        <img class="avatar" :src="currentUser.avatar" alt="Avatar">
+        <p class="user-info">From: {{currentUser.location || 'Unknown'}}</p>
       </div>
       <div class="right-nav">
         <router-link :to="'/setting/' + userid + '/setting'">Edit Profile</router-link>
         <br>
         <router-link :to="'/setting/' + userid + '/change'">Change Password</router-link>
+        <br>
+        <el-button type="text" @click="showDialog=true">Invite Friends</el-button>
+        <!-- dialog -->
+        <el-dialog title="Share Link To Invite Your Friends" :visible.sync="showDialog">
+          <b>Send this Link to Invite Your Friend To Readup.Tips</b>
+          <p style="color: green">{{invitelink}}</p>
+          <share-bar :passTitle="'Invite You To Readup.Tips'" :passUrl="invitelink"></share-bar>
+        </el-dialog>
+        <!-- dialog end -->
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { fetchUser } from '@/api/api'
+import ShareBar from '@/components/Misc/ShareBar.vue'
 import { mapGetters } from 'vuex'
 
 export default {
   name: 'setting',
   title: 'Setting',
+  components: { ShareBar },
   data () {
     return {
-      user: {},
-      userid: this.$route.params.id
+      showDialog: false,
+      userid: ''
     }
   },
   computed: {
     ...mapGetters([
       'currentUser'
-    ])
+    ]),
+    invitelink () {
+      return 'https://readup.tips/register?refcode=' + this.currentUser.recode
+    }
   },
-  beforeMount () {
-    let userid = this.$route.params.id
-    return fetchUser(userid)
-    .then(resp => {
-      this.user = resp.data
-    })
+  methods: {
+    loadAuthedUser () {
+      let userG = this.currentUser
+      let userid = this.$route.params.id
+      if (userG && userG.id === Number(userid)) {
+        this.userid = userG.id
+      } else {
+        this.$store.dispatch('getCurrentUser')
+        .then(resp => {
+          this.userid = resp.data.id
+        })
+      }
+    }
+  },
+  created () {
+    this.loadAuthedUser()
   }
 }
 </script>

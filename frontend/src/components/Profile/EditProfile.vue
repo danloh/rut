@@ -76,21 +76,18 @@ export default {
     resetForm (formName) {
       this.$refs[formName].resetFields()
     },
-    loadUserData () {
-      let user = this.$store.getters.currentUser
-      this.userid = user.id
-      if (user.id === Number(this.$route.params.id)) {
-        this.settingForm.nickname = user.nickname
-        this.settingForm.location = user.location
-        this.settingForm.avatarUrl = user.avatar
-        this.settingForm.about = user.about_me
-        this.settingForm.url = user.links
-        this.canSetting = true
-      }
+    setFormData (user) {
+      this.settingForm.nickname = user.nickname
+      this.settingForm.location = user.location
+      this.settingForm.avatarUrl = user.avatar
+      this.settingForm.about = user.about_me
+      this.settingForm.url = user.links
+      this.canSetting = true
     }
   },
   created () {
-    this.loadUserData()
+    let user = this.$store.getters.currentUser
+    this.setFormData(user)
   }
 }
 </script>

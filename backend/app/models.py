@@ -1235,7 +1235,9 @@ class Users(UserMixin, db.Model):
     links = db.Column(db.String(256))
     #record mission accomplished
     mission = db.Column(db.Integer, default=0)
-    rank = db.Column(db.Integer, default=0)
+    credit = db.Column(db.Integer, default=0)
+    incode = db.Column(db.String(12)) #code of who invite me
+    recode = db.Column(db.String(12)) #my code to invite other
 
     # n to 1 with Roles
     role_id = db.Column(
@@ -1553,7 +1555,7 @@ class Users(UserMixin, db.Model):
     def accomplished(self):
         pass
 
-    def cal_rank(self,p=None,t=None,r=None,a=None,c=None,d=None,m=None):
+    def cal_credit(self,p=None,t=None,r=None,a=None,c=None,d=None,m=None):
         m = m or self.mission*10
         p = p or self.posts.count()*5
         t = t or self.tips.count()*5
@@ -1561,7 +1563,7 @@ class Users(UserMixin, db.Model):
         a = a or self.articles.count()*5
         c = c or self.clips.count()*2
         d = d or self.demands.count()
-        self.rank = m+p+t+r+a+c+d
+        self.credit = m+p+t+r+a+c+d
         db.session.add(self)
         #db.session.commit()
 
@@ -1601,7 +1603,9 @@ class Users(UserMixin, db.Model):
             'about': self.about_me or '',
             'followercount': self.followers.count(), 
             'followedcount': self.followed.count(), # following other
-            'exlink': self.links or ''
+            'exlink': self.links or '',
+            'incode': self.incode,
+            'recode': self.recode
         }
         return user_dict
 
