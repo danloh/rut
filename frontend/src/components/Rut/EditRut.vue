@@ -11,7 +11,7 @@
         <el-input type="textarea" :rows="6" v-model="editForm.intro"></el-input>
       </el-form-item>
       <el-form-item label="Credential" prop="credential">
-        <el-input type="textarea" v-model="editForm.credential"></el-input>
+        <el-input v-model="editForm.credential"></el-input>
       </el-form-item>
       <el-form-item label="Epilog" prop="epilog">
         <el-input type="textarea" :rows="6" v-model="editForm.epilog"></el-input>
@@ -56,10 +56,14 @@ export default {
       },
       rules: {
         title: [
-          { required: true, validator: trimValid, message: 'Please give a title', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Please give a title', trigger: 'blur' },
+          { max: 255, message: 'Max Length should be 255', trigger: 'blur' }
         ],
         intro: [
           { required: true, validator: trimValid, message: 'Need an introduction', trigger: 'blur' }
+        ],
+        credential: [
+          { max: 255, message: 'Max Length should be 255', trigger: 'blur' }
         ]
       },
       ratings: [

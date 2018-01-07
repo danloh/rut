@@ -1,7 +1,7 @@
 <template>
   <div class="edit-page">
     <h3 class="title"> Edit My Profile</h3>
-    <el-form class="edit-form" :model="settingForm" ref="settingForm" label-width="120px" size="mini">
+    <el-form class="edit-form" :model="settingForm" :rules="rules" ref="settingForm" label-width="120px" size="mini">
       <el-form-item label="Nickname" prop="nickname">
         <el-input v-model="settingForm.nickname"></el-input>
       </el-form-item>
@@ -40,6 +40,20 @@ export default {
         avatarUrl: '',
         about: '',
         url: ''
+      },
+      rules: {
+        nickname: [
+          { max: 64, message: 'Max Length should be 64', trigger: 'blur' }
+        ],
+        location: [
+          { max: 64, message: 'Max Length should be 64', trigger: 'blur' }
+        ],
+        avatarUrl: [
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
+        ],
+        url: [
+          { max: 255, message: 'Max Length should be 255', trigger: 'blur' }
+        ]
       },
       userid: null,
       canSetting: false

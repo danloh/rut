@@ -89,10 +89,20 @@ export default {
       },
       addRules: {
         title: [
-          { required: true, validator: trimValid, message: 'Please give a title', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Please give a title', trigger: 'blur' },
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
         ],
         tips: [
           { required: true, validator: trimValid, message: 'Required', trigger: 'blur' }
+        ],
+        resUrl: [
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
+        ],
+        byline: [
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
+        ],
+        cover: [
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
         ]
       },
       show: false,

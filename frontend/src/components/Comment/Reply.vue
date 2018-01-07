@@ -28,7 +28,10 @@ export default {
         comment: ''
       },
       rules: {
-        comment: [{ required: true, validator: trimValid, message: 'Required', trigger: 'blur' }]
+        comment: [
+          { required: true, validator: trimValid, message: 'Required', trigger: 'blur' },
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
+        ]
       }
     }
   },

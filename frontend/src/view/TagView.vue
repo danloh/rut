@@ -62,10 +62,15 @@ export default {
       },
       rules: {
         name: [
-          { required: true, validator: trimValid, message: 'Please give tag a name', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Please give tag a name', trigger: 'blur' },
+          { max: 120, message: 'Max Length should be 120', trigger: 'blur' }
+        ],
+        parent: [
+          { max: 120, message: 'Max Length should be 120', trigger: 'blur' }
         ],
         description: [
-          { required: true, validator: trimValid, message: 'Please Descript it', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Please Descript it', trigger: 'blur' },
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
         ]
       }
     }

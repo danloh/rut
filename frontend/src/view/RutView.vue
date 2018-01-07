@@ -63,7 +63,7 @@
       <div class="credential">
         <p class="credential-title"><b>Creator's Credential</b></p>
         <div class="credential-body">
-          <div v-html="md(rutDetail.credential)"></div>
+          <div>{{rutDetail.credential}}</div>
           <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit">...Edit</router-link> 
         </div>
       </div>
