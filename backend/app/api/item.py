@@ -121,6 +121,8 @@ def check_flag(itemid):
 def flag_item_todo(itemid):
     user = g.user
     item = Items.query.get_or_404(itemid)
+    # record activity as want to read an item
+    user.set_event(action='Scheduled', item=item)
     user.flag(item,1)
     return jsonify('Scheduled')
 
@@ -129,6 +131,8 @@ def flag_item_todo(itemid):
 def flag_item_doing(itemid):
     user = g.user
     item = Items.query.get_or_404(itemid)
+    # record activity asworking an item
+    user.set_event(action='Working on', item=item)
     user.flag(item,2)
     return jsonify('Working On')
 
@@ -137,6 +141,8 @@ def flag_item_doing(itemid):
 def flag_item_done(itemid):
     user = g.user
     item = Items.query.get_or_404(itemid)
+    # record activity as have done an item
+    user.set_event(action='Get done', item=item)
     user.flag(item,3)
     return jsonify('Done')
 

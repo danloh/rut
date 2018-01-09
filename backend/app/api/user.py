@@ -231,3 +231,24 @@ def get_post_comments(userid):
         'currentpage': page
     }
     return jsonify(comments_dict)
+
+@rest.route('/<int:userid>/myactivity')
+def get_activity(userid):
+    #user = Users.query.get_or_404(userid)
+    m = 20
+    evs = Events.query.filter_by(user_id=userid)\
+                      .order_by(Events.timestamp.desc()).limit(m)
+    evs_list = [e.to_dict() for e in evs]
+    return jsonify(evs_list)
+
+@rest.route('/feeds')
+@auth.login_required 
+def get_feeds():
+    m = 60
+    user = g.user
+    late_events = Events.query.order_by(Events.timestamp.desc()).limit(10)
+    follow_events = [f.followed.events for f in user.followed]
+    query = late_events.union(*follow_events)
+    evs = query.order_by(Events.timestamp.desc()).limit(m)
+    evs_list = [e.to_dict() for e in evs]
+    return jsonify(evs_list)

@@ -90,6 +90,8 @@ def upvote_demand(demandid):
             vote_demand=demand
         )
         db.session.add(dvote)
+        # record activity as post a review
+        user.set_event(action='Voted', demand=demand)
         db.session.commit()
         #return jsonify(demand.vote)
     return jsonify(demand.vote)
@@ -114,6 +116,8 @@ def new_demand():
     )
     db.session.add(demand)
     demand.dtag_to_db()
+    # record activity as post a review
+    user.set_event(action='Send', demand=demand)
     db.session.commit()
     return jsonify(demand.to_dict())
 

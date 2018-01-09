@@ -155,6 +155,8 @@ def check_fav(tagid):
 def fav_tag(tagid):
     user = g.user
     tag = Tags.query.get_or_404(tagid)
+    # record activity as favor a tag
+    user.set_event(action='Followed', tag=tag)
     user.fav(tag)
     return jsonify('UnFollow')
 

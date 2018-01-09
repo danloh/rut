@@ -1582,9 +1582,8 @@ class Users(UserMixin, db.Model):
         tag_set = set(tag_all)
 
         return tag_set,tag_fv
-    # set logo cover of  post
+    # set avatar
     @property
-    @cache.memoize()
     def user_avatar(self):
         avatar = self.avatar
         if not avatar or not avatar.strip():
@@ -1684,27 +1683,6 @@ class Events(db.Model):
     action = db.Column(db.String(32))
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
-    
-    dict_action_content = {
-        'create':'post',
-        'alter':'post', #edit intro
-        'updates':'post', #add item
-        'modify':'post', #edit tips
-        'star':'post',
-        'challenge':'post',
-        'comment':'comment',
-        'request':'demand',
-        'add':'review',
-        'endorse':'review',
-        'excerpt':'clip',
-        'fav':'tag',
-        'descript':'tag',
-        'edit':'item',  #add item info
-        'schedule':'item',
-        'working on':'item',
-        'get done':'item'
-    }
-
     # n to 1 with Users and others for record activities
     #events - actor
     user_id =  db.Column(
@@ -1737,30 +1715,58 @@ class Events(db.Model):
     @property
     def action_content(self):
         act = self.action
-        if act in ['create','alter','updates','update','modify','star','challenge']:
-            q=self.post
-            h=q.title if q else 'No title'
-            return ('post',q,h)
-        if act in ['edit','schedule','working on','get done']:
+        content_dict = {}
+        if act in ['Created','Starred','Started challenge']:
+            q = self.post
+            if q:
+                content_dict = {
+                    'type': 'readuplist',
+                    'id': q.id,
+                    'content': q.title
+                }
+        if act in ['Scheduled','Working on','Get done']:
             q=self.item
-            h=q.title if q else 'No title'
-            return ('item',q,h)
-        if act in ['add','endorse']:
+            if q:
+                content_dict = {
+                    'type': 'item',
+                    'id': q.id,
+                    'content': q.title
+                }
+        if act in ['Posted','Endorsed']:
             q=self.review
-            h=q.heading if q else 'No title'
-            return ('review',q,h)
-        if act in ['fav','descript']:
+            if q:
+                content_dict = {
+                    'type': 'review',
+                    'id': q.id,
+                    'content': q.heading
+                }
+        if act in ['Followed','Updated Description']:
             q=self.tag
-            h=q.tag if q else 'No title'
-            return ('tag',q,h)
-        if act == 'request':
+            if q:
+                content_dict = {
+                    'type': 'tag',
+                    'id': q.id,
+                    'content': q.tag
+                }
+        if act in ['Send','Voted']:
             q=self.demand
-            h=q.body if q else 'No content'
-            return ('demand',q,h)
-        if act == 'excerpt':
-            q=self.clip
-            h=q.body if q else 'No content'
-            return ('myclips',q.creator,h)
+            if q:
+                content_dict = {
+                    'type': 'demand',
+                    'id': q.id,
+                    'content': q.body
+                }
+        return content_dict
+
+    def to_dict(self):
+        actor = {'id': self.actor.id, 'name': self.actor.name, 'avatar': self.actor.user_avatar}
+        event_dict = {
+            'actor': actor,
+            'action': self.action,
+            'event': self.action_content,
+            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        return event_dict
 
     def __repr__(self):
         return '<Events %r>' % (self.action + str(self.id))

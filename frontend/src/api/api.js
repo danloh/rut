@@ -39,6 +39,15 @@ const fetchFollows = (userid, follow, params) => {
   return request(`${base}/user/${userid}/${follow}`, params)
 }
 
+// get a user's activity
+const fetchMyActivity = (userid, params) => {
+  return request(`${base}/${userid}/myactivity`, params)
+}
+// get feeds
+const fetchFeeds = (params) => {
+  return request(`${base}/feeds`, params)
+}
+
 const editProfile = (params) => {
   return request(`${base}/editprofile`, params, 'post')
 }
@@ -137,6 +146,10 @@ const editTips = (cid, params) => {
 // delete Tips
 const deleteTips = (cid, params) => {
   return request(`${base}/del/tips/${cid}`, params)
+}
+// get favored tags
+const fetchFavTags = (userid, params) => { // !!
+  return request(`${base}/${userid}/fav/tags`, params)
 }
 // get tag
 const fetchTag = (tagid, params) => { // !!
@@ -286,6 +299,8 @@ export {
   fetchCurrentUser,
   fetchUser,
   fetchFollows,
+  fetchMyActivity,
+  fetchFeeds,
   editProfile,
   checkFollowing,
   followOne,
@@ -312,6 +327,7 @@ export {
   checkItem,
   editTips,
   deleteTips,
+  fetchFavTags,
   fetchTag,
   fetchTagRuts,
   editTag,

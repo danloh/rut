@@ -204,7 +204,10 @@ def check_challenge(rutid):
 def star_rut(rutid):
     user = g.user
     rut = Posts.query.get_or_404(rutid)
-    user.star(rut)
+    # record activity as star a rut
+    user.set_event(action='Starred', post=rut)
+    # exe star
+    user.star(rut)  # commit included
     return jsonify('Unstar')
 
 @rest.route('/unstar/rut/<int:rutid>')
@@ -220,6 +223,8 @@ def unstar_rut(rutid):
 def challenge_rut(rutid):
     user = g.user
     rut = Posts.query.get_or_404(rutid)
+    # record activity as challenge a rut
+    user.set_event(action='Started a challenge', post=rut)
     user.challenge(rut)
     return jsonify('EndChallenge')
 
@@ -235,12 +240,13 @@ def unchallenge_rut(rutid):
 @rest.route('/create/<int:demandid>', methods=['POST'])
 @auth.login_required
 def new_rut(demandid=None):
+    user = g.user
     title = request.json.get('title','').strip()
     intro = request.json.get('intro','').strip()
     if not title or not intro:
         abort(403) # cannot be ''
     post = Posts(
-        creator = g.user,
+        creator = user,
         title = title,
         intro = intro,
         tag_str = request.json.get('tag','').strip(),
@@ -259,6 +265,8 @@ def new_rut(demandid=None):
                 demand=demand
             )
             db.session.add(respon)
+    # record activity as create a rut
+    user.set_event(action='Created', post=post)
     db.session.commit()
     return jsonify({
         'id':post.id,
