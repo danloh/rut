@@ -5,6 +5,9 @@
         <router-link to="/">
             <b style="color:darkorange;font-size:1.6em;letter-spacing:0.0005em">Readup.Tips</b>
         </router-link>
+        <router-link to="/feeds" v-if="authed">
+          <b>Feeds</b>
+        </router-link>
         <router-link to="/challenge">
           <b>Challenge</b>
         </router-link>
@@ -109,6 +112,7 @@ p
   margin 5px 0
 pre
   background-color #f0f0f0
+  padding 5px
 blockquote
   border-left: 4px solid #ccc
   margin: 5px

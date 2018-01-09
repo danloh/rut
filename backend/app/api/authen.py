@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
 # register, log in,  etc.
 
-from flask import current_app, request, g, jsonify, abort
+import random
+import string
+from flask import request, g, jsonify, abort
 from ..models import *
-from ..utils import split_str, str_to_dict, str_to_set
 from ..task.email import send_email
-
 from . import db, rest, auth, PER_PAGE
+
+def random_code():
+    population = string.ascii_letters + string.digits
+    s = ''.join(random.sample(population, 9))
+    while Users.query.filter_by(recode=s).first():
+        s = ''.join(random.sample(population, 9))
+    else:
+        return s
 
 @rest.route('/register', methods = ['POST'])
 def register():
@@ -17,11 +25,15 @@ def register():
         abort(400) # missing arguments
     if Users.query.filter_by(name = username).first() is not None:
         abort(400) # existing user
+    incode = request.json.get('incode','')
+    recode = random_code()
     user = Users(
         name = username,
         email = email,
         auth_server = "Registered",
-        auth_social_id = "00001"
+        auth_social_id = "00001",
+        incode = incode,
+        recode = recode
     )
     user.hash_password(password)
     db.session.add(user)

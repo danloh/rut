@@ -23,8 +23,8 @@
         <h2>{{ rutDetail.title }}</h2>
         <p class="meta">
           <span v-if="!isEveryone">By <router-link :to="'/profile/' + creatorid">{{ creatorname }}</router-link> | </span> 
-          {{ rutDetail.createat | toMDY }} | include {{ rutDetail.itemcount }} items
-          | {{ rutDetail.commentcount }} <router-link :to="'/commenton/rut/' + rutid">Comments</router-link>
+          {{ rutDetail.createat | toMDY }} | include {{ rutDetail.itemcount | pluralise('item') }} 
+          | <router-link :to="'/commenton/rut/' + rutid">{{ rutDetail.commentcount | pluralise('comment') }}</router-link>
         </p>
       </div>
       <div class="intro">
@@ -63,7 +63,7 @@
       <div class="credential">
         <p class="credential-title"><b>Creator's Credential</b></p>
         <div class="credential-body">
-          <div v-html="md(rutDetail.credential)"></div>
+          <div>{{rutDetail.credential}}</div>
           <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit">...Edit</router-link> 
         </div>
       </div>

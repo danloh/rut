@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 # clip : a quote excerpted from a book , or a spark of thought
 
-from flask import current_app, request, g, jsonify, abort
+from flask import request, g, jsonify, abort
 from ..models import *
-from ..utils import split_str, str_to_dict, str_to_set
-
 from . import db, rest, auth, PER_PAGE
 
 @rest.route('/all/clips')
@@ -65,6 +63,8 @@ def new_clip():
         item = Items.query.get(itemid)
     )
     db.session.add(clip)
+    # record activity as excerpt a clip
+    #user.set_event(action='Excerpted', clip=clip)
     db.session.commit()
     return jsonify(clip.to_dict())
 
@@ -82,6 +82,8 @@ def upvote_clip(clipid):
             vote_clip=clip
         )
         db.session.add(cvote)
+        # record activity as upvote a clip
+        #user.set_event(action='Liked', clip=clip)
         db.session.commit()
     return jsonify(clip.vote)
 

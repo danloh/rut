@@ -69,8 +69,13 @@ export default {
         doingItemID: null
       },
       rules: {
-        clip: [{ required: true, validator: trimValid, message: 'Required', trigger: 'blur' }],
-        doingItemID: [{ required: true, message: 'Required', trigger: 'change' }]
+        clip: [
+          { required: true, validator: trimValid, message: 'Required', trigger: 'blur' },
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
+        ],
+        doingItemID: [
+          { required: true, message: 'Required', trigger: 'change' }
+        ]
       },
       challengeRut: {},
       items: [], // items in challenge rut

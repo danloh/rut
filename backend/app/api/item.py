@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 # item : such as book, on-line course, etc. as a element in a rut
 
-from flask import current_app, request, g, jsonify, abort
+from flask import request, g, jsonify, abort
 from ..models import *
-from ..utils import split_str, str_to_dict, str_to_set
-
+from ..utils import str_to_dict
 from . import db, rest, auth, PER_PAGE
 
 @rest.route('/all/items')
@@ -33,23 +32,25 @@ def get_item(itemid):
 @rest.route('/item/<int:itemid>/reviews')
 def get_item_reviews(itemid):
     #item = Items.query.get_or_404(itemid)
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    #get request params
     userid = request.args.get('userid', '')
     ref = request.args.get('ref', '') # hot or new
-    reviews = Reviews.query.filter_by(item_id=itemid) #item.reviews # 
+    # yield query
+    query = Reviews.query.filter_by(item_id=itemid) #item.reviews # 
     if userid:
-        myreviews = reviews.filter_by(creator_id=userid)\
-                            .offset(per_page * page).limit(per_page)
-        review_list = [r.to_dict() for r in myreviews]
-    if ref == 'hot':
-        hotreviews = reviews.order_by(Reviews.vote.desc())\
-                            .offset(per_page * page).limit(per_page)
-        review_list = [r.to_dict() for r in hotreviews]
-    if ref == 'new':
-        newreviews = reviews.order_by(Reviews.timestamp.desc())\
-                            .offset(per_page * page).limit(per_page)
-        review_list = [r.to_dict() for r in newreviews]
+        reviews = query.filter_by(creator_id=userid) 
+    elif ref == 'hot':
+        reviews = query.order_by(Reviews.vote.desc())
+    elif ref == 'new':
+        reviews = query.order_by(Reviews.timestamp.desc())
+    else:
+        reviews = query
+    #pagination
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    reviews_page = reviews.offset(per_page * page).limit(per_page)
+    #yield result, a Dict
+    review_list = [r.to_dict() for r in reviews_page]
     reviews_dict = {
         'reviewcount': reviews.count(),
         'reviews': review_list
@@ -69,10 +70,10 @@ def get_item_inruts(itemid):
 
 @rest.route('/iuclips') # per item or user or any
 def get_iu_clips():
+    #get request params
     userid = request.args.get('userid','')
     itemid = request.args.get('itemid','')
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    #yield query
     q = Clips.query
     if userid and itemid:
         query =q.filter_by(creator_id=userid,item_id=itemid)
@@ -82,8 +83,12 @@ def get_iu_clips():
         query = q.filter_by(item_id=itemid)
     else:
         query = q
+    #pagination
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
     order_query = query.order_by(Clips.timestamp.desc())\
                        .offset(page * per_page).limit(per_page)
+    #yield result, a Dict
     clips_dict = {
         'clips': [c.to_dict() for c in order_query],
         'total': query.count()
@@ -116,6 +121,8 @@ def check_flag(itemid):
 def flag_item_todo(itemid):
     user = g.user
     item = Items.query.get_or_404(itemid)
+    # record activity as want to read an item
+    user.set_event(action='Scheduled', item=item)
     user.flag(item,1)
     return jsonify('Scheduled')
 
@@ -124,6 +131,8 @@ def flag_item_todo(itemid):
 def flag_item_doing(itemid):
     user = g.user
     item = Items.query.get_or_404(itemid)
+    # record activity asworking an item
+    user.set_event(action='Working on', item=item)
     user.flag(item,2)
     return jsonify('Working On')
 
@@ -132,6 +141,8 @@ def flag_item_doing(itemid):
 def flag_item_done(itemid):
     user = g.user
     item = Items.query.get_or_404(itemid)
+    # record activity as have done an item
+    user.set_event(action='Get done', item=item)
     user.flag(item,3)
     return jsonify('Done')
 

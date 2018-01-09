@@ -18,7 +18,7 @@
         <el-input v-model="createForm.tag" clearable></el-input>
       </el-form-item>
       <el-form-item label="Credential" prop="credential">
-        <el-input type="textarea" v-model="createForm.credential"></el-input>
+        <el-input v-model="createForm.credential"></el-input>
       </el-form-item>
       <el-form-item label="Rating" prop="rating">
         <el-select v-model="createForm.rating">
@@ -61,13 +61,18 @@ export default {
       },
       rules: {
         title: [
-          { required: true, validator: trimValid, message: 'Please Name it', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Please Name it', trigger: 'blur' },
+          { max: 255, message: 'Max Length should be 255', trigger: 'blur' }
         ],
         intro: [
           { required: true, validator: trimValid, message: 'Need an introduction', trigger: 'blur' }
         ],
         tag: [
-          { required: true, validator: trimValid, message: 'Please set some tags', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Please set some tags', trigger: 'blur' },
+          { max: 255, message: 'Max Length should be 255', trigger: 'blur' }
+        ],
+        credential: [
+          { max: 255, message: 'Max Length should be 255', trigger: 'blur' }
         ]
       },
       ratings: [

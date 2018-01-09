@@ -14,7 +14,7 @@
         </div>
       </div>
       <div class="share">
-        <share-bar></share-bar>
+        <share-bar :prefix="'Would you like answer this question:  '"></share-bar>
       </div>
       <!-- link to a rut as answer dialog -->
       <el-dialog title="Link A list as Answer" :visible.sync="showDialog" width="45%">

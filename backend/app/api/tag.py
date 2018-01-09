@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 # tag: a topic
 
-from flask import current_app, request, g, jsonify, abort
+from flask import request, g, jsonify, abort
 from ..models import *
-from ..utils import split_str, str_to_dict, str_to_set
-
 from . import db, rest, auth, PER_PAGE
 
 @rest.route('/all/tags')
@@ -157,6 +155,8 @@ def check_fav(tagid):
 def fav_tag(tagid):
     user = g.user
     tag = Tags.query.get_or_404(tagid)
+    # record activity as favor a tag
+    user.set_event(action='Followed', tag=tag)
     user.fav(tag)
     return jsonify('UnFollow')
 

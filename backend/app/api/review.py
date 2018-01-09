@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 # review: a note, review or mindmap on a item
 
-from flask import current_app, request, g, jsonify, abort
+from flask import request, g, jsonify, abort
 from ..models import *
-
 from . import db, rest, auth, PER_PAGE
 
 @rest.route('/reviews') # per user, item or any
@@ -79,6 +78,8 @@ def upvote_review(reviewid):
             vote_review=review
         )
         db.session.add(rvote)
+        # record activity as post a review
+        user.set_event(action='Endorsed', review=review)
         db.session.commit()
     return jsonify(review.vote)
 
@@ -102,6 +103,8 @@ def new_review(itemid):
     )
     db.session.add(review)
     item.cal_vote()
+    # record activity as post a review
+    user.set_event(action='Posted', review=review)
     db.session.commit()
     review_dict = review.to_dict()
     return jsonify(review_dict)

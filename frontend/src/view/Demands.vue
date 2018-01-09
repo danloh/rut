@@ -38,7 +38,10 @@ export default {
         demand: ''
       },
       rules: {
-        demand: [{ required: true, validator: trimValid, message: 'Required', trigger: 'blur' }]
+        demand: [
+          { required: true, validator: trimValid, message: 'Required', trigger: 'blur' },
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
+        ]
       },
       items: null,
       dueDate: ''

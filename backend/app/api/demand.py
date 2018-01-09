@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 # demand: a request to get a rut like book list on a subject
 
-from flask import current_app, request, g, jsonify, abort
+from flask import request, g, jsonify, abort
 from ..models import *
-from ..utils import split_str, str_to_dict, str_to_set
-
 from . import db, rest, auth, PER_PAGE
 
 @rest.route('/all/demands')   
@@ -92,6 +90,8 @@ def upvote_demand(demandid):
             vote_demand=demand
         )
         db.session.add(dvote)
+        # record activity as post a review
+        user.set_event(action='Voted', demand=demand)
         db.session.commit()
         #return jsonify(demand.vote)
     return jsonify(demand.vote)
@@ -104,7 +104,11 @@ def new_demand():
         abort(403)
     sp = text.split('#') + ['42']
     body = sp[0]
-    tag_str = sp[1].strip() or '42'
+    dtag = sp[1].strip()
+    if dtag and len(dtag) < 512:
+        tag_str = dtag
+    else:
+        tag_str = '42'
     demand = Demands(
         requestor = g.user,
         body = body,
@@ -112,6 +116,8 @@ def new_demand():
     )
     db.session.add(demand)
     demand.dtag_to_db()
+    # record activity as post a review
+    user.set_event(action='Send', demand=demand)
     db.session.commit()
     return jsonify(demand.to_dict())
 

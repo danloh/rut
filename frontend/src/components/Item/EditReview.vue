@@ -39,7 +39,8 @@ export default {
       },
       rules: {
         title: [
-          { required: true, validator: trimValid, message: 'Required', trigger: 'change' }
+          { required: true, validator: trimValid, message: 'Required', trigger: 'change' },
+          { max: 255, message: 'Max Length should be 255', trigger: 'blur' }
         ],
         review: [
           { required: true, validator: trimValid, message: 'Required', trigger: 'change' }

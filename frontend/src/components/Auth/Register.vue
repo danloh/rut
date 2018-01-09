@@ -103,10 +103,12 @@ export default {
     onReg (formName, form) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
+          let incode = this.$route.query.refcode
           let data = {
             username: form.username,
             email: form.email.trim(),
-            password: form.password
+            password: form.password,
+            incode: incode || ''
           }
           this.$axios.post('api/register', data)
           .then((resp) => {

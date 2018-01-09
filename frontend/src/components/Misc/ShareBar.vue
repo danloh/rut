@@ -36,17 +36,23 @@
 <script>
 export default {
   name: 'share-bar',
-  mounted () {
+  props: {
+    passUrl: String,
+    passTitle: String,
+    prefix: {
+      type: String,
+      default: ''
+    }
   },
   computed: {
     url () {
-      return `https://readup.tips${this.$route.fullPath}`
+      return this.passUrl || `https://readup.tips${this.$route.fullPath}`
     }
   },
   methods: {
     title () {
       try {
-        if (document) return document.title
+        if (document) return this.prefix + (this.passTitle || document.title)
       } catch (err) { return 'Readup.Tips' }
     },
     shareWindow (url) {

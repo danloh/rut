@@ -33,11 +33,11 @@
       <el-form-item label="Title" prop="title">
         <el-input v-model="addForm.title"></el-input>
       </el-form-item>
-      <el-form-item label="UID" prop="uid">
-        <el-input v-model="addForm.uid"></el-input>
+      <el-form-item label="UID*" prop="uid">
+        <el-input v-model="addForm.uid" placeholder="Either of UID and URL is requied"></el-input>
       </el-form-item>
-      <el-form-item label="Resource URL" prop="resUrl">
-        <el-input v-model="addForm.resUrl"></el-input>
+      <el-form-item label="Resource URL*" prop="resUrl">
+        <el-input v-model="addForm.resUrl" placeholder="Either of UID and URL is requied"></el-input>
       </el-form-item>
       <el-form-item label="Byline" prop="byline">
         <el-input v-model="addForm.byline"></el-input>
@@ -89,13 +89,20 @@ export default {
       },
       addRules: {
         title: [
-          { required: true, validator: trimValid, message: 'Please give a title', trigger: 'blur' }
-        ],
-        uid: [
-          { required: true, validator: trimValid, message: 'Need an UID', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Please give a title', trigger: 'blur' },
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
         ],
         tips: [
           { required: true, validator: trimValid, message: 'Required', trigger: 'blur' }
+        ],
+        resUrl: [
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
+        ],
+        byline: [
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
+        ],
+        cover: [
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
         ]
       },
       show: false,
@@ -144,21 +151,31 @@ export default {
     onAdd (formName, form) {
       this.$refs[formName].validate((valid) => {
         if (valid && checkAuth()) {
-          let data = {
-            title: form.title.trim(),
-            uid: form.uid.trim(),
-            resUrl: form.resUrl.trim(),
-            byline: form.byline.trim(),
-            cover: form.cover.trim(),
-            tips: form.tips.trim(),
-            spoiler: form.spoiler
+          let uid = form.uid.trim()
+          let resUrl = form.resUrl.trim()
+          if (!uid && !resUrl) {
+            this.$message({
+              showClose: true,
+              message: 'Either of UID and Resource URL is requied'
+            })
+            return false
+          } else {
+            let data = {
+              title: form.title.trim(),
+              uid: uid,
+              resUrl: resUrl,
+              byline: form.byline.trim(),
+              cover: form.cover.trim(),
+              tips: form.tips.trim(),
+              spoiler: form.spoiler
+            }
+            addItem(this.rutId, data)
+            .then(() => {
+              let id = this.rutId
+              unlockRut(id)
+              this.$router.push(`/readuplist/${id}`)
+            })
           }
-          addItem(this.rutId, data)
-          .then(() => {
-            let id = this.rutId
-            unlockRut(id)
-            this.$router.push(`/readuplist/${id}`)
-          })
         } else {
           this.$message({
             showClose: true,

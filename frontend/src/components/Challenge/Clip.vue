@@ -53,9 +53,9 @@ export default {
 
 <style lang="stylus" scoped>
 .clip-main
-  background-color #f6f6f1
+  background-color lighten(#f6f6f1, 60%)
   padding 5px
-  border-bottom 1px dotted #e09015
+  border-bottom 1px solid #eee
   position relative
   .meta
     font-size .75em
@@ -64,7 +64,7 @@ export default {
       &:hover
         color red
   .clipbody
-    background-color lighten(#f6f6f1, 60%)
+    background-color #f6f6f1
     padding 8px
     font-size 1.05em
     color #2b2117

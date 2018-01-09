@@ -7,19 +7,20 @@ function getTitle (vm) {
   }
 }
 
-// 2 hooks for different data come-out timing
+function exeTitle (vm) {
+  const title = getTitle(vm)
+  if (title) {
+    document.title = `${title} @Readup.Tips`
+  }
+}
+
+// 2 hooks for different data come-out timing: value or func
 const clientTitleMixin = {
   beforeUpdate () {
-    const title = getTitle(this)
-    if (title) {
-      document.title = `${title} @Readup.Tips`
-    }
+    exeTitle(this)
   },
   mounted () {
-    const title = getTitle(this)
-    if (title) {
-      document.title = `${title} @Readup.Tips`
-    }
+    exeTitle(this)
   }
 }
 

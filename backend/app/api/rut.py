@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 # rut is readup tips, included an item list and tips for each item
 
-from flask import current_app, request, g, jsonify, abort
+from flask import request, g, jsonify, abort
 from ..models import *
 from ..bot import spider
-from ..utils import split_str, str_to_dict, str_to_set
-
 from . import db, rest, auth, PER_PAGE
 
 @rest.route('/index/ruts')
@@ -206,7 +204,10 @@ def check_challenge(rutid):
 def star_rut(rutid):
     user = g.user
     rut = Posts.query.get_or_404(rutid)
-    user.star(rut)
+    # record activity as star a rut
+    user.set_event(action='Starred', post=rut)
+    # exe star
+    user.star(rut)  # commit included
     return jsonify('Unstar')
 
 @rest.route('/unstar/rut/<int:rutid>')
@@ -222,6 +223,8 @@ def unstar_rut(rutid):
 def challenge_rut(rutid):
     user = g.user
     rut = Posts.query.get_or_404(rutid)
+    # record activity as challenge a rut
+    user.set_event(action='Started a challenge', post=rut)
     user.challenge(rut)
     return jsonify('EndChallenge')
 
@@ -237,12 +240,13 @@ def unchallenge_rut(rutid):
 @rest.route('/create/<int:demandid>', methods=['POST'])
 @auth.login_required
 def new_rut(demandid=None):
+    user = g.user
     title = request.json.get('title','').strip()
     intro = request.json.get('intro','').strip()
     if not title or not intro:
         abort(403) # cannot be ''
     post = Posts(
-        creator = g.user,
+        creator = user,
         title = title,
         intro = intro,
         tag_str = request.json.get('tag','').strip(),
@@ -261,6 +265,8 @@ def new_rut(demandid=None):
                 demand=demand
             )
             db.session.add(respon)
+    # record activity as create a rut
+    user.set_event(action='Created', post=post)
     db.session.commit()
     return jsonify({
         'id':post.id,
@@ -400,10 +406,11 @@ def add_item_to_rut(rutid):
         abort(403)
     # get data in request
     title = request.json.get('title','').strip()
-    uid = request.json.get('uid','').replace('-','').replace(' ','')
-    if not title or not uid:
-        abort(403) # cannot be None
+    item_uid = request.json.get('uid','').replace('-','').replace(' ','')
     res_url = request.json.get('resUrl','').strip()
+    if not title or not (item_uid or res_url):
+        abort(403) # cannot be None
+    uid = item_uid or spider.random_uid()
     tips = request.json.get('tips','...')
     spoiler_text = request.json.get('spoiler')
     spoiler = True if spoiler_text == 'Spoiler Ahead' else False
@@ -477,7 +484,8 @@ def check_item_to_add(rutid):
         # check if the url has been spider-ed, 
         # if not, to spider
         # if so,query item and add to post directly
-        lst = Items.query.filter(Items.res_url.in_((checker,pure_url))).all()
+        item_query = Items.query
+        lst = item_query.filter(Items.res_url.in_((checker,pure_url))).all()
         if lst:
             item = lst[0]
             rut.collecting(item,tips,user)
@@ -485,8 +493,14 @@ def check_item_to_add(rutid):
             return jsonify('Done')
         else:
             d = spider.parse_html(checker) # if any error??
+            uid = d.get('uid','').replace('-','').replace(' ','') # random_uid in spider if needed
+            ex_item = item_query.filter_by(uid=uid).first()
+            if ex_item:
+                rut.collecting(ex_item,tips,user)
+                db.session.commit()
+                return jsonify('Done')
             new_item = Items(
-                uid = d.get('uid','').replace('-','').replace(' ',''),
+                uid = uid,
                 title = d.get('title'),
                 res_url = d.get('res_url',''),
                 author = d.get('author',''),

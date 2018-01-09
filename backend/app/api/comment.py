@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 # comment : on rut, demand, clip, item, review, etc.
 
-from flask import current_app, request, g, jsonify, abort
+from flask import request, g, jsonify, abort
 from ..models import *
-from ..utils import split_str, str_to_dict, str_to_set
-
 from . import db, rest, auth, PER_PAGE
 
 @rest.route('/all/comments')

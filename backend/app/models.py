@@ -287,6 +287,9 @@ class Posts(db.Model):
     # 1 to n with Comments
     comments = db.relationship(
         'Comments', backref='post', lazy='dynamic')
+    # 1 to n with Circles
+    circles = db.relationship(
+        'Circles', backref='post', lazy='dynamic')
     # 1 to n with Events
     events = db.relationship(
         'Events',backref='post',lazy='dynamic')
@@ -1086,6 +1089,68 @@ class Demands(db.Model):
     def __repr__(self):
         return '<Demands %r>' % self.body
 
+# helper Model for Users participate Circles
+class Participate(db.Model):
+    __tablename__ = 'participate'
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id"),
+        primary_key=True)
+    circle_id = db.Column(
+        db.Integer,
+        db.ForeignKey("circles.id"),
+        primary_key=True)
+    timestamp = db.Column(db.DateTime,
+                        default=datetime.utcnow)
+
+class Circles(db.Model):
+    __table_name__ = "circles"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(256), nullable=False)
+    area = db.Column(db.String(128), nullable=False)
+    address = db.Column(db.String(256), nullable=False)
+    time = db.Column(db.String(256), nullable=False)
+    note = db.Column(db.String(256))
+    disabled = db.Column(db.Boolean)
+    timestamp = db.Column(db.DateTime,
+                         default=datetime.utcnow)
+    # n to 1 relation with Users
+    facilitator_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id")
+    )
+    # n to 1 with Posts
+    post_id = db.Column(
+        db.Integer,
+        db.ForeignKey("posts.id")
+    )
+    # n2n with Users for participate
+    participators = db.relationship(
+        'Participate',
+        foreign_keys=[Participate.circle_id],
+        backref=db.backref('participate_circle', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    
+    def to_dict(self):
+        facilitator = self.facilitator
+        rut = self.post
+        circle_dict = {
+            'id': self.id,
+            'facilitator': {'id': facilitator.id, 'name': facilitator.nickname or facilitator.name},
+            'name': self.name,
+            'area': self.area,
+            'address': self.address,
+            'time': self.time,
+            'note': self.note or '',
+            'rut': {'id': rut.id, 'title': rut.title},
+            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        return circle_dict
+    
+    def __repr__(self):
+        return '<Circles %r>' % self.name
+    
 
 # helper Model for Messages n2n with self for dialog
 class Dialog(db.Model):
@@ -1235,7 +1300,9 @@ class Users(UserMixin, db.Model):
     links = db.Column(db.String(256))
     #record mission accomplished
     mission = db.Column(db.Integer, default=0)
-    rank = db.Column(db.Integer, default=0)
+    credit = db.Column(db.Integer, default=0)
+    incode = db.Column(db.String(12)) #code of who invite me
+    recode = db.Column(db.String(12)) #my code to invite other
 
     # n to 1 with Roles
     role_id = db.Column(
@@ -1260,6 +1327,9 @@ class Users(UserMixin, db.Model):
     # 1 to n with Demands
     demands = db.relationship(
         'Demands', backref='requestor', lazy='dynamic')
+    # 1 to n with Circles
+    circles = db.relationship(
+        'Circles', backref='facilitator', lazy='dynamic')
     # 1 to n with Events
     events = db.relationship(
         'Events', backref='actor', lazy='dynamic')
@@ -1347,6 +1417,13 @@ class Users(UserMixin, db.Model):
         'Dvote',
         foreign_keys=[Dvote.user_id],
         backref=db.backref('voter', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with Circles for participate
+    participate_circles = db.relationship(
+        'Participate',
+        foreign_keys=[Participate.user_id],
+        backref=db.backref('participator', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Reviews for vote
@@ -1517,6 +1594,9 @@ class Users(UserMixin, db.Model):
             return "Have Done"
 
     #fav and unfav a tag
+    def faving(self, tag):
+        return self.fav_tags.filter_by(
+            tag_id=tag.id).first() is not None
     def fav(self, tag):
         if not self.faving(tag):
             fv = Fav(faver=self, fav_tag=tag)
@@ -1529,9 +1609,21 @@ class Users(UserMixin, db.Model):
             db.session.delete(fv)
             tag.cal_vote()
             db.session.commit() #for API??
-    def faving(self, tag):
-        return self.fav_tags.filter_by(
-            tag_id=tag.id).first() is not None
+    
+    #participate or not a circle
+    def parting(self, circle):
+        return self.participate_circles.filter_by(
+            circle_id=circle.id).first() is not None
+    def participate(self, circle):
+        if not self.parting(circle):
+            pt = Participate(participator=self, participate_circle=circle)
+            db.session.add(pt)
+            db.session.commit()
+    def unparticipate(self, circle):
+        pt = self.participate_circles.filter_by(circle_id=circle.id).first()
+        if pt:
+            db.session.delete(pt)
+            db.session.commit()
 
     #save activities to db Events
     def set_event(self,action=None,post=None,item=None,comment=None,\
@@ -1553,7 +1645,7 @@ class Users(UserMixin, db.Model):
     def accomplished(self):
         pass
 
-    def cal_rank(self,p=None,t=None,r=None,a=None,c=None,d=None,m=None):
+    def cal_credit(self,p=None,t=None,r=None,a=None,c=None,d=None,m=None):
         m = m or self.mission*10
         p = p or self.posts.count()*5
         t = t or self.tips.count()*5
@@ -1561,7 +1653,7 @@ class Users(UserMixin, db.Model):
         a = a or self.articles.count()*5
         c = c or self.clips.count()*2
         d = d or self.demands.count()
-        self.rank = m+p+t+r+a+c+d
+        self.credit = m+p+t+r+a+c+d
         db.session.add(self)
         #db.session.commit()
 
@@ -1580,9 +1672,8 @@ class Users(UserMixin, db.Model):
         tag_set = set(tag_all)
 
         return tag_set,tag_fv
-    # set logo cover of  post
+    # set avatar
     @property
-    @cache.memoize()
     def user_avatar(self):
         avatar = self.avatar
         if not avatar or not avatar.strip():
@@ -1601,7 +1692,9 @@ class Users(UserMixin, db.Model):
             'about': self.about_me or '',
             'followercount': self.followers.count(), 
             'followedcount': self.followed.count(), # following other
-            'exlink': self.links or ''
+            'exlink': self.links or '',
+            'incode': self.incode,
+            'recode': self.recode
         }
         return user_dict
 
@@ -1680,27 +1773,6 @@ class Events(db.Model):
     action = db.Column(db.String(32))
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
-    
-    dict_action_content = {
-        'create':'post',
-        'alter':'post', #edit intro
-        'updates':'post', #add item
-        'modify':'post', #edit tips
-        'star':'post',
-        'challenge':'post',
-        'comment':'comment',
-        'request':'demand',
-        'add':'review',
-        'endorse':'review',
-        'excerpt':'clip',
-        'fav':'tag',
-        'descript':'tag',
-        'edit':'item',  #add item info
-        'schedule':'item',
-        'working on':'item',
-        'get done':'item'
-    }
-
     # n to 1 with Users and others for record activities
     #events - actor
     user_id =  db.Column(
@@ -1733,30 +1805,58 @@ class Events(db.Model):
     @property
     def action_content(self):
         act = self.action
-        if act in ['create','alter','updates','update','modify','star','challenge']:
-            q=self.post
-            h=q.title if q else 'No title'
-            return ('post',q,h)
-        if act in ['edit','schedule','working on','get done']:
+        content_dict = {}
+        if act in ['Created','Starred','Started challenge']:
+            q = self.post
+            if q:
+                content_dict = {
+                    'type': 'readuplist',
+                    'id': q.id,
+                    'content': q.title
+                }
+        if act in ['Scheduled','Working on','Get done']:
             q=self.item
-            h=q.title if q else 'No title'
-            return ('item',q,h)
-        if act in ['add','endorse']:
+            if q:
+                content_dict = {
+                    'type': 'item',
+                    'id': q.id,
+                    'content': q.title
+                }
+        if act in ['Posted','Endorsed']:
             q=self.review
-            h=q.heading if q else 'No title'
-            return ('review',q,h)
-        if act in ['fav','descript']:
+            if q:
+                content_dict = {
+                    'type': 'review',
+                    'id': q.id,
+                    'content': q.heading
+                }
+        if act in ['Followed','Updated Description']:
             q=self.tag
-            h=q.tag if q else 'No title'
-            return ('tag',q,h)
-        if act == 'request':
+            if q:
+                content_dict = {
+                    'type': 'tag',
+                    'id': q.id,
+                    'content': q.tag
+                }
+        if act in ['Send','Voted']:
             q=self.demand
-            h=q.body if q else 'No content'
-            return ('demand',q,h)
-        if act == 'excerpt':
-            q=self.clip
-            h=q.body if q else 'No content'
-            return ('myclips',q.creator,h)
+            if q:
+                content_dict = {
+                    'type': 'demand',
+                    'id': q.id,
+                    'content': q.body
+                }
+        return content_dict
+
+    def to_dict(self):
+        actor = {'id': self.actor.id, 'name': self.actor.name, 'avatar': self.actor.user_avatar}
+        event_dict = {
+            'actor': actor,
+            'action': self.action,
+            'event': self.action_content,
+            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        return event_dict
 
     def __repr__(self):
         return '<Events %r>' % (self.action + str(self.id))

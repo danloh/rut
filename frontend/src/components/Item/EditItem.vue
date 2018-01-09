@@ -88,10 +88,42 @@ export default {
       },
       rules: {
         title: [
-          { required: true, validator: trimValid, message: 'Please give a title', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Please give a title', trigger: 'blur' },
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
         ],
         uid: [
-          { required: true, validator: trimValid, message: 'Need an uid', trigger: 'blur' }
+          { required: true, validator: trimValid, message: 'Need an uid', trigger: 'blur' },
+          { max: 128, message: 'Max Length should be 128', trigger: 'blur' }
+        ],
+        resUrl: [
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
+        ],
+        byline: [
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
+        ],
+        cover: [
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
+        ],
+        language: [
+          { max: 128, message: 'Max Length should be 128', trigger: 'blur' }
+        ],
+        publishDate: [
+          { max: 128, message: 'Max Length should be 128', trigger: 'blur' }
+        ],
+        publisher: [
+          { max: 255, message: 'Max Length should be 255', trigger: 'blur' }
+        ],
+        page: [
+          { max: 64, message: 'Max Length should be 64', trigger: 'blur' }
+        ],
+        level: [
+          { max: 128, message: 'Max Length should be 128', trigger: 'blur' }
+        ],
+        binding: [
+          { max: 128, message: 'Max Length should be 128', trigger: 'blur' }
+        ],
+        price: [
+          { max: 128, message: 'Max Length should be 128', trigger: 'blur' }
         ]
       },
       itemId: null,

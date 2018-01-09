@@ -6,11 +6,11 @@ const request = (url, options = {}, method = 'get') => {
   return axios(Object.assign({'url': url, 'method': method}, {[key]: options}))
   .then(res => res)
 }
-
+// regsiter
 const register = data => {
   return request(`${base}/register`, data, 'post')
 }
-
+// confirm email
 const confirm = (token) => {
   return request(`${base}/confirm/${token}`)
 }
@@ -22,18 +22,10 @@ const change = (data) => {
 const reset = (token, data) => {
   return request(`${base}/reset/${token}`, data, 'post')
 }
-
+// login
 const login = () => {
   return request(`${base}/login`)
 }
-
-// const authUser = params => {
-//   return request(`${base}/user`, params)  // why cannot be frontend url?
-// }
-
-// const auth = (servername, params) => {
-//   return request(`${base}/auth/${servername}`, params)
-// }
 // get authed user info
 const fetchCurrentUser = params => {
   return request(`${base}/currentuser`, params)
@@ -45,6 +37,15 @@ const fetchUser = (id, params) => {
 // get follows
 const fetchFollows = (userid, follow, params) => {
   return request(`${base}/user/${userid}/${follow}`, params)
+}
+
+// get a user's activity
+const fetchMyActivity = (userid, params) => {
+  return request(`${base}/${userid}/myactivity`, params)
+}
+// get feeds
+const fetchFeeds = (params) => {
+  return request(`${base}/feeds`, params)
 }
 
 const editProfile = (params) => {
@@ -62,7 +63,7 @@ const followOne = (action, userid, params) => {
 const newRut = (params, demandid) => {
   return request(`${base}/create/${demandid}`, params, 'post')
 }
-
+// get ruts for index page
 const fetchIndexRuts = params => {
   return request(`${base}/index/ruts`, params)
 }
@@ -145,6 +146,10 @@ const editTips = (cid, params) => {
 // delete Tips
 const deleteTips = (cid, params) => {
   return request(`${base}/del/tips/${cid}`, params)
+}
+// get favored tags
+const fetchFavTags = (userid, params) => { // !!
+  return request(`${base}/${userid}/fav/tags`, params)
 }
 // get tag
 const fetchTag = (tagid, params) => { // !!
@@ -291,11 +296,11 @@ export {
   change,
   reset,
   login,
-  // auth,
-  // authUser,
   fetchCurrentUser,
   fetchUser,
   fetchFollows,
+  fetchMyActivity,
+  fetchFeeds,
   editProfile,
   checkFollowing,
   followOne,
@@ -322,6 +327,7 @@ export {
   checkItem,
   editTips,
   deleteTips,
+  fetchFavTags,
   fetchTag,
   fetchTagRuts,
   editTag,

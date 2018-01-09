@@ -22,7 +22,7 @@
     </div>
     <div class="item-side">
       <div class="include">
-        <b class="in-title">Included in {{currentItem.rutcount}} Tips</b>
+        <b class="in-title">Included in {{currentItem.rutcount | pluralise('List')}}</b>
         <p class="in-item" v-for="(rut, index) in inRuts" :key="index" :rut="rut">
           - <router-link :to="'/readuplist/' + rut.id" :title="rut.title"> {{ rut.title.slice(0, 60) }}...</router-link>
         </p>

@@ -1,7 +1,7 @@
 <template>
   <div class="edit-page">
     <h3 class="title"> Edit My Profile</h3>
-    <el-form class="edit-form" :model="settingForm" ref="settingForm" label-width="120px" size="mini">
+    <el-form class="edit-form" :model="settingForm" :rules="rules" ref="settingForm" label-width="120px" size="mini">
       <el-form-item label="Nickname" prop="nickname">
         <el-input v-model="settingForm.nickname"></el-input>
       </el-form-item>
@@ -41,6 +41,20 @@ export default {
         about: '',
         url: ''
       },
+      rules: {
+        nickname: [
+          { max: 64, message: 'Max Length should be 64', trigger: 'blur' }
+        ],
+        location: [
+          { max: 64, message: 'Max Length should be 64', trigger: 'blur' }
+        ],
+        avatarUrl: [
+          { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
+        ],
+        url: [
+          { max: 255, message: 'Max Length should be 255', trigger: 'blur' }
+        ]
+      },
       userid: null,
       canSetting: false
     }
@@ -76,21 +90,18 @@ export default {
     resetForm (formName) {
       this.$refs[formName].resetFields()
     },
-    loadUserData () {
-      let user = this.$store.getters.currentUser
-      this.userid = user.id
-      if (user.id === Number(this.$route.params.id)) {
-        this.settingForm.nickname = user.nickname
-        this.settingForm.location = user.location
-        this.settingForm.avatarUrl = user.avatar
-        this.settingForm.about = user.about_me
-        this.settingForm.url = user.links
-        this.canSetting = true
-      }
+    setFormData (user) {
+      this.settingForm.nickname = user.nickname
+      this.settingForm.location = user.location
+      this.settingForm.avatarUrl = user.avatar
+      this.settingForm.about = user.about_me
+      this.settingForm.url = user.links
+      this.canSetting = true
     }
   },
   created () {
-    this.loadUserData()
+    let user = this.$store.getters.currentUser
+    this.setFormData(user)
   }
 }
 </script>

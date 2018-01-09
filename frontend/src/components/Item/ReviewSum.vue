@@ -74,9 +74,9 @@ export default {
 
 <style lang="stylus" scoped>
 .review-main
-  background-color lighten(#f6f6f1, 50%)
+  background-color lighten(#f4f7f3, 50%)
   padding 5px
-  border-bottom 1px dotted #e09015
+  border-bottom 1px solid #eee
   position relative
   .title
     font-weight 700
@@ -89,7 +89,7 @@ export default {
     font-size 0.7em
     text-align right
   .review-body
-    background-color #f6f6f1
+    background-color #f4f7f3
     padding 0 5px
     font-size 1.05em
 </style>

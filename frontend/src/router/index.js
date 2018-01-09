@@ -6,6 +6,7 @@ Vue.use(Router)
 import store from '@/store'
 // import components
 import Home from '@/view/Home'
+import Feeds from '@/view/Feeds'
 import Challenge from '@/view/Challenge'
 import Demands from '@/view/Demands'
 import DemandView from '@/view/DemandView'
@@ -36,6 +37,7 @@ import createProfileRuts from '@/components/Profile/CreateProfileRuts'
 import createProfileItems from '@/components/Profile/CreateProfileItems'
 import ProfileReviews from '@/components/Profile/ProfileReviews'
 import ProfileDemands from '@/components/Profile/ProfileDemands'
+import ProfileActivity from '@/components/Profile/ProfileActivity'
 import Setting from '@/components/Profile/Setting'
 import EditProfile from '@/components/Profile/EditProfile'
 import FollowedList from '@/components/Profile/FollowedList'
@@ -77,6 +79,7 @@ const router = new Router({
   scrollBehavior, // : () => ({y: 0}),
   routes: [
     { path: '/', component: Home, name: 'Home' },
+    { path: '/feeds', component: Feeds, name: 'Feeds', meta: {auth: true} },
     { path: '/register', component: Register, name: 'Register' },
     { path: '/confirm/:token', component: Confirm, name: 'Confirm', meta: {auth: true} },
     { path: '/forget', component: Forget, name: 'Forget' },
@@ -133,7 +136,7 @@ const router = new Router({
     { path: '/profile/:id',
       component: Profile,
       children: [
-        { path: '', name: 'defaultPruts', redirect: 'created' },
+        { path: '', name: 'defaultProfile', component: ProfileActivity },
         { path: 'created', name: 'CreatedRuts', component: createProfileRuts('created') },
         { path: 'star', name: 'StarRuts', component: createProfileRuts('star') },
         { path: 'challenge', name: 'ChallengeRuts', component: createProfileRuts('challenge') },
