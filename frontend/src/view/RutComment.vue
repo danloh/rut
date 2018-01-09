@@ -15,6 +15,7 @@
     <div v-if="hasChallenge">
       <challenge-list></challenge-list>
     </div>
+    <div class="circle-side"></div>
   </div>
 </template>
 
