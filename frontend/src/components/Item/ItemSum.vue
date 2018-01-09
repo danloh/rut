@@ -12,20 +12,21 @@
       <span><b>UID/ISBN:</b> {{ item.uid }} <a :href="item.resurl" v-if="item.resurl" target="_blank"> .....</a> </span><br>
       <span><b>Listed:</b> {{ item.rutcount }} </span>
     </div>
+    <div class="flag-note" v-if="flagNote"><b>"</b>{{ flagNote }}<b>"</b></div>
     <div class="operate">
       <el-dropdown>
         <el-button type="primary" size="mini" plain>{{flagAction}}<i class="el-icon-arrow-down el-icon--right"></i></el-button>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item><span @click="flagSchedule">Schedule</span></el-dropdown-item>
-          <el-dropdown-item><span @click="flagWorking">Working On</span></el-dropdown-item>
-          <el-dropdown-item><span @click="flagDone">Have Done</span></el-dropdown-item>
+          <el-dropdown-item><span @click="openToFlag('schedule')">Schedule</span></el-dropdown-item>
+          <el-dropdown-item><span @click="openToFlag('working')">Working On</span></el-dropdown-item>
+          <el-dropdown-item><span @click="openToFlag('done')">Have Done</span></el-dropdown-item>
           <el-dropdown-item divided><span @click="showAndloadData">Add to List</span></el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
     <!-- addtolist dialog -->
     <el-dialog title="Add Item to Created List" :visible.sync="showDialog" width="45%">
-      <el-form :model="intoForm" :rules="rules" ref="intoForm">
+      <el-form :model="intoForm" ref="intoForm">
         <el-form-item prop="rut">
           <el-select v-model="intoForm.selectRutID">
             <el-option v-for="r in createdRuts" :key="r.id" :label="r.title" :value="r.id"></el-option>
@@ -37,7 +38,19 @@
         <el-button size="mini" type="success" @click="addtoRut('intoForm', intoForm)">Add</el-button>
       </div>
     </el-dialog>
-    <!-- dialog end -->
+    <!-- addtolist dialog end -->
+    <!-- addnote dialog -->
+    <el-dialog title="Add Note and Flag" :visible.sync="showNoteDialog" width="35%">
+      <el-form :model="noteForm" :rules="noteRules" ref="noteForm">
+        <el-form-item prop="note">
+          <el-input v-model="noteForm.note" placeholder="Optional, Max 42 words"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" type="success" @click="flagAddnote('noteForm', noteForm)">Done</el-button>
+      </div>
+    </el-dialog>
+    <!-- addnote dialog end -->
   </div>
 </template>
 
@@ -50,13 +63,21 @@ export default {
   props: ['item'],
   data () {
     return {
-      flagAction: this.checkFlaging(), // || 'Flag it',
+      flagAction: 'Flag it',
+      flagNote: '',
       showDialog: false,
       intoForm: {
         selectRutID: null
       },
-      rules: {
-        selectRutID: [{ required: true, message: 'Required', trigger: 'change' }] // can be deleted
+      showNoteDialog: false,
+      flagTo: '',
+      noteForm: {
+        note: ''
+      },
+      noteRules: {
+        note: [
+          { max: 42, message: 'Max Length should be 42', trigger: 'blur' }
+        ]
       },
       createdRuts: []
     }
@@ -72,18 +93,19 @@ export default {
         let itemid = this.item.id || this.$route.params.id // why?? liftcycle timing??: in list or in view
         return checkFlag(itemid)
         .then(resp => {
-          this.flagAction = resp.data
+          this.flagAction = resp.data.label
+          this.flagNote = resp.data.note
+          this.noteForm.note = resp.data.note
         })
       } else {
-        return 'Flag it'
+        this.flagAction = 'Flag it'
+        this.flagNote = ''
       }
     },
-    flagSchedule () {
+    openToFlag (to) {
       if (checkAuth()) {
-        return flagItem('todo', this.item.id)
-        .then(() => {
-          this.flagAction = 'Scheduled'
-        })
+        this.showNoteDialog = true
+        this.flagTo = to
       } else {
         this.$message({
           showClose: true,
@@ -95,39 +117,58 @@ export default {
         })
       }
     },
-    flagWorking () {
-      if (checkAuth()) {
-        return flagItem('doing', this.item.id)
-        .then(() => {
-          this.flagAction = 'Working On'
-        })
-      } else {
-        this.$message({
-          showClose: true,
-          message: 'Should Log in to Access'
-        })
-        this.$router.push({
-          path: '/login',
-          query: {redirect: this.$route.fullPath}
-        })
-      }
+    flagSchedule (note = '') {
+      let params = {'note': note}
+      return flagItem('todo', this.item.id, params)
+      .then(() => {
+        this.flagAction = 'Scheduled'
+        this.flagNote = note
+      })
     },
-    flagDone () {
-      if (checkAuth()) {
-        return flagItem('done', this.item.id)
-        .then(() => {
-          this.flagAction = 'Have Done'
-        })
-      } else {
-        this.$message({
-          showClose: true,
-          message: 'Should Log in to Access'
-        })
-        this.$router.push({
-          path: '/login',
-          query: {redirect: this.$route.fullPath}
-        })
-      }
+    flagWorking (note = '') {
+      let params = {'note': note}
+      return flagItem('doing', this.item.id, params)
+      .then(() => {
+        this.flagAction = 'Working On'
+        this.flagNote = note
+      })
+    },
+    flagDone (note = '') {
+      let params = {'note': note}
+      return flagItem('done', this.item.id, params)
+      .then(() => {
+        this.flagAction = 'Have Done'
+        this.flagNote = note
+      })
+    },
+    flagAddnote (formName, form) {
+      this.$refs[formName].validate((valid) => {
+        if (checkAuth()) {
+          let note = form.note.trim()
+          let to = this.flagTo
+          switch (to) {
+            case 'schedule':
+              this.flagSchedule(note)
+              break
+            case 'working':
+              this.flagWorking(note)
+              break
+            case 'done':
+              this.flagDone(note)
+              break
+          }
+          this.showNoteDialog = false
+        } else {
+          this.$message({
+            showClose: true,
+            message: 'Should Log in to Access'
+          })
+          this.$router.push({
+            path: '/login',
+            query: {redirect: this.$route.fullPath}
+          })
+        }
+      })
     },
     // get created ruts before add item to one
     showAndloadData () {
@@ -185,6 +226,9 @@ export default {
         }
       })
     }
+  },
+  created () {
+    this.checkFlaging()
   }
 }
 </script>
@@ -214,6 +258,10 @@ export default {
     position absolute
     top 10px
     right 2px
+  .flag-note
+    font-size 0.75em
+    color grey
+    text-align right
 .el-select
   width 100%
 </style>

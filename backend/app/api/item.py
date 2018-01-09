@@ -121,9 +121,10 @@ def check_flag(itemid):
 def flag_item_todo(itemid):
     user = g.user
     item = Items.query.get_or_404(itemid)
+    note = request.args.get('note','').strip()
     # record activity as want to read an item
     user.set_event(action='Scheduled', item=item)
-    user.flag(item,1)
+    user.flag(item,1,note)
     return jsonify('Scheduled')
 
 @rest.route('/flagdoing/item/<int:itemid>')
@@ -131,9 +132,10 @@ def flag_item_todo(itemid):
 def flag_item_doing(itemid):
     user = g.user
     item = Items.query.get_or_404(itemid)
+    note = request.args.get('note','').strip()
     # record activity asworking an item
     user.set_event(action='Working on', item=item)
-    user.flag(item,2)
+    user.flag(item,2,note)
     return jsonify('Working On')
 
 @rest.route('/flagdone/item/<int:itemid>')
@@ -141,9 +143,10 @@ def flag_item_doing(itemid):
 def flag_item_done(itemid):
     user = g.user
     item = Items.query.get_or_404(itemid)
+    note = request.args.get('note','').strip()
     # record activity as have done an item
     user.set_event(action='Get done', item=item)
-    user.flag(item,3)
+    user.flag(item,3,note)
     return jsonify('Done')
 
 @rest.route('/edititem/<int:itemid>', methods=['POST'])

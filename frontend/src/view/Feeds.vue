@@ -81,7 +81,7 @@ export default {
   .activity-list
     margin-top 5px
     border-top 1px solid #eee
-    background-color white
+    background-color #eceff1
     position relative
     padding 5px 5px 5px 50px
     .avatar
