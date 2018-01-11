@@ -18,6 +18,8 @@
 </template>
 
 <script>
+import { reqReset } from '@/api/api'
+
 export default {
   name: 'forget',
   title: 'Request to Reset Password',
@@ -45,8 +47,7 @@ export default {
             username: form.username,
             email: form.email
           }
-          this.$axios.post('api/reset', data)
-          .then((resp) => {
+          reqReset(data).then(resp => {
             this.$message({
               showClose: true,
               message: resp.data

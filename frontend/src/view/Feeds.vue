@@ -1,7 +1,7 @@
 <template>
   <div class="feed-page">
     <div>
-      <b>The Feeds shows events from people you follow</b>
+      <b>The Feed shows events from people you follow</b>
       <div class="activity-list" v-for="(act, index) in activity" :key="index" v-if="act.event.type">
         <router-link :to="'/profile/' + act.actor.id">
           <img class="avatar" :src="act.actor.avatar" style="width:30px; border-radius:50%" alt="Avatar">
@@ -16,7 +16,7 @@
     <div class="tag-side">
       <h4 class="sidetitle">Favorite Topics</h4>
       <div class="sidebody" v-for="(tag, index) in showTags" :key="index">
-        <router-link :to="'/tag/' + tag.tagid">{{tag.tagname}}</router-link>
+        <router-link :to="'/tag/' + tag.id">{{tag.tagname}}</router-link>
       </div>
       <div v-if="hasMore">
         <el-button class="blockbtn" type="text" size="mini" @click="loadMoreTags" :disabled="!hasMore">Show More</el-button>

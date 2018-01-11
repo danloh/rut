@@ -43,11 +43,7 @@ export default {
             username: form.username,
             password: form.password
           }
-          this.$axios.get('api/login')
-          .then((resp) => {
-            let data = resp.data
-            this.$store.commit('SET_TOKEN', data.token)
-            this.$store.commit('SET_USER', data.userid)
+          this.$store.dispatch('loginUser').then(() => {
             let nextUrl = this.$route.query.redirect || '/challenge' // uncompletely tackled!!
             this.$router.push(nextUrl)
           }).catch(() => {

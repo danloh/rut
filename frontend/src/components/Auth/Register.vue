@@ -25,13 +25,15 @@
 </template>
 
 <script>
+import { checkName, checkEmail } from '@/api/api'
+
 export default {
   name: 'register',
   title: 'Register',
   data () {
     var validateName = (rule, value, callback) => {
       if (value.trim() !== '') {
-        this.checkName().then(resp => { // call Promise here
+        this.validName().then(resp => { // call Promise here
           if (resp.data) {
             callback()
           } else {
@@ -45,7 +47,7 @@ export default {
     var validateEmail = (rule, value, callback) => {
       let regEmail = /^[a-zA-Z0-9_-]+([-_.][A-Za-z0-9]+)*@[a-zA-Z0-9_-]+(\.[a-zA-Z]+)+$/
       if (regEmail.test(value.trim())) {
-        this.checkEmail().then(resp => {
+        this.validEmail().then(resp => {
           if (resp.data) {
             callback()
           } else {
@@ -110,11 +112,8 @@ export default {
             password: form.password,
             incode: incode || ''
           }
-          this.$axios.post('api/register', data)
-          .then((resp) => {
-            let data = resp.data
-            this.$store.commit('SET_TOKEN', data.token) // as login
-            this.$store.commit('SET_USER', data.userid) // as login
+          this.$store.dispatch('registerUser', data)
+          .then(() => {
             this.$router.push('/challenge')
             this.$message({
               showClose: true,
@@ -130,13 +129,13 @@ export default {
         }
       })
     },
-    checkName () {
+    validName () {
       let name = this.regForm.username
-      return this.$axios.get(`api/checkname/${name}`) // return a Promise
+      return checkName(name) // return a Promise
     },
-    checkEmail () {
+    validEmail () {
       let email = this.regForm.email
-      return this.$axios.get(`api/checkemail/${email}`)
+      return checkEmail(email)
     },
     resetForm (formName) {
       this.$refs[formName].resetFields()

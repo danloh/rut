@@ -42,9 +42,11 @@ const mutations = {
     state.nexturl = nexturl
   }
 }
-import { fetchCurrentUser, confirm, change, reset } from '@/api/api'
+
+import { fetchCurrentUser, register, login } from '@/api/api'
+
 const actions = {
-  getCurrentUser: ({ commit, state }) => {
+  getCurrentUser: ({ commit }) => {
     return new Promise((resolve, reject) => {
       fetchCurrentUser()
       .then(resp => {
@@ -55,27 +57,24 @@ const actions = {
       })
     })
   },
-  confirmEmail: (context, token) => {
+  registerUser: ({ commit }, data) => {
     return new Promise((resolve, reject) => {
-      confirm(token).then(resp => {
+      register(data).then(resp => {
+        let d = resp.data
+        commit('SET_TOKEN', d.token) // as login
+        commit('SET_USER', d.userid) // as login
         resolve(resp)
       }).catch(error => {
         reject(error)
       })
     })
   },
-  changePsw: (context, params) => {
+  loginUser: ({ commit }, params) => {
     return new Promise((resolve, reject) => {
-      change(params).then(resp => {
-        resolve(resp)
-      }).catch(error => {
-        reject(error)
-      })
-    })
-  },
-  resetPsw: (context, params) => {
-    return new Promise((resolve, reject) => {
-      reset(params['token'], params['data']).then(resp => {
+      login(params).then(resp => {
+        let d = resp.data
+        commit('SET_TOKEN', d.token)
+        commit('SET_USER', d.userid)
         resolve(resp)
       }).catch(error => {
         reject(error)

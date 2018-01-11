@@ -6,7 +6,7 @@
             <b style="color:darkorange;font-size:1.6em;letter-spacing:0.0005em">Readup.Tips</b>
         </router-link>
         <router-link to="/feeds" v-if="authed">
-          <b>Feeds</b>
+          <b>Feed</b>
         </router-link>
         <router-link to="/challenge">
           <b>Challenge</b>

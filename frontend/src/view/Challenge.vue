@@ -25,7 +25,7 @@
         <router-view></router-view>
       </div>
     </div>
-    <div class="challenge-side" v-if="challengeRut">
+    <div class="challenge-side">
       <div class="right-title">
         <b>Working on Challenge:</b>
         <br>

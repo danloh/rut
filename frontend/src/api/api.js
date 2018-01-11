@@ -10,21 +10,37 @@ const request = (url, options = {}, method = 'get') => {
 const register = data => {
   return request(`${base}/register`, data, 'post')
 }
+// check name when regsiter
+const checkName = (name) => {
+  return request(`${base}/checkname/${name}`)
+}
+// check email when regsiter
+const checkEmail = (email) => {
+  return request(`${base}/checkemail/${email}`)
+}
 // confirm email
 const confirm = (token) => {
   return request(`${base}/confirm/${token}`)
+}
+// send reconfirm email
+const reConfirmEmail = () => {
+  return request(`${base}/confirm`)
 }
 // change password
 const change = (data) => {
   return request(`${base}/changepassword`, data, 'post')
 }
-// rest password if forget password
+// request rest password if forget password
+const reqReset = (data) => {
+  return request(`${base}/reset`, data, 'post')
+}
+// rest password per token if forget password
 const reset = (token, data) => {
   return request(`${base}/reset/${token}`, data, 'post')
 }
 // login
-const login = () => {
-  return request(`${base}/login`)
+const login = params => {
+  return request(`${base}/login`, params)
 }
 // get authed user info
 const fetchCurrentUser = params => {
@@ -292,10 +308,14 @@ export {
   testError,
   axios,
   register,
+  checkName,
+  checkEmail,
   confirm,
   change,
+  reqReset,
   reset,
   login,
+  reConfirmEmail,
   fetchCurrentUser,
   fetchUser,
   fetchFollows,

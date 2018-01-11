@@ -18,6 +18,8 @@
 </template>
 
 <script>
+import { reset } from '@/api/api'
+
 export default {
   name: 'resetpsw',
   title: 'Reset Password',
@@ -64,9 +66,7 @@ export default {
         if (valid) {
           let data = {newpsw: form.password}
           let token = this.$route.params.token
-          let params = {'token': token, 'data': data}
-          this.$store.dispatch('resetPsw', params)
-          .then((resp) => {
+          reset(token, data).then(resp => {
             this.$message({
               showClose: true,
               message: resp.data

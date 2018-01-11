@@ -1711,6 +1711,7 @@ class Users(UserMixin, db.Model):
             'nickname': self.nickname or '',
             'username': self.name,
             'role': self.role.duty,
+            'confirmed': self.confirmed,
             'avatar': self.user_avatar,
             'location': self.location or '',
             'about': self.about_me or '',

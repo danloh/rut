@@ -22,6 +22,7 @@
 
 <script>
 import { checkAuth } from '@/util/auth'
+import { change } from '@/api/api'
 
 export default {
   name: 'changepsw',
@@ -75,8 +76,7 @@ export default {
             oldpsw: form.password,
             newpsw: form.newpassword
           }
-          this.$store.dispatch('changePsw', data)
-          .then((resp) => {
+          change(data).then(resp => {
             this.$store.commit('DEL_TOKEN')
             this.$message({
               showClose: true,
