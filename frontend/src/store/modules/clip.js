@@ -17,7 +17,7 @@ const state = {
 
 // actions
 const actions = {
-  getClips: ({commit, state}, params = {}) => {
+  getClips: ({commit, state}, params) => {
     if (params.itemid || params.userid) {
       return fetchIUClips(params)
       .then(resp => {
@@ -29,13 +29,13 @@ const actions = {
       commit('SET_CLIPS', resp.data)
     })
   },
-  postClip: ({commit, state}, params = {}) => {
+  postClip: ({commit, state}, params) => {
     return newClip(params)
     .then(resp => {
       commit('ADD_CLIP', resp.data)
     })
   },
-  moreClips: ({commit, state}, params = {}) => {
+  moreClips: ({commit, state}, params) => {
     if (params.itemid || params.userid) {
       return fetchIUClips(params)
       .then(resp => {

@@ -92,7 +92,7 @@ def confirm(token):
         db.session.commit()
         return jsonify('You have confirmed your account. Thanks!')
     else:
-        return jsonify('The confirmation link is invalid or has expired.')
+        return jsonify('The confirmation link is invalid or has expired')
 
 @rest.route('/confirm')
 @auth.login_required
