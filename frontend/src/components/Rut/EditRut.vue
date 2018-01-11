@@ -1,8 +1,8 @@
 <template>
   <div class="edit-page">
-    <h3 class="title"> Edit Readup Tips:
-      <el-button type="text" @click="cancelnReturn"><b>{{rutTitle}}</b> <small>...Cancel and Return</small></el-button>
-    </h3>
+    <div class="title"> <b>Edit List:&nbsp;&nbsp;</b>
+      {{ rutTitle }}&nbsp;&nbsp;<el-button type="text" @click="cancelnReturn">...Cancel Edit and Back</el-button>
+    </div>
     <el-form class="edit-form" :model="editForm" :rules="rules" ref="editForm" label-width="120px" size="mini">
       <el-form-item label="Title" prop="title">
         <el-input v-model="editForm.title"></el-input>

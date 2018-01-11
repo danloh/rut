@@ -79,19 +79,42 @@ def get_tag_relates(tagid):
         'relates': [t.to_dict() for t in related_tags],
         'totalrelates': len(related_tags)
     }
-    return jsonify(tags_dict) 
+    return jsonify(tags_dict)
+
+@rest.route('/locktag/<int:tagid>')
+@auth.login_required
+def lock_tag(tagid):
+    user = g.user
+    tag = Tags.query.get_or_404(tagid)
+    tag.lock(user)
+    return jsonify('Locked')
+
+@rest.route('/unlocktag/<int:tagid>')
+def unlock_tag(tagid):
+    tag = Tags.query.get_or_404(tagid)
+    tag.unlock()
+    return jsonify('UnLocked')
+
+@rest.route('/checkiftag/<int:tagid>/lockedto/<int:userid>')
+def check_tag_if_locked(tagid, userid):
+    tag = Tags.query.get_or_404(tagid)
+    is_locked = tag.check_locked(userid)
+    return jsonify(is_locked)
 
 @rest.route('/edittag/<int:tagid>', methods=['POST'])
 @auth.login_required
 def edit_tag(tagid):
+    user = g.user
     query = Tags.query
-    tag = query.get_or_404(tagid)
     # get data
     name = request.json.get('name','').strip()
     parent = request.json.get('parent','').strip()
     description = request.json.get('description','').strip()
     if not name:
         abort(403)
+    tag = query.get_or_404(tagid)
+    if tag.check_locked(user.id):
+        return jsonify('In Editing')
     if tag.tag != name and query.filter_by(tag=name).first():
         abort(403) # no Duplicated Tag Name
     tag.tag = name

@@ -1,8 +1,8 @@
 <template>
   <div class="edit-page">
-    <h3 class="title"> Edit Item:&nbsp;&nbsp;
-      <router-link class="title" :to="'/item/' + itemId">{{itemTitle}}</router-link>
-    </h3>
+    <div class="title"> <b>Edit Item:</b>&nbsp;
+      {{ itemTitle }}<el-button type="text" @click="cancelnBack"> ...Cancel Edit</el-button>
+    </div>
     <el-form class="edit-form" :model="itemForm" :rules="rules" ref="itemForm" label-width="120px" size="mini">
       <el-form-item label="Type" prop="cate">
         <el-radio-group v-model="itemForm.cate">
@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import { editItem, fetchItem } from '@/api/api'
+import { editItem, unlockItem } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { trimValid } from '@/util/filters'
 
@@ -153,6 +153,7 @@ export default {
           editItem(this.itemId, data)
           .then((resp) => {
             let id = this.itemId
+            unlockItem(id)
             this.$router.push(`/item/${id}`)
             this.$message({
               showClose: true,
@@ -177,6 +178,11 @@ export default {
           return false
         }
       })
+    },
+    cancelnBack () {
+      let id = this.itemId
+      unlockItem(id)
+      this.$router.push(`/item/${id}`)
     },
     resetForm (formName) {
       this.$refs[formName].resetFields()
@@ -206,9 +212,8 @@ export default {
         let item = itemG
         this.setFormData(item)
       } else {
-        fetchItem(itemid).then(resp => {
-          this.setFormData(resp.data)
-        })
+        unlockItem(itemid)
+        this.$router.push(`/item/${itemid}`)
       }
     }
   },

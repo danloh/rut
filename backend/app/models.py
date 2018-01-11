@@ -573,6 +573,8 @@ class Items(db.Model):
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
+    edit_start = db.Column(db.DateTime,default=None)
+    editing_id = db.Column(db.Integer)
 
     # 1 to n with Comments
     comments = db.relationship(
@@ -672,6 +674,37 @@ class Items(db.Model):
         db.session.add(self)
         #db.session.commit()
     
+        # lock and unlock status in/after edit item: a stopgap
+    def lock(self, user):
+        # set a start time and id  to indicate in editing
+        self.edit_start = datetime.utcnow()
+        self.editing_id = user.id
+        db.session.add(self)
+        db.session.commit()
+    def unlock(self):
+        # reset eidt_start to None, after edit done
+        self.edit_start = None
+        self.editing_id = None
+        db.session.add(self)
+        db.session.commit()
+    def force_unlock(self, start=None, timeout=2400):
+        # sometime user forget submit, need to force unlock
+        start = start or self.edit_start
+        if start:
+            now = datetime.utcnow()
+            delta = now - start
+            if delta.seconds >= timeout:
+                self.unlock()
+    def check_locked(self, userid):
+        # if eidt_start is not None, it is locked as editing
+        start = self.edit_start
+        if start and self.editing_id != userid:
+            #force_unlock firstly
+            self.force_unlock(start=start)
+            return bool(self.edit_start)
+        else:
+            return False
+    
     def to_dict(self):
         item_dict = {
             'id': self.id,
@@ -720,6 +753,8 @@ class Tags(db.Model):
     tag = db.Column(db.String(128), nullable=False, unique=True)
     descript = db.Column(db.String(512))
     vote = db.Column(db.Integer, default=0)
+    edit_start = db.Column(db.DateTime,default=None)
+    editing_id = db.Column(db.Integer)
 
     # 1 to n with Events
     events = db.relationship(
@@ -790,6 +825,37 @@ class Tags(db.Model):
         self.vote = i+p+d+f
         db.session.add(self)
         #db.session.commit()
+    
+    # lock and unlock status in/after edit tag: a stopgap
+    def lock(self, user):
+        # set a start time and id  to indicate in editing
+        self.edit_start = datetime.utcnow()
+        self.editing_id = user.id
+        db.session.add(self)
+        db.session.commit()
+    def unlock(self):
+        # reset eidt_start to None, after edit done
+        self.edit_start = None
+        self.editing_id = None
+        db.session.add(self)
+        db.session.commit()
+    def force_unlock(self, start=None, timeout=600):
+        # sometime user forget submit, need to force unlock
+        start = start or self.edit_start
+        if start:
+            now = datetime.utcnow()
+            delta = now - start
+            if delta.seconds >= timeout:
+                self.unlock()
+    def check_locked(self, userid):
+        # if eidt_start is not None, it is locked as editing
+        start = self.edit_start
+        if start and self.editing_id != userid:
+            #force_unlock firstly
+            self.force_unlock(start=start)
+            return bool(self.edit_start)
+        else:
+            return False
 
     def to_dict(self):
         tag_dict = {

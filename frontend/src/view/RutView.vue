@@ -5,16 +5,16 @@
         <span class="tag" v-for="(tag, index) in tags" :key="index">
           <router-link :to="'/tag/' + tag.id">{{tag.tagname}}</router-link>
         </span>
-        <el-button type="text" @click="showDialog=true" v-show="canTag">..Edit</el-button>
+        <el-button type="text" @click="toEditTag" v-show="canTag">..Edit</el-button>
       </div>
       <!-- edit tag dialog -->
-      <el-dialog title="Edit Tag" :visible.sync="showDialog" width="30%">
+      <el-dialog title="Edit Tag" :visible.sync="showDialog" :before-close="cancelOnClose" width="30%">
         <el-input size="mini" v-model="newTag" @keyup.enter.native="addNewTag" placeholder="Input a Tag, Press Enter to Add"></el-input>
         <div v-for="(tag, index) in newTags" :key="index">
           <p><el-button type="text" size="mini" @click="newTags.splice(index, 1)">X</el-button>&nbsp;&nbsp; {{ tag }} </p>
         </div>
         <div slot="footer" class="dialog-footer">
-          <el-button size="mini" @click="showDialog = false">Cancel</el-button>
+          <el-button size="mini" @click="cancelEditTag">Cancel</el-button>
           <el-button type="success" size="mini" @click="editTag">Done</el-button>
         </div>
       </el-dialog>
@@ -32,11 +32,11 @@
         <div v-html="md(rutDetail.intro)"></div>
       </div>
       <div class="toolbar">
-        <router-link class="editlink" :to="'/profile/' + whoEdit.id" v-if="whoEdit.id">{{whoEdit.name}} is Editing</router-link>&nbsp;&nbsp;&nbsp;&nbsp;
-        <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit">...Edit</router-link>&nbsp;&nbsp;&nbsp;&nbsp;
-        <router-link class="editlink" :to="'/additemto/readuplist/' + rutid" v-if="canEdit">Add Item...</router-link> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <el-button type="success" size="mini" plain @click="starRut"><b>{{ starAction }}&nbsp;{{ starCount }}</b></el-button>
-        <el-button type="success" size="mini" plain @click="challengeRut"><b>{{ challengeAction }}&nbsp;{{ challengeCount }}</b></el-button>
+        <router-link class="editlink" :to="'/profile/' + whoEdit.id" v-if="whoEdit.id">In Editing</router-link>&nbsp;&nbsp;&nbsp;&nbsp;
+        <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit"> EDIT </router-link>&nbsp;&nbsp;&nbsp;&nbsp;
+        <router-link class="editlink" :to="'/additemto/readuplist/' + rutid" v-if="canEdit"> ADD ITEM </router-link> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <el-button size="mini" plain @click="starRut"><b>{{ starAction }}&nbsp;{{ starCount }}</b></el-button>
+        <el-button size="mini" plain @click="challengeRut"><b>{{ challengeAction }}&nbsp;{{ challengeCount }}</b></el-button>
       </div>
       <div class="itemtip" v-for="tip in tips" :key="tip.cid">
         <item-sum class="itemsum" :item="tip.item" :key="tip.itemid"></item-sum>
@@ -85,7 +85,7 @@ import ItemSum from '@/components/Item/ItemSum.vue'
 import Comment from '@/components/Comment/Comment.vue'
 import ShareBar from '@/components/Misc/ShareBar.vue'
 // sc: star and challenge
-import { scRut, checkSC, editTags, fetchRutDemands, fetchRutTips, checkEditable } from '@/api/api'
+import { scRut, checkSC, editTags, fetchRutDemands, fetchRutTips, checkEditable, checkRutLocked, lockRut, unlockRut } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { mapGetters } from 'vuex'
 import marked from '@/util/marked'
@@ -95,8 +95,8 @@ export default {
   components: { ItemSum, Comment, ShareBar },
   data () {
     return {
-      starAction: this.checkStar(), // || 'Star',
-      challengeAction: this.checkChallenge(), // || 'Challenge',
+      starAction: 'Star',
+      challengeAction: 'Challenge',
       starCount: 0,
       challengeCount: 0,
       tips: [],
@@ -112,7 +112,7 @@ export default {
       newTags: [],
       canEdit: false,
       whoEdit: {},
-      canTag: checkAuth(),
+      canTag: true,
       short: true
     }
   },
@@ -185,10 +185,11 @@ export default {
       let crutid = this.$route.params.id
       if (!currentUserID) {
         this.canEdit = false
+        this.canTag = false
       } else {
         checkEditable(currentUserID, crutid).then(res => {
           this.canEdit = res.data.canedit
-          this.whoEdit = { id: res.data.id, name: res.data.name }
+          this.whoEdit = { id: res.data.id }
         })
       }
     },
@@ -200,7 +201,7 @@ export default {
           this.starAction = resp.data
         })
       } else {
-        return 'Star'
+        this.starAction = 'Star'
       }
     },
     checkChallenge () {
@@ -211,7 +212,7 @@ export default {
           this.challengeAction = resp.data
         })
       } else {
-        return 'Challenge'
+        this.challengeAction = 'Challenge'
       }
     },
     starRut () {
@@ -266,6 +267,30 @@ export default {
         })
       }
     },
+    toEditTag () {
+      let currentUserID = this.$store.getters.currentUserID
+      if (!currentUserID) {
+        this.showDialog = false
+        this.$message('Please Log in to Continue')
+      } else {
+        checkRutLocked(currentUserID, this.rutid).then(resp => {
+          if (!resp.data) {
+            this.showDialog = true
+            lockRut(this.rutid)
+          } else {
+            this.$message('in Editing...Please Try Later')
+          }
+        })
+      }
+    },
+    cancelEditTag () {
+      this.showDialog = false
+      unlockRut(this.rutid)
+    },
+    cancelOnClose (done) {
+      this.cancelEditTag()
+      done()
+    },
     addNewTag () {
       let newT = this.newTag.trim()
       if (newT) {
@@ -285,6 +310,7 @@ export default {
         let data = {'old': oldTags, 'new': newTags}
         return editTags(this.rutid, data)
         .then(resp => {
+          unlockRut(this.rutid)
           this.$store.commit('NEW_TAGS', resp.data)
           this.showDialog = false
         })
@@ -309,6 +335,8 @@ export default {
   created () {
     this.loadRutData()
     this.checkCanEdit()
+    this.checkStar()
+    this.checkChallenge()
   }
 }
 </script>

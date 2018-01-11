@@ -51,17 +51,22 @@ const scrollBehavior = (to, from, savedPosition) => {
     return position
   }
 }
-// for auth edit rut
+
 import { checkEditable } from '@/api/api'
+// for auth edit rut
 const beforeEnter = (to, from, next) => {
   let currentUserID = store.getters.currentUserID
-  let rut = store.getters.rutDetail
-  if (currentUserID) {
-    checkEditable(currentUserID, rut.id).then(res => {
+  let rutid = store.getters.rutDetail.id
+  if (currentUserID && rutid) {
+    checkEditable(currentUserID, rutid).then(res => {
       if (res.data.canedit) {
         next()
+      } else {
+        new Vue().$message('In Editing...Please Try Later')
       }
     })
+  } else {
+    new Vue().$message('In Editing...Please Go back')
   }
 }
 // for profile setting

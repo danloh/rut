@@ -4,7 +4,7 @@
       <item-sum :item="currentItem" :key="currentItem.id"></item-sum> <!--key to re-render-->
       <div>
         <b>>></b>&nbsp;&nbsp;<b>More Details</b> &nbsp;&nbsp;&nbsp;
-        <router-link class="editlink" :to="'/edit/item/' + currentItem.id">...Edit Detail</router-link>
+        <el-button type="text" @click="toEditItem"> ...Edit Detail</el-button>
       </div>
       <div class="item-detail">
         <div v-html="itemDetail"></div>
@@ -40,7 +40,7 @@
 import ItemSum from '@/components/Item/ItemSum.vue'
 import ReviewList from '@/components/Item/ReviewList.vue'
 import ClipList from '@/components/Challenge/ClipList.vue'
-import { fetchInRuts } from '@/api/api'
+import { fetchInRuts, checkItemLocked, lockItem } from '@/api/api'
 import marked from '@/util/marked'
 import { mapGetters } from 'vuex'
 
@@ -78,6 +78,22 @@ export default {
         this.$store.commit('MORE_INRUTS', resp.data)
         this.currentPage += 1
       })
+    },
+    toEditItem () {
+      let currentUserID = this.$store.getters.currentUserID
+      let itemid = this.$route.params.id
+      if (!currentUserID) {
+        this.$message('Please Log in to Continue')
+      } else {
+        checkItemLocked(currentUserID, itemid).then(resp => {
+          if (!resp.data) {
+            lockItem(itemid)
+            this.$router.push(`/edit/item/${itemid}`)
+          } else {
+            this.$message('in Editing...Please Try Later')
+          }
+        })
+      }
     }
   },
   beforeMount () {

@@ -1,8 +1,8 @@
 <template>
   <div class="add-page">
-    <h3 class="title"> Add Item to Readup Tips:
-      <el-button type="text" @click="cancelnReturn"><b>{{rutTitle}}</b> <small>...Cancel and Return</small></el-button>
-    </h3>
+    <div class="title"> 
+      <b>Add Item To List:&nbsp;&nbsp;</b>{{ rutTitle }}&nbsp;&nbsp;<el-button type="text" @click="cancelnReturn">...Cancel and Back</el-button>
+    </div>
     <spinner :show="loading"></spinner>
     <el-button size="small" type="primary">
       {{ show ? 'Add Item Info Manually' : 'Fetch Item Info via Spider' }}

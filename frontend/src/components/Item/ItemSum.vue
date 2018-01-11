@@ -40,7 +40,7 @@
     </el-dialog>
     <!-- addtolist dialog end -->
     <!-- addnote dialog -->
-    <el-dialog title="Add Note and Flag" :visible.sync="showNoteDialog" width="35%">
+    <el-dialog title="Add Note and Flag It" :visible.sync="showNoteDialog" width="35%">
       <el-form :model="noteForm" :rules="noteRules" ref="noteForm">
         <el-form-item prop="note">
           <el-input v-model="noteForm.note" placeholder="Optional, Max 42 words"></el-input>
@@ -63,7 +63,7 @@ export default {
   props: ['item'],
   data () {
     return {
-      flagAction: 'Flag it',
+      flagAction: 'Flag It',
       flagNote: '',
       showDialog: false,
       intoForm: {
@@ -98,7 +98,7 @@ export default {
           this.noteForm.note = resp.data.note
         })
       } else {
-        this.flagAction = 'Flag it'
+        this.flagAction = 'Flag It'
         this.flagNote = ''
       }
     },

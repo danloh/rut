@@ -149,15 +149,38 @@ def flag_item_done(itemid):
     user.flag(item,3,note)
     return jsonify('Done')
 
+@rest.route('/lockitem/<int:itemid>')
+@auth.login_required
+def lock_item(itemid):
+    user = g.user
+    item = Items.query.get_or_404(itemid)
+    item.lock(user)
+    return jsonify('Locked')
+
+@rest.route('/unlockitem/<int:itemid>')
+def unlock_item(itemid):
+    item = Items.query.get_or_404(itemid)
+    item.unlock()
+    return jsonify('UnLocked')
+
+@rest.route('/checkifitem/<int:itemid>/lockedto/<int:userid>')
+def check_item_if_locked(itemid, userid):
+    item = Items.query.get_or_404(itemid)
+    is_locked = item.check_locked(userid)
+    return jsonify(is_locked)
+
 @rest.route('/edititem/<int:itemid>', methods=['POST'])
 @auth.login_required
 def edit_item(itemid):
+    user = g.user
     uid = request.json.get('uid','').replace('-','').replace(' ','')
     title = request.json.get('title','').strip()
     if not uid or not title:
         abort(403)
     query = Items.query
     item = query.get_or_404(itemid)
+    if item.check_locked(user.id):
+        return jsonify('In Editing')
     if query.filter_by(uid=uid).first() and item.uid != uid:
         abort(403) # can not be duplicated uid
     #update item 
