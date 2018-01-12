@@ -1562,7 +1562,7 @@ class Users(UserMixin, db.Model):
         return True
     
     # token auth
-    def generate_auth_token(self, expiration=10*24*3600):
+    def generate_auth_token(self, expiration=2*24*3600): # unit s
         s = Serializer(current_app.config['SECRET_KEY'], expires_in=expiration)
         return s.dumps({'id': self.id})
 
