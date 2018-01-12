@@ -304,7 +304,7 @@ def check_rut_editable(userid, rutid):
     rut = Posts.query.get_or_404(rutid)
     can_edit = rut.check_editable(user)
     editor_id = rut.editing_id
-    can_dict = {'id': editor_id, 'canedit': can_edit}
+    can_dict = {'editorid': editor_id, 'rutid': rutid, 'canedit': can_edit}
     return jsonify(can_dict)
 
 @rest.route('/editrut/<int:rutid>', methods=['POST'])

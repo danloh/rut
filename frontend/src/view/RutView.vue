@@ -32,7 +32,7 @@
         <div v-html="md(rutDetail.intro)"></div>
       </div>
       <div class="toolbar">
-        <router-link class="editlink" :to="'/profile/' + whoEdit.id" v-if="whoEdit.id">In Editing</router-link>&nbsp;&nbsp;&nbsp;&nbsp;
+        <router-link class="editlink" :to="'/profile/' + whoEdit.editorid" v-if="whoEdit.editorid && rutid === whoEdit.rutid">In Editing</router-link>&nbsp;&nbsp;&nbsp;&nbsp;
         <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit"> EDIT </router-link>&nbsp;&nbsp;&nbsp;&nbsp;
         <router-link class="editlink" :to="'/additemto/readuplist/' + rutid" v-if="canEdit"> ADD ITEM </router-link> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <el-button size="mini" plain @click="starRut"><b>{{ starAction }}&nbsp;{{ starCount }}</b></el-button>
@@ -85,7 +85,7 @@ import ItemSum from '@/components/Item/ItemSum.vue'
 import Comment from '@/components/Comment/Comment.vue'
 import ShareBar from '@/components/Misc/ShareBar.vue'
 // sc: star and challenge
-import { scRut, checkSC, editTags, fetchRutDemands, fetchRutTips, checkEditable, checkRutLocked, lockRut, unlockRut } from '@/api/api'
+import { scRut, checkSC, editTags, fetchRutDemands, fetchRutTips, checkRutLocked, lockRut, unlockRut } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { mapGetters } from 'vuex'
 import marked from '@/util/marked'
@@ -107,18 +107,19 @@ export default {
       demandCount: 0,
       creatorid: null,
       creatorname: '',
+      isEveryone: false,
       showDialog: false,
       newTag: '',
       newTags: [],
       canEdit: false,
-      whoEdit: {},
       canTag: true,
       short: true
     }
   },
   computed: {
     ...mapGetters([
-      'rutDetail'
+      'rutDetail',
+      'whoEdit'
     ]),
     rutid () {
       return this.rutDetail.id
@@ -132,9 +133,6 @@ export default {
     // contributorIDList () {
     //   return this.rutDetail.contributoridlist
     // },
-    isEveryone () {
-      return this.rutDetail.editable === 'Everyone'
-    },
     hasMoreTips () {
       return this.tips.length < this.tipsCount
     },
@@ -155,11 +153,19 @@ export default {
         this.challengeCount = data.challengecount
         this.creatorid = data.creator.id
         this.creatorname = data.creator.name
+        this.isEveryone = data.editable === 'Everyone'
         this.newTags = data.tags.map(t => t.tagname)
         this.tips = data.tips
         this.tipsCount = data.itemcount
         this.demands = data.demands
         this.demandCount = data.demandcount
+        // check if show edit button
+        let currentUserID = this.$store.getters.currentUserID
+        if (!currentUserID) {
+          this.canTag = false
+        } else if (currentUserID === this.creatorid || this.isEveryone) {
+          this.canEdit = true
+        }
       })
     },
     loadmoreTips () {
@@ -179,19 +185,6 @@ export default {
         this.demands.push(...resp.data)
         this.currentDP += 1
       })
-    },
-    checkCanEdit () {
-      let currentUserID = this.$store.getters.currentUserID
-      let crutid = this.$route.params.id
-      if (!currentUserID) {
-        this.canEdit = false
-        this.canTag = false
-      } else {
-        checkEditable(currentUserID, crutid).then(res => {
-          this.canEdit = res.data.canedit
-          this.whoEdit = { id: res.data.id }
-        })
-      }
     },
     checkStar () {
       if (checkAuth()) {
@@ -334,7 +327,6 @@ export default {
   },
   created () {
     this.loadRutData()
-    this.checkCanEdit()
     this.checkStar()
     this.checkChallenge()
   }

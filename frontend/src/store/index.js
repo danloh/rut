@@ -15,7 +15,8 @@ const state = {
   authed: Boolean(getID()) && Boolean(getToken()),
   token: getToken(),
   currentUser: null,
-  nexturl: ''
+  nexturl: '',
+  whoEdit: {}
 }
 const mutations = {
   SET_USER (state, userid) {
@@ -40,6 +41,9 @@ const mutations = {
   },
   MOD_NEXT (state, nexturl) {
     state.nexturl = nexturl
+  },
+  SET_WHOEDIT (state, data) {
+    state.whoEdit = data
   }
 }
 

@@ -62,6 +62,7 @@ const beforeEnter = (to, from, next) => {
       if (res.data.canedit) {
         next()
       } else {
+        store.commit('SET_WHOEDIT', res.data)
         new Vue().$message('In Editing...Please Try Later')
       }
     })
