@@ -49,11 +49,12 @@ def register():
             url=url
         )
     # log in once register successfully
-    auth_token = user.generate_auth_token()
+    auth_token, exp = user.generate_auth_token()
     return jsonify({
         'username': user.name, 
         'userid': user.id, 
-        'token': auth_token.decode('ascii') 
+        'token': auth_token.decode('ascii'),
+        'exp': exp
     })
 
 @rest.route('/editprofile', methods = ['POST'])
@@ -175,8 +176,9 @@ def auth_error():
 @rest.route('/login')
 @auth.login_required
 def get_auth_token():
-    token = g.user.generate_auth_token()
+    token, exp = g.user.generate_auth_token()
     return jsonify({
         'token': token.decode('ascii'),
+        'exp': exp,
         'userid': g.user.id
     })

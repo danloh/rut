@@ -42,6 +42,7 @@ import ReviewList from '@/components/Item/ReviewList.vue'
 import ClipList from '@/components/Challenge/ClipList.vue'
 import { fetchInRuts, checkItemLocked, lockItem } from '@/api/api'
 import marked from '@/util/marked'
+import { checkAuth } from '@/util/auth'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -81,10 +82,10 @@ export default {
     },
     toEditItem () {
       let currentUserID = this.$store.getters.currentUserID
-      let itemid = this.$route.params.id
-      if (!currentUserID) {
+      if (!currentUserID || !checkAuth()) { // utilize short-circle to set default auth
         this.$message('Please Log in to Continue')
       } else {
+        let itemid = this.$route.params.id
         checkItemLocked(currentUserID, itemid).then(resp => {
           if (!resp.data) {
             lockItem(itemid)

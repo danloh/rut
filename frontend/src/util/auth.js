@@ -8,8 +8,8 @@ export function getToken () {
   return Cookies.get(TokenKey)
 }
 
-export function setToken (token) {
-  return Cookies.set(TokenKey, token, { expires: 1 }) // unit: day
+export function setToken (token, exp = 0) {
+  return Cookies.set(TokenKey, token, { expires: exp }) // unit: day
 }
 
 export function removeToken () {
@@ -20,8 +20,8 @@ export function getID () {
   return Cookies.get(IDKey)
 }
 
-export function setID (id) {
-  return Cookies.set(IDKey, id, { expires: 1 })
+export function setID (id, exp = 0) {
+  return Cookies.set(IDKey, id, { expires: exp })
 }
 
 export function removeID () {

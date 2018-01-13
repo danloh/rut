@@ -1562,9 +1562,9 @@ class Users(UserMixin, db.Model):
         return True
     
     # token auth
-    def generate_auth_token(self, expiration=2*24*3600): # unit s
-        s = Serializer(current_app.config['SECRET_KEY'], expires_in=expiration)
-        return s.dumps({'id': self.id})
+    def generate_auth_token(self, exp=1): # unit d
+        s = Serializer(current_app.config['SECRET_KEY'], expires_in=exp*24*3600) # unit to s
+        return (s.dumps({'id': self.id}), exp)
 
     @staticmethod
     def verify_auth_token(token):

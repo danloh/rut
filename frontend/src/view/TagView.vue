@@ -108,7 +108,7 @@ export default {
     },
     toEditTag () {
       let currentUserID = this.$store.getters.currentUserID
-      if (!currentUserID) {
+      if (!currentUserID || !checkAuth()) { // utilize short-circle to set default auth
         this.openDialog = false
         this.$message('Please Log in to Continue')
       } else {

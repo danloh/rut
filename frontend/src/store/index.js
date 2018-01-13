@@ -19,14 +19,16 @@ const state = {
   whoEdit: {}
 }
 const mutations = {
-  SET_USER (state, userid) {
+  SET_USER (state, obj) {
+    let userid = obj.userid
     state.currentUserID = userid
     state.authed = Boolean(userid)
-    setID(userid)
+    setID(userid, obj.exp)
   },
-  SET_TOKEN (state, token) {
+  SET_TOKEN (state, obj) {
+    let token = obj.token
     state.token = token
-    setToken(token)
+    setToken(token, obj.exp)
   },
   SET_INFO (state, userobj) {
     state.currentUser = userobj
@@ -65,8 +67,8 @@ const actions = {
     return new Promise((resolve, reject) => {
       register(data).then(resp => {
         let d = resp.data
-        commit('SET_TOKEN', d.token) // as login
-        commit('SET_USER', d.userid) // as login
+        commit('SET_TOKEN', d) // as login
+        commit('SET_USER', d) // as login
         resolve(resp)
       }).catch(error => {
         reject(error)
@@ -77,8 +79,8 @@ const actions = {
     return new Promise((resolve, reject) => {
       login(params).then(resp => {
         let d = resp.data
-        commit('SET_TOKEN', d.token)
-        commit('SET_USER', d.userid)
+        commit('SET_TOKEN', d)
+        commit('SET_USER', d)
         resolve(resp)
       }).catch(error => {
         reject(error)
