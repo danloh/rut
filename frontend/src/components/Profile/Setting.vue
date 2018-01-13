@@ -13,6 +13,8 @@
         <br>
         <router-link :to="'/setting/' + userid + '/change'">Change Password</router-link>
         <br>
+        <el-button type="text" @click="reconfirm" v-if="!confirmed">Confirm My Email</el-button>
+        <br>
         <el-button type="text" @click="showDialog=true">Invite Friends</el-button>
         <!-- dialog -->
         <el-dialog title="Share Link To Invite Your Friends" :visible.sync="showDialog">
@@ -28,6 +30,7 @@
 
 <script>
 import ShareBar from '@/components/Misc/ShareBar.vue'
+import { reConfirmEmail } from '@/api/api'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -37,7 +40,8 @@ export default {
   data () {
     return {
       showDialog: false,
-      userid: ''
+      userid: '',
+      confirmed: true
     }
   },
   computed: {
@@ -54,12 +58,22 @@ export default {
       let userid = this.$route.params.id
       if (userG && userG.id === Number(userid)) {
         this.userid = userG.id
+        this.confirmed = userG.confirmed
       } else {
         this.$store.dispatch('getCurrentUser')
         .then(resp => {
           this.userid = resp.data.id
+          this.confirmed = resp.data.confirmed
         })
       }
+    },
+    reconfirm () {
+      reConfirmEmail().then(resp => {
+        this.$message({
+          showClose: true,
+          message: resp.data
+        })
+      })
     }
   },
   created () {

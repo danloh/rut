@@ -287,13 +287,13 @@ def unlock_rut(rutid):
     rut.unlock()
     return jsonify('UnLocked')
 
-@rest.route('/checkif/<int:rutid>/lockedto/<int:userid>')
+@rest.route('/checkifrut/<int:rutid>/lockedto/<int:userid>')
 def check_rut_if_locked(rutid, userid):
     rut = Posts.query.get_or_404(rutid)
     is_locked = rut.check_locked(userid)
     return jsonify(is_locked)
 
-@rest.route('/checkif/<userid>/canedit/<int:rutid>')
+@rest.route('/checkif/<userid>/caneditrut/<int:rutid>')
 #@auth.login_required
 def check_rut_editable(userid, rutid):
     if not userid:
@@ -303,12 +303,8 @@ def check_rut_editable(userid, rutid):
         return jsonify(False)
     rut = Posts.query.get_or_404(rutid)
     can_edit = rut.check_editable(user)
-    who = Users.query.get(rut.editing_id) if rut.editing_id else None
-    if who:
-        can_dict = {'id': who.id, 'name': who.nickname or who.name}
-    else:
-        can_dict = {'id': None, 'name': None}
-    can_dict['canedit'] = can_edit
+    editor_id = rut.editing_id
+    can_dict = {'editorid': editor_id, 'rutid': rutid, 'canedit': can_edit}
     return jsonify(can_dict)
 
 @rest.route('/editrut/<int:rutid>', methods=['POST'])
@@ -316,6 +312,7 @@ def check_rut_editable(userid, rutid):
 def edit_rut(rutid):
     user = g.user
     rut = Posts.query.get_or_404(rutid)
+    # check if rut editable
     if not rut.check_editable(user):
         abort(403)
     # check not-null column can not be ''

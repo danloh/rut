@@ -8,6 +8,8 @@
       <el-form-item prop="password">
         <el-input :type="pwdType" v-model="loginForm.password" placeholder="Password"></el-input>
       </el-form-item>
+      <p style="font-size:0.75em">Notice: Just Use Cookies Here to keep you logged in for a limited period, 
+        Never collect any Private Information. The service may not function properly if disable cookies.</p>
       <el-form-item>
         <el-button class="blockbtn" type="primary" @click="onLogin('loginForm', loginForm)">Log in</el-button>
       </el-form-item>
@@ -43,11 +45,7 @@ export default {
             username: form.username,
             password: form.password
           }
-          this.$axios.get('api/login')
-          .then((resp) => {
-            let data = resp.data
-            this.$store.commit('SET_TOKEN', data.token)
-            this.$store.commit('SET_USER', data.userid)
+          this.$store.dispatch('loginUser').then(() => {
             let nextUrl = this.$route.query.redirect || '/challenge' // uncompletely tackled!!
             this.$router.push(nextUrl)
           }).catch(() => {

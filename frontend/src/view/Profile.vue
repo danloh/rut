@@ -1,7 +1,7 @@
 <template>
   <div class="profile-page">
     <div class="profile-head">
-      <b>{{user.name}}</b>
+      <b style="font-size:1.6em">{{user.name}}</b>
       <p class="aboutme">{{user.about || '...'}}</p>
       <div class="fobar">
         <span>Following 

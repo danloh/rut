@@ -10,21 +10,37 @@ const request = (url, options = {}, method = 'get') => {
 const register = data => {
   return request(`${base}/register`, data, 'post')
 }
+// check name when regsiter
+const checkName = (name) => {
+  return request(`${base}/checkname/${name}`)
+}
+// check email when regsiter
+const checkEmail = (email) => {
+  return request(`${base}/checkemail/${email}`)
+}
 // confirm email
 const confirm = (token) => {
   return request(`${base}/confirm/${token}`)
+}
+// send reconfirm email
+const reConfirmEmail = () => {
+  return request(`${base}/confirm`)
 }
 // change password
 const change = (data) => {
   return request(`${base}/changepassword`, data, 'post')
 }
-// rest password if forget password
+// request rest password if forget password
+const reqReset = (data) => {
+  return request(`${base}/reset`, data, 'post')
+}
+// rest password per token if forget password
 const reset = (token, data) => {
   return request(`${base}/reset/${token}`, data, 'post')
 }
 // login
-const login = () => {
-  return request(`${base}/login`)
+const login = params => {
+  return request(`${base}/login`, params)
 }
 // get authed user info
 const fetchCurrentUser = params => {
@@ -107,11 +123,15 @@ const checkSC = (rutid, action, params) => {
 const scRut = (action, rutid, params) => {
   return request(`${base}/${action}/rut/${rutid}`, params)
 }
+// check rut if locked, when edit rut's tag
+const checkRutLocked = (userid, rutid, params) => {
+  return request(`${base}/checkifrut/${rutid}/lockedto/${userid}`, params)
+}
 // check rut if editable i.e. unlocked and permitted
 const checkEditable = (userid, rutid, params) => {
-  return request(`${base}/checkif/${userid}/canedit/${rutid}`, params)
+  return request(`${base}/checkif/${userid}/caneditrut/${rutid}`, params)
 }
-// lock rut
+// unlock rut
 const lockRut = (rutid, params) => {
   return request(`${base}/lockrut/${rutid}`, params)
 }
@@ -159,6 +179,18 @@ const fetchTag = (tagid, params) => { // !!
 const fetchTagRuts = (tagid, params) => { // !!
   return request(`${base}/tag/${tagid}/ruts`, params)
 }
+// lock tag
+const lockTag = (tagid, params) => {
+  return request(`${base}/locktag/${tagid}`, params)
+}
+// unlock tag
+const unlockTag = (tagid, params) => {
+  return request(`${base}/unlocktag/${tagid}`, params)
+}
+// check tag if locked, when edit tag
+const checkTagLocked = (userid, tagid, params) => {
+  return request(`${base}/checkiftag/${tagid}/lockedto/${userid}`, params)
+}
 // edit tag
 const editTag = (tagid, params) => {
   return request(`${base}/edittag/${tagid}`, params, 'post')
@@ -182,6 +214,18 @@ const fetchItemReviews = (itemid, params) => {
 // fetch inruts of the item
 const fetchInRuts = (itemid, params) => {
   return request(`${base}/item/${itemid}/inruts`, params)
+}
+// lock tag
+const lockItem = (itemid, params) => {
+  return request(`${base}/lockitem/${itemid}`, params)
+}
+// unlock item
+const unlockItem = (itemid, params) => {
+  return request(`${base}/unlockitem/${itemid}`, params)
+}
+// check item if locked, when edit item
+const checkItemLocked = (userid, itemid, params) => {
+  return request(`${base}/checkifitem/${itemid}/lockedto/${userid}`, params)
 }
 // edit item
 const editItem = (itemid, params) => {
@@ -292,10 +336,14 @@ export {
   testError,
   axios,
   register,
+  checkName,
+  checkEmail,
   confirm,
   change,
+  reqReset,
   reset,
   login,
+  reConfirmEmail,
   fetchCurrentUser,
   fetchUser,
   fetchFollows,
@@ -317,6 +365,7 @@ export {
   fetchRutChallengers,
   checkSC,
   scRut,
+  checkRutLocked,
   checkEditable,
   lockRut,
   unlockRut,
@@ -330,6 +379,9 @@ export {
   fetchFavTags,
   fetchTag,
   fetchTagRuts,
+  lockTag,
+  unlockTag,
+  checkTagLocked,
   editTag,
   checkFav,
   favTag,
@@ -338,6 +390,9 @@ export {
   fetchInRuts,
   checkFlag,
   flagItem,
+  lockItem,
+  unlockItem,
+  checkItemLocked,
   editItem,
   fetchProfileItems,
   fetchClips,

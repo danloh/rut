@@ -41,14 +41,20 @@ def register():
     if email:
         token = user.generate_confirmation_token().replace('.', '@')
         url= 'localhost:8080/confirm/%s' %token
-        send_email(user.email, 'Confirm Your Account',
-                    'email/confirm', name=user.name, url=url)
+        send_email(
+            user.email, 
+            'Confirm Your Account',
+            'email/confirm', 
+            name=user.name, 
+            url=url
+        )
     # log in once register successfully
-    auth_token = user.generate_auth_token()
+    auth_token, exp = user.generate_auth_token()
     return jsonify({
         'username': user.name, 
         'userid': user.id, 
-        'token': auth_token.decode('ascii') 
+        'token': auth_token.decode('ascii'),
+        'exp': exp
     })
 
 @rest.route('/editprofile', methods = ['POST'])
@@ -87,17 +93,24 @@ def confirm(token):
         db.session.commit()
         return jsonify('You have confirmed your account. Thanks!')
     else:
-        return jsonify('The confirmation link is invalid or has expired.')
+        return jsonify('The confirmation link is invalid or has expired')
 
 @rest.route('/confirm')
 @auth.login_required
 def resend_confirmation():
     user= g.user
+    if user.confirmed:
+        return jsonify('Confirmed')
     token = user.generate_confirmation_token().replace('.', '@')
     url= 'localhost:8080/confirm/%s' %token
-    send_email(user.email, 'Confirm Your Account',
-               'email/confirm', name=user.name, url=url)
-    return jsonify('A new confirmation email has been sent to you by email.')
+    send_email(
+        user.email, 
+        'Confirm Your Account',
+        'email/confirm', 
+        name=user.name, 
+        url=url
+    )
+    return jsonify('A new confirmation email has been sent to you by email')
 
 @rest.route('/changepassword', methods=['GET', 'POST'])
 @auth.login_required
@@ -109,9 +122,9 @@ def change_password():
         user.password = new_psw
         db.session.add(user)
         db.session.commit()
-        return jsonify('Your password Changed, Please login again.')
+        return jsonify('Your password Changed, Please login again')
     else:
-        return jsonify('Invalid password.')
+        return jsonify('Something Wrong')
 
 @rest.route('/reset', methods=['GET', 'POST'])
 def password_reset_request():
@@ -125,13 +138,13 @@ def password_reset_request():
             user.email, 
             'Reset Your Password',
             'email/reset_password',
-            name=user.name, url=url,
-            next=request.args.get('next')
+            name=user.name,
+            url=url
         )
         return jsonify('An email with instructions to reset your password has been '
             'sent to you.')
     else:
-        return jsonify('Invalid username or email.')
+        return jsonify('Invalid username or email')
 
 @rest.route('/reset/<string:token>', methods=['GET', 'POST'])
 def password_reset(token):
@@ -139,7 +152,7 @@ def password_reset(token):
     new_psw = request.json.get('newpsw')
     if Users.reset_password(token, new_psw):
         db.session.commit()
-        return jsonify('Your password updated, Please login again.')
+        return jsonify('Your password Reset, Please login again')
     else:
         return jsonify('Something wrong, Try Again')
 
@@ -163,8 +176,9 @@ def auth_error():
 @rest.route('/login')
 @auth.login_required
 def get_auth_token():
-    token = g.user.generate_auth_token()
+    token, exp = g.user.generate_auth_token()
     return jsonify({
         'token': token.decode('ascii'),
+        'exp': exp,
         'userid': g.user.id
     })

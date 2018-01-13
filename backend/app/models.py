@@ -167,8 +167,9 @@ class Flag(db.Model):
         db.Integer,
         db.ForeignKey("users.id"),
         primary_key=True)
-    #flag label: read-1,reading-2,read-3
+    #flag label: to read-1,reading-2,read-3
     flag_label = db.Column(db.SmallInteger,default=0)
+    flag_note = db.Column(db.String(128), default="")
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
 
@@ -572,6 +573,8 @@ class Items(db.Model):
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
+    edit_start = db.Column(db.DateTime,default=None)
+    editing_id = db.Column(db.Integer)
 
     # 1 to n with Comments
     comments = db.relationship(
@@ -671,6 +674,37 @@ class Items(db.Model):
         db.session.add(self)
         #db.session.commit()
     
+        # lock and unlock status in/after edit item: a stopgap
+    def lock(self, user):
+        # set a start time and id  to indicate in editing
+        self.edit_start = datetime.utcnow()
+        self.editing_id = user.id
+        db.session.add(self)
+        db.session.commit()
+    def unlock(self):
+        # reset eidt_start to None, after edit done
+        self.edit_start = None
+        self.editing_id = None
+        db.session.add(self)
+        db.session.commit()
+    def force_unlock(self, start=None, timeout=2400):
+        # sometime user forget submit, need to force unlock
+        start = start or self.edit_start
+        if start:
+            now = datetime.utcnow()
+            delta = now - start
+            if delta.seconds >= timeout:
+                self.unlock()
+    def check_locked(self, userid):
+        # if eidt_start is not None, it is locked as editing
+        start = self.edit_start
+        if start and self.editing_id != userid:
+            #force_unlock firstly
+            self.force_unlock(start=start)
+            return bool(self.edit_start)
+        else:
+            return False
+    
     def to_dict(self):
         item_dict = {
             'id': self.id,
@@ -719,6 +753,8 @@ class Tags(db.Model):
     tag = db.Column(db.String(128), nullable=False, unique=True)
     descript = db.Column(db.String(512))
     vote = db.Column(db.Integer, default=0)
+    edit_start = db.Column(db.DateTime,default=None)
+    editing_id = db.Column(db.Integer)
 
     # 1 to n with Events
     events = db.relationship(
@@ -789,6 +825,37 @@ class Tags(db.Model):
         self.vote = i+p+d+f
         db.session.add(self)
         #db.session.commit()
+    
+    # lock and unlock status in/after edit tag: a stopgap
+    def lock(self, user):
+        # set a start time and id  to indicate in editing
+        self.edit_start = datetime.utcnow()
+        self.editing_id = user.id
+        db.session.add(self)
+        db.session.commit()
+    def unlock(self):
+        # reset eidt_start to None, after edit done
+        self.edit_start = None
+        self.editing_id = None
+        db.session.add(self)
+        db.session.commit()
+    def force_unlock(self, start=None, timeout=600):
+        # sometime user forget submit, need to force unlock
+        start = start or self.edit_start
+        if start:
+            now = datetime.utcnow()
+            delta = now - start
+            if delta.seconds >= timeout:
+                self.unlock()
+    def check_locked(self, userid):
+        # if eidt_start is not None, it is locked as editing
+        start = self.edit_start
+        if start and self.editing_id != userid:
+            #force_unlock firstly
+            self.force_unlock(start=start)
+            return bool(self.edit_start)
+        else:
+            return False
 
     def to_dict(self):
         tag_dict = {
@@ -1495,9 +1562,9 @@ class Users(UserMixin, db.Model):
         return True
     
     # token auth
-    def generate_auth_token(self, expiration=10*24*3600):
-        s = Serializer(current_app.config['SECRET_KEY'], expires_in=expiration)
-        return s.dumps({'id': self.id})
+    def generate_auth_token(self, exp=1): # unit d
+        s = Serializer(current_app.config['SECRET_KEY'], expires_in=exp*24*3600) # unit to s
+        return (s.dumps({'id': self.id}), exp)
 
     @staticmethod
     def verify_auth_token(token):
@@ -1569,29 +1636,36 @@ class Users(UserMixin, db.Model):
             follower_id=user.id).first() is not None
 
     # flag an item as read, to read or reading
-    def flag(self, item, n):
+    def flag(self, item, n, note=''):
         fl = Flag.query.filter_by(user_id=self.id,item_id=item.id).\
             first()
         if fl:
             fl.flag_label = n
+            fl.flag_note = note
             db.session.add(fl)
         else:
-            new_fl = Flag(flager=self, flag_item=item,flag_label=n)
+            new_fl = Flag(
+                flager=self, 
+                flag_item=item,
+                flag_label=n,
+                flag_note=note
+            )
             db.session.add(new_fl)
         # update item's vote
         item.cal_vote()
         db.session.commit() # need to commit for API??
+
     def flaging(self,item):
         fl = Flag.query.filter_by(user_id=self.id,item_id=item.id).\
             first()
         if fl is None:
-            return "Flag It"
+            return {'label': 'Flag It', 'note': ''}
         if fl.flag_label == 1:
-            return "Scheduled"
+            return {'label': 'Scheduled', 'note': fl.flag_note}
         if fl.flag_label == 2:
-            return "Working on"
+            return {'label': 'Working on', 'note': fl.flag_note}
         if fl.flag_label == 3:
-            return "Have Done"
+            return {'label': 'Have Done', 'note': fl.flag_note}
 
     #fav and unfav a tag
     def faving(self, tag):
@@ -1628,6 +1702,22 @@ class Users(UserMixin, db.Model):
     #save activities to db Events
     def set_event(self,action=None,post=None,item=None,comment=None,\
                        clip=None,review=None,demand=None,tag=None):
+        query = self.events
+        # avoid duplicated entry
+        if action in ['Created','Starred','Started challenge']:
+            e = query.filter_by(action=action,post_id=post.id).first()
+        elif action in ['Scheduled','Working on','Get done']:
+            e = query.filter_by(action=action,item_id=item.id).first()
+        elif action in ['Followed','Updated Description']:
+            e = query.filter_by(action=action,tag_id=tag.id).first()
+        elif action in ['Posted','Endorsed']:
+            e = query.filter_by(action=action,review_id=review.id).first()
+        elif action in ['Send','Voted']:
+            e = query.filter_by(action=action,demand_id=demand.id).first()
+        else:
+            return None
+        if e:
+            return None
         ev = Events(
             actor=self,
             action=action,
@@ -1687,6 +1777,7 @@ class Users(UserMixin, db.Model):
             'nickname': self.nickname or '',
             'username': self.name,
             'role': self.role.duty,
+            'confirmed': self.confirmed,
             'avatar': self.user_avatar,
             'location': self.location or '',
             'about': self.about_me or '',

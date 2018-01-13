@@ -41,7 +41,7 @@ export default {
   margin-top 5px
   padding 10px
   border-top 1px solid #eee
-  background-color white
+  background-color #eceff1
   .act-time
     font-size 0.8em
     color green

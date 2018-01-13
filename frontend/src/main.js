@@ -32,18 +32,18 @@ Object.keys(filters).forEach(key => {
 
 // Axios config
 // Request interceptor
-axios.interceptors.request.use(
-  config => {
-    let token = store.state.token
-    if (token) {
-      config.headers.Authorization = `token ${token}`
-    }
-    return config
-  },
-  error => {
-    return Promise.reject(error)
-  }
-)
+// axios.interceptors.request.use(
+//   config => {
+//     let token = getToken()
+//     if (token) {
+//       config.headers.Authorization = `Basic ${token}`
+//     }
+//     return config
+//   },
+//   error => {
+//     return Promise.reject(error)
+//   }
+// )
 // Response interceptor
 axios.interceptors.response.use(
   response => {

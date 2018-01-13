@@ -9,7 +9,7 @@
     <div class="tagmeta">
       <h4><b>{{ tagDetail.tagname}}</b></h4>
       <div>{{ tagDetail.descript}} 
-        <el-button type="text" @click="openDialog = true">...Edit</el-button>
+        <el-button type="text" @click="toEditTag">...Edit</el-button>
       </div>
       <el-button class="fbtn" type="success" size="mini" plain @click="favTag">{{action}} {{favCount}}</el-button>
     </div>
@@ -17,7 +17,7 @@
       <rut-list :rutlist="currentRuts" @loadmore="loadmoreRuts"></rut-list>
     </div>
     <!-- dialog -->
-    <el-dialog title="Edit Tag Description" :visible.sync="openDialog">
+    <el-dialog title="Edit Tag Description" :visible.sync="openDialog" :before-close="cancelOnClose">
       <el-form :model="tagForm" :rules="rules" ref="tagForm" size="mini">
         <el-form-item label="Tag Name" prop="name">
           <el-input v-model="tagForm.name"></el-input>
@@ -30,7 +30,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="openDialog = false">Cancel</el-button>
+        <el-button @click="cancelEditTag">Cancel</el-button>
         <el-button type="success" @click="editTag('tagForm', tagForm)">Submit</el-button>
       </div>
     </el-dialog>
@@ -41,12 +41,15 @@
 <script>
 import RutList from '@/components/Rut/RutList.vue'
 import { mapGetters } from 'vuex'
-import { editTag, checkFav, favTag, fetchTagRuts } from '@/api/api'
+import { editTag, checkFav, favTag, fetchTagRuts, checkTagLocked, lockTag, unlockTag } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { trimValid } from '@/util/filters'
 
 export default {
   name: 'tag-view',
+  title () {
+    return this.tagDetail.tagname
+  },
   components: {
     RutList
   },
@@ -81,13 +84,10 @@ export default {
       'currentRuts',
       'showTags',
       'tagDetail'
-    ])
-  },
-  tagid () {
-    return this.tagDetail.id
-  },
-  title () {
-    return this.tagDetail.tagname
+    ]),
+    tagid () {
+      return this.tagDetail.id
+    }
   },
   methods: {
     loadmoreRuts () {
@@ -106,6 +106,30 @@ export default {
         this.action = this.checkFavor() // || 'Follow'
       })
     },
+    toEditTag () {
+      let currentUserID = this.$store.getters.currentUserID
+      if (!currentUserID || !checkAuth()) { // utilize short-circle to set default auth
+        this.openDialog = false
+        this.$message('Please Log in to Continue')
+      } else {
+        checkTagLocked(currentUserID, this.tagid).then(resp => {
+          if (!resp.data) {
+            this.openDialog = true
+            lockTag(this.tagid)
+          } else {
+            this.$message('in Editing...Please Try Later')
+          }
+        })
+      }
+    },
+    cancelEditTag () {
+      this.openDialog = false
+      unlockTag(this.tagid)
+    },
+    cancelOnClose (done) {
+      this.cancelEditTag()
+      done()
+    },
     editTag (formName, form) {
       this.$refs[formName].validate((valid) => {
         if (valid && checkAuth()) {
@@ -118,6 +142,7 @@ export default {
           editTag(tagid, data)
           .then((resp) => {
             this.openDialog = false
+            unlockTag(this.tagid)
             this.loadData()  // can be less consumption
             this.$message({
               showClose: true,
@@ -128,7 +153,7 @@ export default {
         } else if (!checkAuth()) {
           this.$message({
             showClose: true,
-            message: 'Should Log in to Continue'
+            message: 'Please Log in to Continue'
           })
           this.$router.push({
             path: '/login',

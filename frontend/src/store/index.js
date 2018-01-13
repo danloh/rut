@@ -15,17 +15,20 @@ const state = {
   authed: Boolean(getID()) && Boolean(getToken()),
   token: getToken(),
   currentUser: null,
-  nexturl: ''
+  nexturl: '',
+  whoEdit: {}
 }
 const mutations = {
-  SET_USER (state, userid) {
+  SET_USER (state, obj) {
+    let userid = obj.userid
     state.currentUserID = userid
     state.authed = Boolean(userid)
-    setID(userid)
+    setID(userid, obj.exp)
   },
-  SET_TOKEN (state, token) {
+  SET_TOKEN (state, obj) {
+    let token = obj.token
     state.token = token
-    setToken(token)
+    setToken(token, obj.exp)
   },
   SET_INFO (state, userobj) {
     state.currentUser = userobj
@@ -40,11 +43,16 @@ const mutations = {
   },
   MOD_NEXT (state, nexturl) {
     state.nexturl = nexturl
+  },
+  SET_WHOEDIT (state, data) {
+    state.whoEdit = data
   }
 }
-import { fetchCurrentUser, confirm, change, reset } from '@/api/api'
+
+import { fetchCurrentUser, register, login } from '@/api/api'
+
 const actions = {
-  getCurrentUser: ({ commit, state }) => {
+  getCurrentUser: ({ commit }) => {
     return new Promise((resolve, reject) => {
       fetchCurrentUser()
       .then(resp => {
@@ -55,27 +63,24 @@ const actions = {
       })
     })
   },
-  confirmEmail: (context, token) => {
+  registerUser: ({ commit }, data) => {
     return new Promise((resolve, reject) => {
-      confirm(token).then(resp => {
+      register(data).then(resp => {
+        let d = resp.data
+        commit('SET_TOKEN', d) // as login
+        commit('SET_USER', d) // as login
         resolve(resp)
       }).catch(error => {
         reject(error)
       })
     })
   },
-  changePsw: (context, params) => {
+  loginUser: ({ commit }, params) => {
     return new Promise((resolve, reject) => {
-      change(params).then(resp => {
-        resolve(resp)
-      }).catch(error => {
-        reject(error)
-      })
-    })
-  },
-  resetPsw: (context, params) => {
-    return new Promise((resolve, reject) => {
-      reset(params['token'], params['data']).then(resp => {
+      login(params).then(resp => {
+        let d = resp.data
+        commit('SET_TOKEN', d)
+        commit('SET_USER', d)
         resolve(resp)
       }).catch(error => {
         reject(error)

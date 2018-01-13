@@ -94,13 +94,14 @@ export default {
       this.settingForm.nickname = user.nickname
       this.settingForm.location = user.location
       this.settingForm.avatarUrl = user.avatar
-      this.settingForm.about = user.about_me
-      this.settingForm.url = user.links
+      this.settingForm.about = user.about
+      this.settingForm.url = user.exlink
       this.canSetting = true
     }
   },
   created () {
     let user = this.$store.getters.currentUser
+    this.userid = user.id
     this.setFormData(user)
   }
 }
