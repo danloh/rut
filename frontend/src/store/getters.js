@@ -2,7 +2,7 @@ const getters = {
   currentUserID: state => state.currentUserID,
   authed: state => state.authed,
   currentUser: state => state.currentUser,
-  nexturl: state => state.nexturl,
+  nexturl: state => state.route.path,
   whoEdit: state => state.whoEdit,
   // ruts
   allRuts: state => state.rut.allRuts,
