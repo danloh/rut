@@ -5,8 +5,6 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_caching import Cache
 from flask_mail import Mail
-from flask_oauthlib.client import OAuth
-from flask_login import LoginManager
 from flask_cors import CORS
 
 from config import config 
@@ -17,8 +15,6 @@ cache = Cache(config={
     'CACHE_DEFAULT_TIMEOUT':60*10
     })
 mail = Mail()
-oauth = OAuth()
-login_manager = LoginManager() # to be deleted
 cors = CORS()
 
 def create_app(config_name):
@@ -31,8 +27,6 @@ def create_app(config_name):
     db.init_app(app)
     cache.init_app(app)
     mail.init_app(app)
-    oauth.init_app(app)
-    #login_manager.init_app(app)
     cors.init_app(app)
 
     #load blueprints
@@ -41,9 +35,6 @@ def create_app(config_name):
 
     from .bot import bot as bot_blueprint
     app.register_blueprint(bot_blueprint)
-
-    from .auth import auth as auth_blueprint
-    app.register_blueprint(auth_blueprint)
     
     return app
 

@@ -16,7 +16,7 @@
     <div class="profile-side">
       <div class="right-avatar">
         <img class="avatar" :src="user.avatar" alt="Avatar">
-        <p class="user-info">From: {{user.location || 'Unknown'}}</p>
+        <p class="user-info">From: {{user.location || '...'}}</p>
       </div>
       <div class="right-nav">
         <router-link :to="'/profile/' + userid + '/created/'">* Created</router-link>

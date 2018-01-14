@@ -84,6 +84,10 @@ export default {
       let currentUserID = this.$store.getters.currentUserID
       if (!currentUserID || !checkAuth()) { // utilize short-circle to set default auth
         this.$message('Please Log in to Continue')
+        this.$router.push({
+          path: '/login',
+          query: {redirect: this.$route.fullPath}
+        })
       } else {
         let itemid = this.$route.params.id
         checkItemLocked(currentUserID, itemid).then(resp => {

@@ -3,6 +3,7 @@
     <div class="comment-main">
       <b style="font-size: 1.5em">Discuss: </b><router-link :to="'/readuplist/' + rut.id">{{ rut.title }}</router-link>
     </div>
+    <b>{{ commentCount | pluralise('comment') }}</b>
     <div v-for="comment in comments" :key="comment.id">
       <comment :comment="comment"></comment>
     </div>

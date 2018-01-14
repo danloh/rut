@@ -111,6 +111,10 @@ export default {
       if (!currentUserID || !checkAuth()) { // utilize short-circle to set default auth
         this.openDialog = false
         this.$message('Please Log in to Continue')
+        this.$router.push({
+          path: '/login',
+          query: {redirect: this.$route.fullPath}
+        })
       } else {
         checkTagLocked(currentUserID, this.tagid).then(resp => {
           if (!resp.data) {
