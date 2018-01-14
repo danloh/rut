@@ -4,43 +4,43 @@ import Router from 'vue-router'
 Vue.use(Router)
 
 import store from '@/store'
-// import components
-import Home from '@/view/Home'
-import Feeds from '@/view/Feeds'
-import Challenge from '@/view/Challenge'
-import Demands from '@/view/Demands'
-import DemandView from '@/view/DemandView'
-import Profile from '@/view/Profile'
-import RutView from '@/view/RutView'
-import RutComment from '@/view/RutComment'
-import ItemView from '@/view/ItemView'
-import ReviewView from '@/view/ReviewView'
-import TagView from '@/view/TagView'
-import NotFound from '@/view/NotFound'
-import Register from '@/components/Auth/Register'
-import Confirm from '@/components/Auth/Confirm'
-import Forget from '@/components/Auth/Forget'
-import ResetPsw from '@/components/Auth/ResetPsw'
-import ChangePsw from '@/components/Auth/ChangePsw'
-import Login from '@/components/Auth/Login'
-import Create from '@/components/Rut/Create'
-import EditRut from '@/components/Rut/EditRut'
-import AddItem from '@/components/Rut/AddItem'
-import EditTips from '@/components/Rut/EditTips'
-import EditItem from '@/components/Item/EditItem'
-import NewReview from '@/components/Item/NewReview'
-import EditReview from '@/components/Item/EditReview'
-import MyItemRC from '@/components/Item/MyItemRC'
-import createClipList from '@/components/Challenge/CreateClipList'
-import createDemandList from '@/components/Demand/CreateDemandList'
-import createProfileRuts from '@/components/Profile/CreateProfileRuts'
-import createProfileItems from '@/components/Profile/CreateProfileItems'
-import ProfileReviews from '@/components/Profile/ProfileReviews'
-import ProfileDemands from '@/components/Profile/ProfileDemands'
-import ProfileActivity from '@/components/Profile/ProfileActivity'
-import Setting from '@/components/Profile/Setting'
-import EditProfile from '@/components/Profile/EditProfile'
-import FollowedList from '@/components/Profile/FollowedList'
+// import components, lazy loading, code splitting
+const Home = () => import('@/view/Home')
+const Feeds = () => import('@/view/Feeds')
+const Challenge = () => import('@/view/Challenge')
+const Demands = () => import('@/view/Demands')
+const DemandView = () => import('@/view/DemandView')
+const Profile = () => import('@/view/Profile')
+const RutView = () => import('@/view/RutView')
+const RutComment = () => import('@/view/RutComment')
+const ItemView = () => import('@/view/ItemView')
+const ReviewView = () => import('@/view/ReviewView')
+const TagView = () => import('@/view/TagView')
+const NotFound = () => import('@/view/NotFound')
+const Register = () => import('@/components/Auth/Register')
+const Confirm = () => import('@/components/Auth/Confirm')
+const Forget = () => import('@/components/Auth/Forget')
+const ResetPsw = () => import('@/components/Auth/ResetPsw')
+const ChangePsw = () => import('@/components/Auth/ChangePsw')
+const Login = () => import('@/components/Auth/Login')
+const Create = () => import('@/components/Rut/Create')
+const EditRut = () => import('@/components/Rut/EditRut')
+const AddItem = () => import('@/components/Rut/AddItem')
+const EditTips = () => import('@/components/Rut/EditTips')
+const EditItem = () => import('@/components/Item/EditItem')
+const NewReview = () => import('@/components/Item/NewReview')
+const EditReview = () => import('@/components/Item/EditReview')
+const MyItemRC = () => import('@/components/Item/MyItemRC')
+const createClipList = param => () => import('@/components/Challenge/CreateClipList').then(m => m.default(param))
+const createDemandList = param => () => import('@/components/Demand/CreateDemandList').then(m => m.default(param))
+const createProfileRuts = param => () => import('@/components/Profile/CreateProfileRuts').then(m => m.default(param))
+const createProfileItems = param => () => import('@/components/Profile/CreateProfileItems').then(m => m.default(param))
+const ProfileReviews = () => import('@/components/Profile/ProfileReviews')
+const ProfileDemands = () => import('@/components/Profile/ProfileDemands')
+const ProfileActivity = () => import('@/components/Profile/ProfileActivity')
+const Setting = () => import('@/components/Profile/Setting')
+const EditProfile = () => import('@/components/Profile/EditProfile')
+const FollowedList = () => import('@/components/Profile/FollowedList')
 
 // for go back / forward scrollBehavior
 const scrollBehavior = (to, from, savedPosition) => {
