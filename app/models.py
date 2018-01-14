@@ -9,12 +9,10 @@ from flask_httpauth import HTTPBasicAuth
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
-from flask_login import UserMixin, AnonymousUserMixin, current_user
-from markdown import markdown
-import bleach
-from . import db, login_manager, cache
+from . import db, cache
 from .utils import split_str, str_to_dict, str_to_set
-
+#from markdown import markdown
+#import bleach
 
 # html_tags Whitelist for Bleach
 # markdown: comment, clip
@@ -359,8 +357,6 @@ class Posts(db.Model):
             item.cal_vote()
             # update the renew timestamp
             self.renew()
-            #save activity to db Events
-            #current_user.set_event(action='updates',post=self,item=item)
             #db.session.commit() #if need commit?
 
     # set and change the order of items, ## ??maybe an issue here!!##
@@ -1349,7 +1345,7 @@ class Follow(db.Model):
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
 
-class Users(UserMixin, db.Model):
+class Users(db.Model):
     __table_name__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     auth_server = db.Column(db.String(32), nullable=False)
@@ -1792,8 +1788,8 @@ class Users(UserMixin, db.Model):
     def __repr__(self):
         return '<Users %r>' % (self.name + str(self.id))
 
-
-class AnonymousUser(AnonymousUserMixin):
+# can be deleted??
+class AnonymousUser():
     @property
     def id(self):
         id = -1
@@ -1828,7 +1824,7 @@ class AnonymousUser(AnonymousUserMixin):
         return r
     def to_dict(self):
         return None
-login_manager.anonymous_user = AnonymousUser
+#login_manager.anonymous_user = AnonymousUser
 
 
 class Authors(db.Model):
