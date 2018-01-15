@@ -4,7 +4,7 @@
       <div>
         <el-form :model="clipForm" :rules="rules" ref="clipForm">
           <el-form-item prop="clip" style="margin-bottom:16px">
-            <el-input type="textarea" v-model="clipForm.clip" placeholder="excerpt something"></el-input>
+            <el-input type="textarea" v-model="clipForm.clip" :autosize="{minRows:3}" placeholder="excerpt something"></el-input>
           </el-form-item>
           <el-form-item prop="doing" style="margin-bottom:8px">
             <el-select class="selectItem" v-model="clipForm.doingItemID" placeholder="Pick an item which you are working on">

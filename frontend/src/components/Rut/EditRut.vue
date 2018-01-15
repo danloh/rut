@@ -8,13 +8,13 @@
         <el-input v-model="editForm.title"></el-input>
       </el-form-item>
       <el-form-item label="Preface" prop="intro">
-        <el-input type="textarea" :rows="6" v-model="editForm.intro"></el-input>
+        <el-input type="textarea" v-model="editForm.intro" :autosize="{minRows:6}"></el-input>
       </el-form-item>
       <el-form-item label="Credential" prop="credential">
         <el-input v-model="editForm.credential"></el-input>
       </el-form-item>
       <el-form-item label="Epilog" prop="epilog">
-        <el-input type="textarea" :rows="6" v-model="editForm.epilog"></el-input>
+        <el-input type="textarea" v-model="editForm.epilog" :autosize="{minRows:6}"></el-input>
       </el-form-item>
       <el-form-item label="Who Can Edit?" prop="editable">
         <el-radio-group v-model="editForm.editable">

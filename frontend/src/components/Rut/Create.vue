@@ -11,7 +11,7 @@
         <el-input v-model="createForm.title" clearable></el-input>
       </el-form-item>
       <el-form-item label="Preface" prop="intro">
-        <el-input type="textarea" :rows="3" v-model="createForm.intro"></el-input>
+        <el-input type="textarea" v-model="createForm.intro" :autosize="{minRows:3}"></el-input>
         <md-tool :pretext="createForm.intro" @insertmd="updateM"></md-tool>
       </el-form-item>
       <el-form-item label="Tag" prop="tag">

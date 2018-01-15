@@ -12,7 +12,7 @@
         <el-input v-model="settingForm.avatarUrl"></el-input>
       </el-form-item>
       <el-form-item label="About Me" prop="about">
-        <el-input type="textarea" v-model="settingForm.about"></el-input>
+        <el-input type="textarea" v-model="settingForm.about" :autosize="{minRows:3}"></el-input>
       </el-form-item>
       <el-form-item label="Url" prop="url">
         <el-input v-model="settingForm.url"></el-input>

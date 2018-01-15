@@ -4,7 +4,7 @@
       <div>
         <el-form :model="demandForm" :rules="rules" ref="demandForm">
           <el-form-item prop="demand" style="margin-bottom:8px">
-            <el-input type="textarea" v-model="demandForm.demand" placeholder="Request something, Support #hashtag"></el-input>
+            <el-input type="textarea" v-model="demandForm.demand" autosize placeholder="Request something, Support #hashtag"></el-input>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" size="mini" @click="submitDemand('demandForm', demandForm)">Send Request</el-button>

@@ -26,7 +26,7 @@
           <el-input v-model="tagForm.parent"></el-input>
         </el-form-item>
         <el-form-item label="Description" prop="description">
-          <el-input type="textarea" v-model="tagForm.description"></el-input>
+          <el-input type="textarea" v-model="tagForm.description" :autosize="{minRows:3}"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">

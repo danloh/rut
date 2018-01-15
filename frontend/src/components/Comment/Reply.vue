@@ -2,7 +2,7 @@
   <div class="reply" v-show="show">
     <el-form :model="commentForm" :rules="rules" ref="commentForm">
       <el-form-item prop="comment" style="margin-bottom:4px">
-        <el-input type="textarea" :rows="1" v-model="commentForm.comment" placeholder="Post a Comment"></el-input>
+        <el-input type="textarea" v-model="commentForm.comment" autosize placeholder="Post a Comment"></el-input>
       </el-form-item>
       <el-form-item>
         <el-button size="mini" @click="reply('commentForm', commentForm)">Submit</el-button>

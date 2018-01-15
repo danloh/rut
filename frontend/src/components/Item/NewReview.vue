@@ -7,7 +7,7 @@
         <el-input v-model="reviewForm.title" placeholder="Title"></el-input>
       </el-form-item>
       <el-form-item prop="review">
-        <el-input type="textarea" :rows="12" v-model="reviewForm.review"></el-input>
+        <el-input type="textarea" v-model="reviewForm.review" :autosize="{minRows:12}"></el-input>
       </el-form-item>
       <el-form-item prop="spoiler">
         <el-radio-group v-model="reviewForm.spoiler">

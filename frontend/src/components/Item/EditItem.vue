@@ -50,7 +50,7 @@
         <el-input v-model="itemForm.price"></el-input>
       </el-form-item>
       <el-form-item label="More Details" prop="details">
-        <el-input type="textarea" v-model="itemForm.details"></el-input>
+        <el-input type="textarea" v-model="itemForm.details" :autosize="{minRows:3}"></el-input>
       </el-form-item>
       <el-form-item>
         <el-button type="success" size="medium" @click="onEditItem('itemForm', itemForm)">Done and Add</el-button>
