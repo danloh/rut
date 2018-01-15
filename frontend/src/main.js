@@ -3,9 +3,10 @@
 import 'es6-promise/auto'
 import Vue from 'vue'
 import axios from 'axios'
-import ElementUI from 'element-ui'
+// import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
-import locale from 'element-ui/lib/locale/lang/en'
+import lang from 'element-ui/lib/locale/lang/en'
+import locale from 'element-ui/lib/locale'
 import ProgressBar from './components/Misc/ProgressBar.vue'
 import titleMixin from './util/title'
 import * as filters from './util/filters'
@@ -20,8 +21,49 @@ sync(store, router)
 
 Vue.config.productionTip = false
 
-// UI + en
-Vue.use(ElementUI, { locale })
+// element UI + en
+// Vue.use(ElementUI, { locale })
+locale.use(lang)
+import {
+  Dialog,
+  Dropdown,
+  DropdownMenu,
+  DropdownItem,
+  Input,
+  Radio,
+  RadioGroup,
+  RadioButton,
+  Select,
+  Option,
+  OptionGroup,
+  Button,
+  ButtonGroup,
+  DatePicker,
+  Form,
+  FormItem,
+  Icon,
+  Message
+} from 'element-ui'
+
+Vue.use(Dialog)
+Vue.use(Dropdown)
+Vue.use(DropdownMenu)
+Vue.use(DropdownItem)
+Vue.use(Input)
+Vue.use(Radio)
+Vue.use(RadioGroup)
+Vue.use(RadioButton)
+Vue.use(Select)
+Vue.use(Option)
+Vue.use(OptionGroup)
+Vue.use(Button)
+Vue.use(ButtonGroup)
+Vue.use(DatePicker)
+Vue.use(Form)
+Vue.use(FormItem)
+Vue.use(Icon)
+
+Vue.prototype.$message = Message
 
 // progress bar, reder off-document and append afterwards
 const bar = Vue.prototype.$bar = new Vue(ProgressBar).$mount()
