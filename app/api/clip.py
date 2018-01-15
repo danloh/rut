@@ -76,8 +76,9 @@ def new_clip():
     else:
         chapnum = chapname = pagenum = ''
     itemid = request.json.get('itemid')
+    user = g.user
     clip = Clips(
-        creator = g.user,
+        creator = user,
         body = body,
         item = Items.query.get(itemid),
         chapnum = chapnum,
@@ -93,8 +94,8 @@ def new_clip():
 @rest.route('/upvoteclip/<int:clipid>')
 @auth.login_required
 def upvote_clip(clipid):
-    user = g.user
     clip = Clips.query.get_or_404(clipid)
+    user = g.user
     voted = Cvote.query.filter_by(user_id=user.id,clip_id=clipid).first()
     if voted is None:
         clip.vote = clip.vote + 1 
@@ -112,8 +113,8 @@ def upvote_clip(clipid):
 @rest.route('/delete/clip/<int:clipid>')
 @auth.login_required
 def del_clip(clipid):
-    user = g.user
     clip = Clips.query.get_or_404(clipid)
+    user = g.user
     if clip.creator != user and user.role != 'Admin':
         abort(403)
     db.session.delete(clip)
@@ -123,8 +124,8 @@ def del_clip(clipid):
 @rest.route('/disable/clip/<int:clipid>')
 @auth.login_required
 def disable_clip(clipid):
-    user = g.user
     clip = Clips.query.get_or_404(clipid)
+    user = g.user
     if clip.creator != user and user.role != 'Admin':
         abort(403)
     clip.disabled = True
@@ -135,8 +136,8 @@ def disable_clip(clipid):
 @rest.route('/recover/clip/<int:clipid>')
 @auth.login_required
 def recover_clip(clipid):
-    user = g.user
     clip = Clips.query.get_or_404(clipid)
+    user = g.user
     if clip.creator != user and user.role != 'Admin':
         abort(403)
     clip.disabled = False #enable

@@ -4,15 +4,15 @@
       <div>
         <el-form :model="clipForm" :rules="rules" ref="clipForm">
           <el-form-item prop="clip" style="margin-bottom:16px">
-            <el-input type="textarea" v-model="clipForm.clip" :autosize="{minRows:3}" placeholder="excerpt something"></el-input>
+            <el-input type="textarea" v-model="clipForm.clip" :autosize="{minRows:3}" placeholder="Excerpt quotes %^&1:First Chapter,Page two:2"></el-input>
           </el-form-item>
-          <el-form-item prop="doing" style="margin-bottom:8px">
+          <el-form-item prop="doing" style="margin-bottom:8px" v-show="clipForm.clip.trim()">
             <el-select class="selectItem" v-model="clipForm.doingItemID" placeholder="Pick an item which you are working on">
               <el-option v-for="i in doingItems" :key="i.id" :label="i.title" :value="i.id"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item>
-            <el-button type="success" size="mini" @click="submitClip('clipForm', clipForm)">Submit</el-button>
+          <el-form-item v-show="clipForm.clip.trim()">
+            <el-button type="success" size="mini" @click="submitClip('clipForm', clipForm)" :disabled="!clipForm.clip.trim()">Submit</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -56,7 +56,6 @@
 <script>
 import ClipList from '@/components/Challenge/ClipList.vue'
 import { fetchChallengeItems, fetchChallengeRut, setDeadline } from '@/api/api'
-import { trimValid } from '@/util/filters'
 
 export default {
   name: 'challenge',
@@ -70,7 +69,6 @@ export default {
       },
       rules: {
         clip: [
-          { required: true, validator: trimValid, message: 'Required', trigger: 'blur' },
           { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
         ],
         doingItemID: [
@@ -93,7 +91,7 @@ export default {
   methods: {
     submitClip (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid && form.doingItemID !== null) {
+        if (valid && form.clip.trim() && form.doingItemID !== null) {
           let data = { clip: form.clip.trim(), itemid: form.doingItemID }
           this.$store.dispatch('postClip', data)
           this.resetForm(formName)

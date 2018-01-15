@@ -5,7 +5,7 @@
         <el-input type="textarea" v-model="commentForm.comment" autosize placeholder="Post a Comment"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button size="mini" @click="reply('commentForm', commentForm)">Submit</el-button>
+        <el-button size="mini" @click="reply('commentForm', commentForm)" :disabled="!commentForm.comment.trim()">Submit</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -14,7 +14,6 @@
 <script>
 import { newComment } from '@/api/api'
 import { checkAuth } from '@/util/auth'
-import { trimValid } from '@/util/filters'
 
 export default {
   name: 'reply',
@@ -29,7 +28,6 @@ export default {
       },
       rules: {
         comment: [
-          { required: true, validator: trimValid, message: 'Required', trigger: 'blur' },
           { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
         ]
       }
@@ -38,7 +36,7 @@ export default {
   methods: {
     reply (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid && checkAuth()) {
+        if (valid && form.comment.trim() && checkAuth()) {
           let data = { comment: form.comment.trim() }
           let re = this.refer.re // demand or rut or review or comment
           let id = this.refer.id // id of above

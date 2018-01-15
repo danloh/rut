@@ -111,17 +111,17 @@ def get_item_dones(itemid):
 @rest.route('/checkflag/item/<int:itemid>')
 @auth.login_required
 def check_flag(itemid):
-    user = g.user
     item = Items.query.get_or_404(itemid)
+    user = g.user
     flaging = user.flaging(item)
     return jsonify(flaging)
 
 @rest.route('/flagtodo/item/<int:itemid>')
 @auth.login_required
 def flag_item_todo(itemid):
-    user = g.user
     item = Items.query.get_or_404(itemid)
     note = request.args.get('note','').strip()
+    user = g.user
     # record activity as want to read an item
     user.set_event(action='Scheduled', item=item)
     user.flag(item,1,note)
@@ -130,9 +130,9 @@ def flag_item_todo(itemid):
 @rest.route('/flagdoing/item/<int:itemid>')
 @auth.login_required
 def flag_item_doing(itemid):
-    user = g.user
     item = Items.query.get_or_404(itemid)
     note = request.args.get('note','').strip()
+    user = g.user
     # record activity asworking an item
     user.set_event(action='Working on', item=item)
     user.flag(item,2,note)
@@ -141,9 +141,9 @@ def flag_item_doing(itemid):
 @rest.route('/flagdone/item/<int:itemid>')
 @auth.login_required
 def flag_item_done(itemid):
-    user = g.user
     item = Items.query.get_or_404(itemid)
     note = request.args.get('note','').strip()
+    user = g.user
     # record activity as have done an item
     user.set_event(action='Get done', item=item)
     user.flag(item,3,note)
@@ -152,8 +152,8 @@ def flag_item_done(itemid):
 @rest.route('/lockitem/<int:itemid>')
 @auth.login_required
 def lock_item(itemid):
-    user = g.user
     item = Items.query.get_or_404(itemid)
+    user = g.user
     item.lock(user)
     return jsonify('Locked')
 
@@ -172,13 +172,13 @@ def check_item_if_locked(itemid, userid):
 @rest.route('/edititem/<int:itemid>', methods=['POST'])
 @auth.login_required
 def edit_item(itemid):
-    user = g.user
     uid = request.json.get('uid','').replace('-','').replace(' ','')
     title = request.json.get('title','').strip()
     if not uid or not title:
         abort(403)
     query = Items.query
     item = query.get_or_404(itemid)
+    user = g.user
     if item.check_locked(user.id):
         return jsonify('In Editing')
     if query.filter_by(uid=uid).first() and item.uid != uid:

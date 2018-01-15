@@ -67,8 +67,8 @@ def get_review_voters(reviewid):
 @rest.route('/upvotereview/<int:reviewid>')
 @auth.login_required
 def upvote_review(reviewid):
-    user = g.user
     review = Reviews.query.get_or_404(reviewid)
+    user = g.user
     voted = Rvote.query.filter_by(user_id=user.id,review_id=reviewid).first()
     if user != review.creator and voted is None:
         review.vote = review.vote + 1 
@@ -90,10 +90,10 @@ def new_review(itemid):
     heading = request.json.get('title','').strip()
     if not body or not heading:
         abort(403)
-    user = g.user
     item = Items.query.get_or_404(itemid)
     spoiler_text = request.json.get('spoiler')
     spoiler = True if spoiler_text == 'Spoiler Ahead' else False
+    user = g.user
     review = Reviews(
         heading = heading,
         body = body,
@@ -116,8 +116,8 @@ def edit_review(reviewid):
     heading = request.json.get('title','').strip()
     if not body or not heading:
         abort(403)
-    user = g.user
     review = Reviews.query.get_or_404(reviewid)
+    user = g.user
     if user != review.creator and user.role != 'Admin':
         abort(403) #No Permission
     review.heading = heading
@@ -133,8 +133,8 @@ def edit_review(reviewid):
 @rest.route('/delete/review/<int:reviewid>')
 @auth.login_required
 def del_review(reviewid):
-    user = g.user
     review = Reviews.query.get_or_404(reviewid)
+    user = g.user
     if review.creator != user and user.role != 'Admin':
         abort(403)
     db.session.delete(review)
@@ -144,8 +144,8 @@ def del_review(reviewid):
 @rest.route('/disable/review/<int:reviewid>')
 @auth.login_required
 def disable_review(reviewid):
-    user = g.user
     review = Reviews.query.get_or_404(reviewid)
+    user = g.user
     if review.creator != user and user.role != 'Admin':
         abort(403)
     review.disabled = True
@@ -156,8 +156,8 @@ def disable_review(reviewid):
 @rest.route('/recover/review/<int:reviewid>')
 @auth.login_required
 def recover_review(reviewid):
-    user = g.user
     review = Reviews.query.get_or_404(reviewid)
+    user = g.user
     if review.creator != user and user.role != 'Admin':
         abort(403)
     review.disabled = False #enable

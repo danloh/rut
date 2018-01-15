@@ -26,7 +26,6 @@ def get_circles(rutid):
 @rest.route('/newcircle', methods=['POST'])
 @auth.login_required
 def new_circle():
-    user = g.user
     name = request.json.get('name','').strip()
     address = request.json.get('address','').strip()
     area = request.json.get('area','').strip()
@@ -34,6 +33,7 @@ def new_circle():
     if not (name and address and area and time):
         abort(403)
     note = request.json.get('note','').strip()
+    user = g.user
     circle = Circles(
         name = name
         address = address
@@ -50,8 +50,8 @@ def new_circle():
 @rest.route('/editcircle/<int:circleid>', methods=['POST'])
 @auth.login_required
 def edit_circle(circleid):
-    user = g.user
     circle = Circles.query.get_or_404(circleid)
+    user = g.user
     if circle.facilitator != user and user.role != 'Admin':
         abort(403)
     # get data
@@ -74,8 +74,8 @@ def edit_circle(circleid):
 @rest.route('/delete/circle/<int:circleid>')
 @auth.login_required
 def del_circle(circleid):
-    user = g.user
     circle = Circles.query.get_or_404(circleid)
+    user = g.user
     if circle.facilitator != user and user.role != 'Admin':
         abort(403)
     db.session.delete(circle)
@@ -85,8 +85,8 @@ def del_circle(circleid):
 @rest.route('/disable/circle/<int:circleid>')
 @auth.login_required
 def disable_circle(circleid):
-    user = g.user
     circle = Circles.query.get_or_404(circleid)
+    user = g.user
     if circle.facilitator != user and user.role != 'Admin':
         abort(403)
     circle.disabled = True
@@ -97,8 +97,8 @@ def disable_circle(circleid):
 @rest.route('/recover/circle/<int:circleid>')
 @auth.login_required
 def recover_circle(circleid):
-    user = g.user
     circle = Circles.query.get_or_404(circleid)
+    user = g.user
     if circle.facilitator != user and user.role != 'Admin':
         abort(403)
     circle.disabled = False #enable
@@ -109,23 +109,23 @@ def recover_circle(circleid):
 @rest.route('/checkparticipate/<int:circleid>')
 @auth.login_required
 def check_participate(circleid):
-    user = g.user
     circle = Circles.query.get_or_404(circleid)
+    user = g.user
     participating = 'Cancle' if user.parting(circle) else 'Participate'
     return jsonify(participating)
 
 @rest.route('/participate/<int:circleid>')
 @auth.login_required
 def participate_circle(circleid):
-    user = g.user
     circle = Circles.query.get_or_404(circleid)
+    user = g.user
     user.participate(circle)
     return jsonify('Cancle')
 
 @rest.route('/unparticipate/<int:circleid>')
 @auth.login_required
 def unparticipate_circle(circleid):
-    user = g.user
     circle = Circles.query.get_or_404(circleid)
+    user = g.user
     user.unparticipate(circle)
     return jsonify('Paticipate')

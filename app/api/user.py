@@ -21,8 +21,8 @@ def get_user(id):        # get info per userid
 @rest.route('/checkfollow/<int:userid>')
 @auth.login_required
 def check_follow(userid):
-    user = g.user
     fo_user = Users.query.get_or_404(userid)
+    user = g.user
     following = 'UnFollow' if user.is_following(fo_user) else 'Follow'
     return jsonify(following)
 
@@ -38,8 +38,8 @@ def follow_user(userid):
 @rest.route('/unfollow/user/<int:userid>')
 @auth.login_required
 def unfollow_user(userid):
-    user = g.user
     fo_user = Users.query.get_or_404(userid)
+    user = g.user
     user.unfollow(fo_user)
     return jsonify('Follow')
 

@@ -4,10 +4,10 @@
       <div>
         <el-form :model="demandForm" :rules="rules" ref="demandForm">
           <el-form-item prop="demand" style="margin-bottom:8px">
-            <el-input type="textarea" v-model="demandForm.demand" autosize placeholder="Request something, Support #hashtag"></el-input>
+            <el-input type="textarea" v-model="demandForm.demand" autosize placeholder="Request something #Tag"></el-input>
           </el-form-item>
-          <el-form-item>
-            <el-button type="primary" size="mini" @click="submitDemand('demandForm', demandForm)">Send Request</el-button>
+          <el-form-item v-show="demandForm.demand.trim()">
+            <el-button type="primary" size="mini" @click="submitDemand('demandForm', demandForm)" :disabled="!demandForm.demand.trim()">Send Request</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -27,7 +27,6 @@
 
 <script>
 import { checkAuth } from '@/util/auth'
-import { trimValid } from '@/util/filters'
 
 export default {
   name: 'demands',
@@ -39,7 +38,6 @@ export default {
       },
       rules: {
         demand: [
-          { required: true, validator: trimValid, message: 'Required', trigger: 'blur' },
           { max: 500, message: 'Max Length should be 500', trigger: 'blur' }
         ]
       },
@@ -47,12 +45,10 @@ export default {
       dueDate: ''
     }
   },
-  computed: {
-  },
   methods: {
     submitDemand (formName, form) {
       this.$refs[formName].validate((valid) => {
-        if (valid && checkAuth()) {
+        if (valid && form.demand.trim() && checkAuth()) {
           let data = { demand: form.demand.trim() }
           this.$store.dispatch('postDemand', data)
           this.resetForm(formName)

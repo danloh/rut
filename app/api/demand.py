@@ -79,8 +79,8 @@ def get_demand_voters(demandid):
 @rest.route('/upvotedemand/<int:demandid>')
 @auth.login_required
 def upvote_demand(demandid):
-    user = g.user
     demand = Demands.query.get_or_404(demandid) # demand's id
+    user = g.user
     voted = Dvote.query.filter_by(user_id=user.id,demand_id=demandid).first()
     if voted is None:
         demand.vote = demand.vote + 1 
@@ -108,8 +108,9 @@ def new_demand():
         abort(403)
     dtag = sp[1].strip()
     tag_str = dtag[:60] or '42'
+    user = g.user
     demand = Demands(
-        requestor = g.user,
+        requestor = user,
         body = body,
         dtag_str = tag_str
     )
@@ -124,8 +125,8 @@ def new_demand():
 @auth.login_required
 def rut_as_answer(rutid, demandid):
     """link  Rut to  a demand as Answer"""
-    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    user = g.user
     if rut.creator != user and user.role != 'Admin':
         abort(403) #no permission
     demand = Demands.query.get_or_404(demandid)
@@ -141,8 +142,8 @@ def rut_as_answer(rutid, demandid):
 @rest.route('/delete/demand/<int:demandid>')
 @auth.login_required
 def del_demand(demandid):
-    user = g.user
     demand = Demands.query.get_or_404(demandid)
+    user = g.user
     if demand.requestor != user and user.role != 'Admin':
         abort(403)
     db.session.delete(demand)
@@ -152,8 +153,8 @@ def del_demand(demandid):
 @rest.route('/disable/demand/<int:demandid>')
 @auth.login_required
 def disable_demand(demandid):
-    user = g.user
     demand = Demands.query.get_or_404(demandid)
+    user = g.user
     if demand.requestor != user and user.role != 'Admin':
         abort(403)
     demand.disabled = True
@@ -164,8 +165,8 @@ def disable_demand(demandid):
 @rest.route('/recover/demand/<int:demandid>')
 @auth.login_required
 def recover_demand(demandid):
-    user = g.user
     demand = Demands.query.get_or_404(demandid)
+    user = g.user
     if demand.requestor != user and user.role != 'Admin':
         abort(403)
     demand.disabled = False #enable

@@ -10,17 +10,17 @@
       <el-form-item label="Title" prop="title">
         <el-input v-model="createForm.title" clearable></el-input>
       </el-form-item>
+      <el-form-item label="Tags" prop="tag">
+        <el-input v-model="createForm.tag" clearable placeholder="Comma can be as Separator"></el-input>
+      </el-form-item>
       <el-form-item label="Preface" prop="intro">
-        <el-input type="textarea" v-model="createForm.intro" :autosize="{minRows:3}"></el-input>
+        <el-input type="textarea" v-model="createForm.intro" :autosize="{minRows:5}"></el-input>
         <md-tool :pretext="createForm.intro" @insertmd="updateM"></md-tool>
       </el-form-item>
-      <el-form-item label="Tag" prop="tag">
-        <el-input v-model="createForm.tag" clearable></el-input>
-      </el-form-item>
       <el-form-item label="Credential" prop="credential">
-        <el-input v-model="createForm.credential"></el-input>
+        <el-input v-model="createForm.credential" placeholder="Help readers understand your experience"></el-input>
       </el-form-item>
-      <el-form-item label="Rating" prop="rating">
+      <el-form-item label="Suitable for" prop="rating">
         <el-select v-model="createForm.rating">
           <el-option v-for="r in ratings" :key="r.value" :label="r.label" :value="r.value"></el-option>
         </el-select>
@@ -33,7 +33,7 @@
         </el-radio-group>
       </el-form-item>
       <el-form-item>
-        <el-button type="success" size="medium" @click="onCreate('createForm', createForm)">Create New Then Add Item Later</el-button>
+        <el-button type="success" size="medium" @click="onCreate('createForm', createForm)">Create New Then Add Items</el-button>
         <!-- <el-button @click="resetForm('createForm')">Reset</el-button> -->
       </el-form-item>
     </el-form>

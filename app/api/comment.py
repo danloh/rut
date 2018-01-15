@@ -52,8 +52,8 @@ def new_comment(demandid=None,rutid=None,commentid=None,itemid=None,reviewid=Non
 @rest.route('/delete/comment/<int:commentid>')
 @auth.login_required
 def del_comment(commentid):
-    user = g.user
     comment = Comments.query.get_or_404(commentid)
+    user = g.user
     if comment.creator != user and user.role != 'Admin':
         abort(403)
     db.session.delete(comment)
@@ -63,8 +63,8 @@ def del_comment(commentid):
 @rest.route('/disable/comment/<int:commentid>')
 @auth.login_required
 def disable_comment(commentid):
-    user = g.user
     comment = Comments.query.get_or_404(commentid)
+    user = g.user
     if comment.creator != user and user.role != 'Admin':
         abort(403)
     comment.disabled = True
@@ -75,8 +75,8 @@ def disable_comment(commentid):
 @rest.route('/recover/comment/<int:commentid>')
 @auth.login_required
 def recover_comment(commentid):
-    user = g.user
     comment = Comments.query.get_or_404(commentid)
+    user = g.user
     if comment.creator != user and user.role != 'Admin':
         abort(403)
     comment.disabled = False #enable

@@ -84,8 +84,8 @@ def get_tag_relates(tagid):
 @rest.route('/locktag/<int:tagid>')
 @auth.login_required
 def lock_tag(tagid):
-    user = g.user
     tag = Tags.query.get_or_404(tagid)
+    user = g.user
     tag.lock(user)
     return jsonify('Locked')
 
@@ -104,15 +104,15 @@ def check_tag_if_locked(tagid, userid):
 @rest.route('/edittag/<int:tagid>', methods=['POST'])
 @auth.login_required
 def edit_tag(tagid):
-    user = g.user
-    query = Tags.query
     # get data
     name = request.json.get('name','').strip()
     parent = request.json.get('parent','').strip()
     description = request.json.get('description','').strip()
     if not name:
         abort(403)
+    query = Tags.query
     tag = query.get_or_404(tagid)
+    user = g.user
     if tag.check_locked(user.id):
         return jsonify('In Editing')
     name = name.title() # titlecased style
@@ -169,16 +169,16 @@ def recover_tag(tagid):
 @rest.route('/checkfavtag/<int:tagid>')
 @auth.login_required
 def check_fav(tagid):
-    user = g.user
     tag = Tags.query.get_or_404(tagid)
+    user = g.user
     faving = 'UnFollow' if user.faving(tag) else 'Follow'
     return jsonify(faving)
 
 @rest.route('/fav/tag/<int:tagid>')
 @auth.login_required
 def fav_tag(tagid):
-    user = g.user
     tag = Tags.query.get_or_404(tagid)
+    user = g.user
     # record activity as favor a tag
     user.set_event(action='Followed', tag=tag)
     user.fav(tag)
@@ -187,7 +187,7 @@ def fav_tag(tagid):
 @rest.route('/unfav/tag/<int:tagid>')
 @auth.login_required
 def unfav_tag(tagid):
-    user = g.user
     tag = Tags.query.get_or_404(tagid)
+    user = g.user
     user.unfav(tag)
     return jsonify('Follow')

@@ -186,24 +186,24 @@ def get_all_ruts():
 @rest.route('/checkstar/rut/<int:rutid>')
 @auth.login_required
 def check_star(rutid):
-    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    user = g.user
     staring = 'Unstar' if user.staring(rut) else 'Star'
     return jsonify(staring)
 
 @rest.route('/checkchallenge/rut/<int:rutid>')
 @auth.login_required
 def check_challenge(rutid):
-    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    user = g.user
     challenging = 'Endchallenge' if user.challenging(rut) else 'Challenge'
     return jsonify(challenging)
 
 @rest.route('/star/rut/<int:rutid>')
 @auth.login_required
 def star_rut(rutid):
-    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    user = g.user
     # record activity as star a rut
     user.set_event(action='Starred', post=rut)
     # exe star
@@ -213,16 +213,16 @@ def star_rut(rutid):
 @rest.route('/unstar/rut/<int:rutid>')
 @auth.login_required
 def unstar_rut(rutid):
-    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    user = g.user
     user.unstar(rut)
     return jsonify('Star')
 
 @rest.route('/challenge/rut/<int:rutid>')
 @auth.login_required
 def challenge_rut(rutid):
-    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    user = g.user
     # record activity as challenge a rut
     user.set_event(action='Started a challenge', post=rut)
     user.challenge(rut)
@@ -231,8 +231,8 @@ def challenge_rut(rutid):
 @rest.route('/unchallenge/rut/<int:rutid>')
 @auth.login_required
 def unchallenge_rut(rutid):
-    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    user = g.user
     user.unchallenge(rut)
     return jsonify('Challenge')
 
@@ -240,11 +240,11 @@ def unchallenge_rut(rutid):
 @rest.route('/create/<int:demandid>', methods=['POST'])
 @auth.login_required
 def new_rut(demandid=None):
-    user = g.user
     title = request.json.get('title','').strip()
     intro = request.json.get('intro','').strip()
     if not title or not intro:
         abort(403) # cannot be ''
+    user = g.user
     post = Posts(
         creator = user,
         title = title,
@@ -276,8 +276,8 @@ def new_rut(demandid=None):
 @rest.route('/lockrut/<int:rutid>')
 @auth.login_required
 def lock_rut(rutid):
-    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    user = g.user
     rut.lock(user)
     return jsonify('Locked')
 
@@ -310,8 +310,8 @@ def check_rut_editable(userid, rutid):
 @rest.route('/editrut/<int:rutid>', methods=['POST'])
 @auth.login_required
 def edit_rut(rutid):
-    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    user = g.user
     # check if rut editable
     if not rut.check_editable(user):
         abort(403)
@@ -368,10 +368,10 @@ def edit_rut_tags(rutid):
 @rest.route('/edittips/<int:cid>', methods=['POST'])
 @auth.login_required
 def edit_tips(cid):
-    user = g.user
     tip_collect = Collect.query.filter_by(id=cid).first_or_404()  #collect 's id
     post_id = tip_collect.post_id
     rut = Posts.query.get_or_404(post_id)
+    user = g.user
     if not rut.check_editable(user):
         abort(403)
     # get the data
@@ -398,8 +398,8 @@ def add_item_to_rut(rutid):
     """Input item info and then check if exsiting 
     and add to rut as new or exsiting item
     """
-    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    user = g.user
     if not rut.check_editable(user):
         abort(403)
     # get data in request
@@ -451,8 +451,8 @@ def add_item_to_rut(rutid):
 @auth.login_required
 def item_to_rut(itemid, rutid):
     """Add existing item to Rut"""
-    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    user = g.user
     if not rut.check_editable(user):
         abort(403)
     item = Items.query.get_or_404(itemid)
@@ -465,8 +465,8 @@ def item_to_rut(itemid, rutid):
 @auth.login_required
 def check_item_to_add(rutid):
     """get item info via Spider or query in db per uid"""
-    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    user = g.user
     if not rut.check_editable(user):
         abort(403)
     #regexp prepare
@@ -534,9 +534,9 @@ def check_item_to_add(rutid):
 @auth.login_required
 def del_tips_in_rut(cid):
     """Del tips, re-ordering items"""
-    user = g.user
     #collect 's id,but not get_or_404, for 3 primary key
     tip_c = Collect.query.filter_by(id=cid).first_or_404()
+    user = g.user
     if user != tip_c.tip_creator and user.role != 'Admin':
         abort(403)
     #once delete an item. need to re-ordering,
@@ -553,8 +553,8 @@ def del_tips_in_rut(cid):
 @rest.route('/disable/rut/<int:rutid>')
 @auth.login_required
 def disable_rut(rutid):
-    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    user = g.user
     if ((rut.creator != user and user.role != 'Admin')
         or rut.starers.count() != 0
         or rut.challengers.count() != 0):
@@ -567,8 +567,8 @@ def disable_rut(rutid):
 @rest.route('/recover/rut/<int:rutid>')
 @auth.login_required
 def recover_rut(rutid):
-    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    user = g.user
     if rut.creator != user and user.role != 'Admin':
         abort(403)
     rut.disabled = False #enable
@@ -579,8 +579,8 @@ def recover_rut(rutid):
 @rest.route('/delete/rut/<int:rutid>')
 @auth.login_required
 def delete_rut(rutid):
-    user = g.user
     rut = Posts.query.get_or_404(rutid)
+    user = g.user
     if ((rut.creator != user and user.role != 'Admin')
         or rut.starers.count() != 0
         or rut.challengers.count() != 0):
