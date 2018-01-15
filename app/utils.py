@@ -2,6 +2,12 @@
 
 import re
 
+def split_str_spn(s, delimiter=r'[,;，；]'):
+    s = str(s)
+    re_sp = re.split(delimiter,s)
+    lst = [sp.strip() for sp in re_sp]
+    return lst
+
 def split_str(s, delimiter=r'[,;，；]'):
     s = str(s)
     re_sp = re.split(delimiter,s)

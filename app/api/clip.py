@@ -4,6 +4,7 @@
 from flask import request, g, jsonify, abort
 from ..models import *
 from . import db, rest, auth, PER_PAGE
+from ..utils import split_str_spn
 
 @rest.route('/all/clips')
 def get_all_clips():
@@ -53,14 +54,35 @@ def get_clip_voters(clipid):
 @rest.route('/newclip', methods=['POST'])
 @auth.login_required
 def new_clip():
-    body = request.json.get('clip','').strip()
+    text = request.json.get('clip','').strip()
+    spl = text.split('%^&') + ['']
+    body = spl[0].strip()
     if not body:
         abort(403)
+    chap = spl[1].strip()
+    if chap:
+        chapl = split_str_spn(chap, r'[:：]')
+        m = chapl[0]
+        chapnum = m if m.isdigit() else ''
+        try:
+            chapname = chapl[1].strip()
+        except:
+            chapname = ''
+        try:
+            p = chapl[2]
+            pagenum = p if p.isdigit() else ''
+        except:
+            pagenum = ''
+    else:
+        chapnum = chapname = pagenum = ''
     itemid = request.json.get('itemid')
     clip = Clips(
         creator = g.user,
         body = body,
-        item = Items.query.get(itemid)
+        item = Items.query.get(itemid),
+        chapnum = chapnum,
+        chapname = chapname[:120],
+        pagenum = pagenum
     )
     db.session.add(clip)
     # record activity as excerpt a clip

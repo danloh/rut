@@ -392,6 +392,7 @@ class Posts(db.Model):
         for _tg in _tagset:
             #_tg = _tg.strip()
             if _tg: # is not "":
+                _tg = _tg.title() # titlecased style
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
                     tag=Tags(tag=_tg)
@@ -628,6 +629,7 @@ class Items(db.Model):
         for _tg in _tagset:
             #_tg = _tg.strip() #
             if _tg: # is not "":
+                _tg = _tg.title()
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
                     tag=Tags(tag=_tg)
@@ -1029,6 +1031,9 @@ class Clips(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text, nullable=False)
     body_html = db.Column(db.Text)
+    chapnum = db.Column(db.String(8))
+    chapname = db.Column(db.String(128))
+    pagenum = db.Column(db.String(8))
     vote = db.Column(db.Integer,default=1)
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
@@ -1060,6 +1065,9 @@ class Clips(db.Model):
             'creator': self.creator.to_dict(),
             'fromitem': self.item.to_dict(),
             'body': self.body,
+            'chapnum': self.chapnum or '',
+            'chapname': self.chapname or '',
+            'pagenum': self.pagenum or '',
             'vote': self.vote,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         }
@@ -1081,7 +1089,7 @@ class Demands(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text, nullable=False)
     vote = db.Column(db.Integer,default=1)
-    dtag_str = db.Column(db.String(512))
+    dtag_str = db.Column(db.String(64))
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
@@ -1123,6 +1131,7 @@ class Demands(db.Model):
         for _tg in _tagset:
             #_tg = _tg.strip() #
             if _tg: # is not "":
+                _tg = _tg.title() # titlecased style
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
                     tag=Tags(tag=_tg)

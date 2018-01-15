@@ -103,12 +103,11 @@ def new_demand():
     if not text:
         abort(403)
     sp = text.split('#') + ['42']
-    body = sp[0]
+    body = sp[0].strip()
+    if not body:
+        abort(403)
     dtag = sp[1].strip()
-    if dtag and len(dtag) < 512:
-        tag_str = dtag
-    else:
-        tag_str = '42'
+    tag_str = dtag[:60] or '42'
     demand = Demands(
         requestor = g.user,
         body = body,
