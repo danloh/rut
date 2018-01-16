@@ -5,7 +5,7 @@ from flask import request, g, jsonify, abort
 from ..models import *
 from . import db, rest, auth, PER_PAGE
 
-@rest.route('/<int:rutid>/circles')
+@rest.route('/rut/<int:rutid>/circles')
 def get_circles(rutid):
     # get request params
     area = request.args.get('area')
@@ -17,15 +17,15 @@ def get_circles(rutid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     circles = query.offset(page*per_page).limit(per_page)
-    cirlce_dict = {
+    circle_dict = {
         'circles': [c.to_dict() for c in circles],
         'circlecount': query.count()
     }
     return jsonify(circle_dict)
 
-@rest.route('/newcircle', methods=['POST'])
+@rest.route('/newcircle/rut/<int:rutid>', methods=['POST'])
 @auth.login_required
-def new_circle():
+def new_circle(rutid):
     name = request.json.get('name','').strip()
     address = request.json.get('address','').strip()
     area = request.json.get('area','').strip()
@@ -33,18 +33,20 @@ def new_circle():
     if not (name and address and area and time):
         abort(403)
     note = request.json.get('note','').strip()
+    rut = Posts.query.get_or_404(rutid)
     user = g.user
     circle = Circles(
-        name = name
-        address = address
-        area = area
-        time = time
-        note = note
-        facilitator = user
+        name = name,
+        address = address,
+        area = area,
+        time = time,
+        note = note,
+        facilitator = user,
+        post = rut
     )
     db.session.add(circle)
     db.session.commit()
-    circle_dict = circle.to_dict
+    circle_dict = circle.to_dict()
     return jsonify(circle_dict)
 
 @rest.route('/editcircle/<int:circleid>', methods=['POST'])

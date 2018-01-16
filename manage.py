@@ -10,7 +10,7 @@ from app.models import Posts, Items, Collect, Tags, Fav, Rvote, Dvote,\
                        Comments, Reviews, Clips, Demands, Articles, Columns,\
                        Star, Flag, Challenge, Contribute, Follow,\
                        Users, Roles, Permission, Authors, Byline,\
-                       Reply, Clan, Messages, Dialog, Events
+                       Reply, Clan, Messages, Dialog, Events, Circles
        
 
 app = create_app('default')
@@ -28,7 +28,7 @@ def make_shell_context():
                 Authors=Authors, Byline=Byline,  
                 Clan=Clan, Reply=Reply, Reviews=Reviews, Rvote=Rvote,
                 Articles=Articles, Columns=Columns,
-                Clips=Clips, Messages=Messages, 
+                Clips=Clips, Messages=Messages, Circles=Circles,
                 Dialog=Dialog, Events=Events)
 
 manager.add_command('shell',Shell(make_context=make_shell_context))

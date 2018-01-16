@@ -5,7 +5,7 @@
       <span v-html="clipContent"></span>
     </div>
     <div class="meta">
-      From <router-link :to="'/item/' + fromitem.id" :title="fromitem.title">{{ fromitem.title.slice(0, 40) }}...</router-link>
+      From <router-link :to="'/item/' + fromitem.id" :title="fromitem.title">{{ fromitem.title.slice(0, 42) }}...</router-link>
       via <router-link :to="'/profile/' + creator.id">{{ creator.name.slice(0, 15) }}</router-link>
       | {{ clip.timestamp | toMDY }}
       | {{ vote }}&nbsp;<el-button type="text" @click="upClip">Like</el-button>

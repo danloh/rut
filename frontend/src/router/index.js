@@ -31,9 +31,9 @@ const EditItem = () => import('@/components/Item/EditItem')
 const NewReview = () => import('@/components/Item/NewReview')
 const EditReview = () => import('@/components/Item/EditReview')
 const MyItemRC = () => import('@/components/Item/MyItemRC')
-import createClipList from '@/components/Challenge/CreateClipList'
+// import createClipList from '@/components/Challenge/CreateClipList'
 // import createDemandList from '@/components/Demand/CreateDemandList'
-// const createClipList = params => () => import('@/components/Challenge/CreateClipList').then(m => m.default(params))
+const createClipList = params => () => import('@/components/Challenge/CreateClipList').then(m => m.default(params))
 const createDemandList = param => () => import('@/components/Demand/CreateDemandList').then(m => m.default(param))
 const createProfileRuts = param => () => import('@/components/Profile/CreateProfileRuts').then(m => m.default(param))
 const createProfileItems = param => () => import('@/components/Profile/CreateProfileItems').then(m => m.default(param))
@@ -137,8 +137,8 @@ const router = new Router({
       children: [
         { path: '', name: 'defaultclip', redirect: 'hotclip' },
         { path: 'myclip', name: 'Myclip', component: createClipList(), meta: {auth: true} },
-        { path: 'hotclip', name: 'Hotclip', component: createClipList('hotclip', {ref: 'Hot'}), meta: {auth: true} },
-        { path: 'allclip', name: 'Allclip', component: createClipList('allclip', {ref: 'All'}), meta: {auth: true} }
+        { path: 'hotclip', name: 'Hotclip', component: createClipList({ref: 'Hot'}), meta: {auth: true} },
+        { path: 'allclip', name: 'Allclip', component: createClipList({ref: 'All'}), meta: {auth: true} }
       ]
     },
     { path: '/profile/:id',

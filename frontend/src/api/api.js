@@ -54,7 +54,6 @@ const fetchUser = (id, params) => {
 const fetchFollows = (userid, follow, params) => {
   return request(`${base}/user/${userid}/${follow}`, params)
 }
-
 // get a user's activity
 const fetchMyActivity = (userid, params) => {
   return request(`${base}/${userid}/myactivity`, params)
@@ -327,6 +326,14 @@ const newComment = (ref, id, params) => {
 const fetchRutComments = (rutid, params) => {
   return request(`${base}/commentsonrut/${rutid}`, params)
 }
+// get circles for a rut
+const fetchRutCircles = (rutid, params) => {
+  return request(`${base}/rut/${rutid}/circles`, params)
+}
+// post new circle
+const postCircle = (rutid, params) => {
+  return request(`${base}/newcircle/rut/${rutid}`, params, 'post')
+}
 // just for error test
 const testError = (params) => {
   return request(`${base}/testerror`, params)
@@ -362,6 +369,7 @@ export {
   fetchRutTips,
   fetchRutDemands,
   fetchRutComments,
+  fetchRutCircles,
   fetchRutChallengers,
   checkSC,
   scRut,
@@ -414,5 +422,6 @@ export {
   newDemand,
   upvoteDemand,
   rutAsAnswer,
-  newComment
+  newComment,
+  postCircle
 }

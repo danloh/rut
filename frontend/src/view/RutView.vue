@@ -70,7 +70,7 @@
       <div class="demands" v-if="demandCount">
         <b>As Answer to Request:</b>
         <p class="demand-title" v-for="(demand, index) in demands" :key="index" :demand="demand">
-          - <router-link :to="'/demand/' + demand.id"> {{ demand.demand.slice(0, 60) }}...</router-link>
+          - <router-link :to="'/demand/' + demand.id"> {{ demand.demand.slice(0, 42) }}...</router-link>
         </p>
         <div v-if="hasMoreDemand">
           <el-button size="mini" @click="loadmoreDemand" :disabled="!hasMoreDemand">Show More</el-button>

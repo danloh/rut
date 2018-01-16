@@ -6,7 +6,7 @@
         <b>Answers to This Demand:</b>
         <el-button size="mini" type="text" @click="loadCreatedThenAsAnswer">...Link To Answer</el-button>
         <div class="title" v-for="(rut, index) in answers" :key="index" :rut="rut">
-          -- <router-link :to="'/readuplist/' + rut.id" :title="rut.title"><b>{{ rut.title.slice(0, 160) }} ...</b></router-link>
+          -- <router-link :to="'/readuplist/' + rut.id" :title="rut.title"><b>{{ rut.title.slice(0, 142) }} ...</b></router-link>
           <!-- <p v-html="rut.intro"></p> -->
         </div>
         <div v-if="hasMoreAnswer">

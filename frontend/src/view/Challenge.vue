@@ -29,7 +29,7 @@
       <div class="right-title">
         <b>Working on Challenge:</b>
         <br>
-        <router-link :to="'/readuplist/' + challengeRut.id"> {{ challengeRut.title }}</router-link>
+        <router-link :to="'/readuplist/' + challengeRut.id"> {{ challengeRut.title || '...' }}</router-link>
         <br>
         <b class="deadline">Deadline: {{ dueDate | toMDY }} <el-button type="text" @click="showPicker=true">..Set</el-button></b>
         <br>
@@ -47,7 +47,7 @@
         <b>Including Items:</b>
       </div>
       <p class="right-item" v-for="(item, index) in items" :key="index" :item="item">
-        ~{{item.cate}} <router-link :to="'/item/' + item.id" :title="item.title"> {{ item.title.slice(0, 60) }}...</router-link>
+        <b>{{ item.cate }}</b> <router-link :to="'/item/' + item.id" :title="item.title"> {{ item.title.slice(0, 42) }}...</router-link>
       </p>
     </div>
   </div>

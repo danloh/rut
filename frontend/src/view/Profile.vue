@@ -19,21 +19,21 @@
         <p class="user-info">From: {{user.location || '...'}}</p>
       </div>
       <div class="right-nav">
-        <router-link :to="'/profile/' + userid + '/created/'">* Created</router-link>
+        <router-link :to="'/profile/' + userid + '/created/'"><b style="color:royalblue">&</b> Created</router-link>
         <br>
-        <router-link :to="'/profile/' + userid + '/challenge/'">* Challenge</router-link>
+        <router-link :to="'/profile/' + userid + '/challenge/'"><b style="color:royalblue">&</b> Challenge</router-link>
         <br>
-        <router-link :to="'/profile/' + userid + '/star/'">* Star</router-link>
+        <router-link :to="'/profile/' + userid + '/star/'"><b style="color:royalblue">&</b> Starred</router-link>
         <br>
-        <router-link :to="'/profile/' + userid + '/working/'">- Working On</router-link>
+        <router-link :to="'/profile/' + userid + '/working/'"><b style="color:coral">#</b> Working On</router-link>
         <br>
-        <router-link :to="'/profile/' + userid + '/scheduled/'">- scheduled</router-link>
+        <router-link :to="'/profile/' + userid + '/scheduled/'"><b style="color:coral">#</b> scheduled</router-link>
         <br>
-        <router-link :to="'/profile/' + userid + '/havedone/'">- Have Done</router-link>
+        <router-link :to="'/profile/' + userid + '/havedone/'"><b style="color:coral">#</b> Have Done</router-link>
         <br>
-        <router-link :to="'/profile/' + userid + '/reviews/'"> > Notes / Reviews</router-link>
+        <router-link :to="'/profile/' + userid + '/reviews/'"><b style="color:teal">></b> Notes / Reviews</router-link>
         <br>
-        <router-link :to="'/profile/' + userid + '/demands/'"> > Requests</router-link>
+        <router-link :to="'/profile/' + userid + '/demands/'"><b style="color:teal">></b> Requests</router-link>
         <br><br>
         <router-link :to="'/setting/' + userid" v-if="showSetting">
           <small style="outline: dotted 1px; background-color: #d5d5be">~Setting~</small>
