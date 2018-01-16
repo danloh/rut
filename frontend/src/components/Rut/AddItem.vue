@@ -52,6 +52,7 @@
       </el-form-item>
       <el-form-item label="Tips" prop="tips">
         <el-input type="textarea" v-model="addForm.tips" :autosize="{minRows:6}"></el-input>
+        <md-tool :pretext="addForm.tips" @insertmd="updateM"></md-tool>
       </el-form-item>
       <el-form-item label="in Tips" prop="spoiler">
         <el-radio-group v-model="addForm.spoiler">
@@ -72,11 +73,12 @@ import { checkItem, addItem, lockRut, unlockRut } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { trimValid } from '@/util/filters'
 import Spinner from '@/components/Misc/Spinner.vue'
+import MdTool from '@/components/Misc/MdTool.vue'
 
 export default {
   name: 'add-rut',
   title: 'Add Item to Readup Tips',
-  components: { Spinner },
+  components: { Spinner, MdTool },
   data () {
     return {
       checkForm: {
@@ -205,6 +207,9 @@ export default {
         this.rutTitle = rut.title
         lockRut(rut.id)
       }
+    },
+    updateM (data) {
+      this.addForm.tips += data
     }
   },
   created () {

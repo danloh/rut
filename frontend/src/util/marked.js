@@ -25,11 +25,13 @@ const linkParse = (href, title, text) => {
 }
 
 const imageParse = (src, title, alt) => {
-  src = src.replace(/^http:\/\//ig, '/proxy/')
-  return `<img src="${src}" 
-               title="${title || alt || 'readup.tips'}" 
-               style="width:10%; height:15%"
-               alt="${alt || title || src}"/>`.replace(/\s+/g, ' ').replace('\n', '')
+  return `<a href="${src}" 
+             target="_blank">
+            <img src="${src}" 
+                title="${title || alt || 'readup.tips'}" 
+                style="width:10%; height:15%"
+                alt="${alt || title || src}"/>
+          </a>`.replace(/\s+/g, ' ').replace('\n', '')
 }
 
 renderer.link = linkParse

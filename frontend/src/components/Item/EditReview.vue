@@ -7,6 +7,7 @@
       </el-form-item>
       <el-form-item prop="review">
         <el-input type="textarea" v-model="reviewForm.review" :autosize="{minRows:12}"></el-input>
+        <md-tool :pretext="reviewForm.review" @insertmd="updateM"></md-tool>
       </el-form-item>
       <el-form-item prop="spoiler">
         <el-radio-group v-model="reviewForm.spoiler">
@@ -26,10 +27,12 @@
 import { editReview, fetchReview } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { trimValid } from '@/util/filters'
+import MdTool from '@/components/Misc/MdTool.vue'
 
 export default {
   name: 'edit-review',
   title: 'Edit Review',
+  components: { MdTool },
   data () {
     return {
       reviewForm: {
@@ -111,6 +114,9 @@ export default {
           this.setFormData(review)
         })
       }
+    },
+    updateM (data) {
+      this.reviewForm.review += data
     }
   },
   created () {

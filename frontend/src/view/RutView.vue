@@ -58,12 +58,12 @@
       <div class="bottombar">
         <share-bar></share-bar>
       </div>
-    </div> 
+    </div>
     <div class="rut-side">
       <div class="credential">
         <p class="credential-title"><b>Creator's Credential</b></p>
         <div class="credential-body">
-          <div>{{rutDetail.credential}}</div>
+          <div>{{ rutDetail.credential || aboutcreator || '...'}}</div>
           <router-link class="editlink" :to="'/edit/readuplist/' + rutid" v-if="canEdit">...Edit</router-link> 
         </div>
       </div>
@@ -107,6 +107,7 @@ export default {
       demandCount: 0,
       creatorid: null,
       creatorname: '',
+      aboutcreator: '',
       isEveryone: false,
       showDialog: false,
       newTag: '',
@@ -153,6 +154,7 @@ export default {
         this.challengeCount = data.challengecount
         this.creatorid = data.creator.id
         this.creatorname = data.creator.name
+        this.aboutcreator = data.creator.about
         this.isEveryone = data.editable === 'Everyone'
         this.newTags = data.tags.map(t => t.tagname)
         this.tips = data.tips

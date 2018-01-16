@@ -10,6 +10,7 @@
       </el-form-item>
       <el-form-item label="Edit Tips" prop="tips">
         <el-input type="textarea" v-model="editForm.tips" :autosize="{minRows:12}"></el-input>
+        <md-tool :pretext="editForm.tips" @insertmd="updateM"></md-tool>
       </el-form-item>
       <el-form-item label="Reminder" prop="spoiler">
         <el-radio-group v-model="editForm.spoiler">
@@ -40,10 +41,12 @@
 import { editTips, deleteTips, lockRut, unlockRut } from '@/api/api'
 import { checkAuth } from '@/util/auth'
 import { trimValid } from '@/util/filters'
+import MdTool from '@/components/Misc/MdTool.vue'
 
 export default {
   name: 'edit-tips',
   title: 'Edit Tip',
+  components: { MdTool },
   data () {
     return {
       editForm: {
@@ -119,6 +122,9 @@ export default {
       this.rutId = rut.id
       this.rutTitle = rut.title
       lockRut(rut.id)
+    },
+    updateM (data) {
+      this.editForm.tips += data
     }
   },
   created () {

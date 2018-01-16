@@ -1,6 +1,9 @@
 <template>
   <div class="md-editor">
     <div class="md-tools">
+      <a href="" title="Bold" @click.stop.prevent="insertContent('bold')">
+        <b>B </b>
+      </a>
       <a href="" title="image" @click.stop.prevent="insertContent('image')">
         <i class="el-icon-picture"></i>
       </a>
@@ -37,6 +40,7 @@
     methods: {
       insertContent (type) {
         const contents = {
+          bold: '** **',
           image: '![](https://)',
           link: '[](https://)',
           code: '\n```python\n \n```'
