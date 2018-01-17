@@ -16,7 +16,8 @@ export default {
   components: { Demand },
   props: {
     type: String,
-    userid: null
+    userid: null,
+    tag: String
   },
   computed: {
     ...mapGetters([
@@ -29,13 +30,16 @@ export default {
     }
   },
   methods: {
+    initData () {
+      this.$store.dispatch('getDemands', {'type': this.type, 'userid': this.userid, 'tag': this.tag})
+    },
     loadmoreDemand () {
-      let params = {'type': this.type, 'userid': this.userid, 'page': this.currentD}
+      let params = {'type': this.type, 'userid': this.userid, 'tag': this.tag, 'page': this.currentD}
       this.$store.dispatch('moreDemands', params)
     }
   },
   created () {
-    this.$store.dispatch('getDemands', {'type': this.type, 'userid': this.userid})
+    this.initData()
   }
 }
 </script>

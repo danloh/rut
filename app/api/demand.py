@@ -10,18 +10,22 @@ from . import db, rest, auth, PER_PAGE
 def get_demands():
     query = Demands.query
     userid = request.args.get('userid','')
+    tag_str = request.args.get('tag','')
     ref = request.args.get('type','')
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
+    # yield query per filter criteria
     if userid:
-        demands = query.filter_by(requestor_id=int(userid))\
-                       .order_by(Demands.timestamp.desc())
-    elif ref == "new":
-        demands = query.order_by(Demands.timestamp.desc())
-    elif ref == "popular":  # popular
-        demands = query.order_by(Demands.vote.desc())
+        demands_query = query.filter_by(requestor_id=int(userid))
+    elif tag_str:
+        demands_query = query.filter_by(dtag_str=str(tag_str))
     else:
-        demands = query
+        demands_query = query
+    # order per ref: new or popular
+    if ref == "popular":
+        demands = demands_query.order_by(Demands.vote.desc())
+    else:
+        demands = demands_query.order_by(Demands.timestamp.desc())
     ds = demands.offset(per_page * page).limit(per_page)
     demands_dict = {
         'demands': [d.to_dict() for d in ds],

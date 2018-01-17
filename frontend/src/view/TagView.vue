@@ -7,14 +7,21 @@
       </div>
     </div>
     <div class="tagmeta">
-      <h4><b>{{ tagDetail.tagname}}</b></h4>
-      <div>{{ tagDetail.descript}} 
+      <h4><b style="font-size:1.5em">{{ tagName }}</b></h4>
+      <div>{{ tagDetail.descript }} 
         <el-button type="text" @click="toEditTag">...Edit</el-button>
       </div>
       <el-button class="fbtn" type="success" size="mini" plain @click="favTag">{{action}} {{favCount}}</el-button>
     </div>
     <div class="rut-list">
       <rut-list :rutlist="currentRuts" @loadmore="loadmoreRuts"></rut-list>
+    </div>
+    <div class="demand-list">
+      <div class="demand-list-title">
+        <b style="font-size:1.2em">Related Requests</b> &nbsp;&nbsp; &nbsp;&nbsp;
+        <router-link to="/demands">Send a Request</router-link>
+      </div>
+      <demand-list :type="'popular'" :tag="tagName" :key="tagid"></demand-list>
     </div>
     <!-- dialog -->
     <el-dialog title="Edit Tag Description" :visible.sync="openDialog" :before-close="cancelOnClose">
@@ -40,6 +47,7 @@
 
 <script>
 import RutList from '@/components/Rut/RutList.vue'
+import DemandList from '@/components/Demand/DemandList.vue'
 import { mapGetters } from 'vuex'
 import { editTag, checkFav, favTag, fetchTagRuts, checkTagLocked, lockTag, unlockTag } from '@/api/api'
 import { checkAuth } from '@/util/auth'
@@ -50,9 +58,7 @@ export default {
   title () {
     return this.tagDetail.tagname
   },
-  components: {
-    RutList
-  },
+  components: { RutList, DemandList },
   data () {
     return {
       action: this.checkFavor(), // || 'Follow',
@@ -87,6 +93,9 @@ export default {
     ]),
     tagid () {
       return this.tagDetail.id
+    },
+    tagName () {
+      return this.tagDetail.tagname
     }
   },
   methods: {
@@ -243,4 +252,7 @@ export default {
       right 5px
   .rut-list
     padding auto
+  .demand-list-title
+    border-bottom 4px solid #eee
+    margin-bottom 10px
 </style>
