@@ -3,7 +3,7 @@
 
 import random
 import string
-from flask import request, g, jsonify, abort
+from flask import request, g, jsonify, abort, current_app
 from ..models import *
 from ..task.email import send_email
 from . import db, rest, auth, PER_PAGE
@@ -40,7 +40,7 @@ def register():
     db.session.commit()
     if email:
         token = user.generate_confirmation_token().replace('.', '@')
-        url= 'localhost:8080/confirm/%s' %token
+        url= '{0}/confirm/{1}'.format(current_app.config['BASE_URL'], token)
         send_email(
             user.email, 
             'Confirm Your Account',
@@ -102,7 +102,7 @@ def resend_confirmation():
     if user.confirmed:
         return jsonify('Confirmed')
     token = user.generate_confirmation_token().replace('.', '@')
-    url= 'localhost:8080/confirm/%s' %token
+    url= '{0}/confirm/{1}'.format(current_app.config['BASE_URL'], token)
     send_email(
         user.email, 
         'Confirm Your Account',
@@ -133,7 +133,7 @@ def password_reset_request():
     user = Users.query.filter_by(email=email, name=username).first()
     if user:
         token = user.generate_reset_token().replace('.', '@')
-        url= 'localhost:8080/reset/%s' % token
+        url= '{0}/reset/{1}'.format(current_app.config['BASE_URL'], token)
         send_email(
             user.email, 
             'Reset Your Password',
