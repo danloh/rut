@@ -78,7 +78,15 @@ def get_demand_answers(demandid):
 
 @rest.route('/demand/<int:demandid>/voters')
 def get_demand_voters(demandid):
-    pass
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    query = Dvote.query.filter_by(demand_id=demandid)
+    voters = query.offset(page * per_page).limit(per_page)
+    voters_dict = {
+        'voters': [v.voter.to_dict() for v in voters],
+        'votecount': query.count()
+    }
+    return jsonify(voters_dict)
 
 @rest.route('/upvotedemand/<int:demandid>')
 @auth.login_required

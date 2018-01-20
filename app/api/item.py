@@ -96,17 +96,26 @@ def get_iu_clips():
     return jsonify(clips_dict)
 
 # who todo /doing / done the item
-@rest.route('/item/<int:itemid>/todos')
-def get_item_todos(itemid):
-    pass
-
-@rest.route('/item/<int:itemid>/doings')
-def get_item_doings(itemid):
-    pass
-
-@rest.route('/item/<int:itemid>/dones')
-def get_item_dones(itemid):
-    pass
+@rest.route('/item/<int:itemid>/who/<string:flag>')
+def get_item_whoflags(itemid, flag):
+    flagers = Flag.query.filter_by(item_id=itemid)
+    if flag == 'todo':
+        flagers = flagers.filter_by(flag_label=1)
+    if flag == 'doing':
+        flagers = flagers.filter_by(flag_label=2)
+    if flag == 'done':
+        flagers = flagers.filter_by(flag_label=3)
+    #pagination
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    whos = flagers.offset(page * per_page).limit(per_page)
+    flager_dict = {
+        'flagers': [f.flager.to_dict() for f in whos],
+        'flagcount': flagers.count(),
+        'label': flag,
+        'itemid': itemid
+    }
+    return jsonify(flager_dict)
 
 @rest.route('/checkflag/item/<int:itemid>')
 @auth.login_required

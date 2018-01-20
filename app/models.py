@@ -1661,17 +1661,23 @@ class Users(db.Model):
         db.session.commit() # need to commit for API??
 
     def flaging(self,item):
-        fl = Flag.query.filter_by(user_id=self.id,item_id=item.id).\
-            first()
-        if fl is None:
-            return {'label': 'Flag It', 'note': ''}
-        if fl.flag_label == 1:
-            return {'label': 'Scheduled', 'note': fl.flag_note}
-        if fl.flag_label == 2:
-            return {'label': 'Working on', 'note': fl.flag_note}
-        if fl.flag_label == 3:
-            return {'label': 'Have Done', 'note': fl.flag_note}
-
+        fl = Flag.query.filter_by(user_id=self.id,item_id=item.id).first()
+        if fl:
+            d_note = {
+                'note': fl.flag_note,
+                'time': fl.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            }
+            d_label =  {'label': 'Flag It'}
+            if fl.flag_label == 1:
+                d_label = {'label': 'Scheduled'}
+            if fl.flag_label == 2:
+                d_label = {'label': 'Working on'}
+            if fl.flag_label == 3:
+                d_label = {'label': 'Have Done'}
+            d = {**d_note, **d_label}
+        else:
+            d =  {'label': 'Flag It', 'note': '', 'time': ''}
+        return d
     #fav and unfav a tag
     def faving(self, tag):
         return self.fav_tags.filter_by(

@@ -62,7 +62,15 @@ def get_review_comments(reviewid):
 
 @rest.route('/review/<int:reviewid>/voters')
 def get_review_voters(reviewid):
-    pass
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    query = Rvote.query.filter_by(review_id=reviewid)
+    voters = query.offset(page * per_page).limit(per_page)
+    voters_dict = {
+        'voters': [v.voter.to_dict() for v in voters],
+        'votecount': query.count()
+    }
+    return jsonify(voters_dict)
 
 @rest.route('/upvotereview/<int:reviewid>')
 @auth.login_required

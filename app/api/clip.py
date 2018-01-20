@@ -49,7 +49,15 @@ def get_clip(clipid):
 
 @rest.route('/clip/<int:clipid>/voters')
 def get_clip_voters(clipid):
-    pass
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    query = Cvote.query.filter_by(clip_id=clipid)
+    voters = query.offset(page * per_page).limit(per_page)
+    voters_dict = {
+        'voters': [v.voter.to_dict() for v in voters],
+        'votecount': query.count()
+    }
+    return jsonify(voters_dict)
 
 @rest.route('/newclip', methods=['POST'])
 @auth.login_required
