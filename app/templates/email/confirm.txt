@@ -6,6 +6,8 @@ To confirm your account please click on the following link:
 
 {{ url }}
 
+This link will expire in 24 hours, so be sure to use it right away.
+
 Sincerely,
 
 The Readup.Tips Team

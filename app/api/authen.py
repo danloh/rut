@@ -5,7 +5,6 @@ import random
 import string
 from flask import request, g, jsonify, abort, current_app
 from ..models import *
-from ..task.email import send_email
 from . import db, rest, auth, PER_PAGE
 
 def random_code():
@@ -41,7 +40,8 @@ def register():
     if email:
         token = user.generate_confirmation_token().replace('.', '@')
         url= '{0}/confirm/{1}'.format(current_app.config['BASE_URL'], token)
-        send_email(
+        from task.tasks import send_email as send_email_celery
+        send_email_celery.delay(
             user.email, 
             'Confirm Your Account',
             'email/confirm', 
@@ -93,7 +93,8 @@ def confirm(token):
         db.session.commit()
         return jsonify('You have confirmed your account. Thanks!')
     else:
-        return jsonify('The confirmation link is invalid or has expired')
+        return jsonify('The confirmation link is invalid or has expired, ' 
+                'Please go to Profile/Setting page and send confirmation email again')
 
 @rest.route('/confirm')
 @auth.login_required
@@ -103,7 +104,8 @@ def resend_confirmation():
         return jsonify('Confirmed')
     token = user.generate_confirmation_token().replace('.', '@')
     url= '{0}/confirm/{1}'.format(current_app.config['BASE_URL'], token)
-    send_email(
+    from task.tasks import send_email as send_email_celery
+    send_email_celery.delay(
         user.email, 
         'Confirm Your Account',
         'email/confirm', 
@@ -134,7 +136,8 @@ def password_reset_request():
     if user:
         token = user.generate_reset_token().replace('.', '@')
         url= '{0}/reset/{1}'.format(current_app.config['BASE_URL'], token)
-        send_email(
+        from task.tasks import send_email as send_email_celery
+        send_email_celery.delay(
             user.email, 
             'Reset Your Password',
             'email/reset_password',
@@ -150,12 +153,20 @@ def password_reset_request():
 def password_reset(token):
     token = token.replace('@', '.')
     new_psw = request.json.get('newpsw')
-    if Users.reset_password(token, new_psw):
+    username = request.json.get('username') # if needed??
+    if Users.reset_password(token, new_psw, username):
         db.session.commit()
         return jsonify('Your password Reset, Please login again')
     else:
-        return jsonify('Something wrong, Try Again')
+        return jsonify('Failed, Please check username ' 
+                  'and Try Again with the rest password link')
 
+@rest.route('/checkifexpired/<string:token>')
+def check_token_expired(token):
+    token = token.replace('@', '.')
+    result =  Users.check_token_expire(token)
+    return jsonify(result)
+    
 @auth.verify_password
 def verify_password(username_or_token, password):
     if request.path == "/api/login":

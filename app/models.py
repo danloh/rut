@@ -1548,26 +1548,35 @@ class Users(db.Model):
         db.session.add(self)
         return True
 
-    def generate_reset_token(self, expiration=3600):
+    def generate_reset_token(self, expiration=24*3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
         return s.dumps({'reset': self.id}).decode('utf-8')
 
     @staticmethod
-    def reset_password(token, new_password):
+    def reset_password(token, new_password, username=None):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token.encode('utf-8'))
         except:
             return False
         user = Users.query.get(data.get('reset'))
-        if user is None:
+        if user is None or user.name != username:
             return False
         user.password = new_password
         db.session.add(user)
         return True
-    
+
+    @staticmethod
+    def check_token_expire(token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token.encode('utf-8'))
+            return True
+        except:
+            return False
+
     # token auth
-    def generate_auth_token(self, exp=1): # unit d
+    def generate_auth_token(self, exp=5): # unit d
         s = Serializer(current_app.config['SECRET_KEY'], expires_in=exp*24*3600) # unit to s
         return (s.dumps({'id': self.id}), exp)
 
