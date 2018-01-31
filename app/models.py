@@ -144,13 +144,19 @@ class Contribute(db.Model):
                           default=datetime.utcnow)
     
     def to_dict(self):
-        user_dict = self.contributor.to_dict()
+        c = self.contributor
+        contributor_dict = {
+            'id': c.id,
+            'name': c.showname,
+            'avatar': c.user_avatar,
+            'location': c.location or ''
+        }
         contribute_dict = {
             'id': self.id,
             'contributorid': self.user_id,
             'postid': self.post_id,
             'disabled': self.disabled,
-            'contributor': user_dict
+            'contributor': contributor_dict
         }
         return contribute_dict
 
@@ -500,7 +506,13 @@ class Posts(db.Model):
         return posts
 
     def to_dict(self):
-        creator = self.creator.to_dict()
+        creator = self.creator
+        creator_dict = {
+            'id': creator.id,
+            'name': creator.showname,
+            'avatar': creator.user_avatar,
+            'location': creator.location or ''
+        }
         #contributes = self.contributors
         #contributors = [i.to_dict() for i in contributes]
         #contributor_id_list = [i.user_id for i in contributes]
@@ -522,7 +534,7 @@ class Posts(db.Model):
             'demandcount': self.demands.count(),
             'cover': self.post_cover,
             'editable': self.editable,
-            'creator': creator,
+            'creator': creator_dict,
             #'contributors': contributors,
             #'contributoridlist': contributor_id_list,
             'tags': tags
@@ -938,13 +950,19 @@ class Comments(db.Model):
     ## end  n2n  with self, can be deprecated?
 
     def to_dict(self):
+        creator = self.creator
+        creator_dict = {
+            'id': self.creator_id, 
+            'name': creator.showname,
+            'avatar': creator.user_avatar
+        }
         comment_dict = {
             'id': self.id,
             'heading': self.heading or '',
             'body': self.body,
             'vote': self.vote,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-            'creator': {'id': self.creator_id, 'name': self.creator.nickname or self.creator.name},
+            'creator': creator_dict,
             'children': [c.to_dict() for c in self.child_comments]
         }
         return comment_dict
@@ -1008,15 +1026,25 @@ class Reviews(db.Model):
         cascade='all, delete-orphan')
 
     def to_dict(self):
+        #get creator and item first
         creator = self.creator
+        creator_dict = {
+            'id': creator.id, 
+            'name': creator.showname,
+            'avatar': creator.user_avatar
+        }
         item = self.item
+        item_dict = {
+            'id': item.id, 
+            'title': item.title
+        }
         review_dict = {
             'id': self.id,
             'heading': self.heading,
-            'creator': {'id': creator.id, 'name': creator.nickname or creator.name},
+            'creator': creator_dict,
             'body': self.body,
             'spoiler': self.spoiler,
-            'item': {'id': item.id, 'title': item.title},
+            'item': item_dict,
             'vote':  self.vote,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         }
@@ -1060,10 +1088,21 @@ class Clips(db.Model):
         cascade='all, delete-orphan')
 
     def to_dict(self):
+        c = self.creator
+        creator_dict = {
+            'id': c.id,
+            'name': c.showname,
+            'avatar': c.user_avatar
+        }
+        from_item = self.item
+        fromitem_dict = {
+            'id': from_item.id, 
+            'title': from_item.title
+        }
         clip_dict = {
             'id': self.id,
-            'creator': self.creator.to_dict(),
-            'fromitem': self.item.to_dict(),
+            'creator': creator_dict,
+            'fromitem': fromitem_dict,
             'body': self.body,
             'chapnum': self.chapnum or '',
             'chapname': self.chapname or '',
@@ -1146,9 +1185,14 @@ class Demands(db.Model):
     
     def to_dict(self):
         requestor = self.requestor
+        requestor_dict = {
+            'id': requestor.id, 
+            'name': requestor.showname,
+            'avatar': requestor.user_avatar
+        }
         demand_dict = {
             'id': self.id,
-            'requestor': {'id': requestor.id, 'name': requestor.nickname or requestor.name},
+            'requestor': requestor_dict,
             'body': self.body,
             'vote': self.vote,
             'tagStr': self.dtag_str or '',
@@ -1206,16 +1250,25 @@ class Circles(db.Model):
     
     def to_dict(self):
         facilitator = self.facilitator
+        facilitator_dict = {
+            'id': facilitator.id, 
+            'name': facilitator.showname,
+            'avatar': facilitator.user_avatar
+        }
         rut = self.post
+        rut_dict = {
+            'id': rut.id, 
+            'title': rut.title
+        }
         circle_dict = {
             'id': self.id,
-            'facilitator': {'id': facilitator.id, 'name': facilitator.nickname or facilitator.name},
+            'facilitator': facilitator_dict,
             'name': self.name,
             'area': self.area,
             'address': self.address,
             'time': self.time,
             'note': self.note or '',
-            'rut': {'id': rut.id, 'title': rut.title},
+            'rut': rut_dict,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         }
         return circle_dict
@@ -1790,10 +1843,14 @@ class Users(db.Model):
             return url_for('static', filename='pic/profile.svg')
         return avatar
 
+    @property
+    def showname(self):
+        return self.nickname or self.name
+
     def to_dict(self):
         user_dict = {
             'id': self.id,
-            'name': self.nickname or self.name,
+            'name': self.showname,
             'nickname': self.nickname or '',
             'username': self.name,
             'role': self.role.duty,
@@ -1960,9 +2017,14 @@ class Events(db.Model):
         return content_dict
 
     def to_dict(self):
-        actor = {'id': self.actor.id, 'name': self.actor.name, 'avatar': self.actor.user_avatar}
+        actor = self.actor
+        actor_dict = {
+            'id': actor.id, 
+            'name': actor.showname, 
+            'avatar': actor.user_avatar
+        }
         event_dict = {
-            'actor': actor,
+            'actor': actor_dict,
             'action': self.action,
             'event': self.action_content,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')

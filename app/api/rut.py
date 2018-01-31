@@ -507,7 +507,7 @@ def check_item_to_add(rutid):
                 publisher = d.get('Publisher',''),
                 pub_date = d.get('Publication Date') or d.get('publish_date',''),
                 language = d.get('Language','English'),
-                binding = d.get('binding','Paperback'),
+                binding = d.get('binding',''),
                 page = d.get('page') or d.get('Print Length', ''),
                 level = d.get('Level',''),
                 price = d.get('price',''),
