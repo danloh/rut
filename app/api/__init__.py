@@ -23,7 +23,7 @@ def after_request(response):
                 % (query.statement, query.parameters, query.duration, query.context))
     return response
 
-from . import authen, errors, rut, item, clip, review, demand, comment, circle, tag, user
+from . import authen, errors, rut, item, clip, review, demand, comment, circle, tag, headline, user
 
 # #get request params
 # userid = request.args.get('userid', '')

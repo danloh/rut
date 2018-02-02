@@ -247,6 +247,20 @@ class Rvote(db.Model):
     timestamp = db.Column(db.DateTime,
                         default=datetime.utcnow)
 
+# helper for n2n Users vote Headlines
+class Hvote(db.Model):
+    __table_name__ = 'hvote'
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id"),
+        primary_key=True)
+    headline_id = db.Column(
+        db.Integer,
+        db.ForeignKey("headlines.id"),
+        primary_key=True)
+    timestamp = db.Column(db.DateTime,
+                        default=datetime.utcnow)
+
 # helper Model for n2n Posts re Demands
 class Respon(db.Model):
     __table_name__ = 'respon'
@@ -929,6 +943,10 @@ class Comments(db.Model):
     demand_id = db.Column(
         db.Integer, db.ForeignKey("demands.id")
     )
+    # n to 1 with Headlines
+    headline_id = db.Column(
+        db.Integer, db.ForeignKey("headlines.id")
+    )
 
     # n2n with self can be deprecated?
     parent_commts = db.relationship(
@@ -1275,6 +1293,71 @@ class Circles(db.Model):
     
     def __repr__(self):
         return '<Circles %r>' % self.name
+
+class Headlines(db.Model):
+    __table_name__ = 'headlines'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(256), nullable=False)
+    url = db.Column(db.Text)
+    content = db.Column(db.Text)
+    vote = db.Column(db.Integer,default=1)
+    point = db.Column(db.Integer,default=0)
+    disabled = db.Column(db.Boolean)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # n to 1 relation with Users
+    submitor_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id")
+    )
+    # 1 to n with Comments
+    comments = db.relationship(
+        'Comments',backref='headline',lazy='dynamic')
+    # n2n with Users for vote
+    voters = db.relationship(
+        'Hvote',
+        foreign_keys=[Hvote.headline_id],
+        backref=db.backref('vote_headline', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # 1 to n with Events
+    events = db.relationship(
+        'Events',backref='headline',lazy='dynamic')
+    
+    def cal_point(self):
+        # get the time lapse
+        submit_at = self.timestamp
+        now = datetime.utcnow()
+        delta = (now - submit_at).seconds / 3600 # unit hour
+        duration = max(0.5, delta - 2) # plan to cal per 2 hour, celery
+        score = self.vote + self.comments.count()
+        point = round(score / duration)
+        self.point = point
+        db.session.add(self)
+        #db.session.commit()
+    
+    def to_dict(self):
+        s = self.submitor
+        submitor_dict = {
+            'id': s.id, 
+            'name': s.showname,
+            'avatar': s.user_avatar
+        }
+        headline_dict = {
+            'id': self.id,
+            'submitor': submitor_dict,
+            'title': self.title,
+            'url': self.url or '',
+            'content': self.content or '',
+            'vote': self.vote,
+            'point': self.point,
+            'commentcount': self.comments.count(),
+            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        return headline_dict
+
+    def __repr__(self):
+        return '<Headlines %r>' % self.title
     
 
 # helper Model for Messages n2n with self for dialog
@@ -1455,6 +1538,9 @@ class Users(db.Model):
     # 1 to n with Circles
     circles = db.relationship(
         'Circles', backref='facilitator', lazy='dynamic')
+    # 1 to n with Headlines
+    headlines = db.relationship(
+        'Headlines', backref='submitor', lazy='dynamic')
     # 1 to n with Events
     events = db.relationship(
         'Events', backref='actor', lazy='dynamic')
@@ -1555,6 +1641,13 @@ class Users(db.Model):
     vote_reviews = db.relationship(
         'Rvote',
         foreign_keys=[Rvote.user_id],
+        backref=db.backref('voter', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with Headlines for vote
+    vote_headlines = db.relationship(
+        'Hvote',
+        foreign_keys=[Hvote.user_id],
         backref=db.backref('voter', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
@@ -1774,7 +1867,7 @@ class Users(db.Model):
 
     #save activities to db Events
     def set_event(self,action=None,post=None,item=None,comment=None,\
-                       clip=None,review=None,demand=None,tag=None):
+                       clip=None,review=None,demand=None,tag=None,headline=None):
         query = self.events
         # avoid duplicated entry
         if action in ['Created','Starred','Started challenge']:
@@ -1785,8 +1878,10 @@ class Users(db.Model):
             e = query.filter_by(action=action,tag_id=tag.id).first()
         elif action in ['Posted','Endorsed']:
             e = query.filter_by(action=action,review_id=review.id).first()
-        elif action in ['Send','Voted']:
+        elif action in ['Sent','Voted']:
             e = query.filter_by(action=action,demand_id=demand.id).first()
+        elif action in ['Submitted','Push']:
+            e = query.filter_by(action=action,headline_id=headline.id).first()
         else:
             return None
         if e:
@@ -1800,7 +1895,8 @@ class Users(db.Model):
             clip=clip,
             review=review,
             demand=demand,
-            tag=tag
+            tag=tag,
+            headline=headline
         )
         db.session.add(ev)
         #db.session.commit()
@@ -1854,7 +1950,6 @@ class Users(db.Model):
             'nickname': self.nickname or '',
             'username': self.name,
             'role': self.role.duty,
-            'confirmed': self.confirmed,
             'avatar': self.user_avatar,
             'location': self.location or '',
             'about': self.about_me or '',
@@ -1967,6 +2062,9 @@ class Events(db.Model):
     tag_id = db.Column(
         db.Integer, db.ForeignKey('tags.id')
     )
+    headline_id = db.Column(
+        db.Integer, db.ForeignKey('headlines.id')
+    )
 
     # get events, ##need to tacle some issue #if del, the obj is None,error occur 
     # warning: fragile!!
@@ -1978,7 +2076,7 @@ class Events(db.Model):
             q = self.post
             if q:
                 content_dict = {
-                    'type': 'readuplist',
+                    'type': 'Readuplist',
                     'id': q.id,
                     'content': q.title
                 }
@@ -1994,7 +2092,7 @@ class Events(db.Model):
             q=self.review
             if q:
                 content_dict = {
-                    'type': 'review',
+                    'type': 'Review',
                     'id': q.id,
                     'content': q.heading
                 }
@@ -2002,17 +2100,25 @@ class Events(db.Model):
             q=self.tag
             if q:
                 content_dict = {
-                    'type': 'tag',
+                    'type': 'Tag',
                     'id': q.id,
                     'content': q.tag
                 }
-        if act in ['Send','Voted']:
+        if act in ['Sent','Voted']:
             q=self.demand
             if q:
                 content_dict = {
-                    'type': 'demand',
+                    'type': 'Demand',
                     'id': q.id,
                     'content': q.body
+                }
+        if act in ['Submitted','Push']:
+            q=self.headline
+            if q:
+                content_dict = {
+                    'type': 'Headline',
+                    'id': q.id,
+                    'content': q.title
                 }
         return content_dict
 

@@ -224,7 +224,7 @@ def challenge_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     user = g.user
     # record activity as challenge a rut
-    user.set_event(action='Started a challenge', post=rut)
+    user.set_event(action='Started challenge', post=rut)
     user.challenge(rut)
     return jsonify('EndChallenge')
 

@@ -29,8 +29,10 @@ def get_comment(commentid):
 @rest.route('/comment/comment/<int:commentid>', methods=['POST'])
 @rest.route('/comment/item/<int:itemid>', methods=['POST'])
 @rest.route('/comment/review/<int:reviewid>', methods=['POST'])
+@rest.route('/comment/headline/<int:headlineid>', methods=['POST'])
 @auth.login_required
-def new_comment(demandid=None,rutid=None,commentid=None,itemid=None,reviewid=None):
+def new_comment(demandid=None,rutid=None,commentid=None,itemid=None,\
+                reviewid=None,headlineid=None):
     body = request.json.get('comment','').strip()
     if not body:
         abort(403)
@@ -42,6 +44,7 @@ def new_comment(demandid=None,rutid=None,commentid=None,itemid=None,reviewid=Non
         item = Items.query.get(itemid) if itemid else None,
         parent_comment = Comments.query.get(commentid) if commentid else None,
         review = Reviews.query.get(reviewid) if reviewid else None,
+        headline = Headlines.query.get(headlineid) if headlineid else None,
         creator = user
     )
     db.session.add(comment)
