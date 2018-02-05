@@ -445,7 +445,7 @@ def parse_html(url):
         d = parse_html_other(url)
     
     author_str = author2str(d)
-    d['author'] = author_str
+    d['byline'] = author_str
     
     return d
 
@@ -465,7 +465,7 @@ def store(d=None,url=''):
             item = Items(
                 title=title,
                 uid=uid,
-                author=d.get('author'),
+                author=d.get('byline'),
                 cover=d.get('cover'),
                 res_url=d.get('res_url'),
                 publisher=d.get('Publisher'),
@@ -478,7 +478,7 @@ def store(d=None,url=''):
         else:
             item.isbn10=isbn_10
             item.asin=asin_
-            item.author=d.get('author')
+            item.author=d.get('byline')
             item.cover=d.get('cover')
             res_url=d.get('res_url')
             item.publisher=d.get('Publisher')

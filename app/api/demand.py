@@ -9,14 +9,14 @@ from . import db, rest, auth, PER_PAGE
 @rest.route('/demands')
 def get_demands():
     query = Demands.query
-    userid = request.args.get('userid','')
+    userid = request.args.get('userid', type=int)
     tag_str = request.args.get('tag','')
     ref = request.args.get('type','')
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     # yield query per filter criteria
     if userid:
-        demands_query = query.filter_by(requestor_id=int(userid))
+        demands_query = query.filter_by(requestor_id=userid)
     elif tag_str:
         demands_query = query.filter_by(dtag_str=str(tag_str))
     else:
@@ -83,7 +83,7 @@ def get_demand_voters(demandid):
     query = Dvote.query.filter_by(demand_id=demandid)
     voters = query.offset(page * per_page).limit(per_page)
     voters_dict = {
-        'voters': [v.voter.to_dict() for v in voters],
+        'voters': [v.voter.to_simple_dict() for v in voters],
         'votecount': query.count()
     }
     return jsonify(voters_dict)

@@ -54,7 +54,7 @@ def get_clip_voters(clipid):
     query = Cvote.query.filter_by(clip_id=clipid)
     voters = query.offset(page * per_page).limit(per_page)
     voters_dict = {
-        'voters': [v.voter.to_dict() for v in voters],
+        'voters': [v.voter.to_simple_dict() for v in voters],
         'votecount': query.count()
     }
     return jsonify(voters_dict)

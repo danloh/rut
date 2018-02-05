@@ -4,6 +4,7 @@
 from flask import request, g, jsonify, abort
 from ..models import *
 from ..utils import str_to_dict
+from ..bot import spider
 from . import db, rest, auth, PER_PAGE
 
 @rest.route('/all/items')
@@ -33,12 +34,12 @@ def get_item(itemid):
 def get_item_reviews(itemid):
     #item = Items.query.get_or_404(itemid)
     #get request params
-    userid = request.args.get('userid', '')
+    userid = request.args.get('userid', type=int)
     ref = request.args.get('ref', '') # hot or new
     # yield query
     query = Reviews.query.filter_by(item_id=itemid) #item.reviews # 
     if userid:
-        reviews = query.filter_by(creator_id=userid) 
+        reviews = query.filter_by(creator_id=userid)
     elif ref == 'hot':
         reviews = query.order_by(Reviews.vote.desc())
     elif ref == 'new':
@@ -71,8 +72,8 @@ def get_item_inruts(itemid):
 @rest.route('/iuclips') # per item or user or any
 def get_iu_clips():
     #get request params
-    userid = request.args.get('userid','')
-    itemid = request.args.get('itemid','')
+    userid = request.args.get('userid', type=int)
+    itemid = request.args.get('itemid', type=int)
     #yield query
     q = Clips.query
     if userid and itemid:
@@ -110,7 +111,7 @@ def get_item_whoflags(itemid, flag):
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     whos = flagers.offset(page * per_page).limit(per_page)
     flager_dict = {
-        'flagers': [f.flager.to_dict() for f in whos],
+        'flagers': [f.flager.to_simple_dict() for f in whos],
         'flagcount': flagers.count(),
         'label': flag,
         'itemid': itemid
@@ -156,7 +157,7 @@ def flag_item_done(itemid):
     # record activity as have done an item
     user.set_event(action='Get done', item=item)
     user.flag(item,3,note)
-    return jsonify('Done')
+    return jsonify('Have Done')
 
 @rest.route('/lockitem/<int:itemid>')
 @auth.login_required
@@ -206,7 +207,7 @@ def edit_item(itemid):
     item.page = request.json.get('page','').strip()
     item.level = request.json.get('level','').strip()
     item.price = request.json.get('price','').strip()
-    item.details = request.json.get('details','').strip()
+    item.details = request.json.get('details','...').strip()
     #edit author  byline
     old_str = item.author
     old_d = str_to_dict(old_str)
@@ -281,3 +282,53 @@ def recover_item(itemid):
     db.session.add(item)
     db.session.commit()
     return jsonify('Enabled')
+
+@rest.route('/newitem', methods=['POST'])
+@auth.login_required
+def new_item():
+    """add new item directly"""
+    item_query = Items.query
+    res_url = request.json.get('resUrl','').strip()
+    # check if the url has been spider-ed, 
+    re_url=r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
+    reg_url = re.compile(re_url,0)
+    if reg_url.match(res_url):
+        pure_url = res_url.split('/ref=')[0] #for amazon url
+        lst = item_query.filter(Items.res_url.in_((res_url, pure_url))).all()
+        if lst:
+            return jsonify(lst[0].id)
+    # via spider or manually
+    how = request.json.get('how','').strip()
+    if how == 'spider':
+        d = spider.parse_html(res_url) # if any error??
+    else:
+        d = request.json
+    title = d.get('title','untitled').strip()
+    uid = d.get('uid','').replace('-','').replace(' ','')
+    if not (uid or res_url):
+        abort(403) # cannot be both None, #must??
+    # check item if existing per the uid
+    old_item = item_query.filter_by(uid=uid).first() if uid else None
+    if old_item:
+        return jsonify(old_item.id)
+    new_item = Items(
+        uid = uid or spider.random_uid(),
+        title = title,
+        res_url = res_url,
+        author = d.get('byline','').strip(),
+        cover = d.get('cover','').strip(),
+        cate = d.get('cate','Book'),
+        publisher = d.get('Publisher','').strip(),
+        pub_date = d.get('Publication Date','').strip(),
+        language = d.get('Language','').strip(),
+        binding = d.get('binding','').strip(),
+        page = d.get('page','').strip(),
+        level = d.get('Level','').strip(),
+        price = d.get('price','').strip(),
+        details = d.get('details','...').strip()
+    )
+    db.session.add(new_item)            
+    if d.get('byline','').strip():
+        new_item.author_to_db()
+    db.session.commit()
+    return jsonify(new_item.id)

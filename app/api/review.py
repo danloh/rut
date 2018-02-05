@@ -7,8 +7,8 @@ from . import db, rest, auth, PER_PAGE
 
 @rest.route('/reviews') # per user, item or any
 def get_reviews():
-    userid = request.args.get('userid','')
-    itemid = request.args.get('itemid','')
+    userid = request.args.get('userid', type=int)
+    itemid = request.args.get('itemid', type=int)
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     query = Reviews.query
@@ -67,7 +67,7 @@ def get_review_voters(reviewid):
     query = Rvote.query.filter_by(review_id=reviewid)
     voters = query.offset(page * per_page).limit(per_page)
     voters_dict = {
-        'voters': [v.voter.to_dict() for v in voters],
+        'voters': [v.voter.to_simple_dict() for v in voters],
         'votecount': query.count()
     }
     return jsonify(voters_dict)

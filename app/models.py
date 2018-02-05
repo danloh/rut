@@ -555,6 +555,18 @@ class Posts(db.Model):
         }
         return post_dict
     
+    # for some simple query
+    def to_simple_dict(self):
+        post_dict = {
+            'id': self.id,
+            'title': self.title,
+            'intro': self.intro,
+            'cover': self.post_cover,
+            'createat': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'itemcount': self.items.count()
+        }
+        return post_dict
+
     def __repr__(self):
         return '<Posts %r>' % self.title
 
@@ -750,6 +762,17 @@ class Items(db.Model):
             'price': self.price or '',
             'resurl': self.res_url or '',
             'details': self.details or ''
+        }
+        return item_dict
+    
+    # for some simple query
+    def to_simple_dict(self):
+        item_dict = {
+            'id': self.id,
+            'cate': self.cate,
+            'title': self.title,
+            'uid': self.uid,
+            'cover': self.item_cover
         }
         return item_dict
 
@@ -1694,7 +1717,7 @@ class Users(db.Model):
         db.session.add(self)
         return True
 
-    def generate_reset_token(self, expiration=24*3600):
+    def generate_reset_token(self, expiration=2*3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
         return s.dumps({'reset': self.id}).decode('utf-8')
 
@@ -1706,7 +1729,7 @@ class Users(db.Model):
         except:
             return False
         user = Users.query.get(data.get('reset'))
-        if user is None or user.name != username:
+        if user is None or (username and user.name != username):
             return False
         user.password = new_password
         db.session.add(user)
@@ -1797,11 +1820,11 @@ class Users(db.Model):
 
     # flag an item as read, to read or reading
     def flag(self, item, n, note=''):
-        fl = Flag.query.filter_by(user_id=self.id,item_id=item.id).\
-            first()
+        fl = Flag.query.filter_by(user_id=self.id,item_id=item.id).first()
         if fl:
             fl.flag_label = n
             fl.flag_note = note
+            fl.timestamp = datetime.utcnow()
             db.session.add(fl)
         else:
             new_fl = Flag(
@@ -1958,6 +1981,17 @@ class Users(db.Model):
             'exlink': self.links or '',
             'incode': self.incode,
             'recode': self.recode
+        }
+        return user_dict
+    
+    # for some simple query
+    def to_simple_dict(self):
+        user_dict = {
+            'id': self.id,
+            'name': self.showname,
+            'avatar': self.user_avatar,
+            'location': self.location or '',
+            'about': self.about_me or ''
         }
         return user_dict
 
@@ -2130,6 +2164,7 @@ class Events(db.Model):
             'avatar': actor.user_avatar
         }
         event_dict = {
+            'id': self.id,
             'actor': actor_dict,
             'action': self.action,
             'event': self.action_content,

@@ -153,7 +153,7 @@ def password_reset_request():
 def password_reset(token):
     token = token.replace('@', '.')
     new_psw = request.json.get('newpsw')
-    username = request.json.get('username') # if needed??
+    username = request.json.get('username', '') # if needed??
     if Users.reset_password(token, new_psw, username):
         db.session.commit()
         return jsonify('Your password Reset, Please login again')

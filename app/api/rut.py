@@ -78,7 +78,7 @@ def get_rut_challengers(rutid):
     challengers = Challenge.query.filter_by(post_id=rutid)
     challengercount = challengers.count()
     r_challengers = challengers.offset(page*per_page).limit(per_page)
-    challengers_list = [u.challenger.to_dict() for u in r_challengers]
+    challengers_list = [u.challenger.to_simple_dict() for u in r_challengers]
     challengers_dict = {
         'challengers': challengers_list,
          'challengercount': challengercount
@@ -93,7 +93,7 @@ def get_rut_stars(rutid):
     stars = Star.query.filter_by(post_id=rutid)
     starcount = stars.count()
     r_stars = stars.offset(page*per_page).limit(per_page)
-    stars_list = [u.starer.to_dict() for u in r_stars]
+    stars_list = [u.starer.to_simple_dict() for u in r_stars]
     stars_dict = {
         'stars': stars_list,
         'starcount': starcount
@@ -131,8 +131,8 @@ def get_challege_rut():
     try:
         rut = challenge_rut.challenge_post
         deadline = challenge_rut.deadline
-        rut_dict = rut.to_dict()
-        items = [t.item.to_dict() for t in rut.items]
+        rut_dict = {'id': rut.id, 'title': rut.title}
+        items = [t.item.to_simple_dict() for t in rut.items]
         return jsonify({
             'rut': rut_dict,
             'items': items,
@@ -342,25 +342,25 @@ def edit_rut_tags(rutid):
     new_set = set(new)
     add_tags = new_set - old_set
     del_tags = old_set - new_set
-    _query = Tags.query
+    query = Tags.query
     for tg in add_tags:
         t = tg.strip()
         if not t:
             continue # if t is '' then next element
         t = t.title() # titlecased sytle
-        _tag = _query.filter_by(tag=t).first()
-        if _tag is None:
+        tag = query.filter_by(tag=t).first()
+        if tag is None:
             new_tag = Tags(tag=t)
             new_tag.posts.append(rut)
             new_tag.cal_vote()
             #db.session.add(new_tag) # add when cal
         else:
-            _tag.posts.append(rut)
-            _tag.cal_vote()
-            #db.session.add(_tag)
+            tag.posts.append(rut)
+            tag.cal_vote()
+            #db.session.add(tag)
     for tg in del_tags:
-        _tag = _query.filter_by(tag=tg).first()
-        _tag.posts.remove(rut)
+        tag = query.filter_by(tag=tg).first()
+        tag.posts.remove(rut)
     db.session.commit()
     new_tags_list = [t.to_dict() for t in rut.tags]
     return jsonify(new_tags_list)
@@ -409,7 +409,7 @@ def add_item_to_rut(rutid):
     if not title or not (item_uid or res_url):
         abort(403) # cannot be None
     uid = item_uid or spider.random_uid()
-    tips = request.json.get('tips','...')
+    tips = request.json.get('tips','...').strip()
     spoiler_text = request.json.get('spoiler')
     spoiler = True if spoiler_text == 'Spoiler Ahead' else False
     # check item if existing per the uid or url
@@ -447,7 +447,7 @@ def add_item_to_rut(rutid):
     db.session.commit()
     return jsonify('Done')
 
-@rest.route('/item/<int:itemid>/torut/<int:rutid>')
+@rest.route('/item/<int:itemid>/torut/<int:rutid>', methods=['GET','POST'])
 @auth.login_required
 def item_to_rut(itemid, rutid):
     """Add existing item to Rut"""
@@ -456,10 +456,12 @@ def item_to_rut(itemid, rutid):
     if not rut.check_editable(user):
         abort(403)
     item = Items.query.get_or_404(itemid)
-    rut.collecting(item,'...',user)
+    tips = request.json.get('tips','...').strip()
+    spoiler_text = request.json.get('spoiler')
+    spoiler = True if spoiler_text == 'Spoiler Ahead' else False
+    rut.collecting(item, tips, user, spoiler)
     db.session.commit()
     return jsonify('Done')
-
 
 @rest.route('/checkitemtoadd/<int:rutid>', methods=['POST'])
 @auth.login_required
@@ -491,7 +493,7 @@ def check_item_to_add(rutid):
             return jsonify('Done')
         else:
             d = spider.parse_html(checker) # if any error??
-            uid = d.get('uid','').replace('-','').replace(' ','') # random_uid in spider if needed
+            uid = d.get('uid','').replace('-','').replace(' ','') # random_uid in spider already
             ex_item = item_query.filter_by(uid=uid).first()
             if ex_item:
                 rut.collecting(ex_item,tips,user)
@@ -501,7 +503,7 @@ def check_item_to_add(rutid):
                 uid = uid,
                 title = d.get('title'),
                 res_url = d.get('res_url',''),
-                author = d.get('author',''),
+                author = d.get('byline',''),
                 cover = d.get('cover',''),
                 cate = d.get('cate','Book'),
                 publisher = d.get('Publisher',''),

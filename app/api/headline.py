@@ -8,13 +8,13 @@ from . import db, rest, auth, PER_PAGE
 @rest.route('/headlines')
 def get_headlines():
     query = Headlines.query
-    userid = request.args.get('userid','')
+    userid = request.args.get('userid', type=int)
     ref = request.args.get('ref','')
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     # yield query per filter criteria
     if userid:
-        headlines_query = query.filter_by(submitor_id=int(userid))
+        headlines_query = query.filter_by(submitor_id=userid)
     else:
         headlines_query = query
     # order per point or timestamp
@@ -55,7 +55,7 @@ def get_headline_voters(headlineid):
     query = Hvote.query.filter_by(headline_id=headlineid)
     voters = query.offset(page * per_page).limit(per_page)
     voters_dict = {
-        'voters': [v.voter.to_dict() for v in voters],
+        'voters': [v.voter.to_simple_dict() for v in voters],
         'votecount': query.count()
     }
     return jsonify(voters_dict)
