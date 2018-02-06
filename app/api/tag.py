@@ -179,9 +179,11 @@ def check_fav(tagid):
 def fav_tag(tagid):
     tag = Tags.query.get_or_404(tagid)
     user = g.user
-    # record activity as favor a tag
-    user.set_event(action='Followed', tag=tag)
     user.fav(tag)
+    # record activity as favor a tag
+    from task.tasks import set_event_celery
+    set_event_celery.delay(user.id, action='Followed', tagid=tag.id)
+    
     return jsonify('UnFollow')
 
 @rest.route('/unfav/tag/<int:tagid>')

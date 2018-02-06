@@ -374,7 +374,7 @@ class Posts(db.Model):
             ) # refer to the relationship-backref var
             db.session.add(c)
             # update item's vote
-            item.cal_vote()
+            #item.cal_vote() # to task queue
             # update the renew timestamp
             self.renew()
             #db.session.commit() #if need commit?
@@ -417,11 +417,11 @@ class Posts(db.Model):
                 if _tag is None:
                     tag=Tags(tag=_tg)
                     tag.posts.append(self)
-                    tag.cal_vote()
+                    #tag.cal_vote()
                     db.session.add(tag)
                 else:
                     _tag.posts.append(self)
-                    _tag.cal_vote()
+                    #_tag.cal_vote()
                     db.session.add(_tag)
         #db.session.commit()
     
@@ -516,7 +516,7 @@ class Posts(db.Model):
 
         posts_select = posts_latest.union(posts_popular,posts_random).\
                        order_by(db.func.rand())#.all()
-        posts = [r.to_dict() for r in posts_select]  #execute here for cache
+        posts = [r.to_simple_dict() for r in posts_select]  #execute here for cache
         return posts
 
     def to_dict(self):
@@ -673,11 +673,11 @@ class Items(db.Model):
                     tag=Tags(tag=_tg)
                     tag.items.append(self)
                     db.session.add(tag)
-                    tag.cal_vote()
+                    #tag.cal_vote()
                 elif _tag.items.filter_by(id=self.id).first() is None:
                     _tag.items.append(self)
                     db.session.add(_tag)
-                    _tag.cal_vote()
+                    #_tag.cal_vote()
         #db.session.commit()
 
     # add author to db
@@ -1203,7 +1203,6 @@ class Demands(db.Model):
         cascade='all, delete-orphan')
 
     def dtag_to_db(self):
-
         #_taglist = self.dtag_str.split(',') #
         _dtag_str = self.dtag_str
         _tagset = str_to_set(_dtag_str)
@@ -1216,11 +1215,11 @@ class Demands(db.Model):
                 if _tag is None:
                     tag=Tags(tag=_tg)
                     tag.demands.append(self)
-                    tag.cal_vote()
+                    #tag.cal_vote()
                     db.session.add(tag)
                 else:
                     _tag.demands.append(self)
-                    _tag.cal_vote()
+                    #_tag.cal_vote()
                     db.session.add(_tag)
         #db.session.commit()
     
@@ -1771,13 +1770,13 @@ class Users(db.Model):
         if not self.staring(post):
             s = Star(starer=self, star_post=post)
             db.session.add(s)
-            post.cal_vote()
+            #post.cal_vote()
             db.session.commit() # need to commit for API??
     def unstar(self, post):
         s = self.star_posts.filter_by(post_id=post.id).first()
         if s:
             db.session.delete(s)
-            post.cal_vote()
+            #post.cal_vote()
             db.session.commit() # need to commit for API??
     def staring(self, post):
         return self.star_posts.filter_by(
@@ -1788,13 +1787,13 @@ class Users(db.Model):
         if not self.challenging(post):
             c = Challenge(challenger=self, challenge_post=post)
             db.session.add(c)
-            post.cal_vote()
+            #post.cal_vote()
             db.session.commit() # need to commit for API??
     def unchallenge(self, post):
         c = self.challenge_posts.filter_by(post_id=post.id).first()
         if c:
             db.session.delete(c)
-            post.cal_vote()
+            #post.cal_vote()
             db.session.commit() # need to commit for API??
     def challenging(self, post):
         return self.challenge_posts.filter_by(
@@ -1835,7 +1834,7 @@ class Users(db.Model):
             )
             db.session.add(new_fl)
         # update item's vote
-        item.cal_vote()
+        #item.cal_vote()
         db.session.commit() # need to commit for API??
 
     def flaging(self,item):
@@ -1864,13 +1863,13 @@ class Users(db.Model):
         if not self.faving(tag):
             fv = Fav(faver=self, fav_tag=tag)
             db.session.add(fv)
-            tag.cal_vote()
+            #tag.cal_vote()
             db.session.commit() #for API??
     def unfav(self, tag):
         fv = self.fav_tags.filter_by(tag_id=tag.id).first()
         if fv:
             db.session.delete(fv)
-            tag.cal_vote()
+            #tag.cal_vote()
             db.session.commit() #for API??
     
     #participate or not a circle
@@ -1889,22 +1888,24 @@ class Users(db.Model):
             db.session.commit()
 
     #save activities to db Events
-    def set_event(self,action=None,post=None,item=None,comment=None,\
-                       clip=None,review=None,demand=None,tag=None,headline=None):
+    def set_event(self,action=None,\
+                       postid=None,itemid=None,\
+                       reviewid=None,demandid=None,\
+                       tagid=None,headlineid=None):
         query = self.events
         # avoid duplicated entry
         if action in ['Created','Starred','Started challenge']:
-            e = query.filter_by(action=action,post_id=post.id).first()
+            e = query.filter_by(action=action,post_id=postid).first()
         elif action in ['Scheduled','Working on','Get done']:
-            e = query.filter_by(action=action,item_id=item.id).first()
+            e = query.filter_by(action=action,item_id=itemid).first()
         elif action in ['Followed','Updated Description']:
-            e = query.filter_by(action=action,tag_id=tag.id).first()
+            e = query.filter_by(action=action,tag_id=tagid).first()
         elif action in ['Posted','Endorsed']:
-            e = query.filter_by(action=action,review_id=review.id).first()
+            e = query.filter_by(action=action,review_id=reviewid).first()
         elif action in ['Sent','Voted']:
-            e = query.filter_by(action=action,demand_id=demand.id).first()
+            e = query.filter_by(action=action,demand_id=demandid).first()
         elif action in ['Submitted','Push']:
-            e = query.filter_by(action=action,headline_id=headline.id).first()
+            e = query.filter_by(action=action,headline_id=headlineid).first()
         else:
             return None
         if e:
@@ -1912,29 +1913,27 @@ class Users(db.Model):
         ev = Events(
             actor=self,
             action=action,
-            post=post,
-            item=item,
-            comment=comment,
-            clip=clip,
-            review=review,
-            demand=demand,
-            tag=tag,
-            headline=headline
+            post_id=postid,
+            item_id=itemid,
+            review_id=reviewid,
+            demand_id=demandid,
+            tag_id=tagid,
+            headline_id=headlineid
         )
         db.session.add(ev)
-        #db.session.commit()
+        db.session.commit()
 
     def accomplished(self):
         pass
 
-    def cal_credit(self,p=None,t=None,r=None,a=None,c=None,d=None,m=None):
-        m = m or self.mission*10
+    def cal_credit(self,p=None,t=None,r=None,c=None,d=None,a=1,m=1):
         p = p or self.posts.count()*5
         t = t or self.tips.count()*5
         r = r or self.reviews.count()*5
-        a = a or self.articles.count()*5
         c = c or self.clips.count()*2
         d = d or self.demands.count()
+        a = a or self.articles.count()*5
+        m = m or self.mission*10
         self.credit = m+p+t+r+a+c+d
         db.session.add(self)
         #db.session.commit()

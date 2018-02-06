@@ -74,12 +74,13 @@ def upvote_headline(headlineid):
             vote_headline=headline
         )
         db.session.add(hvote)
-        # record activity as upvote a headline
-        #user.set_event(action='Push', headline=headline)
-        headline.cal_point() # to be in task queue
         db.session.commit()
-        #return jsonify(headline.vote)
-    return jsonify(headline.point)
+        # record activity as upvote a headline
+        #user.set_event(action='Push', headlineid=headline.id)
+        #headline.cal_point() # to be in task queue
+        
+    #return jsonify(headline.vote)
+    return jsonify(headline.vote)
 
 @rest.route('/newheadline', methods=['POST'])
 @auth.login_required
@@ -103,9 +104,11 @@ def new_headline():
         content = content
     )
     db.session.add(headline)
-    # record activity as submit a headline
-    user.set_event(action='Submitted', headline=headline)
     db.session.commit()
+    # record activity as submit a headline
+    from task.tasks import set_event_celery
+    set_event_celery.delay(user.id, action='Submitted', headlineid=headline.id)
+    
     return jsonify(headline.to_dict())
 
 @rest.route('/delete/headline/<int:headlineid>')

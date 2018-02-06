@@ -95,7 +95,7 @@ def new_clip():
     )
     db.session.add(clip)
     # record activity as excerpt a clip
-    #user.set_event(action='Excerpted', clip=clip)
+    #user.set_event(action='Excerpted', clipid=clip.id)
     db.session.commit()
     return jsonify(clip.to_dict())
 
@@ -114,7 +114,7 @@ def upvote_clip(clipid):
         )
         db.session.add(cvote)
         # record activity as upvote a clip
-        #user.set_event(action='Liked', clip=clip)
+        #user.set_event(action='Liked', clipid=clip.id)
         db.session.commit()
     return jsonify(clip.vote)
 

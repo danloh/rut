@@ -102,10 +102,12 @@ def upvote_demand(demandid):
             vote_demand=demand
         )
         db.session.add(dvote)
-        # record activity as upvote a demand
-        user.set_event(action='Voted', demand=demand)
         db.session.commit()
-        #return jsonify(demand.vote)
+        # record activity as upvote a demand
+        from task.tasks import set_event_celery
+        set_event_celery.delay(user.id, action='Voted', demandid=demand.id)
+        
+    #return jsonify(demand.vote)
     return jsonify(demand.vote)
 
 @rest.route('/newdemand', methods=['POST'])
@@ -128,9 +130,11 @@ def new_demand():
     )
     db.session.add(demand)
     demand.dtag_to_db()
-    # record activity as send a demand
-    user.set_event(action='Sent', demand=demand)
     db.session.commit()
+    # record activity as send a demand
+    from task.tasks import set_event_celery
+    set_event_celery.delay(user.id, action='Sent', demandid=demand.id)
+    
     return jsonify(demand.to_dict())
 
 @rest.route('/rut/<int:rutid>/answerdemand/<int:demandid>')

@@ -204,10 +204,11 @@ def check_challenge(rutid):
 def star_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     user = g.user
-    # record activity as star a rut
-    user.set_event(action='Starred', post=rut)
-    # exe star
     user.star(rut)  # commit included
+    # record activity as star a rut
+    from task.tasks import set_event_celery
+    set_event_celery.delay(user.id, action='Starred', postid=rut.id)
+    
     return jsonify('Unstar')
 
 @rest.route('/unstar/rut/<int:rutid>')
@@ -223,9 +224,11 @@ def unstar_rut(rutid):
 def challenge_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     user = g.user
-    # record activity as challenge a rut
-    user.set_event(action='Started challenge', post=rut)
     user.challenge(rut)
+    # record activity as challenge a rut
+    from task.tasks import set_event_celery
+    set_event_celery.delay(user.id, action='Started challenge', postid=rut.id)
+    
     return jsonify('EndChallenge')
 
 @rest.route('/unchallenge/rut/<int:rutid>')
@@ -265,13 +268,12 @@ def new_rut(demandid=None):
                 demand=demand
             )
             db.session.add(respon)
-    # record activity as create a rut
-    user.set_event(action='Created', post=post)
     db.session.commit()
-    return jsonify({
-        'id':post.id,
-        'title': post.title
-    })
+    # record activity as create a rut
+    from task.tasks import set_event_celery
+    set_event_celery.delay(user.id, action='Created', postid=post.id)
+    
+    return jsonify({'id':post.id, 'title': post.title})
 
 @rest.route('/lockrut/<int:rutid>')
 @auth.login_required
@@ -352,12 +354,12 @@ def edit_rut_tags(rutid):
         if tag is None:
             new_tag = Tags(tag=t)
             new_tag.posts.append(rut)
-            new_tag.cal_vote()
-            #db.session.add(new_tag) # add when cal
+            #new_tag.cal_vote()
+            db.session.add(new_tag)
         else:
             tag.posts.append(rut)
-            tag.cal_vote()
-            #db.session.add(tag)
+            #tag.cal_vote()
+            db.session.add(tag)
     for tg in del_tags:
         tag = query.filter_by(tag=tg).first()
         tag.posts.remove(rut)

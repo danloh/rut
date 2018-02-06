@@ -132,9 +132,11 @@ def flag_item_todo(itemid):
     item = Items.query.get_or_404(itemid)
     note = request.args.get('note','').strip()
     user = g.user
-    # record activity as want to read an item
-    user.set_event(action='Scheduled', item=item)
     user.flag(item,1,note)
+    # record activity as want to read an item
+    from task.tasks import set_event_celery
+    set_event_celery.delay(user.id, action='Scheduled', itemid=item.id)
+    
     return jsonify('Scheduled')
 
 @rest.route('/flagdoing/item/<int:itemid>')
@@ -143,9 +145,11 @@ def flag_item_doing(itemid):
     item = Items.query.get_or_404(itemid)
     note = request.args.get('note','').strip()
     user = g.user
-    # record activity asworking an item
-    user.set_event(action='Working on', item=item)
     user.flag(item,2,note)
+    # record activity asworking an item
+    from task.tasks import set_event_celery
+    set_event_celery.delay(user.id, action='Working on', itemid=item.id)
+    
     return jsonify('Working On')
 
 @rest.route('/flagdone/item/<int:itemid>')
@@ -154,9 +158,11 @@ def flag_item_done(itemid):
     item = Items.query.get_or_404(itemid)
     note = request.args.get('note','').strip()
     user = g.user
-    # record activity as have done an item
-    user.set_event(action='Get done', item=item)
     user.flag(item,3,note)
+    # record activity as have done an item
+    from task.tasks import set_event_celery
+    set_event_celery.delay(user.id, action='Get done', itemid=item.id)
+    
     return jsonify('Have Done')
 
 @rest.route('/lockitem/<int:itemid>')

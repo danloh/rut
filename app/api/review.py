@@ -86,9 +86,11 @@ def upvote_review(reviewid):
             vote_review=review
         )
         db.session.add(rvote)
-        # record activity as post a review
-        user.set_event(action='Endorsed', review=review)
         db.session.commit()
+        # record activity as post a review
+        from task.tasks import set_event_celery
+        set_event_celery.delay(user.id, action='Endorsed', reviewid=review.id)
+        
     return jsonify(review.vote)
 
 @rest.route('/newreview/<int:itemid>', methods=['POST'])
@@ -110,11 +112,13 @@ def new_review(itemid):
         creator = user
     )
     db.session.add(review)
-    item.cal_vote()
-    # record activity as post a review
-    user.set_event(action='Posted', review=review)
     db.session.commit()
     review_dict = review.to_dict()
+    #item.cal_vote()
+    # record activity as post a review
+    from task.tasks import set_event_celery
+    set_event_celery.delay(user.id, action='Posted', reviewid=review.id)
+    
     return jsonify(review_dict)
 
 @rest.route('/editreview/<int:reviewid>', methods=['POST'])

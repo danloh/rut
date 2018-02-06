@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
-from app import mail
-from .celery import celery_app
+from app import mail, db
+from app.models import *
 from flask import render_template
 from flask_mail import Message
+from .celery import celery_app
 
 dev_or_prod = os.environ.get('DEV_OR_PROD')
 if dev_or_prod == 'dev':
@@ -22,3 +23,27 @@ def send_email(self, to, subject, template, **kwargs):
             mail.send(msg)
         except Exception as exc:
             raise self.retry(exc=exc)
+
+@celery_app.task(ignore_result=True)
+def set_event_celery(userid,action=None,postid=None,itemid=None,\
+                    reviewid=None,demandid=None,tagid=None,headlineid=None):
+    with app.app_context():
+        user = Users.query.get(userid)
+        user.set_event(action,postid,itemid,reviewid,demandid,tagid,headlineid)
+
+@celery_app.task(ignore_result=True)
+def cal_vote_celery():
+    with app.app_context():
+        ruts = Posts.query
+        for r in ruts:
+            r.cal_vote()
+        tags = Tags.query
+        for t in tags:
+            t.cal_vote()
+        headlines = Headlines.query
+        for h in headlines:
+            h.cal_point()
+        items = Items.query
+        for i in items:
+            i.cal_vote()
+        db.session.commit()
