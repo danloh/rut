@@ -4,7 +4,7 @@ from app import mail, db
 from app.models import *
 from flask import render_template
 from flask_mail import Message
-from .celery import celery_app
+from task.celery import celery_app
 
 dev_or_prod = os.environ.get('DEV_OR_PROD')
 if dev_or_prod == 'dev':
