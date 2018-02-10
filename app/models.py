@@ -514,8 +514,7 @@ class Posts(db.Model):
         posts_popular = _query.order_by(Posts.vote.desc()).limit(m)
         posts_random = _query.order_by(db.func.rand()).limit(m)
 
-        posts_select = posts_latest.union(posts_popular,posts_random).\
-                       order_by(db.func.rand())#.all()
+        posts_select = posts_latest.union(posts_popular,posts_random)#.all()
         posts = [r.to_simple_dict() for r in posts_select]  #execute here for cache
         return posts
 
