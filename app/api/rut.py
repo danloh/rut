@@ -320,19 +320,43 @@ def edit_rut(rutid):
     # check not-null column can not be ''
     title = request.json.get('title','').strip()
     intro = request.json.get('intro','').strip()
-    if not title or not intro:
+    if (not title) or (not intro):
         abort(403) # cannot be ''
-    rut.title = title,
-    rut.intro = intro,
-    rut.rating = request.json.get('rating'),
-    rut.editable = request.json.get('editable'),
-    rut.credential = request.json.get('credential','...').strip(),
-    rut.epilog = request.json.get('epilog','').strip()
+    rut.title = title
+    rut.intro = intro
+    rut.rating = request.json.get('rating')
+    rut.editable = request.json.get('editable')
     # renew the update time and add to db
     rut.renew()
     #db.session.add(rut)
     db.session.commit()
     return jsonify(rut.to_dict())
+
+@rest.route('/editrutce/<int:rutid>', methods=['POST'])
+@auth.login_required
+def edit_rut_epi_or_cred(rutid):
+    rut = Posts.query.get_or_404(rutid)
+    user = g.user
+    # check if rut editable
+    if not rut.check_editable(user):
+        abort(403)
+    credential = request.json.get('credential','').strip()
+    epilog = request.json.get('epilog','').strip()
+    if (not credential) and (not epilog):
+        abort(403) # cannot both be ''
+    if credential:
+        rut.credential = credential
+    if epilog:
+        rut.epilog = epilog
+    # renew the update time and add to db
+    rut.renew()
+    #db.session.add(rut)
+    db.session.commit()
+    ce_dict = {
+        'credential': rut.credential,
+        'epilog': rut.epilog
+    }
+    return jsonify(ce_dict)
 
 @rest.route('/edittags/<int:rutid>', methods=['POST'])
 @auth.login_required

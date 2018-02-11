@@ -69,33 +69,6 @@ def get_item_inruts(itemid):
     in_ruts_list = [{'id':r.id, 'title': r.title} for r in ruts_list]
     return jsonify(in_ruts_list)
 
-@rest.route('/iuclips') # per item or user or any
-def get_iu_clips():
-    #get request params
-    userid = request.args.get('userid', type=int)
-    itemid = request.args.get('itemid', type=int)
-    #yield query
-    q = Clips.query
-    if userid and itemid:
-        query =q.filter_by(creator_id=userid,item_id=itemid)
-    elif userid:
-        query = q.filter_by(creator_id=userid)
-    elif itemid:
-        query = q.filter_by(item_id=itemid)
-    else:
-        query = q
-    #pagination
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    order_query = query.order_by(Clips.timestamp.desc())\
-                       .offset(page * per_page).limit(per_page)
-    #yield result, a Dict
-    clips_dict = {
-        'clips': [c.to_dict() for c in order_query],
-        'total': query.count()
-    }
-    return jsonify(clips_dict)
-
 # who todo /doing / done the item
 @rest.route('/item/<int:itemid>/who/<string:flag>')
 def get_item_whoflags(itemid, flag):

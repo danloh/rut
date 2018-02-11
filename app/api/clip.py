@@ -20,19 +20,28 @@ def get_all_clips():
     return jsonify(clips_dict)
 
 @rest.route('/clips')
-@auth.login_required
 def get_clips():
-    user = g.user
     ref = request.args.get('ref','')
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    q = Clips.query
-    if ref == "All":
-        query = q.filter(Clips.creator != user)
-    elif ref == "Hot":
+    userid = request.args.get('userid', type=int)
+    itemid = request.args.get('itemid', type=int)
+    #yield query
+    _q = Clips.query
+    if userid and itemid:
+        q = _q.filter_by(creator_id=userid,item_id=itemid)
+    elif userid:
+        q = _q.filter_by(creator_id=userid)
+    elif itemid:
+        q = _q.filter_by(item_id=itemid)
+    else:
+        q = _q
+    # order per ref 
+    if ref == "Hot":
         query = q.order_by(Clips.vote.desc())
     else:
-        query = q.filter_by(creator_id=user.id)
+        query = q
+    #pagination
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
     order_query = query.order_by(Clips.timestamp.desc())\
                   .offset(page * per_page).limit(per_page)
     clips_dict = {

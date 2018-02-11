@@ -197,8 +197,6 @@ def search_items(label):
         items_list.append(item_dict)
     return jsonify({'items': items_list, 'keyword': uid_or_title})
 
-### user created clips: see get_iu_clip in item.py
-
 @rest.route('/<int:userid>/voted/clips')
 def get_voted_clips(userid):
     vote_clips = Cvote.query.filter_by(user_id=userid)\
