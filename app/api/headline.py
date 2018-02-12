@@ -21,9 +21,9 @@ def get_headlines():
     if ref == 'top':
         headlines = headlines_query.order_by(Headlines.point.desc())
     else:
-        headlines = headlines_query
+        headlines = headlines_query.order_by(Headlines.timestamp.desc())
     # pagination then result
-    hs = headlines.order_by(Headlines.timestamp.desc())\
+    hs = headlines.order_by(Headlines.score.desc())\
                   .offset(per_page * page).limit(per_page)
     headlines_dict = {
         'headlines': [h.to_dict() for h in hs],

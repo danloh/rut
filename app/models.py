@@ -1322,6 +1322,7 @@ class Headlines(db.Model):
     url = db.Column(db.Text)
     content = db.Column(db.Text)
     vote = db.Column(db.Integer,default=1)
+    score = db.Column(db.Integer,default=1)
     point = db.Column(db.Integer,default=0)
     disabled = db.Column(db.Boolean)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
@@ -1353,7 +1354,8 @@ class Headlines(db.Model):
         duration = max(0.5, delta - 2) # plan to cal per 2 hour, celery
         score = self.vote + self.comments.count()
         point = round(score / duration)
-        self.point = point
+        self.point = point  # short-time factor
+        self.score = score  # long-term
         db.session.add(self)
         #db.session.commit()
     

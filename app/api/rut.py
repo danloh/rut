@@ -127,7 +127,9 @@ def get_rut_comments(rutid):
 @auth.login_required
 def get_challege_rut():
     user = g.user
-    challenge_rut = user.challenge_posts.first()
+    #get the first earliest challenged rut 
+    challenge_rut = user.challenge_posts\
+                        .order_by(Challenge.timestamp).first()
     try:
         rut = challenge_rut.challenge_post
         deadline = challenge_rut.deadline
@@ -149,7 +151,10 @@ def get_challege_rut():
 @auth.login_required
 def get_challege_items():
     user = g.user
-    doing_flags = user.flag_items.filter_by(flag_label=2).limit(5) # note the order
+    # get the earliest flaged items as doing
+    doing_flags = user.flag_items\
+                      .order_by(Flag.timestamp)\
+                      .filter_by(flag_label=2).limit(5)
     doing_items = [f.flag_item for f in doing_flags]
     doing_list = [{'id':item.id, 'title': item.title} for item in doing_items]
     return jsonify(doing_list)
@@ -158,7 +163,9 @@ def get_challege_items():
 @auth.login_required
 def set_deadline():
     user = g.user
-    challenge_rut = user.challenge_posts.first()
+    rutid = request.args.get('rutid')
+    challenge_rut = Challenge.query.filter_by(user_id=user.id,post_id=rutid).first()
+    #challenge_rut = user.challenge_posts.first()
     deadline = request.args.get('date')
     challenge_rut.deadline = deadline
     db.session.add(challenge_rut)
