@@ -18,12 +18,13 @@ def get_headlines():
     else:
         headlines_query = query
     # order per point or timestamp
-    if ref == 'new':
-        headlines = headlines_query.order_by(Headlines.timestamp.desc())
-    else:
+    if ref == 'top':
         headlines = headlines_query.order_by(Headlines.point.desc())
+    else:
+        headlines = headlines_query
     # pagination then result
-    hs = headlines.offset(per_page * page).limit(per_page)
+    hs = headlines.order_by(Headlines.timestamp.desc())\
+                  .offset(per_page * page).limit(per_page)
     headlines_dict = {
         'headlines': [h.to_dict() for h in hs],
         'total': headlines.count()

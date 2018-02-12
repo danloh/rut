@@ -447,13 +447,13 @@ class Posts(db.Model):
         self.editing_id = None
         db.session.add(self)
         db.session.commit()
-    def force_unlock(self, start=None, timeout=2400):
+    def force_unlock(self, start=None, timeout=40*60):
         # sometime user forget submit, need to force unlock
         start = start or self.edit_start
         if start:
             now = datetime.utcnow()
             delta = now - start
-            if delta.seconds >= timeout:
+            if delta.total_seconds() >= timeout:
                 self.unlock()
     def check_locked(self, userid):
         # if eidt_start is not None, it is locked as editing
@@ -722,13 +722,13 @@ class Items(db.Model):
         self.editing_id = None
         db.session.add(self)
         db.session.commit()
-    def force_unlock(self, start=None, timeout=2400):
+    def force_unlock(self, start=None, timeout=40*60):
         # sometime user forget submit, need to force unlock
         start = start or self.edit_start
         if start:
             now = datetime.utcnow()
             delta = now - start
-            if delta.seconds >= timeout:
+            if delta.total_seconds() >= timeout:
                 self.unlock()
     def check_locked(self, userid):
         # if eidt_start is not None, it is locked as editing
@@ -885,13 +885,13 @@ class Tags(db.Model):
         self.editing_id = None
         db.session.add(self)
         db.session.commit()
-    def force_unlock(self, start=None, timeout=600):
+    def force_unlock(self, start=None, timeout=20*60):
         # sometime user forget submit, need to force unlock
         start = start or self.edit_start
         if start:
             now = datetime.utcnow()
             delta = now - start
-            if delta.seconds >= timeout:
+            if delta.total_seconds() >= timeout:
                 self.unlock()
     def check_locked(self, userid):
         # if eidt_start is not None, it is locked as editing
@@ -1349,7 +1349,7 @@ class Headlines(db.Model):
         # get the time lapse
         submit_at = self.timestamp
         now = datetime.utcnow()
-        delta = (now - submit_at).seconds / 3600 # unit hour
+        delta = (now - submit_at).total_seconds() / 3600 # unit hour
         duration = max(0.5, delta - 2) # plan to cal per 2 hour, celery
         score = self.vote + self.comments.count()
         point = round(score / duration)
