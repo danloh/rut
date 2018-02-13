@@ -12,6 +12,7 @@ Flask-SQLAlchemy==2.3.2
 passlib==1.7.1
 PyMySQL==0.8.0
 gunicorn==19.7.1
+gevent==1.2.2
 Werkzeug==0.14.1
 SQLAlchemy==1.2.0
 celery==4.1.0
