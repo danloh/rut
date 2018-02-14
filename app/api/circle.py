@@ -2,8 +2,9 @@
 # circle : challenge circle, a group people who challege a rut together
 
 from flask import request, g, jsonify, abort
-from ..models import *
+from ..models import Circles, Posts
 from . import db, rest, auth, PER_PAGE
+
 
 @rest.route('/rut/<int:rutid>/circles')
 def get_circles(rutid):
@@ -23,31 +24,33 @@ def get_circles(rutid):
     }
     return jsonify(circle_dict)
 
+
 @rest.route('/newcircle/rut/<int:rutid>', methods=['POST'])
 @auth.login_required
 def new_circle(rutid):
-    name = request.json.get('name','').strip()
-    address = request.json.get('address','').strip()
-    area = request.json.get('area','').strip()
-    time = request.json.get('time','').strip()
+    name = request.json.get('name', '').strip()
+    address = request.json.get('address', '').strip()
+    area = request.json.get('area', '').strip()
+    time = request.json.get('time', '').strip()
     if not (name and address and area and time):
         abort(403)
-    note = request.json.get('note','').strip()
+    note = request.json.get('note', '').strip()
     rut = Posts.query.get_or_404(rutid)
     user = g.user
     circle = Circles(
-        name = name,
-        address = address,
-        area = area,
-        time = time,
-        note = note,
-        facilitator = user,
-        post = rut
+        name=name,
+        address=address,
+        area=area,
+        time=time,
+        note=note,
+        facilitator=user,
+        post=rut
     )
     db.session.add(circle)
     db.session.commit()
     circle_dict = circle.to_dict()
     return jsonify(circle_dict)
+
 
 @rest.route('/editcircle/<int:circleid>', methods=['POST'])
 @auth.login_required
@@ -57,13 +60,13 @@ def edit_circle(circleid):
     if circle.facilitator != user and user.role != 'Admin':
         abort(403)
     # get data
-    name = request.json.get('name','').strip()
-    address = request.json.get('address','').strip()
-    area = request.json.get('area','').strip()
-    time = request.json.get('time','').strip()
+    name = request.json.get('name', '').strip()
+    address = request.json.get('address', '').strip()
+    area = request.json.get('area', '').strip()
+    time = request.json.get('time', '').strip()
     if not (name and address and area and time):
         abort(403)
-    note = request.json.get('note','').strip()
+    note = request.json.get('note', '').strip()
     circle.name = name
     circle.address = address
     circle.area = area
@@ -72,6 +75,7 @@ def edit_circle(circleid):
     db.session.add(circle)
     db.session.commit()
     return jsonify('Updated')
+
 
 @rest.route('/delete/circle/<int:circleid>')
 @auth.login_required
@@ -83,6 +87,7 @@ def del_circle(circleid):
     db.session.delete(circle)
     db.session.commit()
     return jsonify('Deleted')
+
 
 @rest.route('/disable/circle/<int:circleid>')
 @auth.login_required
@@ -96,6 +101,7 @@ def disable_circle(circleid):
     db.session.commit()
     return jsonify('Disabled')
 
+
 @rest.route('/recover/circle/<int:circleid>')
 @auth.login_required
 def recover_circle(circleid):
@@ -103,10 +109,11 @@ def recover_circle(circleid):
     user = g.user
     if circle.facilitator != user and user.role != 'Admin':
         abort(403)
-    circle.disabled = False #enable
+    circle.disabled = False  # enable
     db.session.add(circle)
     db.session.commit()
     return jsonify('Enabled')
+
 
 @rest.route('/checkparticipate/<int:circleid>')
 @auth.login_required
@@ -116,6 +123,7 @@ def check_participate(circleid):
     participating = 'Cancle' if user.parting(circle) else 'Participate'
     return jsonify(participating)
 
+
 @rest.route('/participate/<int:circleid>')
 @auth.login_required
 def participate_circle(circleid):
@@ -123,6 +131,7 @@ def participate_circle(circleid):
     user = g.user
     user.participate(circle)
     return jsonify('Cancle')
+
 
 @rest.route('/unparticipate/<int:circleid>')
 @auth.login_required

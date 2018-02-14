@@ -4,8 +4,9 @@
 import random
 import string
 from flask import request, g, jsonify, abort, current_app
-from ..models import *
-from . import db, rest, auth, PER_PAGE
+from ..models import Users
+from . import db, rest, auth
+
 
 def random_code():
     population = string.ascii_letters + string.digits
@@ -15,60 +16,63 @@ def random_code():
     else:
         return s
 
-@rest.route('/register', methods = ['POST'])
+
+@rest.route('/register', methods=['POST'])
 def register():
     username = request.json.get('username')
     password = request.json.get('password')
-    email = request.json.get('email','').strip()
+    email = request.json.get('email', '').strip()
     if username is None or password is None:
-        abort(400) # missing arguments
-    if Users.query.filter_by(name = username).first() is not None:
-        abort(400) # existing user
-    incode = request.json.get('incode','')
+        abort(400)  # missing arguments
+    if Users.query.filter_by(name=username).first() is not None:
+        abort(400)  # existing user
+    incode = request.json.get('incode', '')
     recode = random_code()
     user = Users(
-        name = username,
-        email = email,
-        auth_server = "Registered",
-        auth_social_id = "00001",
-        incode = incode,
-        recode = recode
+        name=username,
+        email=email,
+        auth_server="Registered",
+        auth_social_id="00001",
+        incode=incode,
+        recode=recode
     )
     user.hash_password(password)
     db.session.add(user)
     db.session.commit()
     if email:
         token = user.generate_confirmation_token().replace('.', '@')
-        url= '{0}/confirm/{1}'.format(current_app.config['BASE_URL'], token)
+        url = '{0}/confirm/{1}'.format(current_app.config['BASE_URL'], token)
         from task.tasks import send_email as send_email_celery
         send_email_celery.delay(
-            user.email, 
+            user.email,
             'Confirm Your Account',
-            'email/confirm', 
-            name=user.name, 
+            'email/confirm',
+            name=user.name,
             url=url
         )
     # log in once register successfully
     auth_token, exp = user.generate_auth_token()
     return jsonify({
-        'username': user.name, 
-        'userid': user.id, 
+        'username': user.name,
+        'userid': user.id,
         'token': auth_token.decode('ascii'),
         'exp': exp
     })
 
-@rest.route('/editprofile', methods = ['POST'])
+
+@rest.route('/editprofile', methods=['POST'])
 @auth.login_required
 def edit_profile():
     user = g.user
-    user.nickname = request.json.get('nickname','').strip()
-    user.location = request.json.get('location','').strip()
-    user.avatar = request.json.get('avatarUrl','').strip()
-    user.about_me = request.json.get('about','').strip()
-    user.links = request.json.get('url','').strip()
+    user.nickname = request.json.get('nickname', '').strip()
+    user.location = request.json.get('location', '').strip()
+    user.avatar = request.json.get('avatarUrl', '').strip()
+    user.about_me = request.json.get('about', '').strip()
+    user.links = request.json.get('url', '').strip()
     db.session.add(user)
     db.session.commit()
     return jsonify('Your Profile Updated')
+
 
 # check if name / email duplicated when regsiter
 @rest.route('/checkname/<username>')
@@ -76,11 +80,14 @@ def checkname(username=None):
     if username and Users.query.filter_by(name=username).first() is None:
         return jsonify(1)
     return jsonify(0)
+
+
 @rest.route('/checkemail/<email>')
 def checkemail(email=None):
     if email and Users.query.filter_by(email=email).first() is None:
         return jsonify(1)
     return jsonify(0)
+
 
 @rest.route('/confirm/<token>')
 @auth.login_required
@@ -93,26 +100,30 @@ def confirm(token):
         db.session.commit()
         return jsonify('You have confirmed your account. Thanks!')
     else:
-        return jsonify('The confirmation link is invalid or has expired, ' 
-                'Please go to Profile/Setting page and send confirmation email again')
+        return jsonify(
+            'The confirmation link is invalid or has expired, '
+            'Please go to Profile/Setting page and send confirmation email again'
+        )
+
 
 @rest.route('/confirm')
 @auth.login_required
 def resend_confirmation():
-    user= g.user
+    user = g.user
     if user.confirmed:
         return jsonify('Confirmed')
     token = user.generate_confirmation_token().replace('.', '@')
-    url= '{0}/confirm/{1}'.format(current_app.config['BASE_URL'], token)
+    url = '{0}/confirm/{1}'.format(current_app.config['BASE_URL'], token)
     from task.tasks import send_email as send_email_celery
     send_email_celery.delay(
-        user.email, 
+        user.email,
         'Confirm Your Account',
-        'email/confirm', 
-        name=user.name, 
+        'email/confirm',
+        name=user.name,
         url=url
     )
     return jsonify('A new confirmation email has been sent to you by email')
+
 
 @rest.route('/changepassword', methods=['GET', 'POST'])
 @auth.login_required
@@ -128,6 +139,7 @@ def change_password():
     else:
         return jsonify('Something Wrong')
 
+
 @rest.route('/reset', methods=['GET', 'POST'])
 def password_reset_request():
     email = request.json.get('email')
@@ -135,38 +147,45 @@ def password_reset_request():
     user = Users.query.filter_by(email=email, name=username).first()
     if user:
         token = user.generate_reset_token().replace('.', '@')
-        url= '{0}/reset/{1}'.format(current_app.config['BASE_URL'], token)
+        url = '{0}/reset/{1}'.format(current_app.config['BASE_URL'], token)
         from task.tasks import send_email as send_email_celery
         send_email_celery.delay(
-            user.email, 
+            user.email,
             'Reset Your Password',
             'email/reset_password',
             name=user.name,
             url=url
         )
-        return jsonify('An email with instructions to reset your password has been '
-            'sent to you.')
+        return jsonify(
+            'An email with instructions to reset your password has been '
+            'sent to you.'
+        )
     else:
         return jsonify('Invalid username or email')
+
 
 @rest.route('/reset/<string:token>', methods=['GET', 'POST'])
 def password_reset(token):
     token = token.replace('@', '.')
     new_psw = request.json.get('newpsw')
-    username = request.json.get('username', '') # if needed??
+    username = request.json.get('username', '')  # if needed??
     if Users.reset_password(token, new_psw, username):
         db.session.commit()
         return jsonify('Your password Reset, Please login again')
     else:
-        return jsonify('Failed, Please check username ' 
-                  'and Try Again with the rest password link')
+        return jsonify(
+                  'Failed, Please check username '
+                  'and Try Again with the rest password link'
+                )
+
 
 @rest.route('/checkifexpired/<string:token>')
 def check_token_expired(token):
     token = token.replace('@', '.')
-    result =  Users.check_token_expire(token)
+    result = Users.check_token_expire(token)
     return jsonify(result)
-    
+
+
 @auth.verify_password
 def verify_password(username_or_token, password):
     if request.path == "/api/login":
@@ -180,9 +199,6 @@ def verify_password(username_or_token, password):
     g.user = user
     return True
 
-@auth.error_handler
-def auth_error():
-    return error_response(401, 'Unauthorized Access')
 
 @rest.route('/login')
 @auth.login_required

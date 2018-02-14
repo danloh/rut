@@ -1,23 +1,22 @@
 # -*- coding: utf-8 -*-
 
 import os
-from datetime import timedelta
 from celery.schedules import crontab
-##general config
+# #general config
 imports = ['task.tasks']
 worker_max_tasks_per_child = 50
 broker_url = os.environ.get('BROKER_URL')
-# result_backend = 
+# result_backend =
 # task_serializer = ''
 # result_serializer = ''
-# result_expires = 
+# result_expires =
 # accept_content = []
 
-##config routing
+# #config routing
 task_routes = {'task.tasks.send_mail': {'queue': 'mail'}}
-#task_queue = 
+# task_queue =
 
-## config periodic task
+# # config periodic task
 timezone = 'UTC'
 beat_schedule = {
     'cal_vote': {

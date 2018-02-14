@@ -2,8 +2,9 @@
 # tag: a topic
 
 from flask import request, g, jsonify, abort
-from ..models import *
+from ..models import Tags, Posts, Demands
 from . import db, rest, auth, PER_PAGE
+
 
 @rest.route('/all/tags')
 def get_all_tags():
@@ -18,26 +19,28 @@ def get_all_tags():
     }
     return jsonify(tags_dict)
 
+
 @rest.route('/tag/<int:tagid>')
 def get_tag(tagid):
     tag = Tags.query.get_or_404(tagid)
     tag_dict = tag.to_dict()
-    #attach ruts included in tag 
-    tagruts = [p.to_dict() \
-            for p in tag.posts.order_by(Posts.timestamp.desc()).limit(PER_PAGE)]
-    #tagruts.reverse()  # as order_by, which is faster?
+    # attach ruts included in tag
+    tagruts = [p.to_dict()
+               for p in tag.posts.order_by(Posts.timestamp.desc()).limit(PER_PAGE)]
+    # tagruts.reverse()  # as order_by, which is faster?
     tag_dict['ruts'] = tagruts
-    tag_dict['total'] = tag.posts.count() #len(tagruts)
+    tag_dict['total'] = tag.posts.count()  # len(tagruts)
     # related tags
-    parent_tags = [t.parent_tag \
-                for t in tag.parent_tags.order_by(db.func.rand()).limit(5)]
+    parent_tags = [t.parent_tag
+                   for t in tag.parent_tags.order_by(db.func.rand()).limit(5)]
     tags = parent_tags
     for tg in parent_tags:
-        child_tags = [t.child_tag \
-                    for t in tg.child_tags.order_by(db.func.rand()).limit(5)]
+        child_tags = [t.child_tag
+                      for t in tg.child_tags.order_by(db.func.rand()).limit(5)]
         tags += child_tags
-    tag_dict['tags'] = [{'tagid': t.id,'tagname': t.tag} for t in set(tags)]
+    tag_dict['tags'] = [{'tagid': t.id, 'tagname': t.tag} for t in set(tags)]
     return jsonify(tag_dict)
+
 
 @rest.route('/tag/<int:tagid>/ruts')
 def get_tag_ruts(tagid):
@@ -46,9 +49,10 @@ def get_tag_ruts(tagid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     posts = tag.posts.order_by(Posts.timestamp.desc())\
-                    .offset(per_page * page).limit(per_page)
+        .offset(per_page * page).limit(per_page)
     tagruts = [p.to_simple_dict() for p in posts]
     return jsonify(tagruts)
+
 
 @rest.route('/tag/<int:tagid>/demands')
 def get_tag_demands(tagid):
@@ -56,14 +60,15 @@ def get_tag_demands(tagid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     demands = tag.demands.order_by(Demands.timestamp.desc())\
-                        .offset(per_page * page).limit(per_page)
+        .offset(per_page * page).limit(per_page)
     tag_demands = [d.to_dict() for d in demands]
     return jsonify(tag_demands)
 
+
 @rest.route('/tag/<int:tagid>/relates')
 def get_tag_relates(tagid):
-    #page = request.args.get('page', 0, type=int)
-    #per_page = request.args.get('perPage', PER_PAGE, type=int)
+    # page = request.args.get('page', 0, type=int)
+    # per_page = request.args.get('perPage', PER_PAGE, type=int)
     tag = Tags.query.get_or_404(tagid)
     parent_tags = [t.parent_tag for t in tag.parent_tags]
     related_tags = []
@@ -81,6 +86,7 @@ def get_tag_relates(tagid):
     }
     return jsonify(tags_dict)
 
+
 @rest.route('/locktag/<int:tagid>')
 @auth.login_required
 def lock_tag(tagid):
@@ -89,11 +95,13 @@ def lock_tag(tagid):
     tag.lock(user)
     return jsonify('Locked')
 
+
 @rest.route('/unlocktag/<int:tagid>')
 def unlock_tag(tagid):
     tag = Tags.query.get_or_404(tagid)
     tag.unlock()
     return jsonify('UnLocked')
+
 
 @rest.route('/checkiftag/<int:tagid>/lockedto/<int:userid>')
 def check_tag_if_locked(tagid, userid):
@@ -101,13 +109,14 @@ def check_tag_if_locked(tagid, userid):
     is_locked = tag.check_locked(userid)
     return jsonify(is_locked)
 
+
 @rest.route('/edittag/<int:tagid>', methods=['POST'])
 @auth.login_required
 def edit_tag(tagid):
     # get data
-    name = request.json.get('name','').strip()
-    parent = request.json.get('parent','').strip()
-    description = request.json.get('description','').strip()
+    name = request.json.get('name', '').strip()
+    parent = request.json.get('parent', '').strip()
+    description = request.json.get('description', '').strip()
     if not name:
         abort(403)
     query = Tags.query
@@ -115,9 +124,9 @@ def edit_tag(tagid):
     user = g.user
     if tag.check_locked(user.id):
         return jsonify('In Editing')
-    name = name.title() # titlecased style
+    name = name.title()  # titlecased style
     if tag.tag.title() != name and query.filter_by(tag=name).first():
-        abort(403) # cannot Duplicated Tag Name
+        abort(403)  # cannot Duplicated Tag Name
     tag.tag = name
     tag.descript = description
     db.session.add(tag)
@@ -131,6 +140,7 @@ def edit_tag(tagid):
     db.session.commit()
     return jsonify('Tag Info Updated, Thank You')
 
+
 @rest.route('/delete/tag/<int:tagid>')
 @auth.login_required
 def del_tag(tagid):
@@ -141,6 +151,7 @@ def del_tag(tagid):
     db.session.delete(tag)
     db.session.commit()
     return jsonify('Deleted')
+
 
 @rest.route('/disable/tag/<int:tagid>')
 @auth.login_required
@@ -154,6 +165,7 @@ def disable_tag(tagid):
     db.session.commit()
     return jsonify('Disabled')
 
+
 @rest.route('/recover/tag/<int:tagid>')
 @auth.login_required
 def recover_tag(tagid):
@@ -161,10 +173,11 @@ def recover_tag(tagid):
     if user.role != 'Admin':
         abort(403)
     tag = Tags.query.get_or_404(tagid)
-    tag.disabled = False #enable
+    tag.disabled = False  # enable
     db.session.add(tag)
     db.session.commit()
     return jsonify('Enabled')
+
 
 @rest.route('/checkfavtag/<int:tagid>')
 @auth.login_required
@@ -173,6 +186,7 @@ def check_fav(tagid):
     user = g.user
     faving = 'UnFollow' if user.faving(tag) else 'Follow'
     return jsonify(faving)
+
 
 @rest.route('/fav/tag/<int:tagid>')
 @auth.login_required
@@ -183,8 +197,8 @@ def fav_tag(tagid):
     # record activity as favor a tag
     from task.tasks import set_event_celery
     set_event_celery.delay(user.id, action='Followed', tagid=tag.id)
-    
     return jsonify('UnFollow')
+
 
 @rest.route('/unfav/tag/<int:tagid>')
 @auth.login_required

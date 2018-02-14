@@ -2,16 +2,17 @@
 # demand: a request to get a rut like book list on a subject
 
 from flask import request, g, jsonify, abort
-from ..models import *
+from ..models import Demands, Posts, Dvote, Respon, Comments
 from . import db, rest, auth, PER_PAGE
 
-@rest.route('/all/demands')   
+
+@rest.route('/all/demands')
 @rest.route('/demands')
 def get_demands():
     query = Demands.query
     userid = request.args.get('userid', type=int)
-    tag_str = request.args.get('tag','')
-    ref = request.args.get('type','')
+    tag_str = request.args.get('tag', '')
+    ref = request.args.get('type', '')
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     # yield query per filter criteria
@@ -33,27 +34,30 @@ def get_demands():
     }
     return jsonify(demands_dict)
 
+
 @rest.route('/onlydemand/<int:demandid>')
 def get_demand_only(demandid):
     demand = Demands.query.get_or_404(demandid)
     demand_dict = demand.to_dict()
     return jsonify(demand_dict)
 
+
 @rest.route('/demand/<int:demandid>')
 def get_demand(demandid):
     demand = Demands.query.get_or_404(demandid)
     demand_dict = demand.to_dict()
-    #attach answers to demand
+    # attach answers to demand
     resps = demand.posts.order_by(Respon.timestamp.desc()).limit(PER_PAGE)
     respons = [r.post for r in resps]
-    answers = [{'id':p.id,'title':p.title,'intro':p.intro} for p in respons]
+    answers = [{'id': p.id, 'title': p.title, 'intro': p.intro} for p in respons]
     demand_dict['answers'] = answers
-    #attach comments
+    # attach comments
     d_comments = demand.comments.order_by(Comments.timestamp.desc()).limit(50)
     comments = [c.to_dict() for c in d_comments]
-    ##comments.reverse()
+    # #comments.reverse()
     demand_dict['comments'] = comments
     return jsonify(demand_dict)
+
 
 @rest.route('/demand/<int:demandid>/comments')
 def get_demand_comments(demandid):
@@ -65,6 +69,7 @@ def get_demand_comments(demandid):
     comments = [c.to_dict() for c in d_comments]
     return jsonify(comments)
 
+
 @rest.route('/demand/<int:demandid>/answers')
 def get_demand_answers(demandid):
     demand = Demands.query.get_or_404(demandid)
@@ -73,8 +78,9 @@ def get_demand_answers(demandid):
     d_resps = demand.posts.order_by(Respon.timestamp.desc())\
                           .offset(page*per_page).limit(per_page)
     d_respons = [r.post for r in d_resps]
-    answers = [{'id':p.id,'title':p.title,'intro':p.intro} for p in d_respons]
+    answers = [{'id': p.id, 'title': p.title, 'intro': p.intro} for p in d_respons]
     return jsonify(answers)
+
 
 @rest.route('/demand/<int:demandid>/voters')
 def get_demand_voters(demandid):
@@ -88,14 +94,15 @@ def get_demand_voters(demandid):
     }
     return jsonify(voters_dict)
 
+
 @rest.route('/upvotedemand/<int:demandid>')
 @auth.login_required
 def upvote_demand(demandid):
-    demand = Demands.query.get_or_404(demandid) # demand's id
+    demand = Demands.query.get_or_404(demandid)  # demand's id
     user = g.user
-    voted = Dvote.query.filter_by(user_id=user.id,demand_id=demandid).first()
+    voted = Dvote.query.filter_by(user_id=user.id, demand_id=demandid).first()
     if voted is None:
-        demand.vote = demand.vote + 1 
+        demand.vote = demand.vote + 1
         db.session.add(demand)
         dvote = Dvote(
             voter=user,
@@ -106,14 +113,14 @@ def upvote_demand(demandid):
         # record activity as upvote a demand
         from task.tasks import set_event_celery
         set_event_celery.delay(user.id, action='Voted', demandid=demand.id)
-        
-    #return jsonify(demand.vote)
+    # return jsonify(demand.vote)
     return jsonify(demand.vote)
+
 
 @rest.route('/newdemand', methods=['POST'])
 @auth.login_required
 def new_demand():
-    text = request.json.get('demand','').strip()
+    text = request.json.get('demand', '').strip()
     if not text:
         abort(403)
     sp = text.split('#') + ['42']
@@ -124,9 +131,9 @@ def new_demand():
     tag_str = dtag[:60] or '42'
     user = g.user
     demand = Demands(
-        requestor = user,
-        body = body,
-        dtag_str = tag_str
+        requestor=user,
+        body=body,
+        dtag_str=tag_str
     )
     db.session.add(demand)
     demand.dtag_to_db()
@@ -134,8 +141,8 @@ def new_demand():
     # record activity as send a demand
     from task.tasks import set_event_celery
     set_event_celery.delay(user.id, action='Sent', demandid=demand.id)
-    
     return jsonify(demand.to_dict())
+
 
 @rest.route('/rut/<int:rutid>/answerdemand/<int:demandid>')
 @auth.login_required
@@ -144,16 +151,17 @@ def rut_as_answer(rutid, demandid):
     rut = Posts.query.get_or_404(rutid)
     user = g.user
     if rut.creator != user and user.role != 'Admin':
-        abort(403) #no permission
+        abort(403)  # no permission
     demand = Demands.query.get_or_404(demandid)
     respon = Respon(
-        post = rut,
-        demand = demand
+        post=rut,
+        demand=demand
     )
     db.session.add(respon)
     db.session.commit()
     answer = {'id': rut.id, 'title': rut.title}
     return jsonify(answer)
+
 
 @rest.route('/delete/demand/<int:demandid>')
 @auth.login_required
@@ -165,6 +173,7 @@ def del_demand(demandid):
     db.session.delete(demand)
     db.session.commit()
     return jsonify('Deleted')
+
 
 @rest.route('/disable/demand/<int:demandid>')
 @auth.login_required
@@ -178,6 +187,7 @@ def disable_demand(demandid):
     db.session.commit()
     return jsonify('Disabled')
 
+
 @rest.route('/recover/demand/<int:demandid>')
 @auth.login_required
 def recover_demand(demandid):
@@ -185,7 +195,7 @@ def recover_demand(demandid):
     user = g.user
     if demand.requestor != user and user.role != 'Admin':
         abort(403)
-    demand.disabled = False #enable
+    demand.disabled = False  # enable
     db.session.add(demand)
     db.session.commit()
     return jsonify('Enabled')

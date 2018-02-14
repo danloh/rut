@@ -2,14 +2,15 @@
 # headline: news for reader
 
 from flask import request, g, jsonify, abort
-from ..models import *
+from ..models import Headlines, Hvote, Comments
 from . import db, rest, auth, PER_PAGE
- 
+
+
 @rest.route('/headlines')
 def get_headlines():
     query = Headlines.query
     userid = request.args.get('userid', type=int)
-    ref = request.args.get('ref','')
+    ref = request.args.get('ref', '')
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     # yield query per filter criteria
@@ -21,9 +22,9 @@ def get_headlines():
     if ref == 'top':
         headlines = headlines_query.order_by(Headlines.point.desc())
     else:
-        headlines = headlines_query.order_by(Headlines.timestamp.desc())
+        headlines = headlines_query
     # pagination then result
-    hs = headlines.order_by(Headlines.score.desc())\
+    hs = headlines.order_by(Headlines.score.desc(), Headlines.timestamp.desc())\
                   .offset(per_page * page).limit(per_page)
     headlines_dict = {
         'headlines': [h.to_dict() for h in hs],
@@ -31,11 +32,13 @@ def get_headlines():
     }
     return jsonify(headlines_dict)
 
+
 @rest.route('/headline/<int:headlineid>')
 def get_headline(headlineid):
     headline = Headlines.query.get_or_404(headlineid)
     headline_dict = headline.to_dict()
     return jsonify(headline_dict)
+
 
 @rest.route('/headline/<int:headlineid>/comments')
 def get_headline_comments(headlineid):
@@ -44,10 +47,11 @@ def get_headline_comments(headlineid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', 50, type=int)
     h_comments = headline.comments.order_by(Comments.timestamp.desc())\
-                                .offset(page*per_page).limit(per_page)
+        .offset(page*per_page).limit(per_page)
     comments = [c.to_dict() for c in h_comments]
     headline_dict['comments'] = comments
     return jsonify(headline_dict)
+
 
 @rest.route('/headline/<int:headlineid>/voters')
 def get_headline_voters(headlineid):
@@ -61,14 +65,15 @@ def get_headline_voters(headlineid):
     }
     return jsonify(voters_dict)
 
+
 @rest.route('/upvoteheadline/<int:headlineid>')
 @auth.login_required
 def upvote_headline(headlineid):
-    headline = Headlines.query.get_or_404(headlineid) # headline's id
+    headline = Headlines.query.get_or_404(headlineid)  # headline's id
     user = g.user
-    voted = Hvote.query.filter_by(user_id=user.id,headline_id=headlineid).first()
+    voted = Hvote.query.filter_by(user_id=user.id, headline_id=headlineid).first()
     if voted is None:
-        headline.vote = headline.vote + 1 
+        headline.vote = headline.vote + 1
         db.session.add(headline)
         hvote = Hvote(
             voter=user,
@@ -77,40 +82,40 @@ def upvote_headline(headlineid):
         db.session.add(hvote)
         db.session.commit()
         # record activity as upvote a headline
-        #user.set_event(action='Push', headlineid=headline.id)
-        #headline.cal_point() # to be in task queue
-        
-    #return jsonify(headline.vote)
+        # user.set_event(action='Push', headlineid=headline.id)
+        # headline.cal_point() # to be in task queue
+    # return jsonify(headline.vote)
     return jsonify(headline.vote)
+
 
 @rest.route('/newheadline', methods=['POST'])
 @auth.login_required
 def new_headline():
-    title = request.json.get('title','').strip()
+    title = request.json.get('title', '').strip()
     if not title:
         abort(403)
-    url = request.json.get('url','').strip()
+    url = request.json.get('url', '').strip()
     if url:
         exist = Headlines.query.filter_by(url=url).first()
         if exist:
             return jsonify(exist.to_dict())
-    content = request.json.get('content','').strip()
+    content = request.json.get('content', '').strip()
     if not (url or content):
         abort(403)
     user = g.user
     headline = Headlines(
-        submitor = user,
-        title = title,
-        url = url,
-        content = content
+        submitor=user,
+        title=title,
+        url=url,
+        content=content
     )
     db.session.add(headline)
     db.session.commit()
     # record activity as submit a headline
     from task.tasks import set_event_celery
     set_event_celery.delay(user.id, action='Submitted', headlineid=headline.id)
-    
     return jsonify(headline.to_dict())
+
 
 @rest.route('/delete/headline/<int:headlineid>')
 @auth.login_required
@@ -122,6 +127,7 @@ def del_headline(headlineid):
     db.session.delete(headline)
     db.session.commit()
     return jsonify('Deleted')
+
 
 @rest.route('/disable/headline/<int:headlineid>')
 @auth.login_required
@@ -135,6 +141,7 @@ def disable_headline(headlineid):
     db.session.commit()
     return jsonify('Disabled')
 
+
 @rest.route('/recover/headline/<int:headlineid>')
 @auth.login_required
 def recover_headline(headlineid):
@@ -142,7 +149,7 @@ def recover_headline(headlineid):
     user = g.user
     if headline.submitor != user and user.role != 'Admin':
         abort(403)
-    headline.disabled = False #enable
+    headline.disabled = False  # enable
     db.session.add(headline)
     db.session.commit()
     return jsonify('Enabled')

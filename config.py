@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import os
-#basedir = os.path.abspath(os.path.dirname(__file__))
+# basedir = os.path.abspath(os.path.dirname(__file__))
 
-#base class for config
+
+# base class for config
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') # for form CRSF
-    SQLALCHEMY_COMMIT_ON_TEARDOWN = True  #?? it is said not reliable as thought
+    SECRET_KEY = os.environ.get('SECRET_KEY')  # for token gen
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = True  # ?? it is said not reliable as thought
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     SQLALCHEMY_RECORD_QUERIES = True
-    SLOW_DB_QUERY_TIME=0.25
+    SLOW_DB_QUERY_TIME = 0.25
 
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
@@ -39,26 +40,29 @@ class Config:
     def init_app(app):
         pass
 
-#for development
+
+# for development
 class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DB_URI') or 'mysql+pymysql://root:psw@localhost/test'
 
-#for test
+
+# for test
 class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DB_URI') or 'mysql+pymysql://root:psw@localhost/test'
 
-#for production 
+
+# for production
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('PRO_DB_URI') or 'mysql+pymysql://root:psw@localhost/test'
 
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
-        #log to file
+        # log to file
         import logging
-        log_file = os.path.join(os.getcwd(),'log/app_run.log')
+        log_file = os.path.join(os.getcwd(), 'log/app_run.log')
         file_handler = logging.FileHandler(log_file, encoding='UTF-8')
         file_handler.setLevel(logging.DEBUG)
         logging_format = logging.Formatter(
@@ -66,10 +70,11 @@ class ProductionConfig(Config):
         file_handler.setFormatter(logging_format)
         app.logger.addHandler(file_handler)
 
-#config dict 
+
+# config dict
 config = {
-    'development':DevelopmentConfig,
-    'test':TestConfig,
-    'production':ProductionConfig,
-    'default':DevelopmentConfig
+    'development': DevelopmentConfig,
+    'test': TestConfig,
+    'production': ProductionConfig,
+    'default': DevelopmentConfig
 }

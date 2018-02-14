@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import random
-import re
 from datetime import datetime
-from flask import url_for, current_app, request, flash
-from flask_sqlalchemy import SQLAlchemy
-from flask_httpauth import HTTPBasicAuth
+from flask import url_for, current_app
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 from . import db, cache
-from .utils import split_str, str_to_dict, str_to_set
-#from markdown import markdown
-#import bleach
+from .utils import str_to_dict, str_to_set
 
+# from markdown import markdown
+# import bleach
 # html_tags Whitelist for Bleach
 # markdown: comment, clip
 # rich text: intro, epilog, tips, review
@@ -53,6 +50,7 @@ tag_demand = db.Table(
     )
 )
 
+
 # helper Model for n2n Posts collect Items
 class Collect(db.Model):
     __table_name__ = 'collect'
@@ -66,16 +64,17 @@ class Collect(db.Model):
         db.Integer,
         db.ForeignKey("posts.id"),
         primary_key=True)
-    order = db.Column(db.SmallInteger)   #item's order in post
+    order = db.Column(db.SmallInteger)   # item's order in post
     tips = db.Column(db.Text, nullable=False)
     tips_html = db.Column(db.Text)
-    spoiler = db.Column(db.Boolean, default=False) # if tips spoiler ahead?
+    spoiler = db.Column(db.Boolean, default=False)  # if tips spoiler ahead?
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
     # n to 1 with Users
     tip_creator_id = db.Column(
         db.Integer, db.ForeignKey("users.id")
     )
+
     def to_dict(self):
         item_dict = self.item.to_dict()
         tip_dict = {
@@ -96,6 +95,7 @@ class Collect(db.Model):
 #             tags=allowed_tags, strip=True))
 # db.event.listen(Collect.tips, 'set', Collect.on_changed_tips)
 
+
 # helper Model for n2n Posts with Users for star
 class Star(db.Model):
     __table_name__ = 'star'
@@ -109,6 +109,7 @@ class Star(db.Model):
         primary_key=True)
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
+
 
 # helper Model for n2n Posts with Users for challenge
 class Challenge(db.Model):
@@ -126,6 +127,7 @@ class Challenge(db.Model):
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
 
+
 # helper Model for n2n Posts co-Contribute
 class Contribute(db.Model):
     __table_name__ = 'contribute'
@@ -142,7 +144,7 @@ class Contribute(db.Model):
     disabled = db.Column(db.Boolean, default=True)
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
-    
+
     def to_dict(self):
         c = self.contributor
         contributor_dict = {
@@ -160,6 +162,7 @@ class Contribute(db.Model):
         }
         return contribute_dict
 
+
 # helper Model for n2n Users flag Items
 class Flag(db.Model):
     __table_name__ = 'flag'
@@ -171,11 +174,12 @@ class Flag(db.Model):
         db.Integer,
         db.ForeignKey("users.id"),
         primary_key=True)
-    #flag label: to read-1,reading-2,read-3
-    flag_label = db.Column(db.SmallInteger,default=0)
+    # flag label: to read-1,reading-2,read-3
+    flag_label = db.Column(db.SmallInteger, default=0)
     flag_note = db.Column(db.String(128), default="")
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
+
 
 # helper Model for n2n Users favirate Tags
 class Fav(db.Model):
@@ -188,8 +192,8 @@ class Fav(db.Model):
         db.Integer,
         db.ForeignKey("users.id"),
         primary_key=True)
-    timestamp = db.Column(db.DateTime,
-                        default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 # helper Model for n2n Items with Authors
 # item-bys : by-items
@@ -205,6 +209,7 @@ class Byline(db.Model):
         primary_key=True)
     contribution = db.Column(db.String(32), nullable=False)
 
+
 # helper for n2n Users vote Clips
 class Cvote(db.Model):
     __table_name__ = 'cvote'
@@ -216,8 +221,8 @@ class Cvote(db.Model):
         db.Integer,
         db.ForeignKey("clips.id"),
         primary_key=True)
-    timestamp = db.Column(db.DateTime,
-                        default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 # helper for n2n Users vote Demands
 class Dvote(db.Model):
@@ -230,8 +235,8 @@ class Dvote(db.Model):
         db.Integer,
         db.ForeignKey("demands.id"),
         primary_key=True)
-    timestamp = db.Column(db.DateTime,
-                        default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 # helper for n2n Users vote Reviews
 class Rvote(db.Model):
@@ -244,8 +249,8 @@ class Rvote(db.Model):
         db.Integer,
         db.ForeignKey("reviews.id"),
         primary_key=True)
-    timestamp = db.Column(db.DateTime,
-                        default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 # helper for n2n Users vote Headlines
 class Hvote(db.Model):
@@ -258,8 +263,8 @@ class Hvote(db.Model):
         db.Integer,
         db.ForeignKey("headlines.id"),
         primary_key=True)
-    timestamp = db.Column(db.DateTime,
-                        default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 # helper Model for n2n Posts re Demands
 class Respon(db.Model):
@@ -272,8 +277,8 @@ class Respon(db.Model):
         db.Integer,
         db.ForeignKey("demands.id"),
         primary_key=True)
-    timestamp = db.Column(db.DateTime,
-                        default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class Posts(db.Model):
     __table_name__ = 'posts'
@@ -286,12 +291,10 @@ class Posts(db.Model):
     tag_str = db.Column(db.String(256), default="42")
     epilog = db.Column(db.Text)
     epilog_html = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
-    renewal = db.Column(db.DateTime,
-                          default=datetime.utcnow)
-    editable = db.Column(db.String(32),default='Creator')
-    edit_start = db.Column(db.DateTime,default=None)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    renewal = db.Column(db.DateTime, default=datetime.utcnow)
+    editable = db.Column(db.String(32), default='Creator')
+    edit_start = db.Column(db.DateTime, default=None)
     editing_id = db.Column(db.Integer)
     disabled = db.Column(db.Boolean)
     vote = db.Column(db.Integer, default=0)
@@ -311,27 +314,27 @@ class Posts(db.Model):
         'Circles', backref='post', lazy='dynamic')
     # 1 to n with Events
     events = db.relationship(
-        'Events',backref='post',lazy='dynamic')
+        'Events', backref='post', lazy='dynamic')
 
     # n2n with Users for contributor
     contributors = db.relationship(
         'Contribute',
         foreign_keys=[Contribute.post_id],
-        backref=db.backref('contribute_post',lazy='joined'),
+        backref=db.backref('contribute_post', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Users for star
     starers = db.relationship(
         'Star',
         foreign_keys=[Star.post_id],
-        backref=db.backref('star_post',lazy='joined'),
+        backref=db.backref('star_post', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Users for challenge
     challengers = db.relationship(
         'Challenge',
         foreign_keys=[Challenge.post_id],
-        backref=db.backref('challenge_post',lazy='joined'),
+        backref=db.backref('challenge_post', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Items
@@ -350,7 +353,7 @@ class Posts(db.Model):
         cascade='all, delete-orphan')
 
     # collect items into post
-    def collected(self,item):
+    def collected(self, item):
         """
         check if there is a record in Collect table,
         record indicates post linking item
@@ -371,16 +374,16 @@ class Posts(db.Model):
                 tips=tips,
                 tip_creator=tip_creator,
                 spoiler=spoiler
-            ) # refer to the relationship-backref var
+            )  # refer to the relationship-backref var
             db.session.add(c)
             # update item's vote
-            #item.cal_vote() # to task queue
+            # item.cal_vote() # to task queue
             # update the renew timestamp
             self.renew()
-            #db.session.commit() #if need commit?
+            # db.session.commit() #if need commit?
 
     # set and change the order of items, ## ??maybe an issue here!!##
-    def ordering(self,item,new_order):
+    def ordering(self, item, new_order):
         _c = self.items  # ie. a collect-object
         c_old = _c.filter_by(item_id=item.id).first()
         old_order = c_old.order
@@ -391,14 +394,14 @@ class Posts(db.Model):
         else:
             if new_order > old_order:
                 _c.filter(Collect.order > old_order, Collect.order <= new_order).\
-                update({'order':Collect.order-1})
+                    update({'order': Collect.order-1})
             if new_order < old_order:
                 _c.filter(Collect.order < old_order, Collect.order >= new_order).\
-                update({'order':Collect.order+1})
-            
+                    update({'order': Collect.order+1})
+
             c_old.order = new_order
             db.session.add(c_old)
-            #db.session.commit()
+            # db.session.commit()
 
     # add post tags to database
     def tag_to_db(self):
@@ -410,26 +413,25 @@ class Posts(db.Model):
         _tagset = str_to_set(_tag_str)
         _query = Tags.query
         for _tg in _tagset:
-            #_tg = _tg.strip()
-            if _tg: # is not "":
-                _tg = _tg.title() # titlecased style
+            # _tg = _tg.strip()
+            if _tg:  # is not "":
+                _tg = _tg.title()  # titlecased style
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
-                    tag=Tags(tag=_tg)
+                    tag = Tags(tag=_tg)
                     tag.posts.append(self)
-                    #tag.cal_vote()
+                    # tag.cal_vote()
                     db.session.add(tag)
                 else:
                     _tag.posts.append(self)
-                    #_tag.cal_vote()
+                    # _tag.cal_vote()
                     db.session.add(_tag)
-        #db.session.commit()
-    
-    #check if can be edited, permission
+        # db.session.commit()
+
+    # check if can be edited, permission
     def uneditable(self, user):
-        if (user != self.creator 
-        and self.editable != 'Everyone' 
-        and user.role.duty != 'Admin'):
+        if (user != self.creator and self.editable != 'Everyone'
+                and user.role.duty != 'Admin'):
             return True
         else:
             return False
@@ -441,12 +443,14 @@ class Posts(db.Model):
         self.editing_id = user.id
         db.session.add(self)
         db.session.commit()
+
     def unlock(self):
         # reset eidt_start to None, after edit done
         self.edit_start = None
         self.editing_id = None
         db.session.add(self)
         db.session.commit()
+
     def force_unlock(self, start=None, timeout=40*60):
         # sometime user forget submit, need to force unlock
         start = start or self.edit_start
@@ -455,49 +459,43 @@ class Posts(db.Model):
             delta = now - start
             if delta.total_seconds() >= timeout:
                 self.unlock()
+
     def check_locked(self, userid):
         # if eidt_start is not None, it is locked as editing
         start = self.edit_start
         if start and self.editing_id != userid:
-            #force_unlock firstly
+            # force_unlock firstly
             self.force_unlock(start=start)
             return bool(self.edit_start)
         else:
             return False
+
     def check_editable(self, user):
         """permission and unlocked"""
         is_uneditable = self.uneditable(user)
         is_locked = self.check_locked(user.id)
-        can_edit =  (not is_locked) and (not is_uneditable)
+        can_edit = (not is_locked) and (not is_uneditable)
         return can_edit
 
     def renew(self):
         self.renewal = datetime.utcnow()
         db.session.add(self)
-        #db.session.commit()
+        # db.session.commit()
 
-    def cal_vote(self,i=None,s=None,c=None):
+    def cal_vote(self, i=None, s=None, c=None):
         i = i or self.items.count()
         s = s or self.starers.count()
         c = c or self.challengers.count() * 2
         self.vote = i+s+c
         db.session.add(self)
-        #db.session.commit()
-    @property
-    def score(self):
-        """caculate the post score, can be deprecated"""
-        itemcount = self.items.count()
-        starcount = self.starers.count()
-        challengecount = self.challengers.count()
-        score = itemcount*2 + starcount * 5 + challengecount *10
-        return score
+        # db.session.commit()
 
     # set logo cover of  post
     @property
     @cache.memoize()
     def post_cover(self):
         n = self.items.count()
-        if n ==0:
+        if n == 0:
             return url_for('static', filename='pic/dpc.svg')
         else:
             m = random.randrange(n)
@@ -505,7 +503,7 @@ class Posts(db.Model):
             return item.item_cover
 
     @staticmethod
-    @cache.memoize() #to tackle
+    @cache.memoize()  # to tackle
     def select_posts():
         _query = Posts.query
         m = current_app.config['POST_PER_PAGE']
@@ -514,8 +512,8 @@ class Posts(db.Model):
         posts_popular = _query.order_by(Posts.vote.desc()).limit(m)
         posts_random = _query.order_by(db.func.rand()).limit(m)
 
-        posts_select = posts_latest.union(posts_popular,posts_random)#.all()
-        posts = [r.to_simple_dict() for r in posts_select]  #execute here for cache
+        posts_select = posts_latest.union(posts_popular, posts_random)
+        posts = [r.to_simple_dict() for r in posts_select]  # execute here for cache
         return posts
 
     def to_dict(self):
@@ -526,9 +524,9 @@ class Posts(db.Model):
             'avatar': creator.user_avatar,
             'location': creator.location or ''
         }
-        #contributes = self.contributors
-        #contributors = [i.to_dict() for i in contributes]
-        #contributor_id_list = [i.user_id for i in contributes]
+        # contributes = self.contributors
+        # contributors = [i.to_dict() for i in contributes]
+        # contributor_id_list = [i.user_id for i in contributes]
         tags = [t.to_dict() for t in self.tags]
         post_dict = {
             'id': self.id,
@@ -539,7 +537,7 @@ class Posts(db.Model):
             'epilog': self.epilog or '',
             'createat': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             # OR .strftime('%Y-%m-%dT%H:%M:%SZ') # as timezone
-            #'renewat': self.renewal.strftime('%Y-%m-%d %H:%M:%S'),
+            # 'renewat': self.renewal.strftime('%Y-%m-%d %H:%M:%S'),
             'itemcount': self.items.count(),
             'starcount': self.starers.count(),
             'challengecount': self.challengers.count(),
@@ -548,12 +546,12 @@ class Posts(db.Model):
             'cover': self.post_cover,
             'editable': self.editable,
             'creator': creator_dict,
-            #'contributors': contributors,
-            #'contributoridlist': contributor_id_list,
+            # 'contributors': contributors,
+            # 'contributoridlist': contributor_id_list,
             'tags': tags
         }
         return post_dict
-    
+
     # for some simple query
     def to_simple_dict(self):
         post_dict = {
@@ -569,7 +567,7 @@ class Posts(db.Model):
     def __repr__(self):
         return '<Posts %r>' % self.title
 
-    ## markdown to html
+    # # markdown to html
     # @staticmethod
     # def on_changed_intro(target, value, oldvalue, initiator):
     #     target.intro_html = bleach.linkify(bleach.clean(
@@ -583,45 +581,45 @@ class Posts(db.Model):
 # db.event.listen(Posts.intro, 'set', Posts.on_changed_intro)
 # db.event.listen(Posts.epilog, 'set', Posts.on_changed_epilog)
 
+
 class Items(db.Model):
     __table_name__ = 'items'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(512), nullable=False)
     res_url = db.Column(db.String(512))
-    uid = db.Column(db.String(128), unique=True, nullable=False)  #isbn13 etc.
+    uid = db.Column(db.String(128), unique=True, nullable=False)  # isbn13 etc.
     isbn10 = db.Column(db.String(32), unique=True)
     asin = db.Column(db.String(32), unique=True)
-    author = db.Column(db.String(512)) # or instructor
+    author = db.Column(db.String(512))  # or instructor
     cover = db.Column(db.String(512))
-    cate = db.Column(db.String(16),default='Book')
+    cate = db.Column(db.String(16), default='Book')
     publisher = db.Column(db.String(256))
-    pub_date = db.Column(db.String(128)) # or start date
+    pub_date = db.Column(db.String(128))  # or start date
     language = db.Column(db.String(256))
     binding = db.Column(db.String(128))
-    page = db.Column(db.String(128)) # book page or length of course
+    page = db.Column(db.String(128))  # book page or length of course
     level = db.Column(db.String(256))
     price = db.Column(db.String(128))
     details = db.Column(db.Text)
     itag_str = db.Column(db.String(512))
-    vote = db.Column(db.Integer,default=0)
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    vote = db.Column(db.Integer, default=0)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
-    edit_start = db.Column(db.DateTime,default=None)
+    edit_start = db.Column(db.DateTime, default=None)
     editing_id = db.Column(db.Integer)
 
     # 1 to n with Comments
     comments = db.relationship(
-        'Comments',backref='item',lazy='dynamic')
+        'Comments', backref='item', lazy='dynamic')
     # 1 to n with reviews
     reviews = db.relationship(
-        'Reviews',backref='item',lazy='dynamic')
+        'Reviews', backref='item', lazy='dynamic')
     # 1 to n with Clips
     clips = db.relationship(
-        'Clips',backref='item',lazy='dynamic')
+        'Clips', backref='item', lazy='dynamic')
     # 1 to n with Events
     events = db.relationship(
-        'Events',backref='item',lazy='dynamic')
+        'Events', backref='item', lazy='dynamic')
 
     # n2n with Posts
     posts = db.relationship(
@@ -634,14 +632,14 @@ class Items(db.Model):
     flagers = db.relationship(
         'Flag',
         foreign_keys=[Flag.item_id],
-        backref=db.backref('flag_item',lazy='joined'),
+        backref=db.backref('flag_item', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-    #n2n with Authors
-    bys =  db.relationship(
+    # n2n with Authors
+    bys = db.relationship(
         'Byline',
         foreign_keys=[Byline.item_id],
-        backref=db.backref('item',lazy='joined'),
+        backref=db.backref('item', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
 
@@ -659,32 +657,32 @@ class Items(db.Model):
         split the input tags to seperated tag,
         and add them into Tags Table
         '''
-        #_taglist = self.itag_str.split(',') #
+        # _taglist = self.itag_str.split(',') #
         _itag_str = self.itag_str
         _tagset = str_to_set(_itag_str)
         _query = Tags.query
         for _tg in _tagset:
-            #_tg = _tg.strip() #
-            if _tg: # is not "":
+            # _tg = _tg.strip() #
+            if _tg:  # is not "":
                 _tg = _tg.title()
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
-                    tag=Tags(tag=_tg)
+                    tag = Tags(tag=_tg)
                     tag.items.append(self)
                     db.session.add(tag)
-                    #tag.cal_vote()
+                    # tag.cal_vote()
                 elif _tag.items.filter_by(id=self.id).first() is None:
                     _tag.items.append(self)
                     db.session.add(_tag)
-                    #_tag.cal_vote()
-        #db.session.commit()
+                    # _tag.cal_vote()
+        # db.session.commit()
 
     # add author to db
-    def author_to_db(self,s=None):
+    def author_to_db(self, s=None):
         author_str = s or self.author
         d = str_to_dict(author_str)
         a_query = Authors.query
-        for k,v in d.items():
+        for k, v in d.items():
             author_old = a_query.filter_by(name=k).first()
             if author_old is None:
                 author = Authors(name=k)
@@ -698,17 +696,17 @@ class Items(db.Model):
                     contribution=v
                 )
                 db.session.add(byline)
-        #db.session.commit()
-    
-    def cal_vote(self,c=None,p=None,r=None,f=None):
+        # db.session.commit()
+
+    def cal_vote(self, c=None, p=None, r=None, f=None):
         c = c or self.clips.count()
         p = p or self.posts.count()
         r = r or self.reviews.count()
         f = f or self.flagers.count()
         self.vote = c+p+r+f
         db.session.add(self)
-        #db.session.commit()
-    
+        # db.session.commit()
+
         # lock and unlock status in/after edit item: a stopgap
     def lock(self, user):
         # set a start time and id  to indicate in editing
@@ -716,12 +714,14 @@ class Items(db.Model):
         self.editing_id = user.id
         db.session.add(self)
         db.session.commit()
+
     def unlock(self):
         # reset eidt_start to None, after edit done
         self.edit_start = None
         self.editing_id = None
         db.session.add(self)
         db.session.commit()
+
     def force_unlock(self, start=None, timeout=40*60):
         # sometime user forget submit, need to force unlock
         start = start or self.edit_start
@@ -730,23 +730,24 @@ class Items(db.Model):
             delta = now - start
             if delta.total_seconds() >= timeout:
                 self.unlock()
+
     def check_locked(self, userid):
         # if eidt_start is not None, it is locked as editing
         start = self.edit_start
         if start and self.editing_id != userid:
-            #force_unlock firstly
+            # force_unlock firstly
             self.force_unlock(start=start)
             return bool(self.edit_start)
         else:
             return False
-    
+
     def to_dict(self):
         item_dict = {
             'id': self.id,
             'cate': self.cate,
             'title': self.title,
             'uid': self.uid,
-            'byline': self.author or '', 
+            'byline': self.author or '',
             'rutcount': self.posts.count(),
             'reviewcount': self.reviews.count(),
             'clipcount': self.clips.count(),
@@ -763,7 +764,7 @@ class Items(db.Model):
             'details': self.details or ''
         }
         return item_dict
-    
+
     # for some simple query
     def to_simple_dict(self):
         item_dict = {
@@ -790,8 +791,8 @@ class Clan(db.Model):
         db.Integer,
         db.ForeignKey('tags.id'),
         primary_key=True)
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class Tags(db.Model):
     __table_name__ = "tags"
@@ -799,18 +800,18 @@ class Tags(db.Model):
     tag = db.Column(db.String(128), nullable=False, unique=True)
     descript = db.Column(db.String(512))
     vote = db.Column(db.Integer, default=0)
-    edit_start = db.Column(db.DateTime,default=None)
+    edit_start = db.Column(db.DateTime, default=None)
     editing_id = db.Column(db.Integer)
 
     # 1 to n with Events
     events = db.relationship(
-        'Events',backref='tag',lazy='dynamic')
+        'Events', backref='tag', lazy='dynamic')
 
     # n2n with users
     favers = db.relationship(
         'Fav',
         foreign_keys=[Fav.tag_id],
-        backref=db.backref('fav_tag',lazy='joined'),
+        backref=db.backref('fav_tag', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
 
@@ -855,23 +856,23 @@ class Tags(db.Model):
         if tag and (not self.parent_is(tag)):
             c = Clan(child_tag=self, parent_tag=tag)
             db.session.add(c)
-            #db.session.commit()
+            # db.session.commit()
 
-    #cache get rand tags
+    # cache get rand tags
     @staticmethod
     @cache.memoize()
     def get_tags():
         return Tags.query.order_by(Tags.vote.desc()).limit(16).all()
 
-    def cal_vote(self,i=None,p=None,d=None,f=None):
+    def cal_vote(self, i=None, p=None, d=None, f=None):
         i = i or self.items.count()
         p = p or self.posts.count()
         d = d or self.demands.count()
         f = f or self.favers.count()
         self.vote = i+p+d+f
         db.session.add(self)
-        #db.session.commit()
-    
+        # db.session.commit()
+
     # lock and unlock status in/after edit tag: a stopgap
     def lock(self, user):
         # set a start time and id  to indicate in editing
@@ -879,12 +880,14 @@ class Tags(db.Model):
         self.editing_id = user.id
         db.session.add(self)
         db.session.commit()
+
     def unlock(self):
         # reset eidt_start to None, after edit done
         self.edit_start = None
         self.editing_id = None
         db.session.add(self)
         db.session.commit()
+
     def force_unlock(self, start=None, timeout=20*60):
         # sometime user forget submit, need to force unlock
         start = start or self.edit_start
@@ -893,11 +896,12 @@ class Tags(db.Model):
             delta = now - start
             if delta.total_seconds() >= timeout:
                 self.unlock()
+
     def check_locked(self, userid):
         # if eidt_start is not None, it is locked as editing
         start = self.edit_start
         if start and self.editing_id != userid:
-            #force_unlock firstly
+            # force_unlock firstly
             self.force_unlock(start=start)
             return bool(self.edit_start)
         else:
@@ -930,20 +934,21 @@ class Reply(db.Model):
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
 
+
 class Comments(db.Model):
     __table_name__ = "comments"
     id = db.Column(db.Integer, primary_key=True)
     heading = db.Column(db.String(256))
     body = db.Column(db.Text, nullable=False)
     body_html = db.Column(db.Text)
-    vote = db.Column(db.Integer,default=1)
+    vote = db.Column(db.Integer, default=1)
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
 
-    #1 to n with Events
+    # 1 to n with Events
     events = db.relationship(
-        'Events',backref='comment',lazy='dynamic')
+        'Events', backref='comment', lazy='dynamic')
 
     # n to 1 with Users
     creator_id = db.Column(
@@ -983,16 +988,17 @@ class Comments(db.Model):
         backref=db.backref('parent_commt', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
+
     def reply(self, commt):
         r = Reply(parent_commt=self, child_commt=commt)
         db.session.add(r)
-        #db.session.commit()
-    ## end  n2n  with self, can be deprecated?
+        # db.session.commit()
+    # # end n2n with self, can be deprecated?
 
     def to_dict(self):
         creator = self.creator
         creator_dict = {
-            'id': self.creator_id, 
+            'id': self.creator_id,
             'name': creator.showname,
             'avatar': creator.user_avatar
         }
@@ -1017,6 +1023,7 @@ class Comments(db.Model):
 #             tags=allowed_tags, strip=True))
 # db.event.listen(Comments.body, 'set', Comments.on_changed_body)
 
+
 # Monkey patched for self reference -reply
 Comments.parent_comment_id = db.Column(
     db.Integer, db.ForeignKey("comments.id")
@@ -1036,17 +1043,16 @@ class Reviews(db.Model):
     body = db.Column(db.Text, nullable=False)
     body_html = db.Column(db.Text)
     spoiler = db.Column(db.Boolean, default=False)
-    vote = db.Column(db.Integer,default=1)
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    vote = db.Column(db.Integer, default=1)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
 
     # 1 to n with Comments
     comments = db.relationship(
-        'Comments',backref='review',lazy='dynamic')
+        'Comments', backref='review', lazy='dynamic')
     # 1 to n with Events
     events = db.relationship(
-        'Events',backref='review',lazy='dynamic')
+        'Events', backref='review', lazy='dynamic')
 
     # n to 1 with Users
     creator_id = db.Column(
@@ -1066,16 +1072,16 @@ class Reviews(db.Model):
         cascade='all, delete-orphan')
 
     def to_dict(self):
-        #get creator and item first
+        # get creator and item first
         creator = self.creator
         creator_dict = {
-            'id': creator.id, 
+            'id': creator.id,
             'name': creator.showname,
             'avatar': creator.user_avatar
         }
         item = self.item
         item_dict = {
-            'id': item.id, 
+            'id': item.id,
             'title': item.title
         }
         review_dict = {
@@ -1102,14 +1108,13 @@ class Clips(db.Model):
     chapnum = db.Column(db.String(8))
     chapname = db.Column(db.String(128))
     pagenum = db.Column(db.String(8))
-    vote = db.Column(db.Integer,default=1)
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    vote = db.Column(db.Integer, default=1)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
 
     # 1 to n with Events
     events = db.relationship(
-        'Events',backref='clip',lazy='dynamic')
+        'Events', backref='clip', lazy='dynamic')
 
     # n to 1   with Users
     creator_id = db.Column(
@@ -1136,7 +1141,7 @@ class Clips(db.Model):
         }
         from_item = self.item
         fromitem_dict = {
-            'id': from_item.id, 
+            'id': from_item.id,
             'title': from_item.title
         }
         clip_dict = {
@@ -1154,7 +1159,7 @@ class Clips(db.Model):
 
     def __repr__(self):
         return '<Clips %r>' % self.body
-    
+
 #     @staticmethod
 #     def on_changed_body(target, value, oldvalue, initiator):
 #         target.body_html = bleach.linkify(bleach.clean(
@@ -1167,18 +1172,17 @@ class Demands(db.Model):
     __table_name__ = "demands"
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text, nullable=False)
-    vote = db.Column(db.Integer,default=1)
+    vote = db.Column(db.Integer, default=1)
     dtag_str = db.Column(db.String(64))
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
 
     # 1 to n with Comments
     comments = db.relationship(
-        'Comments',backref='demand',lazy='dynamic')
+        'Comments', backref='demand', lazy='dynamic')
     # 1 to n with Events
     events = db.relationship(
-        'Events',backref='demand',lazy='dynamic')
+        'Events', backref='demand', lazy='dynamic')
 
     # n to 1 relation with Users
     requestor_id = db.Column(
@@ -1202,30 +1206,30 @@ class Demands(db.Model):
         cascade='all, delete-orphan')
 
     def dtag_to_db(self):
-        #_taglist = self.dtag_str.split(',') #
+        # _taglist = self.dtag_str.split(',') #
         _dtag_str = self.dtag_str
         _tagset = str_to_set(_dtag_str)
         _query = Tags.query
         for _tg in _tagset:
-            #_tg = _tg.strip() #
-            if _tg: # is not "":
-                _tg = _tg.title() # titlecased style
+            # _tg = _tg.strip() #
+            if _tg:  # is not "":
+                _tg = _tg.title()  # titlecased style
                 _tag = _query.filter_by(tag=_tg).first()
                 if _tag is None:
-                    tag=Tags(tag=_tg)
+                    tag = Tags(tag=_tg)
                     tag.demands.append(self)
-                    #tag.cal_vote()
+                    # tag.cal_vote()
                     db.session.add(tag)
                 else:
                     _tag.demands.append(self)
-                    #_tag.cal_vote()
+                    # _tag.cal_vote()
                     db.session.add(_tag)
-        #db.session.commit()
-    
+        # db.session.commit()
+
     def to_dict(self):
         requestor = self.requestor
         requestor_dict = {
-            'id': requestor.id, 
+            'id': requestor.id,
             'name': requestor.showname,
             'avatar': requestor.user_avatar
         }
@@ -1244,6 +1248,7 @@ class Demands(db.Model):
     def __repr__(self):
         return '<Demands %r>' % self.body
 
+
 # helper Model for Users participate Circles
 class Participate(db.Model):
     __tablename__ = 'participate'
@@ -1255,8 +1260,8 @@ class Participate(db.Model):
         db.Integer,
         db.ForeignKey("circles.id"),
         primary_key=True)
-    timestamp = db.Column(db.DateTime,
-                        default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class Circles(db.Model):
     __table_name__ = "circles"
@@ -1267,8 +1272,7 @@ class Circles(db.Model):
     time = db.Column(db.String(256), nullable=False)
     note = db.Column(db.String(256))
     disabled = db.Column(db.Boolean)
-    timestamp = db.Column(db.DateTime,
-                         default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     # n to 1 relation with Users
     facilitator_id = db.Column(
         db.Integer,
@@ -1286,17 +1290,17 @@ class Circles(db.Model):
         backref=db.backref('participate_circle', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-    
+
     def to_dict(self):
         facilitator = self.facilitator
         facilitator_dict = {
-            'id': facilitator.id, 
+            'id': facilitator.id,
             'name': facilitator.showname,
             'avatar': facilitator.user_avatar
         }
         rut = self.post
         rut_dict = {
-            'id': rut.id, 
+            'id': rut.id,
             'title': rut.title
         }
         circle_dict = {
@@ -1311,9 +1315,10 @@ class Circles(db.Model):
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         }
         return circle_dict
-    
+
     def __repr__(self):
         return '<Circles %r>' % self.name
+
 
 class Headlines(db.Model):
     __table_name__ = 'headlines'
@@ -1321,9 +1326,9 @@ class Headlines(db.Model):
     title = db.Column(db.String(256), nullable=False)
     url = db.Column(db.Text)
     content = db.Column(db.Text)
-    vote = db.Column(db.Integer,default=1)
-    score = db.Column(db.Integer,default=1)
-    point = db.Column(db.Integer,default=0)
+    vote = db.Column(db.Integer, default=1)
+    score = db.Column(db.Integer, default=1)
+    point = db.Column(db.Integer, default=0)
     disabled = db.Column(db.Boolean)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -1334,7 +1339,7 @@ class Headlines(db.Model):
     )
     # 1 to n with Comments
     comments = db.relationship(
-        'Comments',backref='headline',lazy='dynamic')
+        'Comments', backref='headline', lazy='dynamic')
     # n2n with Users for vote
     voters = db.relationship(
         'Hvote',
@@ -1344,25 +1349,25 @@ class Headlines(db.Model):
         cascade='all, delete-orphan')
     # 1 to n with Events
     events = db.relationship(
-        'Events',backref='headline',lazy='dynamic')
-    
+        'Events', backref='headline', lazy='dynamic')
+
     def cal_point(self):
         # get the time lapse
         submit_at = self.timestamp
         now = datetime.utcnow()
-        delta = (now - submit_at).total_seconds() / 3600 # unit hour
-        duration = max(0.5, delta - 2) # plan to cal per 2 hour, celery
+        delta = (now - submit_at).total_seconds() / 3600  # unit hour
+        duration = max(0.5, delta - 2)  # plan to cal per 2 hour, celery
         score = self.vote + self.comments.count()
         point = round(score / duration)
         self.point = point  # short-time factor
         self.score = score  # long-term
         db.session.add(self)
-        #db.session.commit()
-    
+        # db.session.commit()
+
     def to_dict(self):
         s = self.submitor
         submitor_dict = {
-            'id': s.id, 
+            'id': s.id,
             'name': s.showname,
             'avatar': s.user_avatar
         }
@@ -1381,7 +1386,7 @@ class Headlines(db.Model):
 
     def __repr__(self):
         return '<Headlines %r>' % self.title
-    
+
 
 # helper Model for Messages n2n with self for dialog
 class Dialog(db.Model):
@@ -1394,14 +1399,14 @@ class Dialog(db.Model):
         db.Integer,
         db.ForeignKey('messages.id'),
         primary_key=True)
-    timestamp = db.Column(db.DateTime,
-                         default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class Messages(db.Model):
     __table_name__ = "messages"
     id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.Text) # !! encrypt, to do
-    status = db.Column(db.String(16)) #unread,read,s_del,r_del
+    content = db.Column(db.Text)  # !! encrypt, to do
+    status = db.Column(db.String(16))  # unread,read,s_del,r_del
 
     # n to 1 with Users for send and receive msg
     send_id = db.Column(
@@ -1428,7 +1433,7 @@ class Messages(db.Model):
     def dialog(self, message):
         d = Dialog(send=self, re=message)
         db.session.add(d)
-        #db.session.commit()
+        # db.session.commit()
 
     def __repr__(self):
         return '<Messages %r>' % self.content
@@ -1437,7 +1442,7 @@ class Messages(db.Model):
 class Permission:
     SCFFFV = 0x0001  # STAR,CHALLENGE,FAV,FLAG,FOLLOW,VOTE
     DEMAND = 0x0002
-    EDIT_ITEM = 0x0004 # EDIT ITEM/TAG
+    EDIT_ITEM = 0x0004  # EDIT ITEM/TAG
     COMMENT = 0x0008
     POST = 0x0010
     ADD_ITEM = 0x0020
@@ -1445,10 +1450,10 @@ class Permission:
     ARTICLE = 0x0080
     EDIT_POST = 0x0100
     EDIT_TIPS = 0x0200
-
-    MOD_CONTENT =0x2000
+    MOD_CONTENT = 0x2000
     MOD_ROLE = 0x4000
-    ADMIN =0x8000
+    ADMIN = 0x8000
+
 
 class Roles(db.Model):
     __table_name__ = 'roles'
@@ -1460,28 +1465,29 @@ class Roles(db.Model):
     # 1 to n with Users
     users = db.relationship(
         'Users', backref='role', lazy='dynamic')
-    
+
     def to_dict(self):
         role_dict = {
             'duty': self.duty,
             'permissions': self.permissions
         }
+        return role_dict
 
     # for add roles
-    role_cases ={
-        "limited":(Permission.SCFFFV, False),
-        "user":(Permission.SCFFFV | Permission.DEMAND |
-                Permission.EDIT_ITEM | Permission.COMMENT |
-                Permission.POST | Permission.ADD_ITEM |
-                Permission.REVIEW | Permission.ARTICLE,
-                True),
-        "moderator":(Permission.SCFFFV | Permission.DEMAND |
-                Permission.EDIT_ITEM | Permission.COMMENT |
-                Permission.POST | Permission.ADD_ITEM |
-                Permission.REVIEW | Permission.ARTICLE |
-                Permission.EDIT_POST | Permission.EDIT_TIPS |
-                Permission.MOD_CONTENT, False),
-        "Admin":(0xffff, False)
+    role_cases = {
+        "limited": (Permission.SCFFFV, False),
+        "user": (Permission.SCFFFV | Permission.DEMAND |
+                 Permission.EDIT_ITEM | Permission.COMMENT |
+                 Permission.POST | Permission.ADD_ITEM |
+                 Permission.REVIEW | Permission.ARTICLE,
+                 True),
+        "moderator": (Permission.SCFFFV | Permission.DEMAND |
+                      Permission.EDIT_ITEM | Permission.COMMENT |
+                      Permission.POST | Permission.ADD_ITEM |
+                      Permission.REVIEW | Permission.ARTICLE |
+                      Permission.EDIT_POST | Permission.EDIT_TIPS |
+                      Permission.MOD_CONTENT, False),
+        "Admin": (0xffff, False)
     }
 
     @staticmethod
@@ -1499,6 +1505,7 @@ class Roles(db.Model):
     def __repr__(self):
         return '<Roles %r>' % self.duty
 
+
 # helper Model for follow Users
 class Follow(db.Model):
     __tablename__ = 'follow'
@@ -1510,8 +1517,8 @@ class Follow(db.Model):
         db.Integer,
         db.ForeignKey('users.id'),
         primary_key=True)
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class Users(db.Model):
     __table_name__ = "users"
@@ -1529,11 +1536,11 @@ class Users(db.Model):
     location = db.Column(db.String(64))
     about_me = db.Column(db.Text)
     links = db.Column(db.String(256))
-    #record mission accomplished
+    # record mission accomplished
     mission = db.Column(db.Integer, default=0)
     credit = db.Column(db.Integer, default=0)
-    incode = db.Column(db.String(12)) #code of who invite me
-    recode = db.Column(db.String(12)) #my code to invite other
+    incode = db.Column(db.String(12))  # code of who invite me
+    recode = db.Column(db.String(12))  # my code to invite other
 
     # n to 1 with Roles
     role_id = db.Column(
@@ -1579,49 +1586,49 @@ class Users(db.Model):
     send_messages = db.relationship(
         'Messages',
         foreign_keys=[Messages.send_id],
-        backref=db.backref('sender',lazy='joined'),
+        backref=db.backref('sender', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # 1 to n with Messages for receive
     receive_messages = db.relationship(
         'Messages',
         foreign_keys=[Messages.receive_id],
-        backref=db.backref('receiver',lazy='joined'),
+        backref=db.backref('receiver', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Posts for contribute
     contribute_posts = db.relationship(
         'Contribute',
         foreign_keys=[Contribute.user_id],
-        backref=db.backref('contributor',lazy='joined'),
+        backref=db.backref('contributor', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Posts for star
     star_posts = db.relationship(
         'Star',
         foreign_keys=[Star.user_id],
-        backref=db.backref('starer',lazy='joined'),
+        backref=db.backref('starer', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Posts for challenge
     challenge_posts = db.relationship(
         'Challenge',
         foreign_keys=[Challenge.user_id],
-        backref=db.backref('challenger',lazy='joined'),
+        backref=db.backref('challenger', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Items for flag
     flag_items = db.relationship(
         'Flag',
         foreign_keys=[Flag.user_id],
-        backref=db.backref('flager',lazy='joined'),
+        backref=db.backref('flager', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with Tags for favirate
     fav_tags = db.relationship(
         'Fav',
         foreign_keys=[Fav.user_id],
-        backref=db.backref('faver',lazy='joined'),
+        backref=db.backref('faver', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # n2n with self for follow
@@ -1638,7 +1645,7 @@ class Users(db.Model):
         backref=db.backref('followed', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-    
+
     # n2n with Clips for vote
     vote_clips = db.relationship(
         'Cvote',
@@ -1675,7 +1682,7 @@ class Users(db.Model):
         lazy='dynamic',
         cascade='all, delete-orphan')
 
-    #init and set role
+    # init and set role
     def __init__(self, **kwargs):
         super(Users, self).__init__(**kwargs)
         if self.role is None:
@@ -1684,7 +1691,7 @@ class Users(db.Model):
                            first()
             if self.role is None:
                 self.role = Roles.query.filter_by(default=True).first()
-    
+
     # password hashing
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
@@ -1699,7 +1706,7 @@ class Users(db.Model):
     @password.setter
     def password(self, password):
         self.password_hash = pwd_context.encrypt(password)
-    
+
     # confirm and reset psw
     def generate_confirmation_token(self, expiration=24*3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
@@ -1739,14 +1746,14 @@ class Users(db.Model):
     def check_token_expire(token):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
-            data = s.loads(token.encode('utf-8'))
+            s.loads(token.encode('utf-8'))
             return True
         except:
             return False
 
     # token auth
-    def generate_auth_token(self, exp=5): # unit d
-        s = Serializer(current_app.config['SECRET_KEY'], expires_in=exp*24*3600) # unit to s
+    def generate_auth_token(self, exp=5):  # unit d
+        s = Serializer(current_app.config['SECRET_KEY'], expires_in=exp*24*3600)  # unit to s
         return (s.dumps({'id': self.id}), exp)
 
     @staticmethod
@@ -1755,72 +1762,79 @@ class Users(db.Model):
         try:
             data = s.loads(token)
         except SignatureExpired:
-            return None #'valid token expired' # None #    # valid token, but expired
+            return None  # 'valid token expired' # None #    # valid token, but expired
         except BadSignature:
-            return None #'invalid token' #None    # invalid token
+            return None  # 'invalid token' #None    # invalid token
         user = Users.query.get(data.get('id'))
         return user
-    
-    #check the user's permission
-    def can(self,permission):
+
+    # check the user's permission
+    def can(self, permission):
         return self.role is not None and \
               (self.role.permissions & permission) == permission
 
-    #star and unstar a post
+    # star and unstar a post
     def star(self, post):
         if not self.staring(post):
             s = Star(starer=self, star_post=post)
             db.session.add(s)
-            #post.cal_vote()
-            db.session.commit() # need to commit for API??
+            # post.cal_vote()
+            db.session.commit()  # need to commit for API??
+
     def unstar(self, post):
         s = self.star_posts.filter_by(post_id=post.id).first()
         if s:
             db.session.delete(s)
-            #post.cal_vote()
-            db.session.commit() # need to commit for API??
+            # post.cal_vote()
+            db.session.commit()  # need to commit for API??
+
     def staring(self, post):
         return self.star_posts.filter_by(
             post_id=post.id).first() is not None
 
-    #challenge a post
+    # challenge a post
     def challenge(self, post):
         if not self.challenging(post):
             c = Challenge(challenger=self, challenge_post=post)
             db.session.add(c)
-            #post.cal_vote()
-            db.session.commit() # need to commit for API??
+            # post.cal_vote()
+            db.session.commit()  # need to commit for API??
+
     def unchallenge(self, post):
         c = self.challenge_posts.filter_by(post_id=post.id).first()
         if c:
             db.session.delete(c)
-            #post.cal_vote()
-            db.session.commit() # need to commit for API??
+            # post.cal_vote()
+            db.session.commit()  # need to commit for API??
+
     def challenging(self, post):
         return self.challenge_posts.filter_by(
             post_id=post.id).first() is not None
 
-    #follow and unfollow user
+    # follow and unfollow user
     def follow(self, user):
         if not self.is_following(user):
-            f = Follow(follower=self,followed=user)
+            f = Follow(follower=self, followed=user)
             db.session.add(f)
-            db.session.commit() # need to commit for API??
+            db.session.commit()  # need to commit for API??
+
     def unfollow(self, user):
         f = self.followed.filter_by(followed_id=user.id).first()
         if f:
             db.session.delete(f)
-            db.session.commit() # need to commit for API??
+            db.session.commit()  # need to commit for API??
+
     def is_following(self, user):
         return self.followed.filter_by(
             followed_id=user.id).first() is not None
+
     def is_followed_by(self, user):
         return self.followers.filter_by(
             follower_id=user.id).first() is not None
 
     # flag an item as read, to read or reading
     def flag(self, item, n, note=''):
-        fl = Flag.query.filter_by(user_id=self.id,item_id=item.id).first()
+        fl = Flag.query.filter_by(user_id=self.id, item_id=item.id).first()
         if fl:
             fl.flag_label = n
             fl.flag_note = note
@@ -1828,24 +1842,24 @@ class Users(db.Model):
             db.session.add(fl)
         else:
             new_fl = Flag(
-                flager=self, 
+                flager=self,
                 flag_item=item,
                 flag_label=n,
                 flag_note=note
             )
             db.session.add(new_fl)
         # update item's vote
-        #item.cal_vote()
-        db.session.commit() # need to commit for API??
+        # item.cal_vote()
+        db.session.commit()  # need to commit for API??
 
-    def flaging(self,item):
-        fl = Flag.query.filter_by(user_id=self.id,item_id=item.id).first()
+    def flaging(self, item):
+        fl = Flag.query.filter_by(user_id=self.id, item_id=item.id).first()
         if fl:
             d_note = {
                 'note': fl.flag_note,
                 'time': fl.timestamp.strftime('%Y-%m-%d %H:%M:%S')
             }
-            d_label =  {'label': 'Flag It'}
+            d_label = {'label': 'Flag It'}
             if fl.flag_label == 1:
                 d_label = {'label': 'Scheduled'}
             if fl.flag_label == 2:
@@ -1854,59 +1868,62 @@ class Users(db.Model):
                 d_label = {'label': 'Have Done'}
             d = {**d_note, **d_label}
         else:
-            d =  {'label': 'Flag It', 'note': '', 'time': ''}
+            d = {'label': 'Flag It', 'note': '', 'time': ''}
         return d
-    #fav and unfav a tag
+
+    # fav and unfav a tag
     def faving(self, tag):
         return self.fav_tags.filter_by(
             tag_id=tag.id).first() is not None
+
     def fav(self, tag):
         if not self.faving(tag):
             fv = Fav(faver=self, fav_tag=tag)
             db.session.add(fv)
-            #tag.cal_vote()
-            db.session.commit() #for API??
+            # tag.cal_vote()
+            db.session.commit()  # for API??
+
     def unfav(self, tag):
         fv = self.fav_tags.filter_by(tag_id=tag.id).first()
         if fv:
             db.session.delete(fv)
-            #tag.cal_vote()
-            db.session.commit() #for API??
-    
-    #participate or not a circle
+            # tag.cal_vote()
+            db.session.commit()  # for API??
+
+    # participate or not a circle
     def parting(self, circle):
         return self.participate_circles.filter_by(
             circle_id=circle.id).first() is not None
+
     def participate(self, circle):
         if not self.parting(circle):
             pt = Participate(participator=self, participate_circle=circle)
             db.session.add(pt)
             db.session.commit()
+
     def unparticipate(self, circle):
         pt = self.participate_circles.filter_by(circle_id=circle.id).first()
         if pt:
             db.session.delete(pt)
             db.session.commit()
 
-    #save activities to db Events
-    def set_event(self,action=None,\
-                       postid=None,itemid=None,\
-                       reviewid=None,demandid=None,\
-                       tagid=None,headlineid=None):
+    # save activities to db Events
+    def set_event(self, action=None, postid=None, itemid=None, reviewid=None,
+                  demandid=None, tagid=None, headlineid=None):
         query = self.events
         # avoid duplicated entry
-        if action in ['Created','Starred','Started challenge']:
-            e = query.filter_by(action=action,post_id=postid).first()
-        elif action in ['Scheduled','Working on','Get done']:
-            e = query.filter_by(action=action,item_id=itemid).first()
-        elif action in ['Followed','Updated Description']:
-            e = query.filter_by(action=action,tag_id=tagid).first()
-        elif action in ['Posted','Endorsed']:
-            e = query.filter_by(action=action,review_id=reviewid).first()
-        elif action in ['Sent','Voted']:
-            e = query.filter_by(action=action,demand_id=demandid).first()
-        elif action in ['Submitted','Push']:
-            e = query.filter_by(action=action,headline_id=headlineid).first()
+        if action in ['Created', 'Starred', 'Started challenge']:
+            e = query.filter_by(action=action, post_id=postid).first()
+        elif action in ['Scheduled', 'Working on', 'Get done']:
+            e = query.filter_by(action=action, item_id=itemid).first()
+        elif action in ['Followed', 'Updated Description']:
+            e = query.filter_by(action=action, tag_id=tagid).first()
+        elif action in ['Posted', 'Endorsed']:
+            e = query.filter_by(action=action, review_id=reviewid).first()
+        elif action in ['Sent', 'Voted']:
+            e = query.filter_by(action=action, demand_id=demandid).first()
+        elif action in ['Submitted', 'Push']:
+            e = query.filter_by(action=action, headline_id=headlineid).first()
         else:
             return None
         if e:
@@ -1927,7 +1944,7 @@ class Users(db.Model):
     def accomplished(self):
         pass
 
-    def cal_credit(self,p=None,t=None,r=None,c=None,d=None,a=1,m=1):
+    def cal_credit(self, p=None, t=None, r=None, c=None, d=None, a=1, m=1):
         p = p or self.posts.count()*5
         t = t or self.tips.count()*5
         r = r or self.reviews.count()*5
@@ -1937,23 +1954,24 @@ class Users(db.Model):
         m = m or self.mission*10
         self.credit = m+p+t+r+a+c+d
         db.session.add(self)
-        #db.session.commit()
+        # db.session.commit()
 
-    #@cache.memoize(timeout=60*5)#cannot cache,due to n2n lazy opt? to tackle.
+    # @cache.memoize(timeout=60*5)#cannot cache,due to n2n lazy opt? to tackle.
     def get_tag_set(self):
         # star posts' Tags
-        tag_s = [p.star_post.tags for p in self.star_posts] #2D LIST
-        #challenge posts'tags
-        tag_c = [p.challenge_post.tags for p in self.challenge_posts] #2D
-        #flaged items' Tags
-        tag_fg = [i.flag_item.itags for i in self.flag_items] #2D
-        #faving tags
+        tag_s = [p.star_post.tags for p in self.star_posts]  # 2D LIST
+        # challenge posts'tags
+        tag_c = [p.challenge_post.tags for p in self.challenge_posts]  # 2D
+        # flaged items' Tags
+        tag_fg = [i.flag_item.itags for i in self.flag_items]  # 2D
+        # faving tags
         tag_fv = [i.fav_tag for i in self.fav_tags]
-        #merge and unduplicated
+        # merge and unduplicated
         tag_all = sum(tag_s + tag_c + tag_fg, tag_fv)
         tag_set = set(tag_all)
 
-        return tag_set,tag_fv
+        return tag_set, tag_fv
+
     # set avatar
     @property
     def user_avatar(self):
@@ -1976,14 +1994,14 @@ class Users(db.Model):
             'avatar': self.user_avatar,
             'location': self.location or '',
             'about': self.about_me or '',
-            'followercount': self.followers.count(), 
-            'followedcount': self.followed.count(), # following other
+            'followercount': self.followers.count(),
+            'followedcount': self.followed.count(),  # following other
             'exlink': self.links or '',
             'incode': self.incode,
             'recode': self.recode
         }
         return user_dict
-    
+
     # for some simple query
     def to_simple_dict(self):
         user_dict = {
@@ -1998,65 +2016,26 @@ class Users(db.Model):
     def __repr__(self):
         return '<Users %r>' % (self.name + str(self.id))
 
-# can be deleted??
-class AnonymousUser():
-    @property
-    def id(self):
-        id = -1
-        return id
-    @property
-    def nickname(self):
-        return None
-    @property
-    def name(self):
-        return None
-    def can(self, permissions):
-        return False
-    def is_administrator(self):
-        return False
-    def staring(self, post):
-        return False
-    def challenging(self, post):
-        return False
-    def is_following(self, user):
-        return False
-    def is_followed_by(self, user):
-        return False
-    def faving(self, tag):
-        return False
-    def flaging(self,item):
-        return "Flag It"
-    @property
-    def followed(self):
-        return []
-    def role(self):
-        r = Roles(duty=None,permissions=0x0000)
-        return r
-    def to_dict(self):
-        return None
-#login_manager.anonymous_user = AnonymousUser
-
 
 class Authors(db.Model):
     __table_name__ = "authors"
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), unique=True, nullable=False) # uni maybe an issue
+    name = db.Column(db.String(128), unique=True, nullable=False)  # uni maybe an issue
     photo = db.Column(db.String(256))
-    link =  db.Column(db.String(256))
+    link = db.Column(db.String(256))
     nation = db.Column(db.String(64))
     language = db.Column(db.String(64))
     gender = db.Column(db.String(16))
     birth = db.Column(db.Date)
     age = db.Column(db.String(8))
     about = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    #n2n with items for byline
+    # n2n with items for byline
     items = db.relationship(
         'Byline',
         foreign_keys=[Byline.author_id],
-        backref=db.backref('by',lazy='joined'),
+        backref=db.backref('by', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
 
@@ -2068,11 +2047,10 @@ class Events(db.Model):
     __table_name__ = "events"
     id = db.Column(db.Integer, primary_key=True)
     action = db.Column(db.String(32))
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     # n to 1 with Users and others for record activities
-    #events - actor
-    user_id =  db.Column(
+    # events - actor
+    user_id = db.Column(
         db.Integer, db.ForeignKey('users.id')
     )
     post_id = db.Column(
@@ -2100,13 +2078,13 @@ class Events(db.Model):
         db.Integer, db.ForeignKey('headlines.id')
     )
 
-    # get events, ##need to tacle some issue #if del, the obj is None,error occur 
+    # get events, ##need to tacle some issue #if del, the obj is None,error occur
     # warning: fragile!!
     @property
     def action_content(self):
         act = self.action
         content_dict = {}
-        if act in ['Created','Starred','Started challenge']:
+        if act in ['Created', 'Starred', 'Started challenge']:
             q = self.post
             if q:
                 content_dict = {
@@ -2114,40 +2092,40 @@ class Events(db.Model):
                     'id': q.id,
                     'content': q.title
                 }
-        if act in ['Scheduled','Working on','Get done']:
-            q=self.item
+        if act in ['Scheduled', 'Working on', 'Get done']:
+            q = self.item
             if q:
                 content_dict = {
                     'type': 'item',
                     'id': q.id,
                     'content': q.title
                 }
-        if act in ['Posted','Endorsed']:
-            q=self.review
+        if act in ['Posted', 'Endorsed']:
+            q = self.review
             if q:
                 content_dict = {
                     'type': 'Review',
                     'id': q.id,
                     'content': q.heading
                 }
-        if act in ['Followed','Updated Description']:
-            q=self.tag
+        if act in ['Followed', 'Updated Description']:
+            q = self.tag
             if q:
                 content_dict = {
                     'type': 'Tag',
                     'id': q.id,
                     'content': q.tag
                 }
-        if act in ['Sent','Voted']:
-            q=self.demand
+        if act in ['Sent', 'Voted']:
+            q = self.demand
             if q:
                 content_dict = {
                     'type': 'Demand',
                     'id': q.id,
                     'content': q.body
                 }
-        if act in ['Submitted','Push']:
-            q=self.headline
+        if act in ['Submitted', 'Push']:
+            q = self.headline
             if q:
                 content_dict = {
                     'type': 'Headline',
@@ -2159,8 +2137,8 @@ class Events(db.Model):
     def to_dict(self):
         actor = self.actor
         actor_dict = {
-            'id': actor.id, 
-            'name': actor.showname, 
+            'id': actor.id,
+            'name': actor.showname,
             'avatar': actor.user_avatar
         }
         event_dict = {
@@ -2183,11 +2161,10 @@ class Articles(db.Model):
     figure = db.Column(db.String(512))
     body = db.Column(db.Text, nullable=False)
     body_html = db.Column(db.Text)
-    vote = db.Column(db.Integer,default=1)
+    vote = db.Column(db.Integer, default=1)
     timestamp = db.Column(db.DateTime,
                           default=datetime.utcnow)
-    renewal = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    renewal = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
 
     # n to 1 with Users
@@ -2204,8 +2181,8 @@ class Articles(db.Model):
     def renew(self):
         self.renewal = datetime.utcnow()
         db.session.add(self)
-        #db.session.commit()
-    
+        # db.session.commit()
+
     def __repr__(self):
         return '<Articles %r>' % self.title
 
@@ -2223,9 +2200,8 @@ class Columns(db.Model):
     title = db.Column(db.String(256), nullable=False)
     intro = db.Column(db.Text)
     figure = db.Column(db.String(512))
-    vote = db.Column(db.Integer,default=1)
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    vote = db.Column(db.Integer, default=1)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
 
     # n to 1 with Users
@@ -2241,7 +2217,7 @@ class Columns(db.Model):
     def __repr__(self):
         return '<Columns %r>' % self.title
 
-#update db
+# update db
 # cd backend
 # python manage.py db init
 # python manage.py db migrate -m "comment"
