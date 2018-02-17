@@ -12,7 +12,7 @@ from config import config
 db = SQLAlchemy()
 cache = Cache(config={
     'CACHE_TYPE': 'simple',
-    'CACHE_DEFAULT_TIMEOUT': 60*10
+    'CACHE_DEFAULT_TIMEOUT': 60*60*2
     })
 mail = Mail()
 cors = CORS()

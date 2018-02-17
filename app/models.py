@@ -1716,7 +1716,7 @@ class Users(db.Model):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token.encode('utf-8'))
-        except:
+        except Exception:
             return False
         if data.get('confirm') != self.id:
             return False
@@ -1733,7 +1733,7 @@ class Users(db.Model):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token.encode('utf-8'))
-        except:
+        except Exception:
             return False
         user = Users.query.get(data.get('reset'))
         if user is None or (username and user.name != username):
@@ -1748,7 +1748,7 @@ class Users(db.Model):
         try:
             s.loads(token.encode('utf-8'))
             return True
-        except:
+        except Exception:
             return False
 
     # token auth

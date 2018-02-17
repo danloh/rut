@@ -88,12 +88,12 @@ def new_clip():
         chapnum = m if m.isdigit() else ''
         try:
             chapname = chapl[1].strip()
-        except:
+        except Exception:
             chapname = ''
         try:
             p = chapl[2]
             pagenum = p if p.isdigit() else ''
-        except:
+        except Exception:
             pagenum = ''
     else:
         chapnum = chapname = pagenum = ''

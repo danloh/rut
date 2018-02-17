@@ -65,9 +65,8 @@ def get_html(url):
         r = requests.get(url, headers=fakeheader(), timeout=30)
         r.raise_for_status()
         r.encoding = r.apparent_encoding
-        # print(r.text)
         return r.text
-    except:
+    except Exception:
         return "Error"
 
 
@@ -77,7 +76,7 @@ def get_soup(url):
         try:
             soup = bs(html, 'lxml')
             return soup
-        except:
+        except Exception:
             return "Error"
     else:
         return "Error"
@@ -112,7 +111,7 @@ def parse_html_amazon(url):
     titleTag = soup.find('h1', id='title')
     try:
         tg = titleTag.select('span')
-    except:
+    except Exception:
         tg = []
     length = len(tg)
     if length > 0:
@@ -129,7 +128,7 @@ def parse_html_amazon(url):
             'span',
             attrs={'class': 'author notFaded'}
         )
-    except:
+    except Exception:
         authorTag = []
     d_authors = {}
     for author in authorTag:
@@ -143,7 +142,7 @@ def parse_html_amazon(url):
                 'span',
                 class_='contribution'
             ).text.strip()
-        except:
+        except Exception:
             name = None
         else:
             d_authors[name] = role
@@ -156,7 +155,7 @@ def parse_html_amazon(url):
         selected = swatchSect.find('a').find_all('span')
         binding = selected[0].text.strip()
         price = selected[1].text.strip()
-    except:
+    except Exception:
         binding = d.get('bind')
         price = ''
     d['binding'] = binding
@@ -169,7 +168,7 @@ def parse_html_amazon(url):
     )
     try:
         detailList = detailTable.find_all('li')
-    except:
+    except Exception:
         detailList = []
     for detail in detailList:
         lst = detail.get_text(strip=True).split(':')+[""]
@@ -181,7 +180,7 @@ def parse_html_amazon(url):
     aboutSection = soup.find('div', id='iframeContent')
     try:
         about = aboutSection.get_text()
-    except:
+    except Exception:
         about = ""
     d['details'] = about
 
@@ -200,7 +199,7 @@ def parse_html_amazon(url):
         # front_img_url = front.get('src')  # why src value is not url but data??
         img_d = front['data-a-dynamic-image']
         front_img_url = 'https:' + img_d.split(':')[1].split('"')[0]
-    except:
+    except Exception:
         front_img_url = ""
     d['cover'] = front_img_url
 
@@ -226,7 +225,7 @@ def parse_html_amazon(url):
     #     filename = str(uid)
     #     try:
     #         down_img(front_img_url,filename)
-    #     except:
+    #     except Exception:
     #         pass
 
     return d
@@ -246,7 +245,7 @@ def parse_html_edx(url):
     # get title
     try:
         title = soup.select_one('head > title').text.strip()
-    except:
+    except Exception:
         title = ""
     d['title'] = title
 
@@ -255,7 +254,7 @@ def parse_html_edx(url):
     try:
         staffList = aboutArea.find('ul')
         instructorsList = staffList.find_all('li')
-    except:
+    except Exception:
         instructorsList = []
     d_instructor = {}
     for instructor in instructorsList:
@@ -274,7 +273,7 @@ def parse_html_edx(url):
             'div',
             class_='see-more-content'
         ).get_text()
-    except:
+    except Exception:
         about = ""
     d['details'] = about
 
@@ -285,7 +284,7 @@ def parse_html_edx(url):
     )
     try:
         imgUrl = imgLink.find('img').get('src')
-    except:
+    except Exception:
         imgUrl = ""
     cover_img = imgUrl if validUrl(imgUrl) else ""
     d['cover'] = cover_img
@@ -297,7 +296,7 @@ def parse_html_edx(url):
     #     filename = str(uid)
     #     try:
     #         down_img(cover_img,filename)
-    #     except:
+    #     except Exception:
     #         pass
 
     return d
@@ -317,7 +316,7 @@ def parse_html_coursera(url):
     # get title
     try:
         title = soup.select_one('head > title').text.strip()
-    except:
+    except Exception:
         title = ""
     d['title'] = title
 
@@ -325,14 +324,14 @@ def parse_html_coursera(url):
     instructorSection = soup.find('ul', class_='instructors-section')
     try:
         instructorList = instructorSection.find_all('li')
-    except:
+    except Exception:
         instructorList = []
     d_instructor = {}
     for instructor in instructorList:
         nameSetion = instructor.find('p', class_='instructor-name')
         try:
             name_a = nameSetion.find('a')
-        except:
+        except Exception:
             name = None
         else:
             if name_a:
@@ -347,7 +346,7 @@ def parse_html_coursera(url):
             'div', class_='creator-names'
             ).get_text()
         creator = creatorName.split(':')[1].strip()
-    except:
+    except Exception:
         creator = 'coursera'
     d['Publisher'] = creator
 
@@ -358,7 +357,7 @@ def parse_html_coursera(url):
             'p',
             class_='body-1-text course-description'
         ).text.strip()
-    except:
+    except Exception:
         about = ""
     d['details'] = about
 
@@ -366,7 +365,7 @@ def parse_html_coursera(url):
     infoTable = soup.find('table', class_='basic-info-table')
     try:
         infoTr = infoTable.find_all('tr')
-    except:
+    except Exception:
         infoTr = []
     for info in infoTr:
         try:
@@ -374,13 +373,13 @@ def parse_html_coursera(url):
             key = infoTd[0].span.text.strip()
             val = infoTd[1].text.strip()
             d[key] = val
-        except:
+        except Exception:
             infoTd = []
 
     # get img, instructor's pic
     try:
         imgUrl = instructorSection.find('img').get('src')
-    except:
+    except Exception:
         imgUrl = ""
     cover_img = imgUrl if validUrl(imgUrl) else ""
     d['cover'] = cover_img
@@ -392,7 +391,7 @@ def parse_html_coursera(url):
     #     filename = str(uid)
     #     try:
     #         down_img(cover_img,filename)
-    #     except:
+    #     except Exception:
     #         pass
 
     return d
@@ -411,14 +410,14 @@ def parse_html_other(url):
     # get title
     try:
         title = soup.select_one('head > title').text.strip()
-    except:
+    except Exception:
         title = ""
     d['title'] = title
 
     # get img by blind search
     try:
         imgUrl = soup.body.find('img').get('src')
-    except:
+    except Exception:
         imgUrl = ""
     cover_img = imgUrl if validUrl(imgUrl) else ""
     d['cover'] = cover_img
@@ -430,7 +429,7 @@ def parse_html_other(url):
     #     filename = str(uid)
     #     try:
     #         down_img(cover_img,filename)
-    #     except:
+    #     except Exception:
     #         pass
 
     return d
@@ -461,7 +460,7 @@ def store(d=None, url=''):
     try:
         title = d['title']
         uid = d['uid']
-    except:
+    except Exception:
         return 'Something Wrong'
     else:
         # store or update item

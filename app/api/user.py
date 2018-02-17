@@ -208,6 +208,7 @@ def search_items(label):
                 continue
         item_dict = {
             'id': item.id,
+            'cate': item.cate,
             'title': item.title
         }
         items_list.append(item_dict)

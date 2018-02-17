@@ -151,7 +151,7 @@ def get_challege_rut():
             'items': items,
             'deadline': deadline or ''
         })
-    except:
+    except Exception:
         return jsonify({
             'rut': {},
             'items': [],
