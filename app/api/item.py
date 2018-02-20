@@ -283,6 +283,10 @@ def new_item():
     """add new item directly"""
     item_query = Items.query
     res_url = request.json.get('resUrl', '').strip()
+    # for flag 
+    user = g.user
+    flag_dict = {'Have Done': 3, 'Schedule': 1, 'Working On': 2}
+    label = request.json.get('flag', '').strip()
     # check if the url has been spider-ed,
     re_url = r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
     reg_url = re.compile(re_url, 0)
@@ -290,7 +294,10 @@ def new_item():
         pure_url = res_url.split('/ref=')[0]  # for amazon url
         lst = item_query.filter(Items.res_url.in_((res_url, pure_url))).all()
         if lst:
-            return jsonify(lst[0].id)
+            item = lst[0]
+            if label:
+                user.flag(item, flag_dict[label])
+            return jsonify(item.id)
     # via spider or manually
     how = request.json.get('how', '').strip()
     if how == 'spider':
@@ -304,6 +311,9 @@ def new_item():
     # check item if existing per the uid
     old_item = item_query.filter_by(uid=uid).first() if uid else None
     if old_item:
+        # flag once item added
+        if label:
+            user.flag(old_item, flag_dict[label])
         return jsonify(old_item.id)
     new_item = Items(
         uid=uid or spider.random_uid(),
@@ -325,4 +335,7 @@ def new_item():
     if d.get('byline', '').strip():
         new_item.author_to_db()
     db.session.commit()
+    # flag once item added
+    if label:
+        user.flag(new_item, flag_dict[label])
     return jsonify(new_item.id)
