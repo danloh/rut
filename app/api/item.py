@@ -79,12 +79,9 @@ def get_item_inruts(itemid):
 @rest.route('/item/<int:itemid>/who/<string:flag>')
 def get_item_whoflags(itemid, flag):
     flagers = Flag.query.filter_by(item_id=itemid)
-    if flag == 'todo':
-        flagers = flagers.filter_by(flag_label=1)
-    if flag == 'doing':
-        flagers = flagers.filter_by(flag_label=2)
-    if flag == 'done':
-        flagers = flagers.filter_by(flag_label=3)
+    label_dict = {'todo': 1, 'doing': 2, 'done': 3}
+    label = label_dict.get(str(flag), 0)
+    flagers = flagers.filter_by(flag_label=label)
     # pagination
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
@@ -287,6 +284,7 @@ def new_item():
     user = g.user
     flag_dict = {'Have Done': 3, 'Schedule': 1, 'Working On': 2}
     label = request.json.get('flag', '').strip()
+    flag = flag_dict.get(label)
     # check if the url has been spider-ed,
     re_url = r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
     reg_url = re.compile(re_url, 0)
@@ -295,8 +293,8 @@ def new_item():
         lst = item_query.filter(Items.res_url.in_((res_url, pure_url))).all()
         if lst:
             item = lst[0]
-            if label:
-                user.flag(item, flag_dict[label])
+            if flag:
+                user.flag(item, flag)
             return jsonify(item.id)
     # via spider or manually
     how = request.json.get('how', '').strip()
@@ -312,8 +310,8 @@ def new_item():
     old_item = item_query.filter_by(uid=uid).first() if uid else None
     if old_item:
         # flag once item added
-        if label:
-            user.flag(old_item, flag_dict[label])
+        if flag:
+            user.flag(old_item, flag)
         return jsonify(old_item.id)
     new_item = Items(
         uid=uid or spider.random_uid(),
@@ -336,6 +334,6 @@ def new_item():
         new_item.author_to_db()
     db.session.commit()
     # flag once item added
-    if label:
-        user.flag(new_item, flag_dict[label])
+    if flag:
+        user.flag(new_item, flag)
     return jsonify(new_item.id)
