@@ -646,7 +646,7 @@ class Items(db.Model):
     # set default item cover
     @property
     def item_cover(self):
-        if self.cover is None or not self.cover.strip():
+        if self.cover is None or not self.cover.startswith('https'):
             return url_for('static', filename='pic/dpc.svg')
         else:
             return self.cover
