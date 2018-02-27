@@ -32,8 +32,10 @@ def author2str(d):
 def validUrl(url):
     re_url = r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
     reg_url = re.compile(re_url, 0)
-    if reg_url.match(url):
-        return True
+    try:
+        return reg_url.match(url)
+    except Exception:
+        return False
 
 
 def fakeheader():
