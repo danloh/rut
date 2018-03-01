@@ -203,9 +203,11 @@ def verify_password(username_or_token, password):
 @rest.route('/login')
 @auth.login_required
 def get_auth_token():
-    token, exp = g.user.generate_auth_token()
+    user = g.user
+    token, exp = user.generate_auth_token()
     return jsonify({
         'token': token.decode('ascii'),
         'exp': exp,
-        'userid': g.user.id
+        'donenum': user.flag_items.filter_by(flag_label=3).count(), # any better way?
+        'userid': user.id
     })
