@@ -582,6 +582,126 @@ class Posts(db.Model):
 # db.event.listen(Posts.epilog, 'set', Posts.on_changed_epilog)
 
 
+# helper Model for n2n Roads gather Items
+class Gather(db.Model):
+    __table_name__ = 'gather'
+    id = db.Column(db.Integer, primary_key=True,
+                   autoincrement=True)
+    item_id = db.Column(
+        db.Integer,
+        db.ForeignKey("items.id"),
+        primary_key=True)
+    road_id = db.Column(
+        db.Integer,
+        db.ForeignKey("roads.id"),
+        primary_key=True)
+    order = db.Column(db.SmallInteger)   # item's order in road
+    mark = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        item_dict = self.item.to_dict()
+        mark_dict = {
+            'order': self.order,
+            'gid': self.id,
+            'roadid': self.road_id,
+            'itemid': self.item_id,
+            'item': item_dict,
+            'mark':  self.mark
+        }
+        return mark_dict
+
+
+class Roads(db.Model):
+    __table_name__ = 'roads'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(256), nullable=False)
+    intro = db.Column(db.Text, nullable=False)
+    deadline = db.Column(db.Date)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    renewal = db.Column(db.DateTime, default=datetime.utcnow)
+    disabled = db.Column(db.Boolean)
+
+    # n to 1 with Users
+    owner_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id")
+    )
+    # n2n with Items
+    items = db.relationship(
+        'Gather',
+        foreign_keys=[Gather.road_id],
+        backref=db.backref('road', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+
+    def renew(self):
+        self.renewal = datetime.utcnow()
+        db.session.add(self)
+        # db.session.commit()
+    
+    @property
+    @cache.memoize()
+    def road_cover(self):
+        n = self.items.count()
+        if n == 0:
+            return url_for('static', filename='pic/dpc.svg')
+        else:
+            m = random.randrange(n)
+            item = self.items.all()[m].item
+            return item.item_cover
+
+    # gather items into road
+    def gathered(self, item):
+        return self.items.filter_by(item_id=item.id).first() is not None
+
+    def gathering(self, item, mark):
+        if not self.gathered(item):
+            gather = Gather(
+                road=self,
+                item=item,
+                order=self.items.count()+1,
+                mark=mark
+            )
+            db.session.add(gather)
+            self.renew()
+            # db.session.commit() #if need commit?
+
+    # set and change the order of items
+    def ordering(self, item, new_order):
+        gi = self.items
+        g_old = gi.filter_by(item_id=item.id).first()
+        old_order = g_old.order
+        new_order = int(new_order)
+
+        if new_order == old_order:
+            pass
+        else:
+            if new_order > old_order:
+                gi.filter(Gather.order > old_order, Gather.order <= new_order).\
+                    update({'order': Gather.order-1})
+            if new_order < old_order:
+                gi.filter(Gather.order < old_order, Gather.order >= new_order).\
+                    update({'order': Gather.order+1})
+            g_old.order = new_order
+            db.session.add(g_old)
+            # db.session.commit()
+    
+    def to_dict(self):
+        road_dict = {
+            'id': self.id,
+            'title': self.title,
+            'intro': self.intro,
+            'cover': self.road_cover,
+            'createat': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'itemcount': self.items.count()
+        }
+        return road_dict
+
+    def __repr__(self):
+        return '<Roads %r>' % self.title
+
+
 class Items(db.Model):
     __table_name__ = 'items'
     id = db.Column(db.Integer, primary_key=True)
@@ -625,6 +745,13 @@ class Items(db.Model):
     posts = db.relationship(
         'Collect',
         foreign_keys=[Collect.item_id],
+        backref=db.backref('item', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with Roads
+    roads = db.relationship(
+        'Gather',
+        foreign_keys=[Gather.item_id],
         backref=db.backref('item', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
@@ -1553,6 +1680,9 @@ class Users(db.Model):
     # 1 to n with Collect for Tips
     tips = db.relationship(
         'Collect', backref='tip_creator', lazy='dynamic')
+    # 1 to n with Roads
+    roads = db.relationship(
+        'Roads', backref='owner', lazy='dynamic')
     # 1 to n with Comments
     comments = db.relationship(
         'Comments', backref='creator', lazy='dynamic')

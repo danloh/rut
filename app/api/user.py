@@ -235,7 +235,7 @@ def get_fav_tags(userid):
     fav_tags = Fav.query.filter_by(user_id=userid)\
                         .order_by(Fav.timestamp.desc())
     page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    per_page = request.args.get('perPage', 12, type=int)  # PER_PAGE
     tags = [t.fav_tag for t in fav_tags.offset(page * per_page).limit(per_page)]
     tags_dict = {
         'tags': [t.to_dict() for t in tags],
