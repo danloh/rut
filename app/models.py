@@ -618,6 +618,7 @@ class Roads(db.Model):
     title = db.Column(db.String(256), nullable=False)
     intro = db.Column(db.Text, nullable=False)
     deadline = db.Column(db.Date)
+    done = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     renewal = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
@@ -688,12 +689,21 @@ class Roads(db.Model):
             # db.session.commit()
     
     def to_dict(self):
+        owner = self.owner
+        owner_dict = {
+            'id': owner.id,
+            'name': owner.showname,
+            'avatar': owner.user_avatar,
+            'location': owner.location or ''
+        }
         road_dict = {
             'id': self.id,
             'title': self.title,
             'intro': self.intro,
             'cover': self.road_cover,
             'createat': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'deadline': self.deadline,
+            'owner': owner_dict,
             'itemcount': self.items.count()
         }
         return road_dict

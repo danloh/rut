@@ -12,12 +12,29 @@ def get_road(roadid):
     road_dict = road.to_dict()
     # attach tips and items included in road
     r_items = road.items.order_by(Gather.order).limit(42)
-    mark = [m.to_dict() for m in r_items]
-    road_dict['mark'] = mark
+    marks = [m.to_dict() for m in r_items]
+    road_dict['marks'] = marks
     return jsonify(road_dict)
 
-
 @rest.route('/<int:userid>/roads')
+def get_roads(userid):
+    # yield query
+    user = Users.query.get_or_404(userid)
+    roads = user.roads.filter_by(done=False)
+    # pagination
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    rs = roads.offset(page*per_page).limit(per_page)
+    # yield result: a dict
+    roads_dict = {
+        'roads': [r.to_dict() for r in rs],
+        'total': roads.count(),
+        'currentpage': page
+    }
+    return jsonify(roads_dict)
+
+
+@rest.route('/<int:userid>/allroads')
 def get_all_roads(userid):
     # yield query
     user = Users.query.get_or_404(userid)
