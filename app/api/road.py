@@ -10,11 +10,12 @@ from . import db, rest, auth, PER_PAGE
 def get_road(roadid):
     road = Roads.query.get_or_404(roadid)
     road_dict = road.to_dict()
-    # attach tips and items included in road
+    # attach items included in road
     r_items = road.items.order_by(Gather.order).limit(42)
     marks = [m.to_dict() for m in r_items]
     road_dict['marks'] = marks
     return jsonify(road_dict)
+
 
 @rest.route('/<int:userid>/roads')
 def get_roads(userid):
@@ -34,11 +35,24 @@ def get_roads(userid):
     return jsonify(roads_dict)
 
 
+# for challenge page
+@rest.route('/getonroad')  # challenging road
+@auth.login_required
+def get_on_road():
+    user = g.user
+    road = user.roads.filter_by(done=False).first()
+    road_dict = road.to_dict()
+    # attach items included in road
+    items = [t.item.to_simple_dict() for t in road.items]
+    road_dict['items'] = items
+    return jsonify(road_dict)
+
+
 @rest.route('/<int:userid>/allroads')
 def get_all_roads(userid):
     # yield query
     user = Users.query.get_or_404(userid)
-    roads = user.roads
+    roads = user.roads.order_by(Roads.done, Roads.timestamp.desc())
     # pagination
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
@@ -52,13 +66,21 @@ def get_all_roads(userid):
     return jsonify(roads_dict)
 
 
+@rest.route('/markasdone/<int:roadid>')
+@auth.login_required
+def mark_road_done(roadid):
+    road = Roads.query.get_or_404(roadid)
+    road.as_done()
+    return jsonify(road.done)
+
+
 @rest.route('/newroad', methods=['POST'])
 @auth.login_required
-def new_road(demandid=None):
+def new_road():
     title = request.json.get('title', '').strip()
     intro = request.json.get('intro', '').strip()
     deadline = request.json.get('deadline')
-    if not title or not intro:
+    if not (title and intro and deadline):
         abort(403)  # cannot be ''
     user = g.user
     road = Roads(

@@ -640,7 +640,7 @@ class Roads(db.Model):
         self.renewal = datetime.utcnow()
         db.session.add(self)
         # db.session.commit()
-    
+
     @property
     @cache.memoize()
     def road_cover(self):
@@ -687,7 +687,20 @@ class Roads(db.Model):
             g_old.order = new_order
             db.session.add(g_old)
             # db.session.commit()
-    
+
+    def as_done(self):
+        userid = self.owner.id
+        itemids = [i.item_id for i in self.items]
+        flags = Flag.query.filter(
+            Flag.user_id == userid,
+            Flag.flag_label != 3,
+            Flag.item_id.in_(itemids)
+        ).all()
+        if (not flags) and itemids:
+            self.done = True
+            db.session.add(self)
+            db.session.commit()
+
     def to_dict(self):
         owner = self.owner
         owner_dict = {
@@ -703,6 +716,7 @@ class Roads(db.Model):
             'cover': self.road_cover,
             'createat': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             'deadline': self.deadline,
+            'done': self.done,
             'owner': owner_dict,
             'itemcount': self.items.count()
         }
