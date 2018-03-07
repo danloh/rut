@@ -2,7 +2,7 @@
 # user
 
 from flask import request, g, jsonify, abort
-from ..models import Users, Flag, Posts, Star, Challenge, Items, Cvote, Fav,\
+from ..models import Users, Flag, Posts, Star, Items, Cvote, Fav,\
                      Demands, Dvote, Reviews, Rvote, Comments, Events
 from . import rest, auth, PER_PAGE
 
@@ -85,22 +85,6 @@ def get_star_ruts(userid):
     ruts_dict = {
         'ruts': [r.to_simple_dict() for r in ruts],
         'total': star_ruts.count(),
-        'tags': []
-    }
-    return jsonify(ruts_dict)
-
-
-@rest.route('/<int:userid>/challenge/ruts')
-def get_challege_ruts(userid):
-    user = Users.query.get_or_404(userid)
-    challenge_ruts = user.challenge_posts.order_by(Challenge.timestamp.desc())
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    ruts = [c.challenge_post
-            for c in challenge_ruts.offset(page * per_page).limit(per_page)]
-    ruts_dict = {
-        'ruts': [r.to_simple_dict() for r in ruts],
-        'total': challenge_ruts.count(),
         'tags': []
     }
     return jsonify(ruts_dict)

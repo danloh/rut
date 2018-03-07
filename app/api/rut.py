@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 # rut is readup tips, included an item list and tips for each item
 
-import re
 from flask import request, g, jsonify, abort
-from ..models import Posts, Star, Challenge, Collect, Users,\
-                     Tags, Comments, Flag, Demands, Items, Respon
-from ..bot import spider
+from ..models import Posts, Star, Collect, Users, Tags,\
+                     Comments, Flag, Demands, Items, Respon
 from . import db, rest, auth, PER_PAGE
 
 
@@ -77,22 +75,6 @@ def get_rut_demands(rutid):
     return jsonify(demands_list)
 
 
-@rest.route('/rut/<int:rutid>/challengers')
-def get_rut_challengers(rutid):
-    # rut = Posts.query.get_or_404(rutid)  #other way: rut.challengers
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    challengers = Challenge.query.filter_by(post_id=rutid)
-    challengercount = challengers.count()
-    r_challengers = challengers.offset(page*per_page).limit(per_page)
-    challengers_list = [u.challenger.to_simple_dict() for u in r_challengers]
-    challengers_dict = {
-        'challengers': challengers_list,
-        'challengercount': challengercount
-    }
-    return jsonify(challengers_dict)
-
-
 @rest.route('/rut/<int:rutid>/stars')
 def get_rut_stars(rutid):
     # rut = Posts.query.get_or_404(rutid)  #other way: rut.stars
@@ -119,8 +101,7 @@ def get_rut_comments(rutid):
     rut = Posts.query.get_or_404(rutid)
     rut_dict = {
         'id': rut.id,
-        'title': rut.title,
-        'challengecount': rut.challengers.count()
+        'title': rut.title
     }
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', 50, type=int)
@@ -131,32 +112,6 @@ def get_rut_comments(rutid):
     comments = [c.to_dict() for c in rut_comments]
     rut_dict['comments'] = comments
     return jsonify(rut_dict)
-
-
-# for challenge page
-@rest.route('/challengerut')  # challenging rut
-@auth.login_required
-def get_challege_rut():
-    user = g.user
-    # get the first earliest challenged rut
-    challenge_rut = user.challenge_posts\
-                        .order_by(Challenge.timestamp).first()
-    try:
-        rut = challenge_rut.challenge_post
-        deadline = challenge_rut.deadline
-        rut_dict = {'id': rut.id, 'title': rut.title}
-        items = [t.item.to_simple_dict() for t in rut.items]
-        return jsonify({
-            'rut': rut_dict,
-            'items': items,
-            'deadline': deadline or ''
-        })
-    except Exception:
-        return jsonify({
-            'rut': {},
-            'items': [],
-            'deadline': ''
-        })
 
 
 @rest.route('/challengeitems')  # challenging items !!
@@ -170,22 +125,6 @@ def get_challege_items():
     doing_items = [f.flag_item for f in doing_flags]
     doing_list = [{'id': item.id, 'title': item.title} for item in doing_items]
     return jsonify(doing_list)
-
-
-@rest.route('/setdeadline')
-@auth.login_required
-def set_deadline():
-    user = g.user
-    rutid = request.args.get('rutid')
-    challenge_rut = Challenge.query.filter_by(user_id=user.id, post_id=rutid).first()
-    # challenge_rut = user.challenge_posts.first()
-    deadline = request.args.get('date')
-    challenge_rut.deadline = deadline
-    db.session.add(challenge_rut)
-    db.session.commit()
-    due = challenge_rut.deadline
-    return jsonify(due)
-# end for challenge page
 
 
 @rest.route('/ruts')
@@ -214,15 +153,6 @@ def check_star(rutid):
     return jsonify(staring)
 
 
-@rest.route('/checkchallenge/rut/<int:rutid>')
-@auth.login_required
-def check_challenge(rutid):
-    rut = Posts.query.get_or_404(rutid)
-    user = g.user
-    challenging = 'Endchallenge' if user.challenging(rut) else 'Challenge'
-    return jsonify(challenging)
-
-
 @rest.route('/star/rut/<int:rutid>')
 @auth.login_required
 def star_rut(rutid):
@@ -242,27 +172,6 @@ def unstar_rut(rutid):
     user = g.user
     user.unstar(rut)
     return jsonify('Star')
-
-
-@rest.route('/challenge/rut/<int:rutid>')
-@auth.login_required
-def challenge_rut(rutid):
-    rut = Posts.query.get_or_404(rutid)
-    user = g.user
-    user.challenge(rut)
-    # record activity as challenge a rut
-    from task.tasks import set_event_celery
-    set_event_celery.delay(user.id, action='Started challenge', postid=rut.id)
-    return jsonify('EndChallenge')
-
-
-@rest.route('/unchallenge/rut/<int:rutid>')
-@auth.login_required
-def unchallenge_rut(rutid):
-    rut = Posts.query.get_or_404(rutid)
-    user = g.user
-    user.unchallenge(rut)
-    return jsonify('Challenge')
 
 
 @rest.route('/create/', methods=['POST'])
@@ -452,62 +361,6 @@ def edit_tips(cid):
     return jsonify('Done')
 
 
-@rest.route('/additemtorut/<int:rutid>', methods=['POST'])
-@auth.login_required
-def add_item_to_rut(rutid):
-    """Input item info and then check if exsiting
-    and add to rut as new or exsiting item
-    """
-    rut = Posts.query.get_or_404(rutid)
-    user = g.user
-    if not rut.check_editable(user):
-        abort(403)
-    # get data in request
-    title = request.json.get('title', '').strip()
-    item_uid = request.json.get('uid', '').replace('-', '').replace(' ', '')
-    res_url = request.json.get('resUrl', '').strip()
-    if not title or not (item_uid or res_url):
-        abort(403)  # cannot be None
-    uid = item_uid or spider.random_uid()
-    tips = request.json.get('tips', '...').strip()
-    spoiler_text = request.json.get('spoiler')
-    spoiler = True if spoiler_text == 'Spoiler Ahead' else False
-    # check item if existing per the uid or url
-    old_item = Items.query.filter_by(uid=uid).first()
-    if res_url:
-        online_item = Items.query.filter_by(res_url=res_url).first()
-    else:
-        online_item = None
-    if old_item is None and online_item is None:
-        new_item = Items(
-            uid=uid,
-            title=title,
-            res_url=res_url,
-            author=request.json.get('byline', '').strip(),
-            cover=request.json.get('cover', '').strip(),
-            cate=request.json.get('cate', 'Book'),
-            publisher=request.json.get('publisher', '').strip(),
-            pub_date=request.json.get('pubdate', '').strip(),
-            language=request.json.get('language', '').strip(),
-            binding=request.json.get('binding', 'Paperback').strip(),
-            page=request.json.get('page', '').strip(),
-            level=request.json.get('level', '').strip(),
-            price=request.json.get('price', '').strip(),
-            details=request.json.get('detail', '').strip()
-        )
-        db.session.add(new_item)
-        rut.collecting(new_item, tips, user, spoiler)
-
-        if request.json.get('byline', '').strip():
-            new_item.author_to_db()
-    elif old_item is not None:
-        rut.collecting(old_item, tips, user, spoiler)
-    elif online_item is not None:
-        rut.collecting(online_item, tips, user, spoiler)
-    db.session.commit()
-    return jsonify('Done')
-
-
 @rest.route('/item/<int:itemid>/torut/<int:rutid>', methods=['GET', 'POST'])
 @auth.login_required
 def item_to_rut(itemid, rutid):
@@ -523,76 +376,6 @@ def item_to_rut(itemid, rutid):
     rut.collecting(item, tips, user, spoiler)
     db.session.commit()
     return jsonify('Done')
-
-
-@rest.route('/checkitemtoadd/<int:rutid>', methods=['POST'])
-@auth.login_required
-def check_item_to_add(rutid):
-    """get item info via Spider or query in db per uid"""
-    rut = Posts.query.get_or_404(rutid)
-    user = g.user
-    if not rut.check_editable(user):
-        abort(403)
-    # regexp prepare
-    re_url = r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
-    # re_uid=r'([-]*(1[03])*[ ]*(: ){0,1})*(([0-9Xx][- ]*){13}|([0-9Xx][- ]*){10})'
-    reg_url = re.compile(re_url, 0)
-    tips = "..."  # default
-    # get checker, via url_or_uid
-    checker = request.json.get('url', '').strip()
-    # by spider
-    if reg_url.match(checker):
-        pure_url = checker.split('/ref=')[0]  # for amazon url
-        # check if the url has been spider-ed,
-        # if not, to spider
-        # if so,query item and add to post directly
-        item_query = Items.query
-        lst = item_query.filter(Items.res_url.in_((checker, pure_url))).all()
-        if lst:
-            item = lst[0]
-            rut.collecting(item, tips, user)
-            db.session.commit()
-            return jsonify('Done')
-        else:
-            d = spider.parse_html(checker)  # if any error??
-            uid = d.get('uid', '').replace('-', '').replace(' ', '')  # random_uid in spider already
-            ex_item = item_query.filter_by(uid=uid).first()
-            if ex_item:
-                rut.collecting(ex_item, tips, user)
-                db.session.commit()
-                return jsonify('Done')
-            new_item = Items(
-                uid=uid,
-                title=d.get('title'),
-                res_url=d.get('res_url', ''),
-                author=d.get('byline', ''),
-                cover=d.get('cover', ''),
-                cate=d.get('cate', 'Book'),
-                publisher=d.get('Publisher', ''),
-                pub_date=d.get('Publication Date') or d.get('publish_date', ''),
-                language=d.get('Language', 'English'),
-                binding=d.get('binding', ''),
-                page=d.get('page') or d.get('Print Length', ''),
-                level=d.get('Level', ''),
-                price=d.get('price', ''),
-                details=d.get('details', '')
-            )
-            db.session.add(new_item)
-            rut.collecting(new_item, tips, user)
-            if request.json.get('byline', '').strip():
-                new_item.author_to_db()
-            db.session.commit()
-            return jsonify('Done')
-    # check if exsiting by UID
-    else:
-        uid = checker.replace('-', '').replace(' ', '')
-        item = Items.query.filter_by(uid=uid).first()
-        if item is not None:
-            rut.collecting(item, tips, user)
-            db.session.commit()
-            return jsonify('Done')
-        else:
-            return jsonify('Back')  # if None by uid, back to try again
 
 
 @rest.route('/del/tips/<int:cid>')
@@ -622,8 +405,7 @@ def disable_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     user = g.user
     if ((rut.creator != user and user.role != 'Admin')
-        or rut.starers.count() != 0
-            or rut.challengers.count() != 0):
+            or rut.starers.count() != 0):
         abort(403)
     rut.disabled = True
     db.session.add(rut)
@@ -650,8 +432,7 @@ def delete_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     user = g.user
     if ((rut.creator != user and user.role != 'Admin')
-        or rut.starers.count() != 0
-            or rut.challengers.count() != 0):
+            or rut.starers.count() != 0):
         abort(403)
     db.session.delete(rut)
     db.session.commit()

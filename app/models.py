@@ -111,23 +111,6 @@ class Star(db.Model):
                           default=datetime.utcnow)
 
 
-# helper Model for n2n Posts with Users for challenge
-class Challenge(db.Model):
-    __table_name__ = 'challenge'
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id"),
-        primary_key=True)
-    post_id = db.Column(
-        db.Integer,
-        db.ForeignKey("posts.id"),
-        primary_key=True)
-    deadline = db.Column(db.Date)
-    done = db.Column(db.Boolean)
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
-
-
 # helper Model for n2n Posts co-Contribute
 class Contribute(db.Model):
     __table_name__ = 'contribute'
@@ -330,13 +313,6 @@ class Posts(db.Model):
         backref=db.backref('star_post', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-    # n2n with Users for challenge
-    challengers = db.relationship(
-        'Challenge',
-        foreign_keys=[Challenge.post_id],
-        backref=db.backref('challenge_post', lazy='joined'),
-        lazy='dynamic',
-        cascade='all, delete-orphan')
     # n2n with Items
     items = db.relationship(
         'Collect',
@@ -482,11 +458,10 @@ class Posts(db.Model):
         db.session.add(self)
         # db.session.commit()
 
-    def cal_vote(self, i=None, s=None, c=None):
+    def cal_vote(self, i=None, s=None):
         i = i or self.items.count()
         s = s or self.starers.count()
-        c = c or self.challengers.count() * 2
-        self.vote = i+s+c
+        self.vote = i+s
         db.session.add(self)
         # db.session.commit()
 
@@ -540,7 +515,6 @@ class Posts(db.Model):
             # 'renewat': self.renewal.strftime('%Y-%m-%d %H:%M:%S'),
             'itemcount': self.items.count(),
             'starcount': self.starers.count(),
-            'challengecount': self.challengers.count(),
             'commentcount': self.comments.count(),
             'demandcount': self.demands.count(),
             'cover': self.post_cover,
@@ -1764,13 +1738,6 @@ class Users(db.Model):
         backref=db.backref('starer', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-    # n2n with Posts for challenge
-    challenge_posts = db.relationship(
-        'Challenge',
-        foreign_keys=[Challenge.user_id],
-        backref=db.backref('challenger', lazy='joined'),
-        lazy='dynamic',
-        cascade='all, delete-orphan')
     # n2n with Items for flag
     flag_items = db.relationship(
         'Flag',
@@ -1946,25 +1913,6 @@ class Users(db.Model):
         return self.star_posts.filter_by(
             post_id=post.id).first() is not None
 
-    # challenge a post
-    def challenge(self, post):
-        if not self.challenging(post):
-            c = Challenge(challenger=self, challenge_post=post)
-            db.session.add(c)
-            # post.cal_vote()
-            db.session.commit()  # need to commit for API??
-
-    def unchallenge(self, post):
-        c = self.challenge_posts.filter_by(post_id=post.id).first()
-        if c:
-            db.session.delete(c)
-            # post.cal_vote()
-            db.session.commit()  # need to commit for API??
-
-    def challenging(self, post):
-        return self.challenge_posts.filter_by(
-            post_id=post.id).first() is not None
-
     # follow and unfollow user
     def follow(self, user):
         if not self.is_following(user):
@@ -2066,7 +2014,7 @@ class Users(db.Model):
                   demandid=None, tagid=None, headlineid=None):
         query = self.events
         # avoid duplicated entry
-        if action in ['Created', 'Starred', 'Started challenge']:
+        if action in ['Created', 'Starred']:
             e = query.filter_by(action=action, post_id=postid).first()
         elif action in ['Scheduled', 'Working on', 'Get done']:
             e = query.filter_by(action=action, item_id=itemid).first()
@@ -2114,14 +2062,12 @@ class Users(db.Model):
     def get_tag_set(self):
         # star posts' Tags
         tag_s = [p.star_post.tags for p in self.star_posts]  # 2D LIST
-        # challenge posts'tags
-        tag_c = [p.challenge_post.tags for p in self.challenge_posts]  # 2D
         # flaged items' Tags
         tag_fg = [i.flag_item.itags for i in self.flag_items]  # 2D
         # faving tags
         tag_fv = [i.fav_tag for i in self.fav_tags]
         # merge and unduplicated
-        tag_all = sum(tag_s + tag_c + tag_fg, tag_fv)
+        tag_all = sum(tag_s + tag_fg, tag_fv)
         tag_set = set(tag_all)
 
         return tag_set, tag_fv
@@ -2238,7 +2184,7 @@ class Events(db.Model):
     def action_content(self):
         act = self.action
         content_dict = {}
-        if act in ['Created', 'Starred', 'Started challenge']:
+        if act in ['Created', 'Starred']:
             q = self.post
             if q:
                 content_dict = {

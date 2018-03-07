@@ -277,10 +277,10 @@ def recover_item(itemid):
 @rest.route('/newitem', methods=['POST'])
 @auth.login_required
 def new_item():
-    """add new item directly"""
+    """add new item mannually or via spider"""
     item_query = Items.query
     res_url = request.json.get('resUrl', '').strip()
-    # for flag 
+    # for flag
     user = g.user
     flag_dict = {'Have Done': 3, 'Schedule': 1, 'Working On': 2}
     label = request.json.get('flag', '').strip()

@@ -5,7 +5,7 @@ from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
 
 from app import create_app, db, cache
-from app.models import Posts, Items, Collect, Star, Challenge, Flag,\
+from app.models import Posts, Items, Collect, Star, Flag,\
                        Tags, tag_post, tag_item, Comments, Users, Contribute,\
                        Fav, Follow, Roles, Respon, Permission, tag_demand,\
                        Demands, Dvote, Cvote, Rvote, Hvote, Authors, Byline,\
@@ -23,13 +23,12 @@ def make_shell_context():
                 Tags=Tags, tag_post=tag_post, tag_item=tag_item,
                 Comments=Comments, Users=Users, Contribute=Contribute,
                 Fav=Fav, Follow=Follow, Roles=Roles, Respon=Respon,
-                Permission=Permission, Challenge=Challenge,
+                Permission=Permission, Gather=Gather, Roads=Roads,
                 tag_demand=tag_demand, Demands=Demands, Dvote=Dvote,
                 Authors=Authors, Byline=Byline, Hvote=Hvote,
                 Clan=Clan, Reply=Reply, Reviews=Reviews, Rvote=Rvote,
                 Articles=Articles, Columns=Columns, Headlines=Headlines,
                 Clips=Clips, Messages=Messages, Circles=Circles,
-                Gather=Gather, Roads=Roads,
                 Dialog=Dialog, Events=Events)
 
 
