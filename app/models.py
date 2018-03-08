@@ -334,7 +334,7 @@ class Posts(db.Model):
         """
         return self.items.filter_by(item_id=item.id).first() is not None
 
-    def collecting(self, item, tips, tip_creator, spoiler=False):
+    def collecting(self, item, tips, tip_creator, spoiler=False, od=None):
         """
         collect item into post,
         ie. add a record into Collect table
@@ -343,7 +343,7 @@ class Posts(db.Model):
             c = Collect(
                 post=self,
                 item=item,
-                order=self.items.count()+1,
+                order= od or self.items.count()+1,
                 tips=tips,
                 tip_creator=tip_creator,
                 spoiler=spoiler
@@ -418,14 +418,14 @@ class Posts(db.Model):
         db.session.commit()
 
     def unlock(self):
-        # reset eidt_start to None, after edit done
+        """reset eidt_start to None, after edit done"""
         self.edit_start = None
         self.editing_id = None
         db.session.add(self)
         db.session.commit()
 
     def force_unlock(self, start=None, timeout=40*60):
-        # sometime user forget submit, need to force unlock
+        """sometime user forget submit, need to force unlock"""
         start = start or self.edit_start
         if start:
             now = datetime.utcnow()
@@ -590,6 +590,7 @@ class Roads(db.Model):
     intro = db.Column(db.Text, nullable=False)
     deadline = db.Column(db.Date)
     done = db.Column(db.Boolean, default=False)
+    converted = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     renewal = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
@@ -688,6 +689,7 @@ class Roads(db.Model):
             'createat': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             'deadline': self.deadline,
             'done': self.done,
+            'converted': self.converted,
             'owner': owner_dict,
             'itemcount': self.items.count()
         }

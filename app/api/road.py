@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
-# road is learning road map
+"""road is learning road map"""
 
 from flask import request, g, jsonify, abort
-from ..models import Roads, Gather, Items, Users
+from ..models import Roads, Gather, Items, Users, Posts
 from . import db, rest, auth, PER_PAGE
 
 
 @rest.route('/road/<int:roadid>')
 def get_road(roadid):
+    """Get  a specific road"""
     road = Roads.query.get_or_404(roadid)
     road_dict = road.to_dict()
     # attach items included in road
@@ -19,12 +20,14 @@ def get_road(roadid):
 
 @rest.route('/<int:userid>/roads')
 def get_roads(userid):
+    """Get the roads which user have not done"""
     # yield query
     user = Users.query.get_or_404(userid)
     roads = user.roads.filter_by(done=False)
     # pagination
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
+    # limit per PER_PAGE
     rs = roads.offset(page*per_page).limit(per_page)
     # yield result: a dict
     roads_dict = {
@@ -39,6 +42,7 @@ def get_roads(userid):
 @rest.route('/getonroad')  # challenging road
 @auth.login_required
 def get_on_road():
+    """Get the working Road: earliest and not done """
     user = g.user
     road = user.roads.filter_by(done=False).first()
     road_dict = road.to_dict()
@@ -50,6 +54,7 @@ def get_on_road():
 
 @rest.route('/<int:userid>/allroads')
 def get_all_roads(userid):
+    """Get  All, order per done or not and timestamp"""
     # yield query
     user = Users.query.get_or_404(userid)
     roads = user.roads.order_by(Roads.done, Roads.timestamp.desc())
@@ -155,6 +160,7 @@ def edit_mark(gid):
 @rest.route('/item/<int:itemid>/toroad/<int:roadid>', methods=['GET', 'POST'])
 @auth.login_required
 def item_to_road(itemid, roadid):
+    """Add item to roadmap"""
     road = Roads.query.get_or_404(roadid)
     user = g.user
     if user != road.owner or road.items.count() >= 42:
@@ -184,6 +190,34 @@ def del_mark(gid):
     db.session.commit()
     roadid = road.id
     return jsonify(roadid)
+
+
+@rest.route('/convertroad/<int:roadid>/torut')
+@auth.login_required
+def convert_road_to_rut(roadid):
+    """convert road to rut when get  road done"""
+    road = Roads.query.get_or_404(roadid)
+    if road.converted:
+        return jsonify(False)
+    user = g.user
+    rut = Posts(
+        creator=user,
+        title=road.title,
+        intro=road.intro,
+        rating="All"
+    )
+    db.session.add(rut)
+    #db.session.commit()
+    for ga in road.items:
+        item = ga.item
+        tips = ga.mark
+        od = ga.order
+        rut.collecting(item, tips, user, od=od)
+    # change to converted
+    road.converted = True
+    db.session.add(road)
+    db.session.commit()
+    return jsonify({'id': rut.id, 'title': rut.title})
 
 
 @rest.route('/disable/road/<int:roadid>')

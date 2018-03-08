@@ -91,11 +91,6 @@ def get_rut_stars(rutid):
     return jsonify(stars_dict)
 
 
-@rest.route('/rut/<int:rutid>/contributors')
-def get_rut_contributors(rutid):
-    pass
-
-
 @rest.route('/commentsonrut/<int:rutid>')
 def get_rut_comments(rutid):
     rut = Posts.query.get_or_404(rutid)
@@ -187,7 +182,7 @@ def new_rut(demandid=None):
         creator=user,
         title=title,
         intro=intro,
-        tag_str=request.json.get('tag', '').strip(),
+        tag_str=request.json.get('tag', '42').strip(),
         rating=request.json.get('rating'),
         credential=request.json.get('credential', '...').strip(),
         editable=request.json.get('editable')
