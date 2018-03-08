@@ -2,16 +2,16 @@
 # circle : challenge circle, a group people who challege a rut together
 
 from flask import request, g, jsonify, abort
-from ..models import Circles, Posts
+from ..models import Circles
 from . import db, rest, auth, PER_PAGE
 
 
-@rest.route('/rut/<int:rutid>/circles')
-def get_circles(rutid):
+@rest.route('/circles')
+def get_circles():
     # get request params
     area = request.args.get('area')
     # query
-    query = Circles.query.filter_by(post_id=rutid)
+    query = Circles.query
     if area:
         query = query.filter_by(area=area)
     # pagination
@@ -25,9 +25,9 @@ def get_circles(rutid):
     return jsonify(circle_dict)
 
 
-@rest.route('/newcircle/rut/<int:rutid>', methods=['POST'])
+@rest.route('/newcircle', methods=['POST'])
 @auth.login_required
-def new_circle(rutid):
+def new_circle():
     name = request.json.get('name', '').strip()
     address = request.json.get('address', '').strip()
     area = request.json.get('area', '').strip()
@@ -35,7 +35,6 @@ def new_circle(rutid):
     if not (name and address and area and time):
         abort(403)
     note = request.json.get('note', '').strip()
-    rut = Posts.query.get_or_404(rutid)
     user = g.user
     circle = Circles(
         name=name,
@@ -43,8 +42,7 @@ def new_circle(rutid):
         area=area,
         time=time,
         note=note,
-        facilitator=user,
-        post=rut
+        facilitator=user
     )
     db.session.add(circle)
     db.session.commit()
@@ -74,10 +72,10 @@ def edit_circle(circleid):
     circle.note = note
     db.session.add(circle)
     db.session.commit()
-    return jsonify('Updated')
+    return jsonify(circle.to_dict())
 
 
-@rest.route('/delete/circle/<int:circleid>')
+@rest.route('/delcircle/<int:circleid>')
 @auth.login_required
 def del_circle(circleid):
     circle = Circles.query.get_or_404(circleid)

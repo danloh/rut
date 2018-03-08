@@ -292,9 +292,6 @@ class Posts(db.Model):
     # 1 to n with Comments
     comments = db.relationship(
         'Comments', backref='post', lazy='dynamic')
-    # 1 to n with Circles
-    circles = db.relationship(
-        'Circles', backref='post', lazy='dynamic')
     # 1 to n with Events
     events = db.relationship(
         'Events', backref='post', lazy='dynamic')
@@ -1398,15 +1395,11 @@ class Circles(db.Model):
     note = db.Column(db.String(256))
     disabled = db.Column(db.Boolean)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
     # n to 1 relation with Users
     facilitator_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id")
-    )
-    # n to 1 with Posts
-    post_id = db.Column(
-        db.Integer,
-        db.ForeignKey("posts.id")
     )
     # n2n with Users for participate
     participators = db.relationship(
@@ -1423,11 +1416,6 @@ class Circles(db.Model):
             'name': facilitator.showname,
             'avatar': facilitator.user_avatar
         }
-        rut = self.post
-        rut_dict = {
-            'id': rut.id,
-            'title': rut.title
-        }
         circle_dict = {
             'id': self.id,
             'facilitator': facilitator_dict,
@@ -1436,7 +1424,6 @@ class Circles(db.Model):
             'address': self.address,
             'time': self.time,
             'note': self.note or '',
-            'rut': rut_dict,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         }
         return circle_dict

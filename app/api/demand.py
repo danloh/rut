@@ -152,6 +152,8 @@ def rut_as_answer(rutid, demandid):
     user = g.user
     if rut.creator != user and user.role != 'Admin':
         abort(403)  # no permission
+    if rut.demands.count() >= 6:  # limit the num as answer
+        return jsonify(False)
     demand = Demands.query.get_or_404(demandid)
     respon = Respon(
         post=rut,

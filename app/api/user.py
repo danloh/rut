@@ -90,14 +90,14 @@ def get_star_ruts(userid):
     return jsonify(ruts_dict)
 
 
-@rest.route('/search/ruts')
+@rest.route('/searchruts')
 @auth.login_required
 def search_ruts():
     """search ruts, esp. created ruts"""
     title = request.args.get('title', '').strip()  # search per title
     # if keywork is '', just return created
     if not title:
-        ruts = g.user.posts.order_by(Posts.timestamp.desc())
+        ruts = g.user.posts.order_by(Posts.timestamp.desc()).limit(PER_PAGE)
     else:
         ref = request.args.get('ref', 'created').strip()  # search in all or created
         if ref == 'created':
@@ -159,9 +159,8 @@ def search_items(label):
     user = g.user
     userid = request.args.get('userid', type=int) or user.id
     # related pagination
-    PER = 50 or PER_PAGE
     page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
     # if keyword is '', return flag-items, otherwise, query per keyword
     if not uid_or_title:
         # abort(403)
