@@ -316,7 +316,7 @@ def new_item():
     new_item = Items(
         uid=uid or spider.random_uid(),
         title=title,
-        res_url=d.get('res_url') or res_url,
+        res_url=d.get('res_url', res_url),
         author=d.get('byline', '').strip(),
         cover=d.get('cover', '').strip(),
         cate=d.get('cate', 'Book'),
