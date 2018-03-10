@@ -45,10 +45,12 @@ def get_on_road():
     """Get the working Road: earliest and not done """
     user = g.user
     road = user.roads.filter_by(done=False).first()
-    road_dict = road.to_dict()
-    # attach items included in road
-    items = [t.item.to_simple_dict() for t in road.items]
-    road_dict['items'] = items
+    road_dict = {'items': []}
+    if road:
+        road_dict = road.to_dict()
+        # attach items included in road
+        items = [t.item.to_simple_dict() for t in road.items]
+        road_dict['items'] = items
     return jsonify(road_dict)
 
 
