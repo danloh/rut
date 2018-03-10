@@ -9,6 +9,7 @@ from . import db, rest, auth
 
 
 def random_code():
+    """Generate random str"""
     population = string.ascii_letters + string.digits
     s = ''.join(random.sample(population, 9))
     while Users.query.filter_by(recode=s).first():

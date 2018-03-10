@@ -15,9 +15,9 @@ def get_current_user():  # for authed-user to re-get info
     return jsonify(user_dict)
 
 
-@rest.route('/user/<int:id>')
-def get_user(id):        # get info per userid
-    user = Users.query.get_or_404(id)
+@rest.route('/user/<int:userid>')
+def get_user(userid):        # get info per userid
+    user = Users.query.get_or_404(userid)
     user_dict = user.to_dict()
     return jsonify(user_dict)
 

@@ -14,6 +14,7 @@ PER_PAGE = 20  # for pagination except items in rut--42
 
 @rest.after_request
 def after_request(response):
+    """Hook func after request"""
     # response.headers.add('Access-Control-Allow-Origin', '*')
     # response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     # response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
