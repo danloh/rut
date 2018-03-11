@@ -171,7 +171,13 @@ def item_to_road(itemid, roadid):
     mark = request.json.get('mark', '...').strip()
     road.gathering(item, mark)
     db.session.commit()
-    return jsonify('Done')
+    # to load mark_dict, radditem: load, itemtor, not
+    load = request.json.get('load', False)
+    g_dict = {}
+    if load:
+        gi = Gather.query.filter_by(road_id=roadid, item_id=itemid).first()
+        g_dict = gi.to_dict() if gi else {}
+    return jsonify(g_dict)
 
 
 @rest.route('/delmark/<int:gid>')
