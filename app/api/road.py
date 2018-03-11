@@ -77,6 +77,9 @@ def get_all_roads(userid):
 @auth.login_required
 def mark_road_done(roadid):
     road = Roads.query.get_or_404(roadid)
+    user = g.user
+    if user != road.owner:
+        abort(403)
     road.as_done()
     return jsonify(road.done)
 
@@ -110,6 +113,9 @@ def edit_road(roadid):
     intro = request.json.get('intro', '').strip()
     if (not title) or (not intro):
         abort(403)  # cannot be ''
+    user = g.user
+    if user != road.owner:
+        abort(403)
     road.title = title
     road.intro = intro
     # renew the update time and add to db
@@ -208,6 +214,8 @@ def convert_road_to_rut(roadid):
     if road.converted:
         return jsonify(False)
     user = g.user
+    if user != road.owner:
+        abort(403)
     rut = Posts(
         creator=user,
         title=road.title,
