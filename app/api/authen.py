@@ -209,6 +209,5 @@ def get_auth_token():
     return jsonify({
         'token': token.decode('ascii'),
         'exp': exp,
-        'donenum': user.flag_items.filter_by(flag_label=3).count(), # any better way?
         'userid': user.id
     })
