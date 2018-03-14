@@ -176,6 +176,11 @@ def item_to_road(itemid, roadid):
     item = Items.query.get_or_404(itemid)
     mark = request.json.get('mark', '...').strip()
     road.gathering(item, mark)
+    # check if need to alter road to not-done per frontend request
+    alter = request.json.get('alter', False)
+    if alter:
+        road.done = False
+        db.session.add(road)
     db.session.commit()
     # to load mark_dict, radditem: load, itemtor, not
     load = request.json.get('load', False)
