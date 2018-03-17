@@ -87,6 +87,21 @@ def get_tag_relates(tagid):
     return jsonify(tags_dict)
 
 
+@rest.route('/searchtags')
+def search_tags():
+    """Search tag"""
+    name = request.args.get('name', '').strip()
+    if not name:
+        return jsonify(None)
+    # related pagination
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    tags = Tags.query.filter(Tags.tag.contains(name))\
+                     .offset(page*per_page).limit(per_page)
+    tags_list = [{'id': t.id, 'name': t.tag} for t in tags]
+    return jsonify(tags_list)
+
+
 @rest.route('/locktag/<int:tagid>')
 @auth.login_required
 def lock_tag(tagid):
