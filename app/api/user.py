@@ -16,6 +16,7 @@ def get_current_user():  # for authed-user to re-get info
 
 
 @rest.route('/user/<int:userid>')
+@auth.login_required
 def get_user(userid):        # get info per userid
     user = Users.query.get_or_404(userid)
     user_dict = user.to_dict()
@@ -52,6 +53,7 @@ def unfollow_user(userid):
 
 
 @rest.route('/user/<int:userid>/followed')
+@auth.login_required
 def get_followeds(userid):
     user = Users.query.get_or_404(userid)
     followeds = [u.followed for u in user.followed]
@@ -60,6 +62,7 @@ def get_followeds(userid):
 
 
 @rest.route('/<int:userid>/created/ruts')
+@auth.login_required
 def get_created_ruts(userid):
     user = Users.query.get_or_404(int(userid))
     created_ruts = user.posts.order_by(Posts.timestamp.desc())
@@ -76,6 +79,7 @@ def get_created_ruts(userid):
 
 
 @rest.route('/<int:userid>/star/ruts')
+@auth.login_required
 def get_star_ruts(userid):
     user = Users.query.get_or_404(userid)
     star_ruts = user.star_posts.order_by(Star.timestamp.desc())
@@ -116,6 +120,7 @@ def search_ruts():
 
 
 @rest.route('/<int:userid>/doing/items')
+@auth.login_required
 def get_doing_items(userid):
     user = Users.query.get_or_404(userid)
     flags = user.flag_items.filter_by(flag_label=2).order_by(Flag.timestamp.desc())
@@ -130,6 +135,7 @@ def get_doing_items(userid):
 
 
 @rest.route('/<int:userid>/todo/items')
+@auth.login_required
 def get_todo_items(userid):
     user = Users.query.get_or_404(userid)
     flags = user.flag_items.filter_by(flag_label=1).order_by(Flag.timestamp.desc())
@@ -144,6 +150,7 @@ def get_todo_items(userid):
 
 
 @rest.route('/<int:userid>/done/items')
+@auth.login_required
 def get_done_items(userid):
     user = Users.query.get_or_404(userid)
     flags = user.flag_items.filter_by(flag_label=3).order_by(Flag.timestamp.desc())
@@ -204,6 +211,7 @@ def search_items(label):
 
 
 @rest.route('/<int:userid>/voted/clips')
+@auth.login_required
 def get_voted_clips(userid):
     vote_clips = Cvote.query.filter_by(user_id=userid)\
                             .order_by(Cvote.timestamp.desc())
@@ -219,6 +227,7 @@ def get_voted_clips(userid):
 
 
 @rest.route('/<int:userid>/fav/tags')
+@auth.login_required
 def get_fav_tags(userid):
     fav_tags = Fav.query.filter_by(user_id=userid)\
                         .order_by(Fav.timestamp.desc())
@@ -233,20 +242,22 @@ def get_fav_tags(userid):
 
 
 @rest.route('/user/<int:userid>/reviews')
+@auth.login_required
 def get_created_reviews(userid):
     # user = Users.query.get_or_404(userid)
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     reviews = Reviews.query.filter_by(creator_id=userid)
-    rs = reviews.order_by(Reviews.timestamp.desc())\
+    revs_list = reviews.order_by(Reviews.timestamp.desc())\
                 .offset(per_page * page).limit(per_page)
     reviewcount = reviews.count()
-    review_list = [r.to_dict() for r in rs]
+    review_list = [r.to_dict() for r in revs_list]
     review_dict = {'reviewcount': reviewcount, 'reviews': review_list}
     return jsonify(review_dict)
 
 
 @rest.route('/<int:userid>/voted/reviews')
+@auth.login_required
 def get_voted_reviews(userid):
     vote_reviews = Rvote.query.filter_by(user_id=userid)\
                         .order_by(Rvote.timestamp.desc())
@@ -262,6 +273,7 @@ def get_voted_reviews(userid):
 
 
 @rest.route('/user/<int:userid>/demands')
+@auth.login_required
 def get_request_demands(userid):
     # user = Users.query.get_or_404(userid)
     page = request.args.get('page', 0, type=int)
@@ -276,6 +288,7 @@ def get_request_demands(userid):
 
 
 @rest.route('/<int:userid>/voted/demands')
+@auth.login_required
 def get_voted_demands(userid):
     # user = Users.query.get_or_404(userid) #which is better?
     # vote_demands = user.vote_demands.order_by(Dvote.timestamp.desc())
@@ -293,6 +306,7 @@ def get_voted_demands(userid):
 
 
 @rest.route('/<int:userid>/comments')
+@auth.login_required
 def get_post_comments(userid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
@@ -308,6 +322,7 @@ def get_post_comments(userid):
 
 
 @rest.route('/<int:userid>/myactivity')
+@auth.login_required
 def get_activity(userid):
     # user = Users.query.get_or_404(userid)
     m = 42

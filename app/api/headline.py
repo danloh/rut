@@ -24,16 +24,17 @@ def get_headlines():
     else:
         headlines = headlines_query
     # pagination then result
-    hs = headlines.order_by(Headlines.timestamp.desc(), Headlines.score.desc())\
+    hs_list = headlines.order_by(Headlines.timestamp.desc(), Headlines.score.desc())\
                   .offset(per_page * page).limit(per_page)
     headlines_dict = {
-        'headlines': [h.to_dict() for h in hs],
+        'headlines': [h.to_dict() for h in hs_list],
         'total': headlines.count()
     }
     return jsonify(headlines_dict)
 
 
 @rest.route('/headline/<int:headlineid>')
+@auth.login_required
 def get_headline(headlineid):
     headline = Headlines.query.get_or_404(headlineid)
     headline_dict = headline.to_dict()
@@ -41,6 +42,7 @@ def get_headline(headlineid):
 
 
 @rest.route('/headline/<int:headlineid>/comments')
+@auth.login_required
 def get_headline_comments(headlineid):
     headline = Headlines.query.get_or_404(headlineid)
     headline_dict = headline.to_dict()
@@ -54,6 +56,7 @@ def get_headline_comments(headlineid):
 
 
 @rest.route('/headline/<int:headlineid>/voters')
+@auth.login_required
 def get_headline_voters(headlineid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)

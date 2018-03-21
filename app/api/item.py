@@ -10,6 +10,7 @@ from . import db, rest, auth, PER_PAGE
 
 
 @rest.route('/all/items')
+@auth.login_required
 def get_all_items():
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
@@ -24,6 +25,7 @@ def get_all_items():
 
 
 @rest.route('/item/<int:itemid>')
+@auth.login_required
 def get_item(itemid):
     item = Items.query.get_or_404(itemid)
     item_dict = item.to_dict()
@@ -35,6 +37,7 @@ def get_item(itemid):
 
 
 @rest.route('/item/<int:itemid>/reviews')
+@auth.login_required
 def get_item_reviews(itemid):
     # item = Items.query.get_or_404(itemid)
     # get request params
@@ -64,6 +67,7 @@ def get_item_reviews(itemid):
 
 
 @rest.route('/item/<int:itemid>/inruts')
+@auth.login_required
 def get_item_inruts(itemid):
     item = Items.query.get_or_404(itemid)
     page = request.args.get('page', 0, type=int)
@@ -77,6 +81,7 @@ def get_item_inruts(itemid):
 
 # who todo /doing / done the item
 @rest.route('/item/<int:itemid>/who/<string:flag>')
+@auth.login_required
 def get_item_whoflags(itemid, flag):
     flagers = Flag.query.filter_by(item_id=itemid)
     label_dict = {'todo': 1, 'doing': 2, 'done': 3}

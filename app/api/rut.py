@@ -76,6 +76,7 @@ def get_rut_demands(rutid):
 
 
 @rest.route('/rut/<int:rutid>/stars')
+@auth.login_required
 def get_rut_stars(rutid):
     # rut = Posts.query.get_or_404(rutid)  #other way: rut.stars
     page = request.args.get('page', 0, type=int)
@@ -92,6 +93,7 @@ def get_rut_stars(rutid):
 
 
 @rest.route('/commentsonrut/<int:rutid>')
+@auth.login_required
 def get_rut_comments(rutid):
     rut = Posts.query.get_or_404(rutid)
     rut_dict = {
@@ -123,16 +125,17 @@ def get_challege_items():
 
 
 @rest.route('/ruts')
+@auth.login_required
 def get_all_ruts():
     # yield query
     ruts = Posts.query
     # pagination
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    rs = ruts.offset(page*per_page).limit(per_page)
+    ruts_list = ruts.offset(page*per_page).limit(per_page)
     # yield result: a dict
     ruts_dict = {
-        'ruts': [r.to_dict() for r in rs],
+        'ruts': [r.to_dict() for r in ruts_list],
         'total': ruts.count(),
         'currentpage': page
     }

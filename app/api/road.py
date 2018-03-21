@@ -19,6 +19,7 @@ def get_road(roadid):
 
 
 @rest.route('/<int:userid>/roads')
+@auth.login_required
 def get_roads(userid):
     """Get the roads which user have not done"""
     # yield query
@@ -28,10 +29,10 @@ def get_roads(userid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     # limit per PER_PAGE
-    rs = roads.offset(page*per_page).limit(per_page)
+    rs_list = roads.offset(page*per_page).limit(per_page)
     # yield result: a dict
     roads_dict = {
-        'roads': [r.to_dict() for r in rs],
+        'roads': [r.to_dict() for r in rs_list],
         'total': roads.count(),
         'currentpage': page
     }
@@ -55,6 +56,7 @@ def get_on_road():
 
 
 @rest.route('/<int:userid>/allroads')
+@auth.login_required
 def get_all_roads(userid):
     """Get  All, order per done or not and timestamp"""
     # yield query
@@ -63,10 +65,10 @@ def get_all_roads(userid):
     # pagination
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    rs = roads.offset(page*per_page).limit(per_page)
+    rs_list = roads.offset(page*per_page).limit(per_page)
     # yield result: a dict
     roads_dict = {
-        'roads': [r.to_dict() for r in rs],
+        'roads': [r.to_dict() for r in rs_list],
         'total': roads.count(),
         'currentpage': page
     }

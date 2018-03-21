@@ -174,10 +174,7 @@ def password_reset(token):
         db.session.commit()
         return jsonify('Your password Reset, Please login again')
     else:
-        return jsonify(
-                  'Failed, Please check username '
-                  'and Try Again with the rest password link'
-                )
+        return jsonify('Failed, Please check username and Try Again')
 
 
 @rest.route('/checkifexpired/<string:token>')

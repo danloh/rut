@@ -7,6 +7,7 @@ from . import db, rest, auth, PER_PAGE
 
 
 @rest.route('/all/tags')
+@auth.login_required
 def get_all_tags():
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
@@ -21,6 +22,7 @@ def get_all_tags():
 
 
 @rest.route('/tag/<int:tagid>')
+@auth.login_required
 def get_tag(tagid):
     tag = Tags.query.get_or_404(tagid)
     tag_dict = tag.to_dict()
@@ -43,6 +45,7 @@ def get_tag(tagid):
 
 
 @rest.route('/tag/<int:tagid>/ruts')
+@auth.login_required
 def get_tag_ruts(tagid):
     tag = Tags.query.get_or_404(tagid)
     # request param {page: int}
@@ -55,6 +58,7 @@ def get_tag_ruts(tagid):
 
 
 @rest.route('/tag/<int:tagid>/demands')
+@auth.login_required
 def get_tag_demands(tagid):
     tag = Tags.query.get_or_404(tagid)
     page = request.args.get('page', 0, type=int)
@@ -66,6 +70,7 @@ def get_tag_demands(tagid):
 
 
 @rest.route('/tag/<int:tagid>/relates')
+@auth.login_required
 def get_tag_relates(tagid):
     # page = request.args.get('page', 0, type=int)
     # per_page = request.args.get('perPage', PER_PAGE, type=int)
@@ -88,6 +93,7 @@ def get_tag_relates(tagid):
 
 
 @rest.route('/searchtags')
+@auth.login_required
 def search_tags():
     """Search tag"""
     name = request.args.get('name', '').strip()

@@ -8,6 +8,7 @@ from ..utils import split_str_spn
 
 
 @rest.route('/all/clips')
+@auth.login_required
 def get_all_clips():
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
@@ -22,6 +23,7 @@ def get_all_clips():
 
 
 @rest.route('/clips')
+@auth.login_required
 def get_clips():
     ref = request.args.get('ref', '')
     userid = request.args.get('userid', type=int)
@@ -54,6 +56,7 @@ def get_clips():
 
 
 @rest.route('/clip/<int:clipid>')
+@auth.login_required
 def get_clip(clipid):
     clip = Clips.query.get_or_404(clipid)
     clip_dict = clip.to_dict()
@@ -61,6 +64,7 @@ def get_clip(clipid):
 
 
 @rest.route('/clip/<int:clipid>/voters')
+@auth.login_required
 def get_clip_voters(clipid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)

@@ -7,6 +7,7 @@ from . import db, rest, auth, PER_PAGE
 
 
 @rest.route('/circles')
+@auth.login_required
 def get_circles():
     # get request params
     area = request.args.get('area')

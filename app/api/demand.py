@@ -8,7 +8,9 @@ from . import db, rest, auth, PER_PAGE
 
 @rest.route('/all/demands')
 @rest.route('/demands')
+@auth.login_required
 def get_demands():
+    """Get demands for request page"""
     query = Demands.query
     userid = request.args.get('userid', type=int)
     tag_str = request.args.get('tag', '')
@@ -27,23 +29,27 @@ def get_demands():
         demands = demands_query.order_by(Demands.vote.desc())
     else:
         demands = demands_query.order_by(Demands.timestamp.desc())
-    ds = demands.offset(per_page * page).limit(per_page)
+    ds_list = demands.offset(per_page * page).limit(per_page)
     demands_dict = {
-        'demands': [d.to_dict() for d in ds],
+        'demands': [d.to_dict() for d in ds_list],
         'total': demands.count()
     }
     return jsonify(demands_dict)
 
 
 @rest.route('/onlydemand/<int:demandid>')
+@auth.login_required
 def get_demand_only(demandid):
+    """Get limited demand info when create as answer"""
     demand = Demands.query.get_or_404(demandid)
     demand_dict = demand.to_dict()
     return jsonify(demand_dict)
 
 
 @rest.route('/demand/<int:demandid>')
+@auth.login_required
 def get_demand(demandid):
+    """get demand info"""
     demand = Demands.query.get_or_404(demandid)
     demand_dict = demand.to_dict()
     # attach answers to demand
@@ -60,7 +66,9 @@ def get_demand(demandid):
 
 
 @rest.route('/demand/<int:demandid>/comments')
+@auth.login_required
 def get_demand_comments(demandid):
+    """get comments on a demand"""
     demand = Demands.query.get_or_404(demandid)
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', 50, type=int)
@@ -71,7 +79,9 @@ def get_demand_comments(demandid):
 
 
 @rest.route('/demand/<int:demandid>/answers')
+@auth.login_required
 def get_demand_answers(demandid):
+    """get the ruts which have linked to a demand as answers"""
     demand = Demands.query.get_or_404(demandid)
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
@@ -83,7 +93,9 @@ def get_demand_answers(demandid):
 
 
 @rest.route('/demand/<int:demandid>/voters')
+@auth.login_required
 def get_demand_voters(demandid):
+    """get who vote a demand"""
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     query = Dvote.query.filter_by(demand_id=demandid)

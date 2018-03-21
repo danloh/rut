@@ -7,6 +7,7 @@ from . import db, rest, auth, PER_PAGE
 
 
 @rest.route('/all/comments')
+@auth.login_required
 def get_all_comments():
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
@@ -21,6 +22,7 @@ def get_all_comments():
 
 
 @rest.route('/comment/<int:commentid>')
+@auth.login_required
 def get_comment(commentid):
     commt = Comments.query.get_or_404(commentid)
     commt_dict = commt.to_dict()

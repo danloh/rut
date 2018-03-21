@@ -7,6 +7,7 @@ from . import db, rest, auth, PER_PAGE
 
 
 @rest.route('/reviews')  # per user, item or any
+@auth.login_required
 def get_reviews():
     userid = request.args.get('userid', type=int)
     itemid = request.args.get('itemid', type=int)
@@ -29,6 +30,7 @@ def get_reviews():
 
 
 @rest.route('/all/reviews')
+@auth.login_required
 def get_all_reviews():
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
@@ -55,6 +57,7 @@ def get_review(reviewid):
 
 
 @rest.route('/review/<int:reviewid>/comments')
+@auth.login_required
 def get_review_comments(reviewid):
     review = Reviews.query.get_or_404(reviewid)
     page = request.args.get('page', 0, type=int)
@@ -66,6 +69,7 @@ def get_review_comments(reviewid):
 
 
 @rest.route('/review/<int:reviewid>/voters')
+@auth.login_required
 def get_review_voters(reviewid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
