@@ -2,7 +2,7 @@
 """road is learning road map"""
 
 from flask import request, g, jsonify, abort
-from ..models import Roads, Gather, Items, Users, Posts
+from ..models import Roads, Gather, Items, Users, Posts, Flag
 from . import db, rest, auth, PER_PAGE
 
 
@@ -15,6 +15,14 @@ def get_road(roadid):
     r_items = road.items.order_by(Gather.order).limit(42)  # special limit num
     marks = [m.to_dict() for m in r_items]
     road_dict['marks'] = marks
+    # cal done num
+    itemids = [i.item_id for i in r_items]
+    done_num = Flag.query.filter(
+        Flag.user_id == road.owner.id,
+        Flag.flag_label == 3,
+        Flag.item_id.in_(itemids)
+    ).count()
+    road_dict['donenum'] = done_num
     return jsonify(road_dict)
 
 
@@ -49,8 +57,16 @@ def get_on_road():
     road_dict = {'items': []}
     if road:
         road_dict = road.to_dict()
-        # attach items included in road
-        items = [t.item.to_simple_dict() for t in road.items]
+        # attach items included in road: not done, per order
+        items = [
+            t.item.to_simple_dict()
+            for t in road.items.order_by(Gather.order)
+            if Flag.query.filter_by(
+                user_id=user.id,
+                flag_label=3,
+                item_id=t.item_id
+            ).first() is None
+        ]
         road_dict['items'] = items
     return jsonify(road_dict)
 
