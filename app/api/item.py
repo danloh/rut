@@ -25,7 +25,6 @@ def get_all_items():
 
 
 @rest.route('/item/<int:itemid>')
-@auth.login_required
 def get_item(itemid):
     item = Items.query.get_or_404(itemid)
     item_dict = item.to_dict()
