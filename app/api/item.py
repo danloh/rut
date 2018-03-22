@@ -280,7 +280,7 @@ def recover_item(itemid):
 
 @rest.route('/newitem', methods=['POST'])
 @auth.login_required
-def new_item():
+def submit_new_item():
     """add new item mannually or via spider"""
     item_query = Items.query
     res_url = request.json.get('resUrl', '').strip()
