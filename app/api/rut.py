@@ -41,7 +41,7 @@ def get_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     rut_dict = rut.to_dict()
     # attach tips and items included in rut
-    r_items = rut.items.order_by(Collect.order).limit(42)
+    r_items = rut.items.order_by(Collect.order).limit(42)  # special limit num
     tips = [t.to_dict() for t in r_items]  # in Collect model
     # # sort tips per order-key in collect-dict -- deprecated way
     # from operator import itemgetter
@@ -58,7 +58,7 @@ def get_rut(rutid):
 def get_rut_tips(rutid):
     rut = Posts.query.get_or_404(rutid)
     page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', 42, type=int)
+    per_page = request.args.get('perPage', 42, type=int)  # special limit num
     r_items = rut.items.order_by(Collect.order)\
                        .offset(page*per_page).limit(per_page)
     tips_list = [t.to_dict() for t in r_items]
@@ -101,7 +101,7 @@ def get_rut_comments(rutid):
         'title': rut.title
     }
     page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', 50, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
     r_comments = rut.comments
     rut_dict['commentcount'] = r_comments.count()
     rut_comments = r_comments.order_by(Comments.timestamp.desc())\

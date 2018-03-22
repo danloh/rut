@@ -232,7 +232,7 @@ def get_fav_tags(userid):
     fav_tags = Fav.query.filter_by(user_id=userid)\
                         .order_by(Fav.timestamp.desc())
     page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', 12, type=int)  # PER_PAGE
+    per_page = request.args.get('perPage', 12, type=int)  # PER_PAGE special limit num
     tags = [t.fav_tag for t in fav_tags.offset(page * per_page).limit(per_page)]
     tags_dict = {
         'tags': [t.to_dict() for t in tags],
@@ -325,7 +325,7 @@ def get_post_comments(userid):
 @auth.login_required
 def get_activity(userid):
     # user = Users.query.get_or_404(userid)
-    m = 42
+    m = 42  # special limit num
     evs = Events.query.filter_by(user_id=userid)\
                       .order_by(Events.timestamp.desc()).limit(m)
     evs_list = [e.to_dict() for e in evs]
@@ -335,7 +335,7 @@ def get_activity(userid):
 @rest.route('/feeds')
 @auth.login_required
 def get_feeds():
-    m = 42
+    m = 42  # special limit num
     user = g.user
     late_events = Events.query.order_by(Events.timestamp.desc()).limit(5)
     follow_events = [f.followed.events for f in user.followed]

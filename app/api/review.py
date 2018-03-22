@@ -51,7 +51,7 @@ def get_review(reviewid):
     # attach comments
     rev_comments = review.comments.order_by(Comments.timestamp.desc())
     review_dict['commentcount'] = rev_comments.count()
-    comments = [c.to_dict() for c in rev_comments.limit(50)]
+    comments = [c.to_dict() for c in rev_comments.limit(PER_PAGE)]
     review_dict['comments'] = comments
     return jsonify(review_dict)
 
@@ -61,7 +61,7 @@ def get_review(reviewid):
 def get_review_comments(reviewid):
     review = Reviews.query.get_or_404(reviewid)
     page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', 50, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
     rev_comments = review.comments.order_by(Comments.timestamp.desc())\
         .offset(page*per_page).limit(per_page)
     comments = [c.to_dict() for c in rev_comments]

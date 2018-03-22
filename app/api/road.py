@@ -12,7 +12,7 @@ def get_road(roadid):
     road = Roads.query.get_or_404(roadid)
     road_dict = road.to_dict()
     # attach items included in road
-    r_items = road.items.order_by(Gather.order).limit(42)
+    r_items = road.items.order_by(Gather.order).limit(42)  # special limit num
     marks = [m.to_dict() for m in r_items]
     road_dict['marks'] = marks
     return jsonify(road_dict)
