@@ -2083,6 +2083,7 @@ class Users(db.Model):
             'avatar': self.user_avatar,
             'location': self.location or '',
             'about': self.about_me or '',
+            'confirmed': self.confirmed,
             'followercount': self.followers.count(),
             'followedcount': self.followed.count(),  # following other
             'exlink': self.links or '',

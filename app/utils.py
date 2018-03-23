@@ -33,8 +33,3 @@ def str_to_set(s, deltr=r'[,;，；]'):
     lst = split_str(s, deltr)
     st = set(t for t in lst)
     return st
-
-# def pop_cache(ref,id=None):
-#     req_path = url_for('.%s' % ref, id=id)
-#     cache.delete('view/%s' % req_path)
-#     return req_path
