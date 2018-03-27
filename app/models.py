@@ -2178,8 +2178,9 @@ class Events(db.Model):
             q = self.post
             if q:
                 content_dict = {
-                    'type': 'Readuplist',
+                    'type': 'Readlist',
                     'id': q.id,
+                    'cover': q.post_cover,
                     'content': q.title
                 }
         if act in ['Scheduled', 'Working on', 'Get done']:
@@ -2188,6 +2189,7 @@ class Events(db.Model):
                 content_dict = {
                     'type': 'item',
                     'id': q.id,
+                    'cover': q.item_cover,
                     'content': q.title
                 }
         if act in ['Posted', 'Endorsed']:
@@ -2196,6 +2198,7 @@ class Events(db.Model):
                 content_dict = {
                     'type': 'Review',
                     'id': q.id,
+                    'cover': '',
                     'content': q.heading
                 }
         if act in ['Followed', 'Updated Description']:
@@ -2204,6 +2207,7 @@ class Events(db.Model):
                 content_dict = {
                     'type': 'Tag',
                     'id': q.id,
+                    'cover': '',
                     'content': q.tag
                 }
         if act in ['Sent', 'Voted']:
@@ -2212,6 +2216,7 @@ class Events(db.Model):
                 content_dict = {
                     'type': 'Demand',
                     'id': q.id,
+                    'cover': '',
                     'content': q.body
                 }
         if act in ['Submitted', 'Push']:
@@ -2220,6 +2225,7 @@ class Events(db.Model):
                 content_dict = {
                     'type': 'Headline',
                     'id': q.id,
+                    'cover': '',
                     'content': q.title
                 }
         return content_dict
