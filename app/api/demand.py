@@ -140,7 +140,7 @@ def new_demand():
     if not body:
         abort(403)
     dtag = sp[1].strip()
-    tag_str = dtag[:60] or '42'
+    tag_str = dtag[:128] or '42'
     user = g.user
     demand = Demands(
         requestor=user,

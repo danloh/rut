@@ -54,8 +54,7 @@ tag_demand = db.Table(
 # helper Model for n2n Posts collect Items
 class Collect(db.Model):
     __table_name__ = 'collect'
-    id = db.Column(db.Integer, primary_key=True,
-                   autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     item_id = db.Column(
         db.Integer,
         db.ForeignKey("items.id"),
@@ -68,8 +67,7 @@ class Collect(db.Model):
     tips = db.Column(db.Text, nullable=False)
     tips_html = db.Column(db.Text)
     spoiler = db.Column(db.Boolean, default=False)  # if tips spoiler ahead?
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     # n to 1 with Users
     tip_creator_id = db.Column(
         db.Integer, db.ForeignKey("users.id")
@@ -107,8 +105,7 @@ class Star(db.Model):
         db.Integer,
         db.ForeignKey("posts.id"),
         primary_key=True)
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 # helper Model for n2n Posts co-Contribute
@@ -125,8 +122,7 @@ class Contribute(db.Model):
         db.ForeignKey("posts.id"),
         primary_key=True)
     disabled = db.Column(db.Boolean, default=True)
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
         c = self.contributor
@@ -160,8 +156,7 @@ class Flag(db.Model):
     # flag label: to read-1,reading-2,read-3
     flag_label = db.Column(db.SmallInteger, default=0)
     flag_note = db.Column(db.String(128), default="")
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 # helper Model for n2n Users favirate Tags
@@ -556,8 +551,7 @@ class Posts(db.Model):
 # helper Model for n2n Roads gather Items
 class Gather(db.Model):
     __table_name__ = 'gather'
-    id = db.Column(db.Integer, primary_key=True,
-                   autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     item_id = db.Column(
         db.Integer,
         db.ForeignKey("items.id"),
@@ -1055,8 +1049,7 @@ class Reply(db.Model):
         db.Integer,
         db.ForeignKey('comments.id'),
         primary_key=True)
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class Comments(db.Model):
@@ -1066,13 +1059,8 @@ class Comments(db.Model):
     body = db.Column(db.Text, nullable=False)
     body_html = db.Column(db.Text)
     vote = db.Column(db.Integer, default=1)
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
-
-    # 1 to n with Events
-    events = db.relationship(
-        'Events', backref='comment', lazy='dynamic')
 
     # n to 1 with Users
     creator_id = db.Column(
@@ -1097,6 +1085,11 @@ class Comments(db.Model):
     # n to 1 with Headlines
     headline_id = db.Column(
         db.Integer, db.ForeignKey("headlines.id")
+    )
+
+    # 1 to n with Events
+    events = db.relationship(
+        'Events', backref='comment', lazy='dynamic'
     )
 
     # n2n with self can be deprecated?
@@ -1236,10 +1229,6 @@ class Clips(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
 
-    # 1 to n with Events
-    events = db.relationship(
-        'Events', backref='clip', lazy='dynamic')
-
     # n to 1   with Users
     creator_id = db.Column(
         db.Integer, db.ForeignKey("users.id")
@@ -1248,6 +1237,12 @@ class Clips(db.Model):
     item_id = db.Column(
         db.Integer, db.ForeignKey("items.id")
     )
+
+    # 1 to n with Events
+    events = db.relationship(
+        'Events', backref='clip', lazy='dynamic'
+    )
+
     # n2n with Users for vote
     voters = db.relationship(
         'Cvote',
@@ -1297,9 +1292,15 @@ class Demands(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text, nullable=False)
     vote = db.Column(db.Integer, default=1)
-    dtag_str = db.Column(db.String(64))
+    dtag_str = db.Column(db.String(128))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
+
+    # n to 1 relation with Users
+    requestor_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id")
+    )
 
     # 1 to n with Comments
     comments = db.relationship(
@@ -1307,12 +1308,6 @@ class Demands(db.Model):
     # 1 to n with Events
     events = db.relationship(
         'Events', backref='demand', lazy='dynamic')
-
-    # n to 1 relation with Users
-    requestor_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id")
-    )
 
     # n2n with Posts, as answer
     posts = db.relationship(
@@ -1649,7 +1644,7 @@ class Users(db.Model):
     nickname = db.Column(db.String(64))
     location = db.Column(db.String(64))
     about_me = db.Column(db.Text)
-    links = db.Column(db.String(256))
+    links = db.Column(db.String(128))
     # record mission accomplished
     mission = db.Column(db.Integer, default=0)
     credit = db.Column(db.Integer, default=0)
@@ -2258,8 +2253,7 @@ class Articles(db.Model):
     body = db.Column(db.Text, nullable=False)
     body_html = db.Column(db.Text)
     vote = db.Column(db.Integer, default=1)
-    timestamp = db.Column(db.DateTime,
-                          default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     renewal = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
 
