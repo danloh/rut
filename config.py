@@ -29,8 +29,6 @@ class Config:
     ITEM_IN_PROFILE = 8
 
     ADMIN = os.environ.get('WEB_ADMIN')  # init set admin
-    FACEBOOK_AUTH_ID = os.environ.get('FB_ID')
-    FACEBOOK_AUTH_SECRET = os.environ.get('FB_SECRET')
     GOOGLE_AUTH_ID = os.environ.get('G_ID')
     GOOGLE_AUTH_SECRET = os.environ.get('G_SECRET')
     TWITTER_AUTH_ID = os.environ.get('TW_ID')

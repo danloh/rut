@@ -2,6 +2,7 @@
 # register, log in,  etc.
 
 import random
+import re
 import string
 from flask import request, g, jsonify, abort, current_app
 from ..models import Users
@@ -23,10 +24,17 @@ def register():
     username = request.json.get('username')
     password = request.json.get('password')
     email = request.json.get('email', '').strip()
-    if username is None or password is None:
-        abort(400)  # missing arguments
+    # check if missing arg
+    if not (username and password):
+        abort(400)
+    # check name and psw if match re or length
+    name_re = r'^[a-z][0-9a-z_]{2,19}$'
+    reg_name = re.compile(name_re)
+    if not reg_name.match(username) or len(password) < 6:
+        abort(400)
+    # check if user existing
     if Users.query.filter_by(name=username).first() is not None:
-        abort(400)  # existing user
+        abort(400)
     incode = request.json.get('incode', '')
     recode = random_code()
     user = Users(
@@ -40,7 +48,10 @@ def register():
     user.hash_password(password)
     db.session.add(user)
     db.session.commit()
-    if email:
+    # check email matched, then send email
+    email_re = r'^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$'
+    reg_email = re.compile(email_re)
+    if reg_email.match(email):
         token = user.generate_confirmation_token().replace('.', '@')
         url = '{0}/confirm/{1}'.format(current_app.config['BASE_URL'], token)
         from task.tasks import send_email as send_email_celery
@@ -64,8 +75,12 @@ def register():
 @rest.route('/editprofile', methods=['POST'])
 @auth.login_required
 def edit_profile():
+    # get nickname and check match
+    name_re = r'^\w{2,20}$'
+    reg_name = re.compile(name_re)
+    nickname = request.json.get('nickname', '').strip()
     user = g.user
-    user.nickname = request.json.get('nickname', '').strip()
+    user.nickname = nickname if reg_name.match(nickname) else ''
     user.location = request.json.get('location', '').strip()
     user.avatar = request.json.get('avatarUrl', '').strip()
     user.about_me = request.json.get('about', '').strip()
