@@ -4,7 +4,6 @@ import os
 import random
 import re
 import requests
-import lxml
 from bs4 import BeautifulSoup as bs
 from ..models import Items, Authors, Byline
 from .. import db
@@ -20,7 +19,7 @@ def random_uid():
 
 
 def author2str(d):
-    authors = d.get('authors')
+    authors = d
     if authors:
         lst = [str(k)+str(v) for k, v in authors.items()]
         author_str = ','.join(lst)
@@ -451,7 +450,7 @@ def parse_html(url):
     else:
         d = parse_html_other(url)
 
-    author_str = author2str(d)
+    author_str = author2str(d.get('authors'))
     d['byline'] = author_str
 
     return d

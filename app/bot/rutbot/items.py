@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
-# Define here the models for your scraped items
-#
-# See documentation in:
-# https://doc.scrapy.org/en/latest/topics/items.html
+# Define here the models for scraped items
 
-import scrapy
+from scrapy import Item, Field
 
-
-class RutbotItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class RutItem(Item):
+    title = Field()
+    res_url = Field()
+    uid = Field()
+    author = Field()
+    cover = Field()
+    publisher = Field()
+    pub_date = Field()
+    language = Field()
+    binding = Field()
