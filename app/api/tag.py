@@ -27,18 +27,21 @@ def get_tag(tagid):
     tag = Tags.query.get_or_404(tagid)
     tag_dict = tag.to_dict()
     # attach ruts included in tag
-    tagruts = [p.to_dict()
-               for p in tag.posts.order_by(Posts.timestamp.desc()).limit(PER_PAGE)]
+    tagruts = [
+        p.to_dict() for p in tag.posts.order_by(Posts.timestamp.desc()).limit(PER_PAGE)
+    ]
     # tagruts.reverse()  # as order_by, which is faster?
     tag_dict['ruts'] = tagruts
     tag_dict['total'] = tag.posts.count()  # len(tagruts)
     # related tags
-    parent_tags = [t.parent_tag
-                   for t in tag.parent_tags.order_by(db.func.rand()).limit(5)]
+    parent_tags = [
+        t.parent_tag for t in tag.parent_tags.order_by(db.func.rand()).limit(5)
+    ]
     tags = parent_tags
-    for tg in parent_tags:
-        child_tags = [t.child_tag
-                      for t in tg.child_tags.order_by(db.func.rand()).limit(5)]
+    for tg in parent_tags + [tag]:
+        child_tags = [
+            t.child_tag for t in tg.child_tags.order_by(db.func.rand()).limit(5)
+        ]
         tags += child_tags
     relate_tags = set(tags)-set([tag])
     tag_dict['tags'] = [{'tagid': t.id, 'tagname': t.tag} for t in relate_tags]
