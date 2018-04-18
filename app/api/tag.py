@@ -40,7 +40,8 @@ def get_tag(tagid):
         child_tags = [t.child_tag
                       for t in tg.child_tags.order_by(db.func.rand()).limit(5)]
         tags += child_tags
-    tag_dict['tags'] = [{'tagid': t.id, 'tagname': t.tag} for t in set(tags)]
+    relate_tags = set(tags)-set([tag])
+    tag_dict['tags'] = [{'tagid': t.id, 'tagname': t.tag} for t in relate_tags]
     return jsonify(tag_dict)
 
 
@@ -80,14 +81,15 @@ def get_tag_relates(tagid):
     for tg in parent_tags:
         c_tags = [t.child_tag for t in tg.child_tags]
         related_tags += c_tags
+    relate_tags_set = set(related_tags) - set([tag])
     child_tags = [t.child_tag for t in tag.child_tags]
     tags_dict = {
         'parents': [t.to_dict() for t in parent_tags],
         'totalparents': len(parent_tags),
         'children': [t.to_dict() for t in child_tags],
         'totalchildren': len(child_tags),
-        'relates': [t.to_dict() for t in related_tags],
-        'totalrelates': len(related_tags)
+        'relates': [t.to_dict() for t in relate_tags_set],
+        'totalrelates': len(relate_tags_set)
     }
     return jsonify(tags_dict)
 
@@ -137,6 +139,7 @@ def edit_tag(tagid):
     # get data
     name = request.json.get('name', '').strip()
     parent = request.json.get('parent', '').strip()
+    logo = request.json.get('logo', '').strip()
     description = request.json.get('description', '').strip()
     if not name:
         abort(403)
@@ -150,6 +153,7 @@ def edit_tag(tagid):
         abort(403)  # cannot Duplicated Tag Name
     tag.tag = name
     tag.descript = description
+    tag.logo = logo
     db.session.add(tag)
     # update parent tag
     if parent:

@@ -479,7 +479,7 @@ class Posts(db.Model):
         posts_popular = _query.order_by(Posts.vote.desc()).limit(m)
         posts_random = _query.order_by(db.func.rand()).limit(m)
 
-        posts_select = posts_latest.union(posts_popular, posts_random)
+        posts_select = posts_popular.union(posts_random, posts_latest)
         posts = [r.to_simple_dict() for r in posts_select]  # execute here for cache
         return posts
 
@@ -917,6 +917,7 @@ class Tags(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tag = db.Column(db.String(128), nullable=False, unique=True)
     descript = db.Column(db.String(512))
+    logo = db.Column(db.String(512))
     vote = db.Column(db.Integer, default=0)
     edit_start = db.Column(db.DateTime, default=None)
     editing_id = db.Column(db.Integer)
@@ -967,8 +968,12 @@ class Tags(db.Model):
         cascade='all, delete-orphan')
 
     def parent_is(self, tag):
-        return self.parent_tags.filter_by(
-            parent_tag_id=tag.id).first() is not None
+        # need to check the relation btwn self and tag
+        if_tag_is_parent = self.parent_tags.filter_by(
+            parent_tag_id=tag.id).first()
+        if_self_is_parent = tag.parent_tags.filter_by(
+            parent_tag_id=self.id).first()
+        return if_tag_is_parent or if_self_is_parent
 
     def parent(self, tag):
         if tag and (not self.parent_is(tag)):
@@ -1030,6 +1035,7 @@ class Tags(db.Model):
             'id': self.id,
             'tagname': self.tag,
             'descript': self.descript or '',
+            'logo': self.logo or '',
             'favcount': self.favers.count()
         }
         return tag_dict
