@@ -104,7 +104,8 @@ def get_rut_comments(rutid):
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     r_comments = rut.comments
     rut_dict['commentcount'] = r_comments.count()
-    rut_comments = r_comments.order_by(Comments.timestamp.desc())\
+    rut_comments = r_comments\
+        .order_by(Comments.vote.desc(), Comments.timestamp.desc())\
         .offset(page*per_page).limit(per_page)
     comments = [c.to_dict() for c in rut_comments]
     rut_dict['comments'] = comments

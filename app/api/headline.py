@@ -48,8 +48,9 @@ def get_headline_comments(headlineid):
     headline_dict = headline.to_dict()
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    h_comments = headline.comments.order_by(Comments.timestamp.desc())\
-        .offset(page*per_page).limit(per_page)
+    h_comments = headline.comments\
+            .order_by(Comments.vote.desc(), Comments.timestamp.desc())\
+            .offset(page*per_page).limit(per_page)
     comments = [c.to_dict() for c in h_comments]
     headline_dict['comments'] = comments
     return jsonify(headline_dict)

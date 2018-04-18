@@ -308,6 +308,7 @@ def get_voted_demands(userid):
 @rest.route('/<int:userid>/comments')
 @auth.login_required
 def get_post_comments(userid):
+    """comments post by user"""
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     all_comments = Comments.query.filter_by(creator_id=userid)\

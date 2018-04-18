@@ -243,6 +243,18 @@ class Hvote(db.Model):
         primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
+# helper for n2n Users vote Comment
+class Mvote(db.Model):
+    __table_name__ = 'mvote'
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id"),
+        primary_key=True)
+    comment_id = db.Column(
+        db.Integer,
+        db.ForeignKey("comments.id"),
+        primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 # helper Model for n2n Posts re Demands
 class Respon(db.Model):
@@ -1112,6 +1124,14 @@ class Comments(db.Model):
         lazy='dynamic',
         cascade='all, delete-orphan')
 
+    # n2n with Users for vote
+    voters = db.relationship(
+        'Mvote',
+        foreign_keys=[Mvote.comment_id],
+        backref=db.backref('vote_comment', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+
     def reply(self, commt):
         r = Reply(parent_commt=self, child_commt=commt)
         db.session.add(r)
@@ -1789,6 +1809,13 @@ class Users(db.Model):
     vote_headlines = db.relationship(
         'Hvote',
         foreign_keys=[Hvote.user_id],
+        backref=db.backref('voter', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # n2n with Comments for vote
+    vote_comments = db.relationship(
+        'Mvote',
+        foreign_keys=[Mvote.user_id],
         backref=db.backref('voter', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')

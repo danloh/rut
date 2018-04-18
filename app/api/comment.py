@@ -2,7 +2,7 @@
 # comment : on rut, demand, clip, item, review, etc.
 
 from flask import request, g, jsonify, abort
-from ..models import Comments, Posts, Demands, Items, Headlines, Reviews
+from ..models import Comments, Posts, Demands, Items, Headlines, Reviews, Mvote
 from . import db, rest, auth, PER_PAGE
 
 
@@ -27,6 +27,38 @@ def get_comment(commentid):
     commt = Comments.query.get_or_404(commentid)
     commt_dict = commt.to_dict()
     return jsonify(commt_dict)
+
+
+@rest.route('/comment/<int:commentid>/voters')
+@auth.login_required
+def get_comment_voters(commentid):
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    query = Mvote.query.filter_by(comment_id=commentid)
+    voters = query.offset(page * per_page).limit(per_page)
+    voters_dict = {
+        'voters': [v.voter.to_simple_dict() for v in voters],
+        'votecount': query.count()
+    }
+    return jsonify(voters_dict)
+
+
+@rest.route('/upvotecomment/<int:commentid>')
+@auth.login_required
+def upvote_comment(commentid):
+    comment = Comments.query.get_or_404(commentid)  # comment's id
+    user = g.user
+    voted = Mvote.query.filter_by(user_id=user.id, comment_id=commentid).first()
+    if voted is None:
+        comment.vote = comment.vote + 1
+        db.session.add(comment)
+        mvote = Mvote(
+            voter=user,
+            vote_comment=comment
+        )
+        db.session.add(mvote)
+        db.session.commit()
+    return jsonify("Done")
 
 
 @rest.route('/comment/rut/<int:rutid>', methods=['POST'])

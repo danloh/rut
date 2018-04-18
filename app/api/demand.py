@@ -58,7 +58,8 @@ def get_demand(demandid):
     answers = [{'id': p.id, 'title': p.title, 'intro': p.intro} for p in respons]
     demand_dict['answers'] = answers
     # attach comments
-    d_comments = demand.comments.order_by(Comments.timestamp.desc()).limit(PER_PAGE)
+    d_comments = demand.comments\
+            .order_by(Comments.vote.desc(), Comments.timestamp.desc()).limit(PER_PAGE)
     comments = [c.to_dict() for c in d_comments]
     # #comments.reverse()
     demand_dict['comments'] = comments
@@ -72,8 +73,9 @@ def get_demand_comments(demandid):
     demand = Demands.query.get_or_404(demandid)
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    d_comments = demand.comments.order_by(Comments.timestamp.desc())\
-                                .offset(page*per_page).limit(per_page)
+    d_comments = demand.comments\
+            .order_by(Comments.vote.desc(), Comments.timestamp.desc())\
+            .offset(page*per_page).limit(per_page)
     comments = [c.to_dict() for c in d_comments]
     return jsonify(comments)
 
