@@ -48,7 +48,7 @@ def get_rut(rutid):
     # order_tips = sorted(tips, key=itemgetter('order'))
     rut_dict['tips'] = tips  # order_tips
     # attach demands respon to
-    r_demands = rut.demands.limit(PER_PAGE)
+    r_demands = rut.demands.limit(6)  # special limit num
     demands = [{'id': r.demand_id, 'demand': r.demand.body} for r in r_demands]
     rut_dict['demands'] = demands
     return jsonify(rut_dict)
@@ -112,14 +112,15 @@ def get_rut_comments(rutid):
     return jsonify(rut_dict)
 
 
-@rest.route('/challengeitems')  # challenging items !!
+@rest.route('/challengeitems')
 @auth.login_required
 def get_challege_items():
+    """challenging items for challenge view page"""
     user = g.user
     # get the earliest flaged items as doing
     doing_flags = user.flag_items\
-                      .order_by(Flag.timestamp)\
-                      .filter_by(flag_label=2).limit(5)
+            .order_by(Flag.timestamp)\
+            .filter_by(flag_label=2).limit(5)  # special limit num
     doing_items = [f.flag_item for f in doing_flags]
     doing_list = [{'id': item.id, 'title': item.title} for item in doing_items]
     return jsonify(doing_list)
@@ -368,6 +369,8 @@ def item_to_rut(itemid, rutid):
     user = g.user
     if not rut.check_editable(user):
         abort(403)
+    if rut.items.count() >= 42:
+        abort(418)
     item = Items.query.get_or_404(itemid)
     tips = request.json.get('tips', '...').strip()
     spoiler_text = request.json.get('spoiler')

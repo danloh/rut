@@ -189,8 +189,10 @@ def item_to_road(itemid, roadid):
     """Add item to roadmap"""
     road = Roads.query.get_or_404(roadid)
     user = g.user
-    if user != road.owner or road.items.count() >= 42:
+    if user != road.owner:
         abort(403)
+    if road.items.count() >= 42:
+        abort(418)
     item = Items.query.get_or_404(itemid)
     mark = request.json.get('mark', '...').strip()
     road.gathering(item, mark)
