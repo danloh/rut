@@ -10,15 +10,16 @@ from . import db, rest, auth, PER_PAGE
 @auth.login_required
 def get_circles():
     # get request params
-    area = request.args.get('area')
+    area = request.args.get('area', '').strip()
     # query
     query = Circles.query
     if area:
-        query = query.filter_by(area=area)
+        query = query.filter(Circles.address.contains(area))
     # pagination
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    circles = query.offset(page*per_page).limit(per_page)
+    circles = query.order_by(Circles.timestamp.desc())\
+                   .offset(page*per_page).limit(per_page)
     circle_dict = {
         'circles': [c.to_dict() for c in circles],
         'circlecount': query.count()
@@ -31,16 +32,14 @@ def get_circles():
 def new_circle():
     name = request.json.get('name', '').strip()
     address = request.json.get('address', '').strip()
-    area = request.json.get('area', '').strip()
     time = request.json.get('time', '').strip()
-    if not (name and address and area and time):
+    if not (name and address and time):
         abort(403)
     note = request.json.get('note', '').strip()
     user = g.user
     circle = Circles(
         name=name,
         address=address,
-        area=area,
         time=time,
         note=note,
         facilitator=user
@@ -61,14 +60,12 @@ def edit_circle(circleid):
     # get data
     name = request.json.get('name', '').strip()
     address = request.json.get('address', '').strip()
-    area = request.json.get('area', '').strip()
     time = request.json.get('time', '').strip()
-    if not (name and address and area and time):
+    if not (name and address and time):
         abort(403)
     note = request.json.get('note', '').strip()
     circle.name = name
     circle.address = address
-    circle.area = area
     circle.time = time
     circle.note = note
     db.session.add(circle)

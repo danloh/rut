@@ -1412,10 +1412,10 @@ class Circles(db.Model):
     __table_name__ = "circles"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(256), nullable=False)
-    area = db.Column(db.String(128), nullable=False)
+    area = db.Column(db.String(128))
     address = db.Column(db.String(256), nullable=False)
     time = db.Column(db.String(256), nullable=False)
-    note = db.Column(db.String(256))
+    note = db.Column(db.Text)
     disabled = db.Column(db.Boolean)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -1443,7 +1443,6 @@ class Circles(db.Model):
             'id': self.id,
             'facilitator': facilitator_dict,
             'name': self.name,
-            'area': self.area,
             'address': self.address,
             'time': self.time,
             'note': self.note or '',
