@@ -5,7 +5,6 @@ import re
 from flask import request, g, jsonify, abort
 from ..models import Clips, Cvote, Items
 from . import db, rest, auth, PER_PAGE
-from ..utils import split_str_spn
 
 
 @rest.route('/all/clips')
