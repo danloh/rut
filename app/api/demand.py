@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # demand: a request to get a rut like book list on a subject
 
+import re
 from flask import request, g, jsonify, abort
 from ..models import Demands, Posts, Dvote, Respon, Comments
 from . import db, rest, auth, PER_PAGE
@@ -137,17 +138,16 @@ def new_demand():
     text = request.json.get('demand', '').strip()
     if not text:
         abort(403)
-    sp = text.split('#') + ['42']
-    body = sp[0].strip()
+    body = text.split('#')[0].strip()
     if not body:
         abort(403)
-    dtag = sp[1].strip()
-    tag_str = dtag[:128] or '42'
+    tg = (re.findall(r'#(\w+)', text) + ['42'])[0]
+    tag_str = tg[:42] or '42'
     user = g.user
     demand = Demands(
         requestor=user,
         body=body,
-        dtag_str=tag_str
+        dtag_str=tag_str.title()
     )
     db.session.add(demand)
     demand.dtag_to_db()

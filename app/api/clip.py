@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # clip : a quote excerpted from a book , or a spark of thought
 
+import re
 from flask import request, g, jsonify, abort
 from ..models import Clips, Cvote, Items
 from . import db, rest, auth, PER_PAGE
@@ -81,26 +82,17 @@ def get_clip_voters(clipid):
 @auth.login_required
 def new_clip():
     text = request.json.get('clip', '').strip()
-    spl = text.split('%^&') + ['']
+    spl = text.split('#') + ['']
     body = spl[0].strip()
     if not body:
         abort(403)
-    chap = spl[1].strip()
-    if chap:
-        chapl = split_str_spn(chap, r'[:：]')
-        m = chapl[0]
-        chapnum = m if m.isdigit() else ''
-        try:
-            chapname = chapl[1].strip()
-        except Exception:
-            chapname = ''
-        try:
-            p = chapl[2]
-            pagenum = p if p.isdigit() else ''
-        except Exception:
-            pagenum = ''
-    else:
-        chapnum = chapname = pagenum = ''
+    chaplst = (re.findall(r'#([0-9]+):([0-9]+):([0-9]+)', text))
+    chapnum = pagenum = ''
+    if chaplst:
+        chap = chaplst[0]
+        chapnum = chap[0]
+        sectnum = chap[1]
+        pagenum = chap[2]
     itemid = request.json.get('itemid')
     user = g.user
     clip = Clips(
@@ -108,7 +100,7 @@ def new_clip():
         body=body,
         item=Items.query.get(itemid),
         chapnum=chapnum,
-        chapname=chapname[:120],
+        sectnum=sectnum,
         pagenum=pagenum
     )
     db.session.add(clip)

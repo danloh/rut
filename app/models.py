@@ -1249,7 +1249,7 @@ class Clips(db.Model):
     body = db.Column(db.Text, nullable=False)
     body_html = db.Column(db.Text)
     chapnum = db.Column(db.String(8))
-    chapname = db.Column(db.String(128))
+    sectnum = db.Column(db.String(8))
     pagenum = db.Column(db.String(8))
     vote = db.Column(db.Integer, default=1)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
@@ -1295,7 +1295,7 @@ class Clips(db.Model):
             'fromitem': fromitem_dict,
             'body': self.body,
             'chapnum': self.chapnum or '',
-            'chapname': self.chapname or '',
+            'sectnum': self.sectnum or '',
             'pagenum': self.pagenum or '',
             'vote': self.vote,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
@@ -1378,12 +1378,14 @@ class Demands(db.Model):
             'name': requestor.showname,
             'avatar': requestor.user_avatar
         }
+        taglst = [t.to_dict() for t in self.dtags]
         demand_dict = {
             'id': self.id,
             'requestor': requestor_dict,
             'body': self.body,
             'vote': self.vote,
             'tagStr': self.dtag_str or '',
+            'tagid': taglst[0]['id'] if taglst else 100003,
             'answercount': self.posts.count(),
             'commentcount': self.comments.count(),
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')

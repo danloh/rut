@@ -14,7 +14,10 @@ def get_circles():
     # query
     query = Circles.query
     if area:
-        query = query.filter(Circles.address.contains(area))
+        if area == "[]":
+            query = query.filter_by(facilitator=g.user)
+        else:
+            query = query.filter(Circles.address.contains(area))
     # pagination
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
