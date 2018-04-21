@@ -389,23 +389,21 @@ class Posts(db.Model):
         split the input tags to seperated tag,
         and add them into Tags Table
         '''
-        _tag_str = self.tag_str
-        _tagset = str_to_set(_tag_str)
-        _query = Tags.query
-        for _tg in _tagset:
-            # _tg = _tg.strip()
-            if _tg:  # is not "":
-                _tg = _tg.title()  # titlecased style
-                _tag = _query.filter_by(tag=_tg).first()
-                if _tag is None:
-                    tag = Tags(tag=_tg)
-                    tag.posts.append(self)
+        tagset = str_to_set(self.tag_str)
+        for tg in tagset:
+            # tg = tg.strip()
+            if tg:  # is not "":
+                tg = tg.title()  # titlecased style
+                tag = Tags.query.filter_by(tag=tg).first()
+                if tag is None:
+                    new_tag = Tags(tag=tg)
+                    new_tag.posts.append(self)
                     # tag.cal_vote()
-                    db.session.add(tag)
+                    db.session.add(new_tag)
                 else:
-                    _tag.posts.append(self)
+                    tag.posts.append(self)
                     # _tag.cal_vote()
-                    db.session.add(_tag)
+                    db.session.add(tag)
         # db.session.commit()
 
     # check if can be edited, permission
@@ -788,22 +786,20 @@ class Items(db.Model):
         and add them into Tags Table
         '''
         # _taglist = self.itag_str.split(',') #
-        _itag_str = self.itag_str
-        _tagset = str_to_set(_itag_str)
-        _query = Tags.query
-        for _tg in _tagset:
-            # _tg = _tg.strip() #
-            if _tg:  # is not "":
-                _tg = _tg.title()
-                _tag = _query.filter_by(tag=_tg).first()
-                if _tag is None:
-                    tag = Tags(tag=_tg)
-                    tag.items.append(self)
-                    db.session.add(tag)
+        itagset = str_to_set(self.itag_str)
+        for itg in itagset:
+            # itg = itg.strip() #
+            if itg:  # is not "":
+                itg = itg.title()
+                itag = Tags.query.filter_by(tag=itg).first()
+                if itag is None:
+                    new_tag = Tags(tag=itg)
+                    new_tag.items.append(self)
+                    db.session.add(new_tag)
                     # tag.cal_vote()
-                elif _tag.items.filter_by(id=self.id).first() is None:
-                    _tag.items.append(self)
-                    db.session.add(_tag)
+                else:
+                    itag.items.append(self)
+                    db.session.add(itag)
                     # _tag.cal_vote()
         # db.session.commit()
 
@@ -883,6 +879,7 @@ class Items(db.Model):
             'clipcount': self.clips.count(),
             'commentcount': self.comments.count(),
             'cover': self.item_cover,
+            'tags': [t.to_dict() for t in self.itags][-6:],  # special limit num
             'publisher': self.publisher or '',
             'pubdate': self.pub_date or '',
             'language': self.language or '',

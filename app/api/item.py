@@ -28,8 +28,9 @@ def get_all_items():
 def get_item(itemid):
     item = Items.query.get_or_404(itemid)
     item_dict = item.to_dict()
-    ruts = [c.post
-            for c in item.posts.order_by(Collect.timestamp.desc()).limit(PER_PAGE)]
+    ruts = [
+        c.post for c in item.posts.order_by(Collect.timestamp.desc()).limit(PER_PAGE)
+    ]
     included_ruts = [{'id': r.id, 'title': r.title} for r in ruts]
     item_dict['inruts'] = included_ruts
     return jsonify(item_dict)
@@ -179,6 +180,7 @@ def edit_item(itemid):
         abort(403)
     query = Items.query
     item = query.get_or_404(itemid)
+    old_author_str = item.author  # use this later
     user = g.user
     if item.check_locked(user.id):
         return jsonify('In Editing')
@@ -190,6 +192,7 @@ def edit_item(itemid):
     item.title = title
     item.author = request.json.get('byline', '').strip()
     item.cover = request.json.get('cover', '').strip()
+    item.itag_str = request.json.get('tags', '').strip()
     item.res_url = request.json.get('resUrl', '').strip()
     item.publisher = request.json.get('publisher', '').strip()
     item.pub_date = request.json.get('publishDate', '').strip()
@@ -200,15 +203,12 @@ def edit_item(itemid):
     item.price = request.json.get('price', '').strip()
     item.details = request.json.get('details', '...').strip()
     # edit author  byline
-    old_str = item.author
-    old_d = str_to_dict(old_str)
-    old_set = set(k for k in old_d if k is not "None")
+    old_set = set(k for k in str_to_dict(old_author_str) if k is not "None")
     new_str = request.json.get('byline', '').strip()
     new_d = str_to_dict(new_str)
     new_set = set(k for k in new_d)
     add_name = new_set - old_set
     del_name = old_set - new_set
-
     a_query = Authors.query
     for name in add_name:
         author = a_query.filter_by(name=name).first()
@@ -228,7 +228,6 @@ def edit_item(itemid):
                 contribution=new_d.get(name, "Author")
             )
             db.session.add(byline)
-
     b_query = Byline.query
     for name in del_name:
         old_author = a_query.filter_by(name=name).first()
@@ -236,6 +235,8 @@ def edit_item(itemid):
         db.session.delete(byline)
     # END edit author byline
     db.session.add(item)
+    # item tags to db
+    item.itag_to_db()
     db.session.commit()
     return jsonify('The item info Updated, Thank You')
 
