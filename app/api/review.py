@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # review: a note, review or mindmap on a item
 
+import re
 from flask import request, g, jsonify, abort
 from ..models import Reviews, Rvote, Comments, Items
 from . import db, rest, auth, PER_PAGE
@@ -124,6 +125,9 @@ def new_review(itemid):
         creator=user
     )
     db.session.add(review)
+    # extract tags
+    taglst = re.findall(r'#(\w+)', body)
+    review.rvtag_to_db(taglst)
     db.session.commit()
     review_dict = review.to_dict()
     # item.cal_vote()
@@ -150,6 +154,9 @@ def edit_review(reviewid):
     spoiler = True if spoiler_text == 'Spoiler Ahead' else False
     review.spoiler = spoiler
     db.session.add(review)
+    # extract tags
+    taglst = re.findall(r'#(\w+)', body)
+    review.rvtag_to_db(taglst)
     db.session.commit()
     review_dict = review.to_dict()
     return jsonify(review_dict)

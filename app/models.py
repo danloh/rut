@@ -69,6 +69,16 @@ tag_road = db.Table(
         'road_id', db.Integer, db.ForeignKey("roads.id")
     )
 )
+# simple n2n for Tags Reviews
+tag_review = db.Table(
+    'tag_review',
+    db.Column(
+        'tag_id', db.Integer, db.ForeignKey("tags.id")
+    ),
+    db.Column(
+        'review_id', db.Integer, db.ForeignKey("reviews.id")
+    )
+)
 
 # helper Model for n2n Posts collect Items
 class Collect(db.Model):
@@ -355,6 +365,12 @@ class Tags(db.Model):
         secondary=tag_road,
         backref=db.backref('rtags', lazy='joined'),
         lazy='dynamic')
+    # simple n2n relationship with reviews
+    reviews = db.relationship(
+        'Reviews',
+        secondary=tag_review,
+        backref=db.backref('rvtags', lazy='joined'),
+        lazy='dynamic')
 
     # n2n with self
     parent_tags = db.relationship(
@@ -408,14 +424,14 @@ class Tags(db.Model):
                 taglist.append(tag)
         return taglist
 
-    def cal_vote(self, i=None, p=None, d=None, f=None, c=None, r=None):
+    def cal_vote(self, i=None, p=None, d=None, f=None, r=None, rv=None):
         i = i or self.items.count()
         p = p or self.posts.count()
         d = d or self.demands.count()
         f = f or self.favers.count()
-        c = c or self.comments.count()
         r = r or self.roads.count()
-        self.vote = i+p+d+f+c+r
+        rv = rv or self.reviews.count()
+        self.vote = i+p+d+f+r+rv
         db.session.add(self)
         # db.session.commit()
 
@@ -1251,6 +1267,15 @@ class Reviews(db.Model):
         backref=db.backref('vote_review', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
+    
+    # add review tags to database
+    def rvtag_to_db(self, strlst=None):
+        taglist = Tags.tagstr_to_db(strlst or '42')
+        for tag in taglist:
+            tag.reviews.append(self)
+            # tag.cal_vote()
+            db.session.add(tag)
+        # db.session.commit()
 
     def to_dict(self):
         # get creator and item first
