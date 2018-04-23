@@ -21,6 +21,12 @@ def get_all_tags():
     return jsonify(tags_dict)
 
 
+@rest.route('/gettag/<string:tagname>')
+def get_tagid(tagname):
+    tagname = str(tagname).split("@")[-1]
+    tag = Tags.query.filter_by(tag=tagname).first_or_404()
+    return jsonify(tag.id)
+
 @rest.route('/tag/<int:tagid>')
 @auth.login_required
 def get_tag(tagid):

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # rut is readup tips, included an item list and tips for each item
 
+import re
 from flask import request, g, jsonify, abort
 from ..models import Posts, Star, Collect, Users, Tags,\
                      Comments, Flag, Demands, Items, Respon
@@ -180,20 +181,22 @@ def unstar_rut(rutid):
 def new_rut(demandid=None):
     title = request.json.get('title', '').strip()
     intro = request.json.get('intro', '').strip()
-    if not title or not intro:
+    # extract tags and intro
+    taglst = re.findall(r'#(\w+)', intro)
+    intro = intro.split("#" + (taglst + ['42'])[0])[0]
+    if not (title and intro):
         abort(403)  # cannot be ''
     user = g.user
     post = Posts(
         creator=user,
         title=title,
         intro=intro,
-        tag_str=request.json.get('tag', '42').strip(),
-        rating=request.json.get('rating'),
+        rating=request.json.get('rating', 'All'),
         credential=request.json.get('credential', '...').strip(),
         editable=request.json.get('editable')
     )
     db.session.add(post)
-    post.tag_to_db()
+    post.tag_to_db(taglst)
     # link to demand as answer if come from demand
     if demandid:
         demand = Demands.query.get(demandid)

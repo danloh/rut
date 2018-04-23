@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # comment : on rut, demand, clip, item, review, etc.
 
+import re
 from flask import request, g, jsonify, abort
 from ..models import Comments, Posts, Demands, Items, Headlines, Reviews, Mvote
 from . import db, rest, auth, PER_PAGE
@@ -85,6 +86,9 @@ def new_comment(demandid=None, rutid=None, commentid=None, itemid=None,
         creator=user
     )
     db.session.add(comment)
+    # extract tags and intro
+    taglst = re.findall(r'#(\w+)', body)
+    comment.ctag_to_db(taglst)
     db.session.commit()
     comment_dict = comment.to_dict()
     return jsonify(comment_dict)

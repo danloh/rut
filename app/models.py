@@ -49,7 +49,26 @@ tag_demand = db.Table(
         'demand_id', db.Integer, db.ForeignKey("demands.id")
     )
 )
-
+# simple n2n for Tags Comments
+tag_comment = db.Table(
+    'tag_comment',
+    db.Column(
+        'tag_id', db.Integer, db.ForeignKey("tags.id")
+    ),
+    db.Column(
+        'comment_id', db.Integer, db.ForeignKey("comments.id")
+    )
+)
+# simple n2n for Tags Roads
+tag_road = db.Table(
+    'tag_road',
+    db.Column(
+        'tag_id', db.Integer, db.ForeignKey("tags.id")
+    ),
+    db.Column(
+        'road_id', db.Integer, db.ForeignKey("roads.id")
+    )
+)
 
 # helper Model for n2n Posts collect Items
 class Collect(db.Model):
@@ -270,6 +289,184 @@ class Respon(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+# helper Model for Tags hierarchy
+class Clan(db.Model):
+    __tablename__ = 'clan'
+    parent_tag_id = db.Column(
+        db.Integer,
+        db.ForeignKey('tags.id'),
+        primary_key=True)
+    child_tag_id = db.Column(
+        db.Integer,
+        db.ForeignKey('tags.id'),
+        primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Tags(db.Model):
+    __table_name__ = "tags"
+    id = db.Column(db.Integer, primary_key=True)
+    tag = db.Column(db.String(128), nullable=False, unique=True)
+    descript = db.Column(db.String(512))
+    logo = db.Column(db.String(512))
+    vote = db.Column(db.Integer, default=0)
+    edit_start = db.Column(db.DateTime, default=None)
+    editing_id = db.Column(db.Integer)
+
+    # 1 to n with Events
+    events = db.relationship(
+        'Events', backref='tag', lazy='dynamic')
+
+    # n2n with users
+    favers = db.relationship(
+        'Fav',
+        foreign_keys=[Fav.tag_id],
+        backref=db.backref('fav_tag', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+
+    # simple n2n relationship with Posts
+    posts = db.relationship(
+        'Posts',
+        secondary=tag_post,
+        backref=db.backref('tags', lazy='joined'),
+        lazy='dynamic')
+    # simple n2n relationship with items
+    items = db.relationship(
+        'Items',
+        secondary=tag_item,
+        backref=db.backref('itags', lazy='joined'),
+        lazy='dynamic')
+    # simple n2n relationship with demands
+    demands = db.relationship(
+        'Demands',
+        secondary=tag_demand,
+        backref=db.backref('dtags', lazy='joined'),
+        lazy='dynamic')
+    # simple n2n relationship with comments
+    comments = db.relationship(
+        'Comments',
+        secondary=tag_comment,
+        backref=db.backref('ctags', lazy='joined'),
+        lazy='dynamic')
+    # simple n2n relationship with comments
+    roads = db.relationship(
+        'Roads',
+        secondary=tag_road,
+        backref=db.backref('rtags', lazy='joined'),
+        lazy='dynamic')
+
+    # n2n with self
+    parent_tags = db.relationship(
+        'Clan',
+        foreign_keys=[Clan.child_tag_id],
+        backref=db.backref('child_tag', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    child_tags = db.relationship(
+        'Clan',
+        foreign_keys=[Clan.parent_tag_id],
+        backref=db.backref('parent_tag', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+
+    def parent_is(self, tag):
+        # need to check the relation btwn self and tag
+        if_tag_is_parent = self.parent_tags.filter_by(
+            parent_tag_id=tag.id).first()
+        if_self_is_parent = tag.parent_tags.filter_by(
+            parent_tag_id=self.id).first()
+        return if_tag_is_parent or if_self_is_parent
+
+    def parent(self, tag):
+        if tag and (not self.parent_is(tag)):
+            c = Clan(child_tag=self, parent_tag=tag)
+            db.session.add(c)
+            # db.session.commit()
+
+    # cache get rand tags
+    @staticmethod
+    @cache.memoize()
+    def get_tags():
+        return Tags.query.order_by(Tags.vote.desc()).limit(16).all()  # special limit num
+
+    @staticmethod
+    def tagstr_to_db(strlst):
+        '''
+        split the input tagstr to seperated tag,
+        and add them into Tags Table
+        '''
+        tagset = str_to_set(strlst) if isinstance(strlst, str) else set(strlst)  # can be list or str
+        taglist = []
+        for tg in tagset:
+            tg = tg.strip()
+            if tg and len(tg) < 64:
+                tg = tg.title()  # titlecased style
+                tag = Tags.query.filter_by(tag=tg).first()
+                if tag is None:
+                    tag = Tags(tag=tg)
+                taglist.append(tag)
+        return taglist
+
+    def cal_vote(self, i=None, p=None, d=None, f=None, c=None, r=None):
+        i = i or self.items.count()
+        p = p or self.posts.count()
+        d = d or self.demands.count()
+        f = f or self.favers.count()
+        c = c or self.comments.count()
+        r = r or self.roads.count()
+        self.vote = i+p+d+f+c+r
+        db.session.add(self)
+        # db.session.commit()
+
+    # lock and unlock status in/after edit tag: a stopgap
+    def lock(self, user):
+        # set a start time and id  to indicate in editing
+        self.edit_start = datetime.utcnow()
+        self.editing_id = user.id
+        db.session.add(self)
+        db.session.commit()
+
+    def unlock(self):
+        # reset eidt_start to None, after edit done
+        self.edit_start = None
+        self.editing_id = None
+        db.session.add(self)
+        db.session.commit()
+
+    def force_unlock(self, start=None, timeout=20*60):
+        # sometime user forget submit, need to force unlock
+        start = start or self.edit_start
+        if start:
+            now = datetime.utcnow()
+            delta = now - start
+            if delta.total_seconds() >= timeout:
+                self.unlock()
+
+    def check_locked(self, userid):
+        # if eidt_start is not None, it is locked as editing
+        start = self.edit_start
+        if start and self.editing_id != userid:
+            # force_unlock firstly
+            self.force_unlock(start=start)
+            return bool(self.edit_start)
+        else:
+            return False
+
+    def to_dict(self):
+        tag_dict = {
+            'id': self.id,
+            'tagname': self.tag,
+            'descript': self.descript or '',
+            'logo': self.logo or '',
+            'favcount': self.favers.count()
+        }
+        return tag_dict
+
+    def __repr__(self):
+        return '<Tags %r>' % self.tag
+
+
 class Posts(db.Model):
     __table_name__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)
@@ -384,26 +581,12 @@ class Posts(db.Model):
             # db.session.commit()
 
     # add post tags to database
-    def tag_to_db(self):
-        '''
-        split the input tags to seperated tag,
-        and add them into Tags Table
-        '''
-        tagset = str_to_set(self.tag_str)
-        for tg in tagset:
-            # tg = tg.strip()
-            if tg:  # is not "":
-                tg = tg.title()  # titlecased style
-                tag = Tags.query.filter_by(tag=tg).first()
-                if tag is None:
-                    new_tag = Tags(tag=tg)
-                    new_tag.posts.append(self)
-                    # tag.cal_vote()
-                    db.session.add(new_tag)
-                else:
-                    tag.posts.append(self)
-                    # _tag.cal_vote()
-                    db.session.add(tag)
+    def tag_to_db(self, strlst=None):
+        taglist = Tags.tagstr_to_db(strlst or self.tag_str)
+        for tag in taglist:
+            tag.posts.append(self)
+            # tag.cal_vote()
+            db.session.add(tag)
         # db.session.commit()
 
     # check if can be edited, permission
@@ -617,6 +800,15 @@ class Roads(db.Model):
         db.session.add(self)
         # db.session.commit()
 
+    # add road tags to database
+    def rtag_to_db(self, strlst=None):
+        taglist = Tags.tagstr_to_db(strlst or '42')
+        for tag in taglist:
+            tag.roads.append(self)
+            # tag.cal_vote()
+            db.session.add(tag)
+        # db.session.commit()
+
     @property
     @cache.memoize()
     def road_cover(self):
@@ -695,6 +887,7 @@ class Roads(db.Model):
             'done': self.done,
             'converted': self.converted,
             'owner': owner_dict,
+            'tags': [t.to_dict() for t in self.rtags][-6:],  # special limit num
             'itemcount': self.items.count()
         }
         return road_dict
@@ -780,27 +973,12 @@ class Items(db.Model):
             return self.cover
 
     # add item tags to database
-    def itag_to_db(self):
-        '''
-        split the input tags to seperated tag,
-        and add them into Tags Table
-        '''
-        # _taglist = self.itag_str.split(',') #
-        itagset = str_to_set(self.itag_str)
-        for itg in itagset:
-            # itg = itg.strip() #
-            if itg:  # is not "":
-                itg = itg.title()
-                itag = Tags.query.filter_by(tag=itg).first()
-                if itag is None:
-                    new_tag = Tags(tag=itg)
-                    new_tag.items.append(self)
-                    db.session.add(new_tag)
-                    # tag.cal_vote()
-                else:
-                    itag.items.append(self)
-                    db.session.add(itag)
-                    # _tag.cal_vote()
+    def itag_to_db(self, strlst=None):
+        taglist = Tags.tagstr_to_db(strlst or self.itag_str)
+        for tag in taglist:
+            tag.items.append(self)
+            # tag.cal_vote()
+            db.session.add(tag)
         # db.session.commit()
 
     # add author to db
@@ -907,152 +1085,6 @@ class Items(db.Model):
         return '<Items %r>' % self.title
 
 
-# helper Model for Tags hierarchy
-class Clan(db.Model):
-    __tablename__ = 'clan'
-    parent_tag_id = db.Column(
-        db.Integer,
-        db.ForeignKey('tags.id'),
-        primary_key=True)
-    child_tag_id = db.Column(
-        db.Integer,
-        db.ForeignKey('tags.id'),
-        primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-
-class Tags(db.Model):
-    __table_name__ = "tags"
-    id = db.Column(db.Integer, primary_key=True)
-    tag = db.Column(db.String(128), nullable=False, unique=True)
-    descript = db.Column(db.String(512))
-    logo = db.Column(db.String(512))
-    vote = db.Column(db.Integer, default=0)
-    edit_start = db.Column(db.DateTime, default=None)
-    editing_id = db.Column(db.Integer)
-
-    # 1 to n with Events
-    events = db.relationship(
-        'Events', backref='tag', lazy='dynamic')
-
-    # n2n with users
-    favers = db.relationship(
-        'Fav',
-        foreign_keys=[Fav.tag_id],
-        backref=db.backref('fav_tag', lazy='joined'),
-        lazy='dynamic',
-        cascade='all, delete-orphan')
-
-    # simple n2n relationship with Posts
-    posts = db.relationship(
-        'Posts',
-        secondary=tag_post,
-        backref=db.backref('tags', lazy='joined'),
-        lazy='dynamic')
-    # simple n2n relationship with items
-    items = db.relationship(
-        'Items',
-        secondary=tag_item,
-        backref=db.backref('itags', lazy='joined'),
-        lazy='dynamic')
-    # simple n2n relationship with demands
-    demands = db.relationship(
-        'Demands',
-        secondary=tag_demand,
-        backref=db.backref('dtags', lazy='joined'),
-        lazy='dynamic')
-
-    # n2n with self
-    parent_tags = db.relationship(
-        'Clan',
-        foreign_keys=[Clan.child_tag_id],
-        backref=db.backref('child_tag', lazy='joined'),
-        lazy='dynamic',
-        cascade='all, delete-orphan')
-    child_tags = db.relationship(
-        'Clan',
-        foreign_keys=[Clan.parent_tag_id],
-        backref=db.backref('parent_tag', lazy='joined'),
-        lazy='dynamic',
-        cascade='all, delete-orphan')
-
-    def parent_is(self, tag):
-        # need to check the relation btwn self and tag
-        if_tag_is_parent = self.parent_tags.filter_by(
-            parent_tag_id=tag.id).first()
-        if_self_is_parent = tag.parent_tags.filter_by(
-            parent_tag_id=self.id).first()
-        return if_tag_is_parent or if_self_is_parent
-
-    def parent(self, tag):
-        if tag and (not self.parent_is(tag)):
-            c = Clan(child_tag=self, parent_tag=tag)
-            db.session.add(c)
-            # db.session.commit()
-
-    # cache get rand tags
-    @staticmethod
-    @cache.memoize()
-    def get_tags():
-        return Tags.query.order_by(Tags.vote.desc()).limit(16).all()  # special limit num
-
-    def cal_vote(self, i=None, p=None, d=None, f=None):
-        i = i or self.items.count()
-        p = p or self.posts.count()
-        d = d or self.demands.count()
-        f = f or self.favers.count()
-        self.vote = i+p+d+f
-        db.session.add(self)
-        # db.session.commit()
-
-    # lock and unlock status in/after edit tag: a stopgap
-    def lock(self, user):
-        # set a start time and id  to indicate in editing
-        self.edit_start = datetime.utcnow()
-        self.editing_id = user.id
-        db.session.add(self)
-        db.session.commit()
-
-    def unlock(self):
-        # reset eidt_start to None, after edit done
-        self.edit_start = None
-        self.editing_id = None
-        db.session.add(self)
-        db.session.commit()
-
-    def force_unlock(self, start=None, timeout=20*60):
-        # sometime user forget submit, need to force unlock
-        start = start or self.edit_start
-        if start:
-            now = datetime.utcnow()
-            delta = now - start
-            if delta.total_seconds() >= timeout:
-                self.unlock()
-
-    def check_locked(self, userid):
-        # if eidt_start is not None, it is locked as editing
-        start = self.edit_start
-        if start and self.editing_id != userid:
-            # force_unlock firstly
-            self.force_unlock(start=start)
-            return bool(self.edit_start)
-        else:
-            return False
-
-    def to_dict(self):
-        tag_dict = {
-            'id': self.id,
-            'tagname': self.tag,
-            'descript': self.descript or '',
-            'logo': self.logo or '',
-            'favcount': self.favers.count()
-        }
-        return tag_dict
-
-    def __repr__(self):
-        return '<Tags %r>' % self.tag
-
-
 # helper Model for Reply comments, can be deprecated?
 class Reply(db.Model):
     __tablename__ = 'reply'
@@ -1135,6 +1167,14 @@ class Comments(db.Model):
         # db.session.commit()
     # # end n2n with self, can be deprecated?
 
+    def ctag_to_db(self, tagstr):
+        taglist = Tags.tagstr_to_db(tagstr)
+        for tag in taglist:
+            tag.comments.append(self)
+            # tag.cal_vote()
+            db.session.add(tag)
+        # db.session.commit()
+
     def to_dict(self):
         creator = self.creator
         creator_dict = {
@@ -1147,6 +1187,7 @@ class Comments(db.Model):
             'heading': self.heading or '',
             'body': self.body,
             'vote': self.vote,
+            'tags': [t.to_dict() for t in self.ctags],  # special limit num
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             'creator': creator_dict,
             'children': [c.to_dict() for c in self.child_comments]
@@ -1347,25 +1388,12 @@ class Demands(db.Model):
         lazy='dynamic',
         cascade='all, delete-orphan')
 
-    def dtag_to_db(self):
-        # _taglist = self.dtag_str.split(',') #
-        _dtag_str = self.dtag_str
-        _tagset = str_to_set(_dtag_str)
-        _query = Tags.query
-        for _tg in _tagset:
-            # _tg = _tg.strip() #
-            if _tg:  # is not "":
-                _tg = _tg.title()  # titlecased style
-                _tag = _query.filter_by(tag=_tg).first()
-                if _tag is None:
-                    tag = Tags(tag=_tg)
-                    tag.demands.append(self)
-                    # tag.cal_vote()
-                    db.session.add(tag)
-                else:
-                    _tag.demands.append(self)
-                    # _tag.cal_vote()
-                    db.session.add(_tag)
+    def dtag_to_db(self, strlst=None):
+        taglist = Tags.tagstr_to_db(strlst or self.dtag_str)
+        for tag in taglist:
+            tag.demands.append(self)
+            # tag.cal_vote()
+            db.session.add(tag)
         # db.session.commit()
 
     def to_dict(self):
@@ -1381,8 +1409,7 @@ class Demands(db.Model):
             'requestor': requestor_dict,
             'body': self.body,
             'vote': self.vote,
-            'tagStr': self.dtag_str or '',
-            'tagid': taglst[0]['id'] if taglst else 100003,
+            'tag': taglst[0] if taglst else {},
             'answercount': self.posts.count(),
             'commentcount': self.comments.count(),
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')

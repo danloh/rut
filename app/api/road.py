@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """road is learning road map"""
 
+import re
 from flask import request, g, jsonify, abort
 from ..models import Roads, Gather, Items, Users, Posts, Flag
 from . import db, rest, auth, PER_PAGE
@@ -108,6 +109,9 @@ def new_road():
     title = request.json.get('title', '').strip()
     intro = request.json.get('intro', '').strip()
     deadline = request.json.get('deadline')
+    # extract tags
+    taglst = re.findall(r'#(\w+)', intro)
+    intro = intro.split("#" + (taglst + ['42'])[0])[0]
     if not (title and intro and deadline):
         abort(403)  # cannot be ''
     user = g.user
@@ -118,6 +122,7 @@ def new_road():
         deadline=deadline
     )
     db.session.add(road)
+    road.rtag_to_db(taglst)
     db.session.commit()
     return jsonify({'id': road.id, 'title': road.title})
 
@@ -129,7 +134,10 @@ def edit_road(roadid):
     # check not-null column can not be ''
     title = request.json.get('title', '').strip()
     intro = request.json.get('intro', '').strip()
-    if (not title) or (not intro):
+    # extract tags
+    taglst = re.findall(r'#(\w+)', intro)
+    intro = intro.split("#" + (taglst + ['42'])[0])[0]
+    if not (title and intro):
         abort(403)  # cannot be ''
     user = g.user
     if user != road.owner:
@@ -139,6 +147,7 @@ def edit_road(roadid):
     # renew the update time and add to db
     road.renew()
     # db.session.add(road)
+    road.rtag_to_db(taglst)
     db.session.commit()
     return jsonify(road.to_dict())
 
