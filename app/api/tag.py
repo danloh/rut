@@ -2,7 +2,7 @@
 # tag: a topic
 
 from flask import request, g, jsonify, abort
-from ..models import Tags, Posts, Demands
+from ..models import Tags, Posts, Demands, Items
 from . import db, rest, auth, PER_PAGE
 
 
@@ -61,10 +61,12 @@ def get_tag_ruts(tagid):
     # request param {page: int}
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    posts = tag.posts.order_by(Posts.timestamp.desc())\
+    post_query = tag.posts
+    posts = post_query.order_by(Posts.vote.desc())\
         .offset(per_page * page).limit(per_page)
     tagruts = [p.to_simple_dict() for p in posts]
-    return jsonify(tagruts)
+    tagruts_dict = {'ruts': tagruts, 'rutcount': post_query.count()}
+    return jsonify(tagruts_dict)
 
 
 @rest.route('/tag/<int:tagid>/demands')
@@ -73,10 +75,26 @@ def get_tag_demands(tagid):
     tag = Tags.query.get_or_404(tagid)
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    demands = tag.demands.order_by(Demands.timestamp.desc())\
+    demand_query = tag.demands
+    demands = demand_query.order_by(Demands.vote.desc())\
         .offset(per_page * page).limit(per_page)
     tag_demands = [d.to_dict() for d in demands]
-    return jsonify(tag_demands)
+    tagdemands_dict = {'demands': tag_demands, 'demandcount': demand_query.count()}
+    return jsonify(tagdemands_dict)
+
+
+@rest.route('/tag/<int:tagid>/items')
+@auth.login_required
+def get_tag_items(tagid):
+    tag = Tags.query.get_or_404(tagid)
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    item_query = tag.items
+    items = item_query.order_by(Items.vote.desc())\
+        .offset(per_page * page).limit(per_page)
+    tag_items = [i.to_dict() for i in items]
+    tagitems_dict = {'items': tag_items, 'itemcount': item_query.count()}
+    return jsonify(tagitems_dict)
 
 
 @rest.route('/tag/<int:tagid>/relates')

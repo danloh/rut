@@ -1267,7 +1267,7 @@ class Reviews(db.Model):
         backref=db.backref('vote_review', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-    
+
     # add review tags to database
     def rvtag_to_db(self, strlst=None):
         taglist = Tags.tagstr_to_db(strlst or '42')
