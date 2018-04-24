@@ -32,13 +32,6 @@ def get_tagid(tagname):
 def get_tag(tagid):
     tag = Tags.query.get_or_404(tagid)
     tag_dict = tag.to_dict()
-    # attach ruts included in tag
-    tagruts = [
-        p.to_dict() for p in tag.posts.order_by(Posts.timestamp.desc()).limit(PER_PAGE)
-    ]
-    # tagruts.reverse()  # as order_by, which is faster?
-    tag_dict['ruts'] = tagruts
-    tag_dict['total'] = tag.posts.count()  # len(tagruts)
     # related tags
     parent_tags = [
         t.parent_tag for t in tag.parent_tags.order_by(db.func.rand()).limit(5)

@@ -317,7 +317,7 @@ class Tags(db.Model):
     __table_name__ = "tags"
     id = db.Column(db.Integer, primary_key=True)
     tag = db.Column(db.String(128), nullable=False, unique=True)
-    descript = db.Column(db.String(512))
+    descript = db.Column(db.Text)
     logo = db.Column(db.String(512))
     vote = db.Column(db.Integer, default=0)
     edit_start = db.Column(db.DateTime, default=None)
