@@ -1441,7 +1441,7 @@ class Demands(db.Model):
         backref=db.backref('vote_demand', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-    
+
     def cal_point(self, c=None, v=None):
         c = c or self.comments.count()
         v = v or self.vote
@@ -1576,14 +1576,14 @@ class Headlines(db.Model):
         'Events', backref='headline', lazy='dynamic')
 
     def cal_point(self):
-        # get the time lapse
-        submit_at = self.timestamp
-        now = datetime.utcnow()
-        delta = (now - submit_at).total_seconds() / 3600  # unit hour
-        duration = max(0.5, delta - 2)  # plan to cal per 2 hour, celery
+        # get the time lapse, other way
+        # submit_at = self.timestamp
+        # now = datetime.utcnow()
+        # delta = (now - submit_at).total_seconds() / 3600  # unit hour
+        # duration = max(0.5, delta - 2)  # plan to cal per 2 hour, celery
+        # self.point = round(score / duration)
         score = self.vote + self.comments.count()
-        point = round(score / duration)
-        self.point = point  # short-time factor
+        self.point = max(0, score - self.score)  # short-time factor
         self.score = score  # long-term
         db.session.add(self)
         # db.session.commit()
@@ -2324,7 +2324,7 @@ class Events(db.Model):
                 content_dict = {
                     'type': 'Tag',
                     'id': q.id,
-                    'cover': '',
+                    'cover': q.logo or '',
                     'content': q.tag
                 }
         if act in ['Sent', 'Voted']:
