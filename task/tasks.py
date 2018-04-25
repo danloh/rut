@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 from app import mail, db
-from app.models import Users, Posts, Tags, Items, Headlines
+from app.models import Users, Posts, Tags, Items, Demands, Reviews, Headlines
 from flask import render_template
 from flask_mail import Message
 from task.celery import celery_app
@@ -36,6 +36,7 @@ def set_event_celery(userid, action=None, postid=None, itemid=None,
 
 @celery_app.task(ignore_result=True)
 def cal_vote_celery():
+    """need to narrow the query"""
     with app.app_context():
         ruts = Posts.query
         for r in ruts:
@@ -43,10 +44,16 @@ def cal_vote_celery():
         tags = Tags.query
         for t in tags:
             t.cal_vote()
-        headlines = Headlines.query
-        for h in headlines:
-            h.cal_point()
         items = Items.query
         for i in items:
             i.cal_vote()
+        demands = Demands.query
+        for d in demands:
+            d.cal_point()
+        reviews = Reviews.query
+        for rv in reviews:
+            rv.cal_point()
+        headlines = Headlines.query
+        for h in headlines:
+            h.cal_point()
         db.session.commit()

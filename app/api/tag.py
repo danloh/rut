@@ -69,7 +69,7 @@ def get_tag_demands(tagid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     demand_query = tag.demands
-    demands = demand_query.order_by(Demands.vote.desc())\
+    demands = demand_query.order_by(Demands.point_incre.desc(), Demands.vote.desc())\
         .offset(per_page * page).limit(per_page)
     tag_demands = [d.to_dict() for d in demands]
     tagdemands_dict = {'demands': tag_demands, 'demandcount': demand_query.count()}
@@ -83,7 +83,7 @@ def get_tag_items(tagid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     item_query = tag.items
-    items = item_query.order_by(Items.vote.desc())\
+    items = item_query.order_by(Items.vote_incre.desc(), Items.vote.desc())\
         .offset(per_page * page).limit(per_page)
     tag_items = [i.to_dict() for i in items]
     tagitems_dict = {'items': tag_items, 'itemcount': item_query.count()}

@@ -22,7 +22,7 @@ def get_demands():
     if userid:
         demands_query = query.filter_by(requestor_id=userid)
     elif tag_str:
-        demands_query = query.filter_by(dtag_str=str(tag_str))
+        demands_query = query.filter_by(dtag_str=str(tag_str))  # ??, to midify
     else:
         demands_query = query
     # order per ref: new or popular

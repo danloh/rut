@@ -320,6 +320,7 @@ class Tags(db.Model):
     descript = db.Column(db.Text)
     logo = db.Column(db.String(512))
     vote = db.Column(db.Integer, default=0)
+    vote_incre = db.Column(db.Integer, default=0)  # record increment
     edit_start = db.Column(db.DateTime, default=None)
     editing_id = db.Column(db.Integer)
 
@@ -404,7 +405,7 @@ class Tags(db.Model):
     @staticmethod
     @cache.memoize()
     def get_tags():
-        return Tags.query.order_by(Tags.vote.desc()).limit(16).all()  # special limit num
+        return Tags.query.order_by(Tags.vote_incre.desc(), Tags.vote.desc()).limit(16).all()  # special limit num
 
     @staticmethod
     def tagstr_to_db(strlst):
@@ -431,7 +432,10 @@ class Tags(db.Model):
         f = f or self.favers.count()
         r = r or self.roads.count()
         rv = rv or self.reviews.count()
-        self.vote = i+p+d+f+r+rv
+        now_vote = i+p+d+f+r+rv
+        pre_vote = self.vote
+        self.vote_incre = max(0, now_vote - pre_vote)
+        self.vote = now_vote
         db.session.add(self)
         # db.session.commit()
 
@@ -501,6 +505,7 @@ class Posts(db.Model):
     editing_id = db.Column(db.Integer)
     disabled = db.Column(db.Boolean)
     vote = db.Column(db.Integer, default=0)
+    vote_incre = db.Column(db.Integer, default=0)
     refer = db.Column(db.String(32))  # to mark off some special list
 
     # n to 1 with Users
@@ -659,10 +664,14 @@ class Posts(db.Model):
         db.session.add(self)
         # db.session.commit()
 
-    def cal_vote(self, i=None, s=None):
+    def cal_vote(self, i=None, s=None, c=None):
         i = i or self.items.count()
         s = s or self.starers.count()
-        self.vote = i+s
+        c = c or self.comments.count()
+        now_vote = i+s+c
+        pre_vote = self.vote
+        self.vote_incre = max(0, now_vote - pre_vote)
+        self.vote = now_vote
         db.session.add(self)
         # db.session.commit()
 
@@ -683,11 +692,12 @@ class Posts(db.Model):
     def select_posts():
         _query = Posts.query
         m = current_app.config['POST_PER_PAGE']
-
+        # query per diff order
         posts_latest = _query.order_by(Posts.renewal.desc()).limit(m)
-        posts_popular = _query.order_by(Posts.vote.desc()).limit(m)
+        posts_popular = _query\
+                .order_by(Posts.vote_incre.desc(), Posts.vote.desc()).limit(m)
         posts_random = _query.order_by(db.func.rand()).limit(m)
-
+        # union the quey
         posts_select = posts_popular.union(posts_random, posts_latest)
         posts = [r.to_simple_dict() for r in posts_select]  # execute here for cache
         return posts
@@ -933,6 +943,7 @@ class Items(db.Model):
     details = db.Column(db.Text)
     itag_str = db.Column(db.String(512))
     vote = db.Column(db.Integer, default=0)
+    vote_incre = db.Column(db.Integer, default=0)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
     edit_start = db.Column(db.DateTime, default=None)
@@ -1018,12 +1029,16 @@ class Items(db.Model):
                 db.session.add(byline)
         # db.session.commit()
 
-    def cal_vote(self, c=None, p=None, r=None, f=None):
+    def cal_vote(self, c=None, p=None, rd=None, r=None, f=None):
         c = c or self.clips.count()
         p = p or self.posts.count()
+        rd = rd or self.roads.count()
         r = r or self.reviews.count()
         f = f or self.flagers.count()
-        self.vote = c+p+r+f
+        now_vote = c+p+rd+r+f
+        pre_vote = self.vote
+        self.vote_incre = max(0, now_vote - pre_vote)
+        self.vote = now_vote
         db.session.add(self)
         # db.session.commit()
 
@@ -1241,6 +1256,8 @@ class Reviews(db.Model):
     body_html = db.Column(db.Text)
     spoiler = db.Column(db.Boolean, default=False)
     vote = db.Column(db.Integer, default=1)
+    point = db.Column(db.Integer, default=1)
+    point_incre = db.Column(db.Integer, default=0)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
 
@@ -1267,6 +1284,16 @@ class Reviews(db.Model):
         backref=db.backref('vote_review', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
+    
+    def cal_point(self, c=None, v=None):
+        c = c or self.comments.count()
+        v = v or self.vote
+        now_point = c+v
+        pre_point = self.point or 0
+        self.point_incre = max(0, now_point - pre_point)
+        self.point = now_point
+        db.session.add(self)
+        # db.session.commit()
 
     # add review tags to database
     def rvtag_to_db(self, strlst=None):
@@ -1381,6 +1408,8 @@ class Demands(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text, nullable=False)
     vote = db.Column(db.Integer, default=1)
+    point = db.Column(db.Integer, default=1)
+    point_incre = db.Column(db.Integer, default=0)
     dtag_str = db.Column(db.String(128))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
@@ -1412,6 +1441,16 @@ class Demands(db.Model):
         backref=db.backref('vote_demand', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
+    
+    def cal_point(self, c=None, v=None):
+        c = c or self.comments.count()
+        v = v or self.vote
+        now_point = c+v
+        pre_point = self.point or 0
+        self.point_incre = max(0, now_point - pre_point)
+        self.point = now_point
+        db.session.add(self)
+        # db.session.commit()
 
     def dtag_to_db(self, strlst=None):
         taglist = Tags.tagstr_to_db(strlst or self.dtag_str)

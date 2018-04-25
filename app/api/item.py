@@ -48,7 +48,7 @@ def get_item_reviews(itemid):
     if userid:
         reviews = query.filter_by(creator_id=userid)
     elif ref == 'hot':
-        reviews = query.order_by(Reviews.vote.desc())
+        reviews = query.order_by(Reviews.point_incre.desc(), Reviews.vote.desc())
     elif ref == 'new':
         reviews = query.order_by(Reviews.timestamp.desc())
     else:
