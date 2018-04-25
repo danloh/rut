@@ -168,8 +168,8 @@ def edit_tag(tagid):
     user = g.user
     if tag.check_locked(user.id):
         return jsonify('In Editing')
-    name = name.title()  # titlecased style
-    if tag.tag.title() != name and query.filter_by(tag=name).first():
+    t = query.filter_by(tag=name).first()
+    if t and t != tag:
         abort(403)  # cannot Duplicated Tag Name
     tag.tag = name
     tag.descript = description
@@ -179,7 +179,7 @@ def edit_tag(tagid):
     if parent:
         parent_tag = query.filter_by(tag=parent).first()
         if not parent_tag:
-            parent_tag = Tags(tag=parent.title())
+            parent_tag = Tags(tag=parent)
             db.session.add(parent_tag)
         tag.parent(parent_tag)
     db.session.commit()

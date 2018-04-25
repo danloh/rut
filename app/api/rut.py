@@ -317,7 +317,6 @@ def edit_rut_tags(rutid):
         t = tg.strip()
         if not t:
             continue  # if t is '' then next element
-        t = t.title()  # titlecased sytle
         tag = query.filter_by(tag=t).first()
         if tag is None:
             new_tag = Tags(tag=t)

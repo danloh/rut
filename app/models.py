@@ -418,7 +418,6 @@ class Tags(db.Model):
         for tg in tagset:
             tg = tg.strip()
             if tg and len(tg) < 64:
-                tg = tg.title()  # titlecased style
                 tag = Tags.query.filter_by(tag=tg).first()
                 if tag is None:
                     tag = Tags(tag=tg)

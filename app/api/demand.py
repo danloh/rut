@@ -145,7 +145,7 @@ def new_demand():
     demand = Demands(
         requestor=user,
         body=body,
-        dtag_str=tag_str.title()
+        dtag_str=tag_str
     )
     db.session.add(demand)
     demand.dtag_to_db()
