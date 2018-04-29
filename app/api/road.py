@@ -209,6 +209,7 @@ def item_to_road(itemid, roadid):
     alter = request.json.get('alter', False)
     if alter:
         road.done = False
+        road.converted = False
         db.session.add(road)
     db.session.commit()
     # to load mark_dict, radditem: load, itemtor, not
@@ -243,9 +244,9 @@ def del_mark(gid):
 @rest.route('/convertroad/<int:roadid>/torut')
 @auth.login_required
 def convert_road_to_rut(roadid):
-    """convert road to rut when get  road done"""
+    """convert road to rut when get road done"""
     road = Roads.query.get_or_404(roadid)
-    if road.converted:
+    if road.converted or (not road.done):
         return jsonify(False)
     user = g.user
     if user != road.owner:
@@ -257,7 +258,7 @@ def convert_road_to_rut(roadid):
         rating="All"
     )
     db.session.add(rut)
-    #db.session.commit()
+    # db.session.commit()
     for ga in road.items:
         item = ga.item
         tips = ga.mark
@@ -266,6 +267,11 @@ def convert_road_to_rut(roadid):
     # change to converted
     road.converted = True
     db.session.add(road)
+    # tag rut
+    tags = road.rtags
+    for tag in tags:
+        tag.posts.append(rut)
+        db.session.add(tag)
     db.session.commit()
     return jsonify({'id': rut.id, 'title': rut.title})
 

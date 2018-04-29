@@ -891,8 +891,11 @@ class Roads(db.Model):
         ).all()
         if (not flags) and itemids:
             self.done = True
-            db.session.add(self)
-            db.session.commit()
+        else:
+            self.done = False
+            self.converted = False
+        db.session.add(self)
+        db.session.commit()
 
     def to_dict(self):
         owner = self.owner
