@@ -251,12 +251,18 @@ def convert_road_to_rut(roadid):
     user = g.user
     if user != road.owner:
         abort(403)
-    rut = Posts(
-        creator=user,
-        title=road.title,
-        intro=road.intro,
-        rating="All"
-    )
+    rut = road.post
+    if rut:
+        rut.itle = road.title
+        rut.intro = road.intro
+    else:
+        rut = Posts(
+            creator=user,
+            road=road,
+            title=road.title,
+            intro=road.intro,
+            rating="All"
+        )
     db.session.add(rut)
     # db.session.commit()
     for ga in road.items:

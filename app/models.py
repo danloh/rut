@@ -513,6 +513,12 @@ class Posts(db.Model):
         db.ForeignKey("users.id")
     )
 
+    # 1 to 1 with Roads as convert from
+    road_id = db.Column(
+        db.Integer,
+        db.ForeignKey("roads.id")
+    )
+
     # 1 to n with Comments
     comments = db.relationship(
         'Comments', backref='post', lazy='dynamic')
@@ -567,7 +573,7 @@ class Posts(db.Model):
             c = Collect(
                 post=self,
                 item=item,
-                order= od or self.items.count()+1,
+                order=od or self.items.count()+1,
                 tips=tips,
                 tip_creator=tip_creator,
                 spoiler=spoiler
@@ -712,6 +718,8 @@ class Posts(db.Model):
         # contributes = self.contributors
         # contributors = [i.to_dict() for i in contributes]
         # contributor_id_list = [i.user_id for i in contributes]
+        road = self.road
+        road_dict = {'id': road.id, 'title': road.title} if road else {'id': '', 'title': ''}
         tags = [t.to_dict() for t in self.tags]
         post_dict = {
             'id': self.id,
@@ -730,6 +738,7 @@ class Posts(db.Model):
             'cover': self.post_cover,
             'editable': self.editable,
             'creator': creator_dict,
+            'convertfrom': road_dict,
             # 'contributors': contributors,
             # 'contributoridlist': contributor_id_list,
             'tags': tags
@@ -812,6 +821,11 @@ class Roads(db.Model):
         db.Integer,
         db.ForeignKey("users.id")
     )
+
+    # 1 to 1 with Posts as convert to
+    post = db.relationship(
+        'Posts', backref='road', uselist=False, lazy='joined')
+
     # n2n with Items
     items = db.relationship(
         'Gather',
