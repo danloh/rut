@@ -21,16 +21,16 @@ def get_all_tags():
     return jsonify(tags_dict)
 
 
-@rest.route('/gettag/<string:tagname>')
+@rest.route('/gettagid/<string:tagname>')
 def get_tagid(tagname):
-    tagname = str(tagname).split("@")[-1]
     tag = Tags.query.filter_by(tag=tagname).first_or_404()
     return jsonify(tag.id)
 
-@rest.route('/tag/<int:tagid>')
+
+@rest.route('/tag/<string:tagname>')
 @auth.login_required
-def get_tag(tagid):
-    tag = Tags.query.get_or_404(tagid)
+def get_tag(tagname):
+    tag = Tags.query.filter_by(tag=tagname).first_or_404()
     tag_dict = tag.to_dict()
     # related tags
     parent_tags = [
@@ -47,10 +47,10 @@ def get_tag(tagid):
     return jsonify(tag_dict)
 
 
-@rest.route('/tag/<int:tagid>/ruts')
+@rest.route('/tag/<string:tagname>/ruts')
 @auth.login_required
-def get_tag_ruts(tagid):
-    tag = Tags.query.get_or_404(tagid)
+def get_tag_ruts(tagname):
+    tag = Tags.query.filter_by(tag=tagname).first_or_404()
     # request param {page: int}
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
@@ -62,10 +62,10 @@ def get_tag_ruts(tagid):
     return jsonify(tagruts_dict)
 
 
-@rest.route('/tag/<int:tagid>/demands')
+@rest.route('/tag/<string:tagname>/demands')
 @auth.login_required
-def get_tag_demands(tagid):
-    tag = Tags.query.get_or_404(tagid)
+def get_tag_demands(tagname):
+    tag = Tags.query.filter_by(tag=tagname).first_or_404()
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     demand_query = tag.demands
@@ -76,10 +76,10 @@ def get_tag_demands(tagid):
     return jsonify(tagdemands_dict)
 
 
-@rest.route('/tag/<int:tagid>/items')
+@rest.route('/tag/<string:tagname>/items')
 @auth.login_required
-def get_tag_items(tagid):
-    tag = Tags.query.get_or_404(tagid)
+def get_tag_items(tagname):
+    tag = Tags.query.filter_by(tag=tagname).first_or_404()
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     item_query = tag.items
@@ -90,12 +90,12 @@ def get_tag_items(tagid):
     return jsonify(tagitems_dict)
 
 
-@rest.route('/tag/<int:tagid>/relates')
+@rest.route('/tag/<string:tagname>/relates')
 @auth.login_required
-def get_tag_relates(tagid):
+def get_tag_relates(tagname):
     # page = request.args.get('page', 0, type=int)
     # per_page = request.args.get('perPage', PER_PAGE, type=int)
-    tag = Tags.query.get_or_404(tagid)
+    tag = Tags.query.filter_by(tag=tagname).first_or_404()
     parent_tags = [t.parent_tag for t in tag.parent_tags]
     related_tags = []
     for tg in parent_tags:
