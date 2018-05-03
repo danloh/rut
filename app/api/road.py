@@ -111,7 +111,6 @@ def new_road():
     deadline = request.json.get('deadline')
     # extract tags
     taglst = re.findall(r'#(\w+)', intro)
-    intro = intro.split("#" + (taglst + ['42'])[0])[0]
     if not (title and intro and deadline):
         abort(403)  # cannot be ''
     user = g.user
@@ -136,7 +135,6 @@ def edit_road(roadid):
     intro = request.json.get('intro', '').strip()
     # extract tags
     taglst = re.findall(r'#(\w+)', intro)
-    intro = intro.split("#" + (taglst + ['42'])[0])[0]
     if not (title and intro):
         abort(403)  # cannot be ''
     user = g.user
