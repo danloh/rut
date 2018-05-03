@@ -342,3 +342,16 @@ def submit_new_item():
     if flag:
         user.flag(new_item, flag)
     return jsonify(new_item.id)
+
+
+@rest.route('/additemtag/<int:itemid>', methods=['POST'])
+@auth.login_required
+def add_item_tags(itemid):
+    item = Items.query.get_or_404(itemid)
+    itag_str = request.json.get('tags', '').strip()
+    if not itag_str:
+        return jsonify(False)
+    item.itag_to_db(itag_str)
+    db.session.commit()
+    tags = [t.to_dict() for t in item.itags][-12:]
+    return jsonify(tags)

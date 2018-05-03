@@ -183,7 +183,8 @@ def edit_tag(tagid):
             db.session.add(parent_tag)
         tag.parent(parent_tag)
     db.session.commit()
-    return jsonify('Tag Info Updated, Thank You')
+    tag_dict = tag.to_dict()
+    return jsonify(tag_dict)
 
 
 @rest.route('/delete/tag/<int:tagid>')

@@ -1104,7 +1104,7 @@ class Items(db.Model):
             'clipcount': self.clips.count(),
             'commentcount': self.comments.count(),
             'cover': self.item_cover,
-            'tags': [t.to_dict() for t in self.itags][-6:],  # special limit num
+            'tags': [t.to_dict() for t in self.itags][-12:],  # special limit num
             'publisher': self.publisher or '',
             'pubdate': self.pub_date or '',
             'language': self.language or '',
