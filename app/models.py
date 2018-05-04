@@ -978,6 +978,12 @@ class Items(db.Model):
     events = db.relationship(
         'Events', backref='item', lazy='dynamic')
 
+    # n to 1 with Users for who submit
+    submitor_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id")
+    )
+
     # n2n with Posts
     posts = db.relationship(
         'Collect',
@@ -1113,7 +1119,8 @@ class Items(db.Model):
             'binding': self.binding or '',
             'price': self.price or '',
             'resurl': self.res_url or '',
-            'details': self.details or ''
+            'details': self.details or '',
+            'submitor': self.submitor.to_simple_dict() if self.submitor else {'id': '', 'name': 'Bot'}
         }
         return item_dict
 
@@ -1814,6 +1821,9 @@ class Users(db.Model):
     # 1 to n with Headlines
     headlines = db.relationship(
         'Headlines', backref='submitor', lazy='dynamic')
+    # 1 to n with Items
+    sub_items = db.relationship(
+        'Items', backref='submitor', lazy='dynamic')
     # 1 to n with Events
     events = db.relationship(
         'Events', backref='actor', lazy='dynamic')
@@ -2220,6 +2230,7 @@ class Users(db.Model):
             'followercount': self.followers.count(),
             'followedcount': self.followed.count(),  # following other
             'exlink': self.links or '',
+            'joinat': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             'incode': self.incode,
             'recode': self.recode
         }

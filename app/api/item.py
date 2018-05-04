@@ -279,6 +279,15 @@ def recover_item(itemid):
     return jsonify('Enabled')
 
 
+@rest.route('/getsubmitteditems')
+@auth.login_required
+def get_submitted_items():
+    user = g.user
+    items = user.sub_items.order_by(Items.timestamp.desc()).limit(PER_PAGE)
+    item_list = [i.to_simple_dict() for i in items]
+    return jsonify(item_list)
+
+
 @rest.route('/newitem', methods=['POST'])
 @auth.login_required
 def submit_new_item():
@@ -332,7 +341,8 @@ def submit_new_item():
         page=d.get('page', '').strip(),
         level=d.get('Level', '').strip(),
         price=d.get('price', '').strip(),
-        details=d.get('details', '...').strip()
+        details=d.get('details', '...').strip(),
+        submitor=user
     )
     db.session.add(new_item)
     if d.get('byline', '').strip():
