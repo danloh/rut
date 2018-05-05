@@ -56,9 +56,9 @@ def fakeheader():
               'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3185.1 Safari/537.36',
               'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3185.0 Safari/537.36']
     agent = agents[random.randint(0, len(agents)-1)]
-    fakeheader = {}
-    fakeheader['User-Agent'] = agent
-    return fakeheader
+    fake_header = {}
+    fake_header['User-Agent'] = agent
+    return fake_header
 
 
 def get_html(url):
@@ -104,7 +104,7 @@ def parse_html_amazon(url):
     soup = get_soup(url)
     # init a dict to store info
     d = {}
-    d['res_url'] = url.split('/ref=')[0]  # discard the ref part in amazon url
+    d['resUrl'] = url.split('/ref=')[0]  # discard the ref part in amazon url
     if soup == "Error":
         return d
 
@@ -237,7 +237,7 @@ def parse_html_edx(url):
 
     # init a dict to store info
     d = {}
-    d['res_url'] = url
+    d['resUrl'] = url
     d['Publisher'] = 'edx'
     d['cate'] = 'Online'
     if soup == "Error":
@@ -308,7 +308,7 @@ def parse_html_coursera(url):
 
     # init a dict to store info
     d = {}
-    d['res_url'] = url
+    d['resUrl'] = url
     d['Publisher'] = 'coursera'
     d['cate'] = 'Online'
     if soup == "Error":
@@ -403,7 +403,7 @@ def parse_html_other(url):
 
     # init a dict to store info
     d = {}
-    d['res_url'] = url
+    d['resUrl'] = url
     d['cate'] = 'Online'
     if soup == "Error":
         return d
@@ -456,7 +456,7 @@ def parse_html(url):
     return d
 
 
-def store(d=None, url=''):
+def parse_and_store(d=None, url=''):
     d = d or parse_html(url)
     try:
         title = d['title']
@@ -473,7 +473,7 @@ def store(d=None, url=''):
                 uid=uid,
                 author=d.get('byline'),
                 cover=d.get('cover'),
-                res_url=d.get('res_url'),
+                res_url=d.get('resUrl'),
                 publisher=d.get('Publisher'),
                 pub_date=d.get('publish_date'),
                 language=d.get('Language'),
@@ -484,7 +484,7 @@ def store(d=None, url=''):
         else:
             item.author = d.get('byline')
             item.cover = d.get('cover')
-            item.res_url = d.get('res_url')
+            item.res_url = d.get('resUrl')
             item.publisher = d.get('Publisher')
             item.pub_date = d.get('publish_date')
             item.language = d.get('Language')
