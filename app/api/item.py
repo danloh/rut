@@ -297,7 +297,7 @@ def new_item_pipe(d, uid, user, flag=None):
         cover=d.get('cover', '').strip(),
         cate=d.get('cate', 'Book'),
         publisher=d.get('Publisher', '').strip(),
-        pub_date=d.get('Publication Date', '').strip(),
+        pub_date=d.get('PublishDate', '').strip(),
         language=d.get('Language', '').strip(),
         binding=d.get('binding', '').strip(),
         page=d.get('page', '').strip(),
@@ -372,73 +372,6 @@ def submit_new_item():
         d = request.json
         item = add_new_item(d, user, flag)
         return jsonify(item.id)
-
-
-# @rest.route('/newitem', methods=['POST'])
-# @auth.login_required
-# def submit_new_item():
-#     """add new item mannually or via spider"""
-#     item_query = Items.query
-#     res_url = request.json.get('resUrl', '').strip()
-#     # for flag
-#     user = g.user
-#     flag_dict = {'Have Done': 3, 'Schedule': 1, 'Working On': 2}
-#     label = request.json.get('flag', '').strip()
-#     flag = flag_dict.get(label)
-#     # check if the url has been spider-ed,
-#     re_url = r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
-#     reg_url = re.compile(re_url, 0)
-#     if reg_url.match(res_url):
-#         pure_url = res_url.split('/ref=')[0]  # for amazon url
-#         lst = item_query.filter(Items.res_url.in_((res_url, pure_url))).all()
-#         if lst:
-#             item = lst[0]
-#             if flag:
-#                 user.flag(item, flag)
-#             return jsonify(item.id)
-#     # via spider or manually
-#     how = request.json.get('how', '').strip()
-#     if how == 'spider':
-#         d = spider.parse_html(res_url)  # if any error??
-#     else:
-#         d = request.json
-#     title = d.get('title', 'untitled').strip()
-#     uid = d.get('uid', '').replace('-', '').replace(' ', '')
-#     if not (uid or res_url):
-#         abort(403)  # cannot be both None, #must??
-#     # check item if existing per the uid
-#     old_item = item_query.filter_by(uid=uid).first() if uid else None
-#     if old_item:
-#         # flag once item added
-#         if flag:
-#             user.flag(old_item, flag)
-#         return jsonify(old_item.id)
-    # # new_item = Items(
-    # #     uid=uid or spider.random_uid(),
-    # #     title=title,
-    # #     res_url=d.get('resUrl', '').strip(),
-    # #     author=d.get('byline', '').strip(),
-    # #     cover=d.get('cover', '').strip(),
-    # #     cate=d.get('cate', 'Book'),
-    # #     publisher=d.get('Publisher', '').strip(),
-    # #     pub_date=d.get('Publication Date', '').strip(),
-    # #     language=d.get('Language', '').strip(),
-    # #     binding=d.get('binding', '').strip(),
-    # #     page=d.get('page', '').strip(),
-    # #     level=d.get('Level', '').strip(),
-    # #     price=d.get('price', '').strip(),
-    # #     details=d.get('details', '...').strip(),
-    # #     submitor=user
-    # # )
-    # # db.session.add(new_item)
-    # # if d.get('byline', '').strip():
-    # #     new_item.author_to_db()
-    # # db.session.commit()
-    # # # flag once item added
-    # # if flag:
-    # #     user.flag(new_item, flag)
-    # new_item = new_item_pipe(d, uid, title, user, flag)
-    # return jsonify(new_item.id)
 
 
 @rest.route('/additemtag/<int:itemid>', methods=['POST'])
