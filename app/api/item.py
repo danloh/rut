@@ -28,10 +28,13 @@ def get_all_items():
 def get_item(itemid):
     item = Items.query.get_or_404(itemid)
     item_dict = item.to_dict()
-    ruts = [
-        c.post for c in item.posts.order_by(Collect.timestamp.desc()).limit(PER_PAGE)
+    included_ruts = [
+        {
+            'id': r.post_id,
+            'title': r.post.title,
+            'itemtip': r.to_dict()
+        } for r in item.posts.order_by(Collect.timestamp.desc()).limit(PER_PAGE)
     ]
-    included_ruts = [{'id': r.id, 'title': r.title} for r in ruts]
     item_dict['inruts'] = included_ruts
     return jsonify(item_dict)
 
@@ -74,8 +77,13 @@ def get_item_inruts(itemid):
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     included_ruts = item.posts.order_by(Collect.timestamp.desc())\
                               .offset(per_page * page).limit(per_page)
-    ruts_list = [c.post for c in included_ruts]
-    in_ruts_list = [{'id': r.id, 'title': r.title} for r in ruts_list]
+    in_ruts_list = [
+        {
+            'id': r.post_id,
+            'title': r.post.title,
+            'itemtip': r.to_dict()
+        } for r in included_ruts
+    ]
     return jsonify(in_ruts_list)
 
 
