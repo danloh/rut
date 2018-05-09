@@ -12,7 +12,7 @@ def get_circles():
     # get request params
     area = request.args.get('area', '').strip()
     # query
-    query = Circles.query
+    query = Circles.query.filter(Circles.disabled == None)
     if area:
         if area == "[]":
             query = query.filter_by(facilitator=g.user)
@@ -88,27 +88,27 @@ def del_circle(circleid):
     return jsonify('Deleted')
 
 
-@rest.route('/disable/circle/<int:circleid>')
+@rest.route('/disablecircle/<int:circleid>')
 @auth.login_required
 def disable_circle(circleid):
     circle = Circles.query.get_or_404(circleid)
     user = g.user
-    if circle.facilitator != user and user.role != 'Admin':
-        abort(403)
+    # if circle.facilitator != user and user.role != 'Admin':
+    #     abort(403)
     circle.disabled = True
     db.session.add(circle)
     db.session.commit()
     return jsonify('Disabled')
 
 
-@rest.route('/recover/circle/<int:circleid>')
+@rest.route('/recovercircle/<int:circleid>')
 @auth.login_required
 def recover_circle(circleid):
     circle = Circles.query.get_or_404(circleid)
     user = g.user
     if circle.facilitator != user and user.role != 'Admin':
         abort(403)
-    circle.disabled = False  # enable
+    circle.disabled = None  # enable
     db.session.add(circle)
     db.session.commit()
     return jsonify('Enabled')
