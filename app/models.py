@@ -319,6 +319,8 @@ class Tags(db.Model):
     tag = db.Column(db.String(128), nullable=False, unique=True)
     descript = db.Column(db.Text)
     logo = db.Column(db.String(512))
+    ftcolor = db.Column(db.String(64))
+    bgcolor = db.Column(db.String(64))
     vote = db.Column(db.Integer, default=0)
     vote_incre = db.Column(db.Integer, default=0)  # record increment
     edit_start = db.Column(db.DateTime, default=None)
@@ -360,7 +362,7 @@ class Tags(db.Model):
         secondary=tag_comment,
         backref=db.backref('ctags', lazy='joined'),
         lazy='dynamic')
-    # simple n2n relationship with comments
+    # simple n2n relationship with roads
     roads = db.relationship(
         'Roads',
         secondary=tag_road,
@@ -478,6 +480,8 @@ class Tags(db.Model):
             'tagname': self.tag,
             'descript': self.descript or '',
             'logo': self.logo or '',
+            'ftcolor': self.ftcolor or '',
+            'bgcolor': self.bgcolor or '',
             'favcount': self.favers.count()
         }
         return tag_dict

@@ -2,7 +2,7 @@
 # tag: a topic
 
 from flask import request, g, jsonify, abort
-from ..models import Tags, Posts, Demands, Items
+from ..models import Tags, Posts, Demands, Items, Comments
 from . import db, rest, auth, PER_PAGE
 
 
@@ -90,6 +90,20 @@ def get_tag_items(tagname):
     return jsonify(tagitems_dict)
 
 
+@rest.route('/tag/<string:tagname>/comments')
+@auth.login_required
+def get_tag_comments(tagname):
+    tag = Tags.query.filter_by(tag=tagname).first_or_404()
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    comment_query = tag.comments
+    comments = comment_query.order_by(Comments.vote.desc(), Comments.timestamp.desc())\
+                            .offset(per_page * page).limit(per_page)
+    tag_comments = [c.to_dict() for c in comments]
+    tagcomments_dict = {'comments': tag_comments, 'commentcount': comment_query.count()}
+    return jsonify(tagcomments_dict)
+
+
 @rest.route('/tag/<string:tagname>/relates')
 @auth.login_required
 def get_tag_relates(tagname):
@@ -160,6 +174,8 @@ def edit_tag(tagid):
     name = request.json.get('name', '').strip()
     parent = request.json.get('parent', '').strip()
     logo = request.json.get('logo', '').strip()
+    ftcolor = request.json.get('ftcolor', '').strip()
+    bgcolor = request.json.get('bgcolor', '').strip()
     description = request.json.get('description', '').strip()
     if not name:
         abort(403)
@@ -174,6 +190,8 @@ def edit_tag(tagid):
     tag.tag = name
     tag.descript = description
     tag.logo = logo
+    tag.ftcolor = ftcolor
+    tag.bgcolor = bgcolor
     db.session.add(tag)
     # update parent tag
     if parent:

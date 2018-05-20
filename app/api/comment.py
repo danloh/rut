@@ -62,6 +62,7 @@ def upvote_comment(commentid):
     return jsonify("Done")
 
 
+@rest.route('/comment/tag/', methods=['POST'])
 @rest.route('/comment/rut/<int:rutid>', methods=['POST'])
 @rest.route('/comment/demand/<int:demandid>', methods=['POST'])
 @rest.route('/comment/comment/<int:commentid>', methods=['POST'])
