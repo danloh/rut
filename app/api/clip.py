@@ -86,7 +86,7 @@ def new_clip():
     if not body:
         abort(403)
     chaplst = (re.findall(r'#([0-9]+):([0-9]+):([0-9]+)', text))
-    chapnum = pagenum = ''
+    chapnum = sectnum = pagenum = ''
     if chaplst:
         chap = chaplst[0]
         chapnum = chap[0]
@@ -103,9 +103,10 @@ def new_clip():
         pagenum=pagenum
     )
     db.session.add(clip)
-    # record activity as excerpt a clip
-    # user.set_event(action='Excerpted', clipid=clip.id)
     db.session.commit()
+    # record activity as excerpt a clip
+    from task.tasks import set_event_celery
+    set_event_celery.delay(user.id, action='Excerpted', clipid=clip.id)
     return jsonify(clip.to_dict())
 
 

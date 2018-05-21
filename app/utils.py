@@ -3,6 +3,8 @@
 import re
 
 def split_str(s, delimiter=r'[,;，；]'):
+    if not s:
+        return []
     s = str(s)
     re_sp = re.split(delimiter, s)
     lst = [sp.strip() for sp in re_sp if sp.strip()]

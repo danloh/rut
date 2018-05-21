@@ -22,5 +22,9 @@ beat_schedule = {
     'cal_vote': {
         'task': 'task.tasks.cal_vote_celery',
         'schedule': crontab(minute=0, hour='*/2')
+    },
+    'event_heat': {
+        'task': 'task.tasks.event_heat_celery',
+        'schedule': crontab(minute=0, hour=1)
     }
 }

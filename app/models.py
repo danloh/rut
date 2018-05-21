@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import random
-from datetime import datetime
+from datetime import datetime, date
 from flask import url_for, current_app
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
@@ -415,7 +415,7 @@ class Tags(db.Model):
         split the input tagstr to seperated tag,
         and add them into Tags Table
         '''
-        tagset = str_to_set(strlst) if isinstance(strlst, str) else set(strlst)  # can be list or str
+        tagset = set(strlst) if isinstance(strlst, list) else str_to_set(strlst)  # can be list or str
         taglist = []
         for tg in tagset:
             tg = tg.strip()
@@ -2147,7 +2147,7 @@ class Users(db.Model):
 
     # save activities to db Events
     def set_event(self, action=None, postid=None, itemid=None, reviewid=None,
-                  demandid=None, tagid=None, headlineid=None):
+                  demandid=None, clipid=None, tagid=None, headlineid=None):
         query = self.events
         # avoid duplicated entry
         if action in ['Created', 'Starred']:
@@ -2162,6 +2162,8 @@ class Users(db.Model):
             e = query.filter_by(action=action, demand_id=demandid).first()
         elif action in ['Submitted', 'Push']:
             e = query.filter_by(action=action, headline_id=headlineid).first()
+        elif action in ['Excerpted']:
+            e = query.filter_by(action=action, clip_id=clipid).first()
         else:
             return None
         if e:
@@ -2173,6 +2175,7 @@ class Users(db.Model):
             item_id=itemid,
             review_id=reviewid,
             demand_id=demandid,
+            clip_id=clipid,
             tag_id=tagid,
             headline_id=headlineid
         )
@@ -2286,6 +2289,7 @@ class Events(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     action = db.Column(db.String(32))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    day = db.Column(db.Date, default=date.today)
     # n to 1 with Users and others for record activities
     # events - actor
     user_id = db.Column(
@@ -2377,6 +2381,24 @@ class Events(db.Model):
                     'content': q.title
                 }
         return content_dict
+    
+    @staticmethod
+    def dt_to_day():
+        for e in Events.query:
+            e.day = e.timestamp.date()
+            db.session.add(e)
+        db.session.commit()
+    
+    @staticmethod
+    def to_heat(day=None):
+        filter_action = ['Created', 'Sent', 'Posted', 'Get done', 'Excerpted']
+        query = Events.query.filter(Events.action.in_(filter_action))
+        if day:
+            query = query.filter_by(day=day)
+        heat_list = query.with_entities(
+            Events.user_id, Events.day, db.func.count(Events.id)
+        ).group_by(Events.user_id, Events.day)
+        return heat_list
 
     def to_dict(self):
         actor = self.actor
@@ -2396,6 +2418,38 @@ class Events(db.Model):
 
     def __repr__(self):
         return '<Events %r>' % (self.action + str(self.id))
+
+
+class Heat(db.Model):
+    __table_name__ = "heat"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False)
+    day = db.Column(db.Date, nullable=False)
+    num = db.Column(db.Integer, default=0)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    @staticmethod
+    def into_heat(lst):
+        for i in lst:
+            x, y, z = i
+            heat =Heat(
+                user_id=x,
+                day=y,
+                num=z
+            )
+            db.session.add(heat)
+        db.session.commit()
+    
+    def to_dict(self):
+        heat_dict = {
+            'userid': self.user_id,
+            'day': self.strftime('%Y-%m-%d'),
+            'num': self.num
+        }
+        return heat_dict
+
+    def __repr__(self):
+        return '<Heat %r>' % self.id
 
 
 class Articles(db.Model):
