@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 # user
 
+from datetime import datetime, timedelta
 from flask import request, g, jsonify, abort
-from ..models import Users, Flag, Posts, Star, Items, Cvote, Fav,\
+from ..models import Users, Flag, Posts, Star, Items, Cvote, Fav, Heat,\
                      Demands, Dvote, Reviews, Rvote, Comments, Events
 from . import rest, auth, PER_PAGE
 
@@ -344,3 +345,18 @@ def get_feeds():
     evs = query.order_by(Events.timestamp.desc()).limit(m)
     evs_list = [e.to_dict() for e in evs]
     return jsonify(evs_list)
+
+@rest.route('/eventheat/<int:userid>')
+@auth.login_required
+def get_heat(userid):
+    heat_query = Heat.query.filter_by(user_id=userid)
+    today = datetime.utcnow().date()
+    delta = timedelta(days=365)
+    start = today - delta
+    heats = heat_query.filter(Heat.day >= start)
+    heat_list = [
+        {'counting': h.num, 'created_at': h.day.strftime('%Y-%m-%d')} for h in heats
+    ]
+    heat_count = sum([h.num for h in heats])
+    heat_dict = {'heats': heat_list, 'heatcount': heat_count }
+    return jsonify(heat_dict)

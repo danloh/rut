@@ -2443,7 +2443,7 @@ class Heat(db.Model):
     def to_dict(self):
         heat_dict = {
             'userid': self.user_id,
-            'day': self.strftime('%Y-%m-%d'),
+            'day': self.day.strftime('%Y-%m-%d'),
             'num': self.num
         }
         return heat_dict
