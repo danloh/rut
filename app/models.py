@@ -1021,7 +1021,13 @@ class Items(db.Model):
     @property
     def item_cover(self):
         if self.cover is None or not self.cover.startswith('https'):
-            return url_for('static', filename='pic/dpc.svg')
+            ca = self.cate
+            if ca in ['Online', 'Video', 'Course', 'Podcast']:
+                return url_for('static', filename='pic/video.svg')
+            elif ca in ['Atlas', 'Album']:
+                return url_for('static', filename='pic/album.svg')
+            else:
+                return url_for('static', filename='pic/dpc.svg')
         else:
             return self.cover
 
