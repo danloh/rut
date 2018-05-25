@@ -2367,7 +2367,7 @@ class Events(db.Model):
             if q:
                 content_dict = {
                     'type': 'Tag',
-                    'id': q.id,
+                    'id': q.tag,
                     'cover': q.logo or '',
                     'content': q.tag
                 }
