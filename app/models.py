@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import random
-from datetime import datetime, date
+from datetime import datetime
 from flask import url_for, current_app
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
@@ -79,6 +79,7 @@ tag_review = db.Table(
         'review_id', db.Integer, db.ForeignKey("reviews.id")
     )
 )
+
 
 # helper Model for n2n Posts collect Items
 class Collect(db.Model):
@@ -272,6 +273,7 @@ class Hvote(db.Model):
         primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
+
 # helper for n2n Users vote Comment
 class Mvote(db.Model):
     __table_name__ = 'mvote'
@@ -284,6 +286,7 @@ class Mvote(db.Model):
         db.ForeignKey("comments.id"),
         primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 # helper Model for n2n Posts re Demands
 class Respon(db.Model):
@@ -704,7 +707,7 @@ class Posts(db.Model):
         # query per diff order
         posts_latest = _query.order_by(Posts.renewal.desc()).limit(m)
         posts_popular = _query\
-                .order_by(Posts.vote_incre.desc(), Posts.vote.desc()).limit(m)
+            .order_by(Posts.vote_incre.desc(), Posts.vote.desc()).limit(m)
         posts_random = _query.order_by(db.func.rand()).limit(m)
         # union the quey
         posts_select = posts_popular.union(posts_random, posts_latest)
@@ -1317,7 +1320,7 @@ class Reviews(db.Model):
         backref=db.backref('vote_review', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-    
+
     def cal_point(self, c=None, v=None):
         c = c or self.comments.count()
         v = v or self.vote
@@ -2295,7 +2298,7 @@ class Events(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     action = db.Column(db.String(32))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    day = db.Column(db.Date, default=date.today)
+    day = db.Column(db.Date, default=datetime.utcnow().date)
     # n to 1 with Users and others for record activities
     # events - actor
     user_id = db.Column(
@@ -2387,14 +2390,14 @@ class Events(db.Model):
                     'content': q.title
                 }
         return content_dict
-    
+
     @staticmethod
     def dt_to_day():
         for e in Events.query:
             e.day = e.timestamp.date()
             db.session.add(e)
         db.session.commit()
-    
+
     @staticmethod
     def to_heat(day=None):
         filter_action = ['Created', 'Sent', 'Posted', 'Get done', 'Excerpted']
@@ -2438,14 +2441,10 @@ class Heat(db.Model):
     def into_heat(lst):
         for i in lst:
             x, y, z = i
-            heat =Heat(
-                user_id=x,
-                day=y,
-                num=z
-            )
+            heat = Heat(user_id=x, day=y, num=z)
             db.session.add(heat)
         db.session.commit()
-    
+
     def to_dict(self):
         heat_dict = {
             'userid': self.user_id,
