@@ -1069,7 +1069,7 @@ class Items(db.Model):
         p = p or self.posts.count()
         rd = rd or self.roads.count()
         r = r or self.reviews.count()
-        f = f or self.flagers.count()
+        f = f or self.flagers.count()  # sum([f.flag_label for f in self.flagers]) 
         now_vote = c+p+rd+r+f
         pre_vote = self.vote
         self.vote_incre = max(0, now_vote - pre_vote)
@@ -2110,7 +2110,7 @@ class Users(db.Model):
             if fl.flag_label == 1:
                 d_label = {'label': 'Scheduled'}
             if fl.flag_label == 2:
-                d_label = {'label': 'Working on'}
+                d_label = {'label': 'Working'}
             if fl.flag_label == 3:
                 d_label = {'label': 'Have Done'}
             d = {**d_note, **d_label}
@@ -2161,7 +2161,7 @@ class Users(db.Model):
         # avoid duplicated entry
         if action in ['Created', 'Starred']:
             e = query.filter_by(action=action, post_id=postid).first()
-        elif action in ['Scheduled', 'Working on', 'Get done']:
+        elif action in ['Scheduled', 'Working', 'Get done']:
             e = query.filter_by(action=action, item_id=itemid).first()
         elif action in ['Followed', 'Updated Description']:
             e = query.filter_by(action=action, tag_id=tagid).first()
@@ -2344,7 +2344,7 @@ class Events(db.Model):
                     'cover': q.post_cover,
                     'content': q.title
                 }
-        if act in ['Scheduled', 'Working on', 'Get done']:
+        if act in ['Scheduled', 'Working', 'Get done']:
             q = self.item
             if q:
                 content_dict = {

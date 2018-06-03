@@ -139,8 +139,8 @@ def flag_item_doing(itemid):
     user.flag(item, 2, note)
     # record activity asworking an item
     from task.tasks import set_event_celery
-    set_event_celery.delay(user.id, action='Working on', itemid=item.id)
-    return jsonify('Working On')
+    set_event_celery.delay(user.id, action='Working', itemid=item.id)
+    return jsonify('Working')
 
 
 @rest.route('/flagdone/item/<int:itemid>')
@@ -354,7 +354,7 @@ def submit_new_item():
     res_url = request.json.get('resUrl', '').strip()
     # extratc flag info
     user = g.user
-    flag_dict = {'Have Done': 3, 'Schedule': 1, 'Working On': 2}
+    flag_dict = {'Have Done': 3, 'Schedule': 1, 'Working': 2}
     label = request.json.get('flag', '').strip()
     flag = flag_dict.get(label)
     # check if the url has been spider-ed,
