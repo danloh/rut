@@ -737,7 +737,7 @@ class Posts(db.Model):
             'epilog': self.epilog or '',
             'createat': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             # OR .strftime('%Y-%m-%dT%H:%M:%SZ') # as timezone
-            # 'renewat': self.renewal.strftime('%Y-%m-%d %H:%M:%S'),
+            'renewat': self.renewal.strftime('%Y-%m-%d %H:%M:%S') if self.renewal else '',
             'itemcount': self.items.count(),
             'starcount': self.starers.count(),
             'commentcount': self.comments.count(),
