@@ -2186,7 +2186,8 @@ class Users(db.Model):
             demand_id=demandid,
             clip_id=clipid,
             tag_id=tagid,
-            headline_id=headlineid
+            headline_id=headlineid,
+            day=datetime.utcnow().date()
         )
         db.session.add(ev)
         db.session.commit()
@@ -2298,7 +2299,7 @@ class Events(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     action = db.Column(db.String(32))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    day = db.Column(db.Date, default=datetime.utcnow().date)
+    day = db.Column(db.Date)
     # n to 1 with Users and others for record activities
     # events - actor
     user_id = db.Column(
