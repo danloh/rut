@@ -109,12 +109,11 @@ def parse_html_amazon(url):
     titleTag = soup.find('h1', id='title')
     try:
         tg = titleTag.select('span')
+        d['title'] = tg[0].text.strip()
+        d['bind'] = tg[1].get_text(strip=True)
+        d['PublishDate'] = tg[2].text.strip()
     except Exception:
-        tg = []
-    tg = tg + ['','','']
-    d['title'] = tg[0].text.strip()
-    # d['bind'] = tg[1].get_text(strip=True)
-    d['PublishDate'] = tg[2].text.strip()
+        pass
 
     # get authors
     bylineTag = soup.find('div', id='bylineInfo')

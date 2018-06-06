@@ -319,7 +319,7 @@ def new_item_pipe(d, uid, user, flag=None):
         new_item.author_to_db()
     db.session.commit()
     # flag once item added
-    if flag:
+    if flag in [1, 2, 3]:
         user.flag(new_item, flag)
     return new_item
 
@@ -333,8 +333,8 @@ def add_new_item(d, user, flag):
     old_item = Items.query.filter_by(uid=uid).first() if uid else None
     if old_item:
         # flag once item added
-        if flag:
-            user.flag(old_item, flag)  # not bound to threading session??
+        if flag in [1, 2, 3]:
+            user.flag(old_item, flag)  # here a bug: not bound to threading session??
         return old_item
     new_item = new_item_pipe(d, uid, user, flag)
     return new_item
@@ -365,7 +365,7 @@ def submit_new_item():
         lst = Items.query.filter(Items.res_url.in_((res_url, pure_url))).all()
         if lst:
             item = lst[0]
-            if flag:
+            if flag in [1, 2, 3]:
                 user.flag(item, flag)
             return jsonify(item.id)
     # via spider or manually
@@ -393,3 +393,58 @@ def add_item_tags(itemid):
     db.session.commit()
     tags = [t.to_dict() for t in item.itags][-12:]
     return jsonify(tags)
+
+
+@rest.route('/search/<int:label>/items')
+@auth.login_required
+def search_items(label):
+    uid_or_title = request.args.get('uid_or_title', '').strip()
+    user = g.user
+    userid = request.args.get('userid', type=int) or user.id
+    # related pagination
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    # re
+    re_url = r'^https?://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
+    reg_url = re.compile(re_url, 0)
+    # if keyword is '', return flag-items
+    if not uid_or_title:
+        # abort(403)
+        flags = user.flag_items.filter_by(flag_label=label)\
+                               .order_by(Flag.timestamp.desc())\
+                               .offset(page*per_page).limit(per_page)
+        items = [d.flag_item for d in flags]  # i.e. flaged, may huge
+    # spider per url
+    elif reg_url.match(uid_or_title):
+        d = spider.parse_html(uid_or_title)
+        item = add_new_item(d, user, label)
+        items = [item]
+    # query per keyword
+    else:
+        query = Items.query
+        item_uid = query.filter_by(uid=uid_or_title)
+        item_title = query.filter(Items.title.contains(uid_or_title))  # query per substring
+        items = item_uid.union(item_title)\
+            .offset(page*per_page).limit(per_page).all()
+    if not items:
+        return jsonify({'items': [], 'keyword': uid_or_title})
+    items_list = []
+    for item in set(items):
+        if not item:
+            continue
+        # filter per label to get result from flag-items or all
+        if label in [1, 2, 3] and userid and uid_or_title:
+            flag = Flag.query.filter_by(
+                user_id=userid,
+                item_id=item.id,
+                flag_label=label
+            ).first()
+            if flag is None:
+                continue
+        item_dict = {
+            'id': item.id,
+            'cate': item.cate,
+            'title': item.title
+        }
+        items_list.append(item_dict)
+    return jsonify({'items': items_list, 'keyword': uid_or_title})

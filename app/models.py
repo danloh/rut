@@ -2081,6 +2081,8 @@ class Users(db.Model):
 
     # flag an item as read, to read or reading
     def flag(self, item, n, note=''):
+        if n not in [1, 2, 3]:
+            return None
         fl = Flag.query.filter_by(user_id=self.id, item_id=item.id).first()
         if fl:
             fl.flag_label = n

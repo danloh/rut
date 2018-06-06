@@ -95,31 +95,6 @@ def get_star_ruts(userid):
     return jsonify(ruts_dict)
 
 
-@rest.route('/searchruts')
-@auth.login_required
-def search_ruts():
-    """search ruts, esp. created ruts"""
-    title = request.args.get('title', '').strip()  # search per title
-    # related pagination
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    # if keywork is '', just return created
-    if not title:
-        ruts = g.user.posts.order_by(Posts.timestamp.desc())\
-                           .offset(page*per_page).limit(per_page)
-    else:
-        ref = request.args.get('ref', 'created').strip()  # search in all or created
-        if ref == 'created':
-            query = g.user.posts
-        else:
-            query = Posts.query
-        ruts = query.filter(Posts.title.contains(title))\
-                    .order_by(Posts.timestamp.desc())\
-                    .offset(page*per_page).limit(per_page)
-    ruts_list = [{'id': r.id, 'title': r.title} for r in ruts]
-    return jsonify(ruts_list)
-
-
 @rest.route('/<int:userid>/doing/items')
 @auth.login_required
 def get_doing_items(userid):
@@ -163,52 +138,6 @@ def get_done_items(userid):
         'total': flags.count()
     }
     return jsonify(items_dict)
-
-
-@rest.route('/search/<int:label>/items')
-@auth.login_required
-def search_items(label):
-    uid_or_title = request.args.get('uid_or_title', '').strip()
-    user = g.user
-    userid = request.args.get('userid', type=int) or user.id
-    # related pagination
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    # if keyword is '', return flag-items, otherwise, query per keyword
-    if not uid_or_title:
-        # abort(403)
-        flags = user.flag_items.filter_by(flag_label=label)\
-                               .order_by(Flag.timestamp.desc())\
-                               .offset(page*per_page).limit(per_page)
-        items = [d.flag_item for d in flags]  # i.e. flaged, may huge
-    else:
-        query = Items.query
-        item_uid = query.filter_by(uid=uid_or_title)
-        item_title = query.filter(Items.title.contains(uid_or_title))  # query per substring
-        items = item_uid.union(item_title)\
-            .offset(page*per_page).limit(per_page).all()
-    if not items:
-        return jsonify({'items': [], 'keyword': uid_or_title})
-    items_list = []
-    for item in set(items):
-        if not item:
-            continue
-        # filter per label to get result from flag-items or all
-        if label in [1, 2, 3] and userid and uid_or_title:
-            flag = Flag.query.filter_by(
-                user_id=userid,
-                item_id=item.id,
-                flag_label=label
-            ).first()
-            if flag is None:
-                continue
-        item_dict = {
-            'id': item.id,
-            'cate': item.cate,
-            'title': item.title
-        }
-        items_list.append(item_dict)
-    return jsonify({'items': items_list, 'keyword': uid_or_title})
 
 
 @rest.route('/<int:userid>/voted/clips')

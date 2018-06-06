@@ -145,6 +145,31 @@ def get_all_ruts():
     return jsonify(ruts_dict)
 
 
+@rest.route('/searchruts')
+@auth.login_required
+def search_ruts():
+    """search ruts, esp. created ruts"""
+    title = request.args.get('title', '').strip()  # search per title
+    # related pagination
+    page = request.args.get('page', 0, type=int)
+    per_page = request.args.get('perPage', PER_PAGE, type=int)
+    # if keywork is '', just return created
+    if not title:
+        ruts = g.user.posts.order_by(Posts.timestamp.desc())\
+                           .offset(page*per_page).limit(per_page)
+    else:
+        ref = request.args.get('ref', 'created').strip()  # search in all or created
+        if ref == 'created':
+            query = g.user.posts
+        else:
+            query = Posts.query
+        ruts = query.filter(Posts.title.contains(title))\
+                    .order_by(Posts.timestamp.desc())\
+                    .offset(page*per_page).limit(per_page)
+    ruts_list = [{'id': r.id, 'title': r.title} for r in ruts]
+    return jsonify(ruts_list)
+
+
 @rest.route('/checkstar/rut/<int:rutid>')
 @auth.login_required
 def check_star(rutid):
