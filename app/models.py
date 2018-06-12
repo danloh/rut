@@ -2228,7 +2228,7 @@ class Users(db.Model):
     def user_avatar(self):
         avatar = self.avatar
         if not avatar or not avatar.strip():
-            return url_for('static', filename='pic/profile.svg')
+            return '' # url_for('static', filename='pic/profile.svg')
         return avatar
 
     @property
