@@ -1,4 +1,4 @@
-## RUT:  www.readup.tips
+## RUT:  www.ruthub.com
 A Service for sharing reading list to read up on sth, welcome to join 
 
 1. Frontend: Vue + vue-route + Vuex  

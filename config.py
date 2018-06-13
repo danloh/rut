@@ -17,8 +17,8 @@ class Config:
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    MAIL_SUBJECT_PREFIX = '[Readup.Tips]'
-    MAIL_SENDER = 'Readup.Tips Admin <readup.tips@gmail.com>'
+    MAIL_SUBJECT_PREFIX = '[RutHub]'
+    MAIL_SENDER = 'RutHub Admin <readup.tips@gmail.com>'
     BASE_URL = os.environ.get('BASE_URL') or 'localhost:8080'
 
     POST_PER_PAGE = 20
