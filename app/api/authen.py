@@ -76,7 +76,7 @@ def register():
 @auth.login_required
 def edit_profile():
     # get nickname and check match
-    name_re = r'^\w{2,20}$'
+    name_re = r'^[\w ]{2,20}$'
     reg_name = re.compile(name_re)
     nickname = request.json.get('nickname', '').strip()
     user = g.user
