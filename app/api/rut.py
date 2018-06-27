@@ -8,7 +8,7 @@ from ..models import Posts, Star, Collect, Users, Tags,\
 from . import db, rest, auth, PER_PAGE
 
 
-@rest.route('/index/ruts')
+@rest.route('/ruts/index', methods=['GET'])
 # @auth.login_required
 def get_index_ruts():
     # #personalized ruts
@@ -37,7 +37,7 @@ def get_index_ruts():
     return jsonify(ruts_dict)
 
 
-@rest.route('/rut/<int:rutid>')
+@rest.route('/ruts/<int:rutid>', methods=['GET'])
 def get_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     rut_dict = rut.to_dict()
@@ -55,7 +55,7 @@ def get_rut(rutid):
     return jsonify(rut_dict)
 
 
-@rest.route('/rut/<int:rutid>/tips')
+@rest.route('/ruts/<int:rutid>/tips', methods=['GET'])
 def get_rut_tips(rutid):
     rut = Posts.query.get_or_404(rutid)
     page = request.args.get('page', 0, type=int)
@@ -66,7 +66,7 @@ def get_rut_tips(rutid):
     return jsonify(tips_list)
 
 
-@rest.route('/rut/<int:rutid>/demands')
+@rest.route('/ruts/<int:rutid>/demands', methods=['GET'])
 def get_rut_demands(rutid):
     rut = Posts.query.get_or_404(rutid)
     page = request.args.get('page', 0, type=int)
@@ -76,7 +76,7 @@ def get_rut_demands(rutid):
     return jsonify(demands_list)
 
 
-@rest.route('/rut/<int:rutid>/stars')
+@rest.route('/ruts/<int:rutid>/stars', methods=['GET'])
 @auth.login_required
 def get_rut_stars(rutid):
     # rut = Posts.query.get_or_404(rutid)  #other way: rut.stars
@@ -93,7 +93,7 @@ def get_rut_stars(rutid):
     return jsonify(stars_dict)
 
 
-@rest.route('/commentsonrut/<int:rutid>')
+@rest.route('/ruts/<int:rutid>/comments', methods=['GET'])
 @auth.login_required
 def get_rut_comments(rutid):
     rut = Posts.query.get_or_404(rutid)
@@ -113,21 +113,7 @@ def get_rut_comments(rutid):
     return jsonify(rut_dict)
 
 
-@rest.route('/challengeitems')
-@auth.login_required
-def get_challege_items():
-    """challenging items for challenge view page"""
-    user = g.user
-    # get the earliest flaged items as doing
-    doing_flags = user.flag_items\
-            .order_by(Flag.timestamp)\
-            .filter_by(flag_label=2).limit(5)  # special limit num
-    doing_items = [f.flag_item for f in doing_flags]
-    doing_list = [{'id': item.id, 'title': item.title} for item in doing_items]
-    return jsonify(doing_list)
-
-
-@rest.route('/ruts')
+@rest.route('/ruts', methods=['GET'])
 @auth.login_required
 def get_all_ruts():
     # yield query
@@ -145,7 +131,7 @@ def get_all_ruts():
     return jsonify(ruts_dict)
 
 
-@rest.route('/searchruts')
+@rest.route('/ruts/search', methods=['GET'])
 @auth.login_required
 def search_ruts():
     """search ruts, esp. created ruts"""
@@ -170,7 +156,7 @@ def search_ruts():
     return jsonify(ruts_list)
 
 
-@rest.route('/checkstar/rut/<int:rutid>')
+@rest.route('/ruts/<int:rutid>/checkstar', methods=['GET'])
 @auth.login_required
 def check_star(rutid):
     rut = Posts.query.get_or_404(rutid)
@@ -179,7 +165,7 @@ def check_star(rutid):
     return jsonify(staring)
 
 
-@rest.route('/star/rut/<int:rutid>')
+@rest.route('/star/rut/<int:rutid>', methods=['GET'])
 @auth.login_required
 def star_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
@@ -191,7 +177,7 @@ def star_rut(rutid):
     return jsonify('Unstar')
 
 
-@rest.route('/unstar/rut/<int:rutid>')
+@rest.route('/unstar/rut/<int:rutid>', methods=['GET'])
 @auth.login_required
 def unstar_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
@@ -200,10 +186,9 @@ def unstar_rut(rutid):
     return jsonify('Star')
 
 
-@rest.route('/create/', methods=['POST'])
-@rest.route('/create/<int:demandid>', methods=['POST'])
+@rest.route('/ruts', methods=['POST'])
 @auth.login_required
-def new_rut(demandid=None):
+def new_rut():
     title = request.json.get('title', '').strip()
     intro = request.json.get('intro', '').strip()
     # extract tags and intro
@@ -223,6 +208,7 @@ def new_rut(demandid=None):
     db.session.add(post)
     post.tag_to_db(taglst)
     # link to demand as answer if come from demand
+    demandid = request.json.get('demandid', '').strip()
     if demandid:
         demand = Demands.query.get(demandid)
         if demand:
@@ -238,7 +224,7 @@ def new_rut(demandid=None):
     return jsonify({'id': post.id, 'title': post.title})
 
 
-@rest.route('/lockrut/<int:rutid>')
+@rest.route('/lockrut/<int:rutid>', methods=['GET'])
 @auth.login_required
 def lock_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
@@ -247,21 +233,21 @@ def lock_rut(rutid):
     return jsonify('Locked')
 
 
-@rest.route('/unlockrut/<int:rutid>')
+@rest.route('/unlockrut/<int:rutid>', methods=['GET'])
 def unlock_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     rut.unlock()
     return jsonify('UnLocked')
 
 
-@rest.route('/checkifrut/<int:rutid>/lockedto/<int:userid>')
+@rest.route('/ruts/<int:rutid>/lockedto/<int:userid>', methods=['GET'])
 def check_rut_if_locked(rutid, userid):
     rut = Posts.query.get_or_404(rutid)
     is_locked = rut.check_locked(userid)
     return jsonify(is_locked)
 
 
-@rest.route('/checkif/<userid>/caneditrut/<int:rutid>')
+@rest.route('/checkif/<userid>/caneditrut/<int:rutid>', methods=['GET'])
 # @auth.login_required
 def check_rut_editable(userid, rutid):
     if not userid:
@@ -276,7 +262,7 @@ def check_rut_editable(userid, rutid):
     return jsonify(can_dict)
 
 
-@rest.route('/editrut/<int:rutid>', methods=['POST'])
+@rest.route('/ruts/<int:rutid>', methods=['PUT'])
 @auth.login_required
 def edit_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
@@ -300,7 +286,7 @@ def edit_rut(rutid):
     return jsonify(rut.to_dict())
 
 
-@rest.route('/editrutce/<int:rutid>', methods=['POST'])
+@rest.route('/ruts/<int:rutid>/ce', methods=['PUT'])
 @auth.login_required
 def edit_rut_epi_or_cred(rutid):
     rut = Posts.query.get_or_404(rutid)
@@ -327,7 +313,7 @@ def edit_rut_epi_or_cred(rutid):
     return jsonify(ce_dict)
 
 
-@rest.route('/edittags/<int:rutid>', methods=['POST'])
+@rest.route('/ruts/<int:rutid>/tags', methods=['PUT'])
 @auth.login_required
 def edit_rut_tags(rutid):
     rut = Posts.query.get_or_404(rutid)
@@ -360,7 +346,7 @@ def edit_rut_tags(rutid):
     return jsonify(new_tags_list)
 
 
-@rest.route('/edittips/<int:cid>', methods=['POST'])
+@rest.route('/collects/<int:cid>', methods=['PUT'])
 @auth.login_required
 def edit_tips(cid):
     tip_collect = Collect.query.filter_by(id=cid).first_or_404()  # collect 's id
@@ -388,9 +374,9 @@ def edit_tips(cid):
     return jsonify('Done')
 
 
-@rest.route('/item/<int:itemid>/torut/<int:rutid>', methods=['GET', 'POST'])
+@rest.route('/ruts/<int:rutid>/collects/<int:itemid>', methods=['POST'])
 @auth.login_required
-def item_to_rut(itemid, rutid):
+def add_item_to_rut(itemid, rutid):
     """Add existing item to Rut"""
     rut = Posts.query.get_or_404(rutid)
     user = g.user
@@ -407,7 +393,7 @@ def item_to_rut(itemid, rutid):
     return jsonify('Done')
 
 
-@rest.route('/del/tips/<int:cid>')
+@rest.route('/collects/<int:cid>', methods=['DELETE'])
 @auth.login_required
 def del_tips_in_rut(cid):
     """Del tips, re-ordering items"""
@@ -455,7 +441,7 @@ def recover_rut(rutid):
     return jsonify('Enabled')
 
 
-@rest.route('/delete/rut/<int:rutid>')
+@rest.route('/ruts/<int:rutid>', methods=['DELETE'])
 @auth.login_required
 def delete_rut(rutid):
     rut = Posts.query.get_or_404(rutid)

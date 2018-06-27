@@ -19,7 +19,7 @@ def random_code():
         return s
 
 
-@rest.route('/register', methods=['POST'])
+@rest.route('/users', methods=['POST'])
 def register():
     username = request.json.get('username')
     password = request.json.get('password')
@@ -72,7 +72,7 @@ def register():
     })
 
 
-@rest.route('/editprofile', methods=['POST'])
+@rest.route('/users', methods=['PUT'])
 @auth.login_required
 def edit_profile():
     # get nickname and check match

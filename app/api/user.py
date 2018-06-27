@@ -3,12 +3,12 @@
 
 from datetime import datetime, timedelta
 from flask import request, g, jsonify, abort
-from ..models import Users, Flag, Posts, Star, Items, Cvote, Fav, Heat,\
+from ..models import Users, Flag, Posts, Star, Cvote, Fav, Heat,\
                      Demands, Dvote, Reviews, Rvote, Comments, Events
 from . import rest, auth, PER_PAGE
 
 
-@rest.route('/currentuser')
+@rest.route('/currentuser', methods=['GET'])
 @auth.login_required
 def get_current_user():  # for authed-user to re-get info
     user = g.user
@@ -16,15 +16,15 @@ def get_current_user():  # for authed-user to re-get info
     return jsonify(user_dict)
 
 
-@rest.route('/user/<int:userid>')
+@rest.route('/users/<int:userid>', methods=['GET'])
 @auth.login_required
-def get_user(userid):        # get info per userid
+def get_user(userid):
     user = Users.query.get_or_404(userid)
     user_dict = user.to_dict()
     return jsonify(user_dict)
 
 
-@rest.route('/checkfollow/<int:userid>')
+@rest.route('/checkfollow/<int:userid>', methods=['GET'])
 @auth.login_required
 def check_follow(userid):
     fo_user = Users.query.get_or_404(userid)
@@ -33,7 +33,7 @@ def check_follow(userid):
     return jsonify(following)
 
 
-@rest.route('/follow/user/<int:userid>')
+@rest.route('/follow/user/<int:userid>', methods=['GET'])
 @auth.login_required
 def follow_user(userid):
     user = g.user
@@ -44,7 +44,7 @@ def follow_user(userid):
     return jsonify('UnFollow')
 
 
-@rest.route('/unfollow/user/<int:userid>')
+@rest.route('/unfollow/user/<int:userid>', methods=['GET'])
 @auth.login_required
 def unfollow_user(userid):
     fo_user = Users.query.get_or_404(userid)
@@ -53,7 +53,7 @@ def unfollow_user(userid):
     return jsonify('Follow')
 
 
-@rest.route('/user/<int:userid>/followed')
+@rest.route('/users/<int:userid>/followed', methods=['GET'])
 @auth.login_required
 def get_followeds(userid):
     user = Users.query.get_or_404(userid)
@@ -62,7 +62,7 @@ def get_followeds(userid):
     return jsonify(user_dicts)
 
 
-@rest.route('/<int:userid>/created/ruts')
+@rest.route('/users/<int:userid>/createdruts', methods=['GET'])
 @auth.login_required
 def get_created_ruts(userid):
     user = Users.query.get_or_404(int(userid))
@@ -79,7 +79,7 @@ def get_created_ruts(userid):
     return jsonify(ruts_dict)
 
 
-@rest.route('/<int:userid>/star/ruts')
+@rest.route('/users/<int:userid>/starruts', methods=['GET'])
 @auth.login_required
 def get_star_ruts(userid):
     user = Users.query.get_or_404(userid)
@@ -95,7 +95,7 @@ def get_star_ruts(userid):
     return jsonify(ruts_dict)
 
 
-@rest.route('/<int:userid>/doing/items')
+@rest.route('/users/<int:userid>/doingitems', methods=['GET'])
 @auth.login_required
 def get_doing_items(userid):
     user = Users.query.get_or_404(userid)
@@ -110,7 +110,7 @@ def get_doing_items(userid):
     return jsonify(items_dict)
 
 
-@rest.route('/<int:userid>/todo/items')
+@rest.route('/users/<int:userid>/todoitems', methods=['GET'])
 @auth.login_required
 def get_todo_items(userid):
     user = Users.query.get_or_404(userid)
@@ -125,7 +125,7 @@ def get_todo_items(userid):
     return jsonify(items_dict)
 
 
-@rest.route('/<int:userid>/done/items')
+@rest.route('/users/<int:userid>/doneitems', methods=['GET'])
 @auth.login_required
 def get_done_items(userid):
     user = Users.query.get_or_404(userid)
@@ -140,7 +140,21 @@ def get_done_items(userid):
     return jsonify(items_dict)
 
 
-@rest.route('/<int:userid>/voted/clips')
+@rest.route('/users/challengeitems', methods=['GET'])
+@auth.login_required
+def get_challege_items():
+    """challenging items for challenge view page"""
+    user = g.user
+    # get the earliest flaged items as doing
+    doing_flags = user.flag_items\
+            .order_by(Flag.timestamp)\
+            .filter_by(flag_label=2).limit(5)  # special limit num
+    doing_items = [f.flag_item for f in doing_flags]
+    doing_list = [{'id': item.id, 'title': item.title} for item in doing_items]
+    return jsonify(doing_list)
+
+
+@rest.route('/users/<int:userid>/voted/clips', methods=['GET'])
 @auth.login_required
 def get_voted_clips(userid):
     vote_clips = Cvote.query.filter_by(user_id=userid)\
@@ -156,7 +170,7 @@ def get_voted_clips(userid):
     return jsonify(clips_dict)
 
 
-@rest.route('/<int:userid>/fav/tags')
+@rest.route('/users/<int:userid>/favtags', methods=['GET'])
 @auth.login_required
 def get_fav_tags(userid):
     fav_tags = Fav.query.filter_by(user_id=userid)\
@@ -171,7 +185,7 @@ def get_fav_tags(userid):
     return jsonify(tags_dict)
 
 
-@rest.route('/user/<int:userid>/reviews')
+@rest.route('/users/<int:userid>/reviews', methods=['GET'])
 @auth.login_required
 def get_created_reviews(userid):
     # user = Users.query.get_or_404(userid)
@@ -186,7 +200,7 @@ def get_created_reviews(userid):
     return jsonify(review_dict)
 
 
-@rest.route('/<int:userid>/voted/reviews')
+@rest.route('/users/<int:userid>/voted/reviews', methods=['GET'])
 @auth.login_required
 def get_voted_reviews(userid):
     vote_reviews = Rvote.query.filter_by(user_id=userid)\
@@ -202,7 +216,7 @@ def get_voted_reviews(userid):
     return jsonify(reviews_dict)
 
 
-@rest.route('/user/<int:userid>/demands')
+@rest.route('/users/<int:userid>/demands', methods=['GET'])
 @auth.login_required
 def get_request_demands(userid):
     # user = Users.query.get_or_404(userid)
@@ -217,7 +231,7 @@ def get_request_demands(userid):
     return jsonify(demand_dict)
 
 
-@rest.route('/<int:userid>/voted/demands')
+@rest.route('/users/<int:userid>/voted/demands', methods=['GET'])
 @auth.login_required
 def get_voted_demands(userid):
     # user = Users.query.get_or_404(userid) #which is better?
@@ -235,7 +249,7 @@ def get_voted_demands(userid):
     return jsonify(demands_dict)
 
 
-@rest.route('/<int:userid>/comments')
+@rest.route('/users/<int:userid>/comments', methods=['GET'])
 @auth.login_required
 def get_post_comments(userid):
     """comments post by user"""
@@ -252,7 +266,7 @@ def get_post_comments(userid):
     return jsonify(comments_dict)
 
 
-@rest.route('/<int:userid>/myactivity')
+@rest.route('/users/<int:userid>/myactivity', methods=['GET'])
 @auth.login_required
 def get_activity(userid):
     # user = Users.query.get_or_404(userid)
@@ -263,7 +277,7 @@ def get_activity(userid):
     return jsonify(evs_list)
 
 
-@rest.route('/feeds')
+@rest.route('/users/feeds', methods=['GET'])
 @auth.login_required
 def get_feeds():
     m = 42  # special limit num
@@ -275,7 +289,7 @@ def get_feeds():
     evs_list = [e.to_dict() for e in evs]
     return jsonify(evs_list)
 
-@rest.route('/eventheat/<int:userid>')
+@rest.route('/users/<int:userid>/eventheat', methods=['GET'])
 @auth.login_required
 def get_heat(userid):
     heat_query = Heat.query.filter_by(user_id=userid)
@@ -287,5 +301,5 @@ def get_heat(userid):
         {'counting': h.num, 'created_at': h.day.strftime('%Y-%m-%d')} for h in heats
     ]
     heat_count = sum([h.num for h in heats])
-    heat_dict = {'heats': heat_list, 'heatcount': heat_count }
+    heat_dict = {'heats': heat_list, 'heatcount': heat_count}
     return jsonify(heat_dict)
