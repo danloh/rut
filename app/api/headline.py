@@ -6,7 +6,7 @@ from ..models import Headlines, Hvote, Comments
 from . import db, rest, auth, PER_PAGE
 
 
-@rest.route('/headlines')
+@rest.route('/headlines', methods=['GET'])
 def get_headlines():
     query = Headlines.query
     userid = request.args.get('userid', type=int)
@@ -33,7 +33,7 @@ def get_headlines():
     return jsonify(headlines_dict)
 
 
-@rest.route('/headline/<int:headlineid>')
+@rest.route('/headlines/<int:headlineid>', methods=['GET'])
 @auth.login_required
 def get_headline(headlineid):
     headline = Headlines.query.get_or_404(headlineid)
@@ -41,7 +41,7 @@ def get_headline(headlineid):
     return jsonify(headline_dict)
 
 
-@rest.route('/headline/<int:headlineid>/comments')
+@rest.route('/headlines/<int:headlineid>/comments', methods=['GET'])
 @auth.login_required
 def get_headline_comments(headlineid):
     headline = Headlines.query.get_or_404(headlineid)
@@ -56,7 +56,7 @@ def get_headline_comments(headlineid):
     return jsonify(headline_dict)
 
 
-@rest.route('/headline/<int:headlineid>/voters')
+@rest.route('/headlines/<int:headlineid>/voters', methods=['GET'])
 @auth.login_required
 def get_headline_voters(headlineid):
     page = request.args.get('page', 0, type=int)
@@ -70,7 +70,7 @@ def get_headline_voters(headlineid):
     return jsonify(voters_dict)
 
 
-@rest.route('/upvoteheadline/<int:headlineid>')
+@rest.route('/headlines/<int:headlineid>/voters', methods=['PATCH'])
 @auth.login_required
 def upvote_headline(headlineid):
     headline = Headlines.query.get_or_404(headlineid)  # headline's id
@@ -92,7 +92,7 @@ def upvote_headline(headlineid):
     return jsonify(headline.vote)
 
 
-@rest.route('/newheadline', methods=['POST'])
+@rest.route('/headlines', methods=['POST'])
 @auth.login_required
 def new_headline():
     title = request.json.get('title', '').strip()
@@ -121,7 +121,7 @@ def new_headline():
     return jsonify(headline.to_dict())
 
 
-@rest.route('/delete/headline/<int:headlineid>')
+@rest.route('/headlines/<int:headlineid>', methods=['DELETE'])
 @auth.login_required
 def del_headline(headlineid):
     headline = Headlines.query.get_or_404(headlineid)
@@ -133,27 +133,15 @@ def del_headline(headlineid):
     return jsonify('Deleted')
 
 
-@rest.route('/disable/headline/<int:headlineid>')
+@rest.route('/headlines/<int:headlineid>/disabled', methods=['PATCH'])
 @auth.login_required
-def disable_headline(headlineid):
+def disable_or_enable_headline(headlineid):
     headline = Headlines.query.get_or_404(headlineid)
     user = g.user
     if headline.submitor != user and user.role != 'Admin':
         abort(403)
-    headline.disabled = True
+    dis_or_enb = request.json.get('disbaled', True)
+    headline.disabled = dis_or_enb
     db.session.add(headline)
     db.session.commit()
-    return jsonify('Disabled')
-
-
-@rest.route('/recover/headline/<int:headlineid>')
-@auth.login_required
-def recover_headline(headlineid):
-    headline = Headlines.query.get_or_404(headlineid)
-    user = g.user
-    if headline.submitor != user and user.role != 'Admin':
-        abort(403)
-    headline.disabled = False  # enable
-    db.session.add(headline)
-    db.session.commit()
-    return jsonify('Enabled')
+    return jsonify(headline.disabled)

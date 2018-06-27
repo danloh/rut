@@ -9,9 +9,9 @@ from ..bot import spider
 from . import db, rest, auth, PER_PAGE
 
 
-@rest.route('/all/items')
+@rest.route('/items', methods=['GET'])
 @auth.login_required
-def get_all_items():
+def get_items():
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     all_items = Items.query
@@ -24,7 +24,16 @@ def get_all_items():
     return jsonify(items_dict)
 
 
-@rest.route('/item/<int:itemid>')
+@rest.route('/items/submitted', methods=['GET'])
+@auth.login_required
+def get_submitted_items():
+    user = g.user
+    items = user.sub_items.order_by(Items.timestamp.desc()).limit(PER_PAGE)
+    item_list = [i.to_simple_dict() for i in items]
+    return jsonify(item_list)
+
+
+@rest.route('/items/<int:itemid>', methods=['GET'])
 def get_item(itemid):
     item = Items.query.get_or_404(itemid)
     item_dict = item.to_dict()
@@ -39,7 +48,7 @@ def get_item(itemid):
     return jsonify(item_dict)
 
 
-@rest.route('/item/<int:itemid>/reviews')
+@rest.route('/items/<int:itemid>/reviews', methods=['GET'])
 @auth.login_required
 def get_item_reviews(itemid):
     # item = Items.query.get_or_404(itemid)
@@ -69,7 +78,7 @@ def get_item_reviews(itemid):
     return jsonify(reviews_dict)
 
 
-@rest.route('/item/<int:itemid>/inruts')
+@rest.route('/items/<int:itemid>/inruts', methods=['GET'])
 @auth.login_required
 def get_item_inruts(itemid):
     item = Items.query.get_or_404(itemid)
@@ -88,7 +97,7 @@ def get_item_inruts(itemid):
 
 
 # who todo /doing / done the item
-@rest.route('/item/<int:itemid>/who/<string:flag>')
+@rest.route('/items/<int:itemid>/users/<string:flag>', methods=['GET'])
 @auth.login_required
 def get_item_whoflags(itemid, flag):
     flagers = Flag.query.filter_by(item_id=itemid)
@@ -108,7 +117,7 @@ def get_item_whoflags(itemid, flag):
     return jsonify(flager_dict)
 
 
-@rest.route('/checkflag/item/<int:itemid>')
+@rest.route('/items/<int:itemid>/flag', methods=['GET'])
 @auth.login_required
 def check_flag(itemid):
     item = Items.query.get_or_404(itemid)
@@ -117,11 +126,11 @@ def check_flag(itemid):
     return jsonify(flaging)
 
 
-@rest.route('/flagtodo/item/<int:itemid>')
+@rest.route('/items/<int:itemid>/flagtodo', methods=['PATCH'])
 @auth.login_required
 def flag_item_todo(itemid):
     item = Items.query.get_or_404(itemid)
-    note = request.args.get('note', '').strip()
+    note = request.json.get('note', '').strip()
     user = g.user
     user.flag(item, 1, note)
     # record activity as want to read an item
@@ -130,11 +139,11 @@ def flag_item_todo(itemid):
     return jsonify('Scheduled')
 
 
-@rest.route('/flagdoing/item/<int:itemid>')
+@rest.route('/items/<int:itemid>/flagdoing', methods=['PATCH'])
 @auth.login_required
 def flag_item_doing(itemid):
     item = Items.query.get_or_404(itemid)
-    note = request.args.get('note', '').strip()
+    note = request.json.get('note', '').strip()
     user = g.user
     user.flag(item, 2, note)
     # record activity asworking an item
@@ -143,11 +152,11 @@ def flag_item_doing(itemid):
     return jsonify('Working')
 
 
-@rest.route('/flagdone/item/<int:itemid>')
+@rest.route('/items/<int:itemid>/flagdone', methods=['PATCH'])
 @auth.login_required
 def flag_item_done(itemid):
     item = Items.query.get_or_404(itemid)
-    note = request.args.get('note', '').strip()
+    note = request.json.get('note', '').strip()
     user = g.user
     user.flag(item, 3, note)
     # record activity as have done an item
@@ -158,7 +167,7 @@ def flag_item_done(itemid):
 
 @rest.route('/lockitem/<int:itemid>')
 @auth.login_required
-def lock_item(itemid):
+def lock_item(itemid):  # #??
     item = Items.query.get_or_404(itemid)
     user = g.user
     item.lock(user)
@@ -166,20 +175,20 @@ def lock_item(itemid):
 
 
 @rest.route('/unlockitem/<int:itemid>')
-def unlock_item(itemid):
+def unlock_item(itemid):  # #??
     item = Items.query.get_or_404(itemid)
     item.unlock()
     return jsonify('UnLocked')
 
 
-@rest.route('/checkifitem/<int:itemid>/lockedto/<int:userid>')
+@rest.route('/items/<int:itemid>/lockedto/<int:userid>', methods=['GET'])
 def check_item_if_locked(itemid, userid):
     item = Items.query.get_or_404(itemid)
     is_locked = item.check_locked(userid)
     return jsonify(is_locked)
 
 
-@rest.route('/edititem/<int:itemid>', methods=['POST'])
+@rest.route('/items/<int:itemid>', methods=['PUT'])
 @auth.login_required
 def edit_item(itemid):
     uid = request.json.get('uid', '').replace('-', '').replace(' ', '')
@@ -249,52 +258,7 @@ def edit_item(itemid):
     return jsonify('The item info Updated, Thank You')
 
 
-@rest.route('/delete/item/<int:itemid>')
-@auth.login_required
-def del_item(itemid):
-    user = g.user
-    if user.role != 'Admin':
-        abort(403)
-    item = Items.query.get_or_404(itemid)
-    db.session.delete(item)
-    db.session.commit()
-    return jsonify('Deleted')
-
-
-@rest.route('/disable/item/<int:itemid>')
-@auth.login_required
-def disable_item(itemid):
-    user = g.user
-    if user.role != 'Admin':
-        abort(403)
-    item = Items.query.get_or_404(itemid)
-    item.disabled = True
-    db.session.add(item)
-    db.session.commit()
-    return jsonify('Disabled')
-
-
-@rest.route('/recover/item/<int:itemid>')
-@auth.login_required
-def recover_item(itemid):
-    user = g.user
-    if user.role != 'Admin':
-        abort(403)
-    item = Items.query.get_or_404(itemid)
-    item.disabled = False  # enable
-    db.session.add(item)
-    db.session.commit()
-    return jsonify('Enabled')
-
-
-@rest.route('/getsubmitteditems')
-@auth.login_required
-def get_submitted_items():
-    user = g.user
-    items = user.sub_items.order_by(Items.timestamp.desc()).limit(PER_PAGE)
-    item_list = [i.to_simple_dict() for i in items]
-    return jsonify(item_list)
-
+########## new item func-set ##################
 
 def new_item_pipe(d, uid, user, flag=None):
     new_item = Items(
@@ -346,8 +310,10 @@ def spider_new_item(app, url, user, flag):
         d = spider.parse_html(url)
         add_new_item(d, user, flag)
 
+########## end new item func-set ##################
 
-@rest.route('/newitem', methods=['POST'])
+
+@rest.route('/items', methods=['POST'])
 @auth.login_required
 def submit_new_item():
     """add new item mannually or via spider"""
@@ -382,7 +348,7 @@ def submit_new_item():
         return jsonify(item.id)
 
 
-@rest.route('/additemtag/<int:itemid>', methods=['POST'])
+@rest.route('/items/<int:itemid>/tags', methods=['POST'])
 @auth.login_required
 def add_item_tags(itemid):
     item = Items.query.get_or_404(itemid)
@@ -395,7 +361,7 @@ def add_item_tags(itemid):
     return jsonify(tags)
 
 
-@rest.route('/search/<int:label>/items')
+@rest.route('/items/search/<int:label>', methods=['GET'])
 @auth.login_required
 def search_items(label):
     uid_or_title = request.args.get('uid_or_title', '').strip()
@@ -448,3 +414,29 @@ def search_items(label):
         }
         items_list.append(item_dict)
     return jsonify({'items': items_list, 'keyword': uid_or_title})
+
+
+@rest.route('/items/<int:itemid>', methods=['DELETE'])
+@auth.login_required
+def del_item(itemid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    item = Items.query.get_or_404(itemid)
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify('Deleted')
+
+
+@rest.route('/items/<int:itemid>/disabled', methods=['PATCH'])
+@auth.login_required
+def disable_or_enable_item(itemid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    item = Items.query.get_or_404(itemid)
+    dis_or_enb = request.json.get('disbaled', True)
+    item.disabled = dis_or_enb
+    db.session.add(item)
+    db.session.commit()
+    return jsonify(item.disabled)

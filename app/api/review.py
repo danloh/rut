@@ -7,9 +7,10 @@ from ..models import Reviews, Rvote, Comments, Items
 from . import db, rest, auth, PER_PAGE
 
 
-@rest.route('/reviews')  # per user, item or any
+@rest.route('/reviews', methods=['GET'])
 @auth.login_required
 def get_reviews():
+    # per user, item or any
     userid = request.args.get('userid', type=int)
     itemid = request.args.get('itemid', type=int)
     page = request.args.get('page', 0, type=int)
@@ -26,26 +27,14 @@ def get_reviews():
     rs = reviews.order_by(Reviews.timestamp.desc())\
                 .offset(per_page * page).limit(per_page)
     review_list = [r.to_dict() for r in rs]
-    reviews_dict = {'reviewcount': reviews.count(), 'reviews': review_list}
-    return jsonify(reviews_dict)
-
-
-@rest.route('/all/reviews')
-@auth.login_required
-def get_all_reviews():
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    all_reviews = Reviews.query
-    reviews = all_reviews.offset(page*per_page).limit(per_page)
     reviews_dict = {
-        'reviews': [rev.to_dict() for rev in reviews],
-        'total': all_reviews.count(),
-        'currentpage': page
+        'reviewcount': reviews.count(),
+        'reviews': review_list
     }
     return jsonify(reviews_dict)
 
 
-@rest.route('/review/<int:reviewid>')
+@rest.route('/reviews/<int:reviewid>', methods=['GET'])
 def get_review(reviewid):
     review = Reviews.query.get_or_404(reviewid)
     review_dict = review.to_dict()
@@ -58,7 +47,7 @@ def get_review(reviewid):
     return jsonify(review_dict)
 
 
-@rest.route('/review/<int:reviewid>/comments')
+@rest.route('/reviews/<int:reviewid>/comments', methods=['GET'])
 @auth.login_required
 def get_review_comments(reviewid):
     review = Reviews.query.get_or_404(reviewid)
@@ -71,7 +60,7 @@ def get_review_comments(reviewid):
     return jsonify(comments)
 
 
-@rest.route('/review/<int:reviewid>/voters')
+@rest.route('/reviews/<int:reviewid>/voters', methods=['GET'])
 @auth.login_required
 def get_review_voters(reviewid):
     page = request.args.get('page', 0, type=int)
@@ -85,28 +74,7 @@ def get_review_voters(reviewid):
     return jsonify(voters_dict)
 
 
-@rest.route('/upvotereview/<int:reviewid>')
-@auth.login_required
-def upvote_review(reviewid):
-    review = Reviews.query.get_or_404(reviewid)
-    user = g.user
-    voted = Rvote.query.filter_by(user_id=user.id, review_id=reviewid).first()
-    if user != review.creator and voted is None:
-        review.vote = review.vote + 1
-        db.session.add(review)
-        rvote = Rvote(
-            voter=user,
-            vote_review=review
-        )
-        db.session.add(rvote)
-        db.session.commit()
-        # record activity as post a review
-        from task.tasks import set_event_celery
-        set_event_celery.delay(user.id, action='Endorsed', reviewid=review.id)
-    return jsonify(review.vote)
-
-
-@rest.route('/newreview/<int:itemid>', methods=['POST'])
+@rest.route('/items/<int:itemid>/reviews', methods=['POST'])
 @auth.login_required
 def new_review(itemid):
     body = request.json.get('review', '').strip()
@@ -137,7 +105,7 @@ def new_review(itemid):
     return jsonify(review_dict)
 
 
-@rest.route('/editreview/<int:reviewid>', methods=['POST'])
+@rest.route('/reviews/<int:reviewid>', methods=['PUT'])
 @auth.login_required
 def edit_review(reviewid):
     body = request.json.get('review', '').strip()
@@ -162,7 +130,28 @@ def edit_review(reviewid):
     return jsonify(review_dict)
 
 
-@rest.route('/delete/review/<int:reviewid>')
+@rest.route('/reviews/<int:reviewid>/voters', methods=['PATCH'])
+@auth.login_required
+def upvote_review(reviewid):
+    review = Reviews.query.get_or_404(reviewid)
+    user = g.user
+    voted = Rvote.query.filter_by(user_id=user.id, review_id=reviewid).first()
+    if user != review.creator and voted is None:
+        review.vote = review.vote + 1
+        db.session.add(review)
+        rvote = Rvote(
+            voter=user,
+            vote_review=review
+        )
+        db.session.add(rvote)
+        db.session.commit()
+        # record activity as post a review
+        from task.tasks import set_event_celery
+        set_event_celery.delay(user.id, action='Endorsed', reviewid=review.id)
+    return jsonify(review.vote)
+
+
+@rest.route('/reviews/<int:reviewid>', methods=['DELETE'])
 @auth.login_required
 def del_review(reviewid):
     review = Reviews.query.get_or_404(reviewid)
@@ -174,27 +163,15 @@ def del_review(reviewid):
     return jsonify('Deleted')
 
 
-@rest.route('/disable/review/<int:reviewid>')
+@rest.route('/reviews/<int:reviewid>/disabled', methods=['PATCH'])
 @auth.login_required
-def disable_review(reviewid):
+def disable_or_enable_review(reviewid):
     review = Reviews.query.get_or_404(reviewid)
     user = g.user
     if review.creator != user and user.role != 'Admin':
         abort(403)
-    review.disabled = True
+    dis_or_enb = request.json.get('disbaled', True)
+    review.disabled = dis_or_enb
     db.session.add(review)
     db.session.commit()
-    return jsonify('Disabled')
-
-
-@rest.route('/recover/review/<int:reviewid>')
-@auth.login_required
-def recover_review(reviewid):
-    review = Reviews.query.get_or_404(reviewid)
-    user = g.user
-    if review.creator != user and user.role != 'Admin':
-        abort(403)
-    review.disabled = False  # enable
-    db.session.add(review)
-    db.session.commit()
-    return jsonify('Enabled')
+    return jsonify(review.disabled)

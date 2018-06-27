@@ -7,7 +7,7 @@ from ..models import Roads, Gather, Items, Users, Posts, Flag
 from . import db, rest, auth, PER_PAGE
 
 
-@rest.route('/road/<int:roadid>')
+@rest.route('/roads/<int:roadid>', methods=['GET'])
 def get_road(roadid):
     """Get  a specific road"""
     road = Roads.query.get_or_404(roadid)
@@ -27,9 +27,9 @@ def get_road(roadid):
     return jsonify(road_dict)
 
 
-@rest.route('/<int:userid>/roads')
+@rest.route('/roads/<int:userid>', methods=['GET'])
 @auth.login_required
-def get_roads(userid):
+def get_roads(userid):  # #?? -0
     """Get the roads which user have not done"""
     # yield query
     user = Users.query.get_or_404(userid)
@@ -51,7 +51,7 @@ def get_roads(userid):
 # for challenge page
 @rest.route('/getonroad')  # challenging road
 @auth.login_required
-def get_on_road():
+def get_on_road():  # #?? -0
     """Get the working Road: earliest and not done """
     user = g.user
     road = user.roads.filter_by(done=False).first()
@@ -74,7 +74,7 @@ def get_on_road():
 
 @rest.route('/<int:userid>/allroads')
 @auth.login_required
-def get_all_roads(userid):
+def get_all_roads(userid):  # #?? -0
     """Get  All, order per done or not and timestamp"""
     # yield query
     user = Users.query.get_or_404(userid)
@@ -92,18 +92,7 @@ def get_all_roads(userid):
     return jsonify(roads_dict)
 
 
-@rest.route('/markasdone/<int:roadid>')
-@auth.login_required
-def mark_road_done(roadid):
-    road = Roads.query.get_or_404(roadid)
-    user = g.user
-    if user != road.owner:
-        abort(403)
-    road.as_done()
-    return jsonify(road.done)
-
-
-@rest.route('/newroad', methods=['POST'])
+@rest.route('/roads', methods=['POST'])
 @auth.login_required
 def new_road():
     title = request.json.get('title', '').strip()
@@ -126,7 +115,7 @@ def new_road():
     return jsonify({'id': road.id, 'title': road.title})
 
 
-@rest.route('/editroad/<int:roadid>', methods=['POST'])
+@rest.route('/roads/<int:roadid>', methods=['PUT'])
 @auth.login_required
 def edit_road(roadid):
     road = Roads.query.get_or_404(roadid)
@@ -150,15 +139,25 @@ def edit_road(roadid):
     return jsonify(road.to_dict())
 
 
-@rest.route('/resetdeadline')
+@rest.route('/roads/<int:roadid>/done', methods=['PATCH'])
 @auth.login_required
-def edit_deadline():
-    roadid = request.args.get('roadid')
+def mark_road_done(roadid):
     road = Roads.query.get_or_404(roadid)
     user = g.user
     if user != road.owner:
         abort(403)
-    deadline = request.args.get('date')
+    road.as_done()
+    return jsonify(road.done)
+
+
+@rest.route('/roads/<int:roadid>/deadline', methods=['PATCH'])
+@auth.login_required
+def edit_deadline(roadid):
+    road = Roads.query.get_or_404(roadid)
+    user = g.user
+    if user != road.owner:
+        abort(403)
+    deadline = request.json.get('date', '')
     road.deadline = deadline
     db.session.add(road)
     db.session.commit()
@@ -166,34 +165,10 @@ def edit_deadline():
     return jsonify(due)
 
 
-@rest.route('/editmark/<int:gid>', methods=['POST'])
+@rest.route('/roads/<int:roadid>/items/<int:itemid>', methods=['POST'])
 @auth.login_required
-def edit_mark(gid):
-    mark_g = Gather.query.filter_by(id=gid).first_or_404()  # collect 's id
-    road_id = mark_g.road_id
-    road = Roads.query.get_or_404(road_id)
-    user = g.user
-    if road.owner != user:
-        abort(403)
-    # get the data
-    order = request.json.get('order')
-    mark = request.json.get('mark', '').strip()
-    if not order or not mark:
-        abort(403)  # cannot be None
-    item = Items.query.get_or_404(mark_g.item_id)
-    # re-ordering
-    road.ordering(item, order)
-    road.renew()
-    mark_g.mark = mark
-    db.session.add(mark_g)
-    db.session.commit()
-    return jsonify('Done')
-
-
-@rest.route('/item/<int:itemid>/toroad/<int:roadid>', methods=['GET', 'POST'])
-@auth.login_required
-def item_to_road(itemid, roadid):
-    """Add item to roadmap"""
+def add_item_to_road(roadid, itemid):
+    """Add item to roadmap, i.e. add new marks"""
     road = Roads.query.get_or_404(roadid)
     user = g.user
     if user != road.owner:
@@ -219,7 +194,31 @@ def item_to_road(itemid, roadid):
     return jsonify(g_dict)
 
 
-@rest.route('/delmark/<int:gid>')
+@rest.route('/marks/<int:gid>', methods=['PUT'])
+@auth.login_required
+def edit_mark(gid):
+    mark_g = Gather.query.filter_by(id=gid).first_or_404()  # collect 's id
+    road_id = mark_g.road_id
+    road = Roads.query.get_or_404(road_id)
+    user = g.user
+    if road.owner != user:
+        abort(403)
+    # get the data
+    order = request.json.get('order')
+    mark = request.json.get('mark', '').strip()
+    if not order or not mark:
+        abort(403)  # cannot be None
+    item = Items.query.get_or_404(mark_g.item_id)
+    # re-ordering
+    road.ordering(item, order)
+    road.renew()
+    mark_g.mark = mark
+    db.session.add(mark_g)
+    db.session.commit()
+    return jsonify('Done')
+
+
+@rest.route('/marks/<int:gid>', methods=['DELETE'])
 @auth.login_required
 def del_mark(gid):
     """Del, re-ordering items"""
@@ -239,9 +238,9 @@ def del_mark(gid):
     return jsonify(roadid)
 
 
-@rest.route('/convertroad/<int:roadid>/torut')
+@rest.route('/road/<int:roadid>/torut', methods=['PATCH'])
 @auth.login_required
-def convert_road_to_rut(roadid):
+def convert_road_to_rut(roadid):  # #??, -test
     """convert road to rut when get road done"""
     road = Roads.query.get_or_404(roadid)
     if road.converted or (not road.done):
@@ -280,33 +279,21 @@ def convert_road_to_rut(roadid):
     return jsonify({'id': rut.id, 'title': rut.title})
 
 
-@rest.route('/disable/road/<int:roadid>')
+@rest.route('/roads/<int:roadid>/disabled', methods=['PATCH'])
 @auth.login_required
-def disable_road(roadid):
+def disable_or_enable_road(roadid):
     road = Roads.query.get_or_404(roadid)
     user = g.user
     if road.owner != user and user.role != 'Admin':
         abort(403)
-    road.disabled = True
+    dis_or_enb = request.json.get('disbaled', True)
+    road.disabled = dis_or_enb
     db.session.add(road)
     db.session.commit()
-    return jsonify('Disabled')
+    return jsonify(road.disabled)
 
 
-@rest.route('/recover/road/<int:roadid>')
-@auth.login_required
-def recover_road(roadid):
-    road = Roads.query.get_or_404(roadid)
-    user = g.user
-    if road.owner != user and user.role != 'Admin':
-        abort(403)
-    road.disabled = False  # enable
-    db.session.add(road)
-    db.session.commit()
-    return jsonify('Enabled')
-
-
-@rest.route('/delroad/<int:roadid>')
+@rest.route('/roads/<int:roadid>', methods=['DELETE'])
 @auth.login_required
 def delete_road(roadid):
     road = Roads.query.get_or_404(roadid)

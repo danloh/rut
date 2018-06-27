@@ -7,8 +7,7 @@ from ..models import Demands, Posts, Dvote, Respon, Comments
 from . import db, rest, auth, PER_PAGE
 
 
-@rest.route('/all/demands')
-@rest.route('/demands')
+@rest.route('/demands', methods=['GET'])
 @auth.login_required
 def get_demands():
     """Get demands for request page"""
@@ -38,7 +37,7 @@ def get_demands():
     return jsonify(demands_dict)
 
 
-@rest.route('/onlydemand/<int:demandid>')
+@rest.route('/demand/<int:demandid>', methods=['GET'])
 @auth.login_required
 def get_demand_only(demandid):
     """Get limited demand info when create as answer"""
@@ -47,7 +46,7 @@ def get_demand_only(demandid):
     return jsonify(demand_dict)
 
 
-@rest.route('/demand/<int:demandid>')
+@rest.route('/demands/<int:demandid>', methods=['GET'])
 @auth.login_required
 def get_demand(demandid):
     """get demand info"""
@@ -67,7 +66,7 @@ def get_demand(demandid):
     return jsonify(demand_dict)
 
 
-@rest.route('/demand/<int:demandid>/comments')
+@rest.route('/demands/<int:demandid>/comments', methods=['GET'])
 @auth.login_required
 def get_demand_comments(demandid):
     """get comments on a demand"""
@@ -81,7 +80,7 @@ def get_demand_comments(demandid):
     return jsonify(comments)
 
 
-@rest.route('/demand/<int:demandid>/answers')
+@rest.route('/demands/<int:demandid>/answers', methods=['GET'])
 @auth.login_required
 def get_demand_answers(demandid):
     """get the ruts which have linked to a demand as answers"""
@@ -95,7 +94,7 @@ def get_demand_answers(demandid):
     return jsonify(answers)
 
 
-@rest.route('/demand/<int:demandid>/voters')
+@rest.route('/demands/<int:demandid>/voters', methods=['GET'])
 @auth.login_required
 def get_demand_voters(demandid):
     """get who vote a demand"""
@@ -110,7 +109,7 @@ def get_demand_voters(demandid):
     return jsonify(voters_dict)
 
 
-@rest.route('/upvotedemand/<int:demandid>')
+@rest.route('/demands/<int:demandid>/voters', methods=['PATCH'])
 @auth.login_required
 def upvote_demand(demandid):
     demand = Demands.query.get_or_404(demandid)  # demand's id
@@ -132,7 +131,7 @@ def upvote_demand(demandid):
     return jsonify(demand.vote)
 
 
-@rest.route('/newdemand', methods=['POST'])
+@rest.route('/demands', methods=['POST'])
 @auth.login_required
 def new_demand():
     text = request.json.get('demand', '').strip()
@@ -156,9 +155,9 @@ def new_demand():
     return jsonify(demand.to_dict())
 
 
-@rest.route('/rut/<int:rutid>/answerdemand/<int:demandid>')
+@rest.route('/demands/<int:demandid>/ruts/<int:rutid>', methods=['PATCH'])
 @auth.login_required
-def rut_as_answer(rutid, demandid):
+def rut_as_answer(demandid, rutid):
     """link  Rut to  a demand as Answer"""
     rut = Posts.query.get_or_404(rutid)
     user = g.user
@@ -177,7 +176,7 @@ def rut_as_answer(rutid, demandid):
     return jsonify(answer)
 
 
-@rest.route('/delete/demand/<int:demandid>')
+@rest.route('/demands/<int:demandid>', methods=['DELETE'])
 @auth.login_required
 def del_demand(demandid):
     demand = Demands.query.get_or_404(demandid)
@@ -189,27 +188,15 @@ def del_demand(demandid):
     return jsonify('Deleted')
 
 
-@rest.route('/disable/demand/<int:demandid>')
+@rest.route('/demands/<int:demandid>/disabled', methods=['PATCH'])
 @auth.login_required
 def disable_demand(demandid):
     demand = Demands.query.get_or_404(demandid)
     user = g.user
     if demand.requestor != user and user.role != 'Admin':
         abort(403)
-    demand.disabled = True
+    dis_or_enb = request.json.get('disbaled', True)
+    demand.disabled = dis_or_enb
     db.session.add(demand)
     db.session.commit()
-    return jsonify('Disabled')
-
-
-@rest.route('/recover/demand/<int:demandid>')
-@auth.login_required
-def recover_demand(demandid):
-    demand = Demands.query.get_or_404(demandid)
-    user = g.user
-    if demand.requestor != user and user.role != 'Admin':
-        abort(403)
-    demand.disabled = False  # enable
-    db.session.add(demand)
-    db.session.commit()
-    return jsonify('Enabled')
+    return jsonify(demand.disabled)

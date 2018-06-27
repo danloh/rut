@@ -156,7 +156,7 @@ def search_ruts():
     return jsonify(ruts_list)
 
 
-@rest.route('/ruts/<int:rutid>/checkstar', methods=['GET'])
+@rest.route('/ruts/<int:rutid>/star', methods=['GET'])
 @auth.login_required
 def check_star(rutid):
     rut = Posts.query.get_or_404(rutid)
@@ -165,7 +165,7 @@ def check_star(rutid):
     return jsonify(staring)
 
 
-@rest.route('/star/rut/<int:rutid>', methods=['GET'])
+@rest.route('/ruts/<int:rutid>/stars', methods=['PATCH'])
 @auth.login_required
 def star_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
@@ -177,7 +177,7 @@ def star_rut(rutid):
     return jsonify('Unstar')
 
 
-@rest.route('/unstar/rut/<int:rutid>', methods=['GET'])
+@rest.route('/ruts/<int:rutid>/stars', methods=['DELETE'])
 @auth.login_required
 def unstar_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
@@ -226,7 +226,7 @@ def new_rut():
 
 @rest.route('/lockrut/<int:rutid>', methods=['GET'])
 @auth.login_required
-def lock_rut(rutid):
+def lock_rut(rutid):  # #??
     rut = Posts.query.get_or_404(rutid)
     user = g.user
     rut.lock(user)
@@ -234,14 +234,14 @@ def lock_rut(rutid):
 
 
 @rest.route('/unlockrut/<int:rutid>', methods=['GET'])
-def unlock_rut(rutid):
+def unlock_rut(rutid):  # #??
     rut = Posts.query.get_or_404(rutid)
     rut.unlock()
     return jsonify('UnLocked')
 
 
 @rest.route('/ruts/<int:rutid>/lockedto/<int:userid>', methods=['GET'])
-def check_rut_if_locked(rutid, userid):
+def check_rut_if_locked(rutid, userid):  # #?? -1, head?
     rut = Posts.query.get_or_404(rutid)
     is_locked = rut.check_locked(userid)
     return jsonify(is_locked)
@@ -249,7 +249,7 @@ def check_rut_if_locked(rutid, userid):
 
 @rest.route('/checkif/<userid>/caneditrut/<int:rutid>', methods=['GET'])
 # @auth.login_required
-def check_rut_editable(userid, rutid):
+def check_rut_editable(userid, rutid):  # #?? -1
     if not userid:
         return jsonify(False)
     user = Users.query.get_or_404(userid)
@@ -286,7 +286,7 @@ def edit_rut(rutid):
     return jsonify(rut.to_dict())
 
 
-@rest.route('/ruts/<int:rutid>/ce', methods=['PUT'])
+@rest.route('/ruts/<int:rutid>/ce', methods=['PATCH'])
 @auth.login_required
 def edit_rut_epi_or_cred(rutid):
     rut = Posts.query.get_or_404(rutid)
@@ -313,7 +313,7 @@ def edit_rut_epi_or_cred(rutid):
     return jsonify(ce_dict)
 
 
-@rest.route('/ruts/<int:rutid>/tags', methods=['PUT'])
+@rest.route('/ruts/<int:rutid>/tags', methods=['PATCH'])
 @auth.login_required
 def edit_rut_tags(rutid):
     rut = Posts.query.get_or_404(rutid)
@@ -346,7 +346,26 @@ def edit_rut_tags(rutid):
     return jsonify(new_tags_list)
 
 
-@rest.route('/collects/<int:cid>', methods=['PUT'])
+@rest.route('/ruts/<int:rutid>/items/<int:itemid>', methods=['POST'])
+@auth.login_required
+def add_item_to_rut(itemid, rutid):
+    """Add existing item to Rut, i.e. add new tips"""
+    rut = Posts.query.get_or_404(rutid)
+    user = g.user
+    if not rut.check_editable(user):
+        abort(403)
+    if rut.items.count() >= 42:
+        abort(418)
+    item = Items.query.get_or_404(itemid)
+    tips = request.json.get('tips', '...').strip()
+    spoiler_text = request.json.get('spoiler')
+    spoiler = True if spoiler_text == 'Spoiler Ahead' else False
+    rut.collecting(item, tips, user, spoiler)
+    db.session.commit()
+    return jsonify('Done')
+
+
+@rest.route('/tips/<int:cid>', methods=['PUT'])
 @auth.login_required
 def edit_tips(cid):
     tip_collect = Collect.query.filter_by(id=cid).first_or_404()  # collect 's id
@@ -374,26 +393,7 @@ def edit_tips(cid):
     return jsonify('Done')
 
 
-@rest.route('/ruts/<int:rutid>/collects/<int:itemid>', methods=['POST'])
-@auth.login_required
-def add_item_to_rut(itemid, rutid):
-    """Add existing item to Rut"""
-    rut = Posts.query.get_or_404(rutid)
-    user = g.user
-    if not rut.check_editable(user):
-        abort(403)
-    if rut.items.count() >= 42:
-        abort(418)
-    item = Items.query.get_or_404(itemid)
-    tips = request.json.get('tips', '...').strip()
-    spoiler_text = request.json.get('spoiler')
-    spoiler = True if spoiler_text == 'Spoiler Ahead' else False
-    rut.collecting(item, tips, user, spoiler)
-    db.session.commit()
-    return jsonify('Done')
-
-
-@rest.route('/collects/<int:cid>', methods=['DELETE'])
+@rest.route('/tips/<int:cid>', methods=['DELETE'])
 @auth.login_required
 def del_tips_in_rut(cid):
     """Del tips, re-ordering items"""
@@ -414,31 +414,19 @@ def del_tips_in_rut(cid):
     return jsonify(rutid)
 
 
-@rest.route('/disable/rut/<int:rutid>')
+@rest.route('/ruts/<int:rutid>/disabled', methods=['PATCH'])
 @auth.login_required
-def disable_rut(rutid):
+def disable_or_enable_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     user = g.user
     if ((rut.creator != user and user.role != 'Admin')
             or rut.starers.count() != 0):
         abort(403)
-    rut.disabled = True
+    dis_or_enb = request.json.get('disbaled', True)
+    rut.disabled = dis_or_enb
     db.session.add(rut)
     db.session.commit()
-    return jsonify('Disabled')
-
-
-@rest.route('/recover/rut/<int:rutid>')
-@auth.login_required
-def recover_rut(rutid):
-    rut = Posts.query.get_or_404(rutid)
-    user = g.user
-    if rut.creator != user and user.role != 'Admin':
-        abort(403)
-    rut.disabled = False  # enable
-    db.session.add(rut)
-    db.session.commit()
-    return jsonify('Enabled')
+    return jsonify(rut.disabled)
 
 
 @rest.route('/ruts/<int:rutid>', methods=['DELETE'])

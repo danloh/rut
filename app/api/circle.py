@@ -6,7 +6,7 @@ from ..models import Circles
 from . import db, rest, auth, PER_PAGE
 
 
-@rest.route('/circles')
+@rest.route('/circles', methods=['GET'])
 @auth.login_required
 def get_circles():
     # get request params
@@ -30,7 +30,7 @@ def get_circles():
     return jsonify(circle_dict)
 
 
-@rest.route('/newcircle', methods=['POST'])
+@rest.route('/circles', methods=['POST'])
 @auth.login_required
 def new_circle():
     name = request.json.get('name', '').strip()
@@ -53,7 +53,7 @@ def new_circle():
     return jsonify(circle_dict)
 
 
-@rest.route('/editcircle/<int:circleid>', methods=['POST'])
+@rest.route('/circles/<int:circleid>', methods=['PUT'])
 @auth.login_required
 def edit_circle(circleid):
     circle = Circles.query.get_or_404(circleid)
@@ -76,7 +76,7 @@ def edit_circle(circleid):
     return jsonify(circle.to_dict())
 
 
-@rest.route('/delcircle/<int:circleid>')
+@rest.route('/circles/<int:circleid>', methods=['DELETE'])
 @auth.login_required
 def del_circle(circleid):
     circle = Circles.query.get_or_404(circleid)
@@ -88,33 +88,21 @@ def del_circle(circleid):
     return jsonify('Deleted')
 
 
-@rest.route('/disablecircle/<int:circleid>')
+@rest.route('/circles/<int:circleid>/disabled', methods=['PATCH'])
 @auth.login_required
 def disable_circle(circleid):
     circle = Circles.query.get_or_404(circleid)
     user = g.user
     # if circle.facilitator != user and user.role != 'Admin':
     #     abort(403)
-    circle.disabled = True
+    # dis_or_enb = request.json.get('disbaled', True)
+    circle.disabled = True  # dis_or_enb
     db.session.add(circle)
     db.session.commit()
-    return jsonify('Disabled')
+    return jsonify(circle.disabled)
 
 
-@rest.route('/recovercircle/<int:circleid>')
-@auth.login_required
-def recover_circle(circleid):
-    circle = Circles.query.get_or_404(circleid)
-    user = g.user
-    if circle.facilitator != user and user.role != 'Admin':
-        abort(403)
-    circle.disabled = None  # enable
-    db.session.add(circle)
-    db.session.commit()
-    return jsonify('Enabled')
-
-
-@rest.route('/checkparticipate/<int:circleid>')
+@rest.route('/circles/<int:circleid>/part', methods=['GET'])
 @auth.login_required
 def check_participate(circleid):
     circle = Circles.query.get_or_404(circleid)
@@ -123,7 +111,20 @@ def check_participate(circleid):
     return jsonify(participating)
 
 
-@rest.route('/participate/<int:circleid>')
+@rest.route('/circles/<int:circleid>/participates', methods=['GET'])
+@auth.login_required
+def get_who_participate_circle(circleid):
+    circle = Circles.query.get_or_404(circleid)
+    participators = circle.participators
+    part_list = [p.to_simple_dict() for p in participators]
+    part_dict = {
+        'participators': part_list,
+        'count': participators.count()
+    }
+    return jsonify(part_dict)
+
+
+@rest.route('/circles/<int:circleid>/participates', methods=['PATCH'])
 @auth.login_required
 def participate_circle(circleid):
     circle = Circles.query.get_or_404(circleid)
@@ -132,7 +133,7 @@ def participate_circle(circleid):
     return jsonify('Cancle')
 
 
-@rest.route('/unparticipate/<int:circleid>')
+@rest.route('/circles/<int:circleid>/participates', methods=['DELETE'])
 @auth.login_required
 def unparticipate_circle(circleid):
     circle = Circles.query.get_or_404(circleid)

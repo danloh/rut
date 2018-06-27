@@ -6,23 +6,7 @@ from flask import request, g, jsonify, abort
 from ..models import Clips, Cvote, Items
 from . import db, rest, auth, PER_PAGE
 
-
-@rest.route('/all/clips')
-@auth.login_required
-def get_all_clips():
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    all_clips = Clips.query
-    clips = all_clips.offset(page*per_page).limit(per_page)
-    clips_dict = {
-        'clips': [c.to_dict() for c in clips],
-        'total': all_clips.count(),
-        'currentpage': page
-    }
-    return jsonify(clips_dict)
-
-
-@rest.route('/clips')
+@rest.route('/clips', methods=['GET'])
 @auth.login_required
 def get_clips():
     ref = request.args.get('ref', '')
@@ -55,7 +39,7 @@ def get_clips():
     return jsonify(clips_dict)
 
 
-@rest.route('/clip/<int:clipid>')
+@rest.route('/clips/<int:clipid>', methods=['GET'])
 @auth.login_required
 def get_clip(clipid):
     clip = Clips.query.get_or_404(clipid)
@@ -63,7 +47,7 @@ def get_clip(clipid):
     return jsonify(clip_dict)
 
 
-@rest.route('/clip/<int:clipid>/voters')
+@rest.route('/clips/<int:clipid>/voters', methods=['GET'])
 @auth.login_required
 def get_clip_voters(clipid):
     page = request.args.get('page', 0, type=int)
@@ -77,7 +61,7 @@ def get_clip_voters(clipid):
     return jsonify(voters_dict)
 
 
-@rest.route('/newclip', methods=['POST'])
+@rest.route('/clips', methods=['POST'])
 @auth.login_required
 def new_clip():
     text = request.json.get('clip', '').strip()
@@ -110,7 +94,7 @@ def new_clip():
     return jsonify(clip.to_dict())
 
 
-@rest.route('/upvoteclip/<int:clipid>')
+@rest.route('/clips/<int:clipid>/voters', methods=['PATCH'])
 @auth.login_required
 def upvote_clip(clipid):
     clip = Clips.query.get_or_404(clipid)
@@ -130,7 +114,7 @@ def upvote_clip(clipid):
     return jsonify(clip.vote)
 
 
-@rest.route('/delete/clip/<int:clipid>')
+@rest.route('/clips/<int:clipid>', methods=['DELETE'])
 @auth.login_required
 def del_clip(clipid):
     clip = Clips.query.get_or_404(clipid)
@@ -142,27 +126,15 @@ def del_clip(clipid):
     return jsonify('Deleted')
 
 
-@rest.route('/disable/clip/<int:clipid>')
+@rest.route('/clip/<int:clipid>/disabled', methods=['PATCH'])
 @auth.login_required
-def disable_clip(clipid):
+def disable_or_enable_clip(clipid):
     clip = Clips.query.get_or_404(clipid)
     user = g.user
     if clip.creator != user and user.role != 'Admin':
         abort(403)
-    clip.disabled = True
+    dis_or_enb = request.json.get('disbaled', True)
+    clip.disabled = dis_or_enb
     db.session.add(clip)
     db.session.commit()
-    return jsonify('Disabled')
-
-
-@rest.route('/recover/clip/<int:clipid>')
-@auth.login_required
-def recover_clip(clipid):
-    clip = Clips.query.get_or_404(clipid)
-    user = g.user
-    if clip.creator != user and user.role != 'Admin':
-        abort(403)
-    clip.disabled = False  # enable
-    db.session.add(clip)
-    db.session.commit()
-    return jsonify('Enabled')
+    return jsonify(clip.disabled)

@@ -10,7 +10,8 @@ from . import rest, auth, PER_PAGE
 
 @rest.route('/currentuser', methods=['GET'])
 @auth.login_required
-def get_current_user():  # for authed-user to re-get info
+def get_current_user():  # #??
+    # for authed-user to re-get info
     user = g.user
     user_dict = user.to_dict()
     return jsonify(user_dict)
@@ -24,18 +25,20 @@ def get_user(userid):
     return jsonify(user_dict)
 
 
-@rest.route('/checkfollow/<int:userid>', methods=['GET'])
+@rest.route('/users/<int:userid>/iffollow', methods=['GET'])
 @auth.login_required
 def check_follow(userid):
+    # check if follow someone
     fo_user = Users.query.get_or_404(userid)
     user = g.user
     following = 'UnFollow' if user.is_following(fo_user) else 'Follow'
     return jsonify(following)
 
 
-@rest.route('/follow/user/<int:userid>', methods=['GET'])
+@rest.route('/users/<int:userid>/follows', methods=['PATCH'])
 @auth.login_required
 def follow_user(userid):
+    # me fo other
     user = g.user
     if user.followed.count() >= 42:
         abort(418)
@@ -44,18 +47,20 @@ def follow_user(userid):
     return jsonify('UnFollow')
 
 
-@rest.route('/unfollow/user/<int:userid>', methods=['GET'])
+@rest.route('/users/<int:userid>/follows', methods=['DELETE'])
 @auth.login_required
 def unfollow_user(userid):
+    # me unfo other
     fo_user = Users.query.get_or_404(userid)
     user = g.user
     user.unfollow(fo_user)
     return jsonify('Follow')
 
 
-@rest.route('/users/<int:userid>/followed', methods=['GET'])
+@rest.route('/users/<int:userid>/followeds', methods=['GET'])
 @auth.login_required
 def get_followeds(userid):
+    # who be followed by me
     user = Users.query.get_or_404(userid)
     followeds = [u.followed for u in user.followed]
     user_dicts = [u.to_simple_dict() for u in followeds]

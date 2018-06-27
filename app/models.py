@@ -1890,14 +1890,14 @@ class Users(db.Model):
         backref=db.backref('faver', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-    # n2n with self for follow
+    # n2n with self for follow, be followed by me
     followed = db.relationship(
         'Follow',
         foreign_keys=[Follow.follower_id],
         backref=db.backref('follower', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-    # n2n with self for follow
+    # n2n with self for follow, who follow me
     followers = db.relationship(
         'Follow',
         foreign_keys=[Follow.followed_id],

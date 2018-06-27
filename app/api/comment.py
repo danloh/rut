@@ -7,9 +7,9 @@ from ..models import Comments, Posts, Demands, Items, Headlines, Reviews, Mvote
 from . import db, rest, auth, PER_PAGE
 
 
-@rest.route('/all/comments')
+@rest.route('/comments', methods=['GET'])
 @auth.login_required
-def get_all_comments():
+def get_comments():
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     all_comments = Comments.query
@@ -22,7 +22,7 @@ def get_all_comments():
     return jsonify(comments_dict)
 
 
-@rest.route('/comment/<int:commentid>')
+@rest.route('/comments/<int:commentid>', methods=['GET'])
 @auth.login_required
 def get_comment(commentid):
     commt = Comments.query.get_or_404(commentid)
@@ -30,7 +30,7 @@ def get_comment(commentid):
     return jsonify(commt_dict)
 
 
-@rest.route('/comment/<int:commentid>/voters')
+@rest.route('/comments/<int:commentid>/voters', methods=['GET'])
 @auth.login_required
 def get_comment_voters(commentid):
     page = request.args.get('page', 0, type=int)
@@ -44,7 +44,7 @@ def get_comment_voters(commentid):
     return jsonify(voters_dict)
 
 
-@rest.route('/upvotecomment/<int:commentid>')
+@rest.route('/comments/<int:commentid>/voters', methods=['PATCH'])
 @auth.login_required
 def upvote_comment(commentid):
     comment = Comments.query.get_or_404(commentid)  # comment's id
@@ -95,7 +95,7 @@ def new_comment(demandid=None, rutid=None, commentid=None, itemid=None,
     return jsonify(comment_dict)
 
 
-@rest.route('/delete/comment/<int:commentid>')
+@rest.route('/comments/<int:commentid>', methods=['DELETE'])
 @auth.login_required
 def del_comment(commentid):
     comment = Comments.query.get_or_404(commentid)
@@ -107,27 +107,15 @@ def del_comment(commentid):
     return jsonify('Deleted')
 
 
-@rest.route('/disable/comment/<int:commentid>')
+@rest.route('/comments/<int:commentid>/disabled', methods=['PATCH'])
 @auth.login_required
-def disable_comment(commentid):
+def disable_or_enable_comment(commentid):
     comment = Comments.query.get_or_404(commentid)
     user = g.user
     if comment.creator != user and user.role != 'Admin':
         abort(403)
-    comment.disabled = True
+    dis_or_enb = request.json.get('disbaled', True)
+    comment.disabled = dis_or_enb
     db.session.add(comment)
     db.session.commit()
-    return jsonify('Disabled')
-
-
-@rest.route('/recover/comment/<int:commentid>')
-@auth.login_required
-def recover_comment(commentid):
-    comment = Comments.query.get_or_404(commentid)
-    user = g.user
-    if comment.creator != user and user.role != 'Admin':
-        abort(403)
-    comment.disabled = False  # enable
-    db.session.add(comment)
-    db.session.commit()
-    return jsonify('Enabled')
+    return jsonify(comment.disabled)

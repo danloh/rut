@@ -6,9 +6,9 @@ from ..models import Tags, Posts, Demands, Items, Comments
 from . import db, rest, auth, PER_PAGE
 
 
-@rest.route('/all/tags')
+@rest.route('/tags', methods=['GET'])
 @auth.login_required
-def get_all_tags():
+def get_tags():
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     all_tags = Tags.query
@@ -21,13 +21,7 @@ def get_all_tags():
     return jsonify(tags_dict)
 
 
-@rest.route('/gettagid/<string:tagname>')
-def get_tagid(tagname):
-    tag = Tags.query.filter_by(tag=tagname).first_or_404()
-    return jsonify(tag.id)
-
-
-@rest.route('/tag/<string:tagname>')
+@rest.route('/tags/<string:tagname>', methods=['GET'])
 @auth.login_required
 def get_tag(tagname):
     tag = Tags.query.filter_by(tag=tagname).first_or_404()
@@ -47,7 +41,7 @@ def get_tag(tagname):
     return jsonify(tag_dict)
 
 
-@rest.route('/tag/<string:tagname>/ruts')
+@rest.route('/tags/<string:tagname>/ruts', methods=['GET'])
 @auth.login_required
 def get_tag_ruts(tagname):
     tag = Tags.query.filter_by(tag=tagname).first_or_404()
@@ -62,7 +56,7 @@ def get_tag_ruts(tagname):
     return jsonify(tagruts_dict)
 
 
-@rest.route('/tag/<string:tagname>/demands')
+@rest.route('/tags/<string:tagname>/demands', methods=['GET'])
 @auth.login_required
 def get_tag_demands(tagname):
     tag = Tags.query.filter_by(tag=tagname).first_or_404()
@@ -76,7 +70,7 @@ def get_tag_demands(tagname):
     return jsonify(tagdemands_dict)
 
 
-@rest.route('/tag/<string:tagname>/items')
+@rest.route('/tags/<string:tagname>/items', methods=['GET'])
 @auth.login_required
 def get_tag_items(tagname):
     tag = Tags.query.filter_by(tag=tagname).first_or_404()
@@ -90,7 +84,7 @@ def get_tag_items(tagname):
     return jsonify(tagitems_dict)
 
 
-@rest.route('/tag/<string:tagname>/comments')
+@rest.route('/tags/<string:tagname>/comments', methods=['GET'])
 @auth.login_required
 def get_tag_comments(tagname):
     tag = Tags.query.filter_by(tag=tagname).first_or_404()
@@ -104,7 +98,7 @@ def get_tag_comments(tagname):
     return jsonify(tagcomments_dict)
 
 
-@rest.route('/tag/<string:tagname>/relates')
+@rest.route('/tags/<string:tagname>/relates', methods=['GET'])
 @auth.login_required
 def get_tag_relates(tagname):
     # page = request.args.get('page', 0, type=int)
@@ -128,7 +122,7 @@ def get_tag_relates(tagname):
     return jsonify(tags_dict)
 
 
-@rest.route('/searchtags')
+@rest.route('/tags/search', methods=['GET'])
 @auth.login_required
 def search_tags():
     """Search tag"""
@@ -146,7 +140,7 @@ def search_tags():
 
 @rest.route('/locktag/<int:tagid>')
 @auth.login_required
-def lock_tag(tagid):
+def lock_tag(tagid):  # #??
     tag = Tags.query.get_or_404(tagid)
     user = g.user
     tag.lock(user)
@@ -154,20 +148,20 @@ def lock_tag(tagid):
 
 
 @rest.route('/unlocktag/<int:tagid>')
-def unlock_tag(tagid):
+def unlock_tag(tagid):  # #??
     tag = Tags.query.get_or_404(tagid)
     tag.unlock()
     return jsonify('UnLocked')
 
 
-@rest.route('/checkiftag/<int:tagid>/lockedto/<int:userid>')
-def check_tag_if_locked(tagid, userid):
+@rest.route('/tags/<int:tagid>/iflockedto/<int:userid>')
+def check_tag_if_locked(tagid, userid):  # #?? -head?
     tag = Tags.query.get_or_404(tagid)
     is_locked = tag.check_locked(userid)
     return jsonify(is_locked)
 
 
-@rest.route('/edittag/<int:tagid>', methods=['POST'])
+@rest.route('/tags/<int:tagid>', methods=['PUT'])
 @auth.login_required
 def edit_tag(tagid):
     # get data
@@ -205,45 +199,7 @@ def edit_tag(tagid):
     return jsonify(tag_dict)
 
 
-@rest.route('/delete/tag/<int:tagid>')
-@auth.login_required
-def del_tag(tagid):
-    user = g.user
-    if user.role != 'Admin':
-        abort(403)
-    tag = Tags.query.get_or_404(tagid)
-    db.session.delete(tag)
-    db.session.commit()
-    return jsonify('Deleted')
-
-
-@rest.route('/disable/tag/<int:tagid>')
-@auth.login_required
-def disable_tag(tagid):
-    user = g.user
-    if user.role != 'Admin':
-        abort(403)
-    tag = Tags.query.get_or_404(tagid)
-    tag.disabled = True
-    db.session.add(tag)
-    db.session.commit()
-    return jsonify('Disabled')
-
-
-@rest.route('/recover/tag/<int:tagid>')
-@auth.login_required
-def recover_tag(tagid):
-    user = g.user
-    if user.role != 'Admin':
-        abort(403)
-    tag = Tags.query.get_or_404(tagid)
-    tag.disabled = False  # enable
-    db.session.add(tag)
-    db.session.commit()
-    return jsonify('Enabled')
-
-
-@rest.route('/checkfavtag/<int:tagid>')
+@rest.route('/tags/<int:tagid>/faver', methods=['GET'])
 @auth.login_required
 def check_fav(tagid):
     tag = Tags.query.get_or_404(tagid)
@@ -252,7 +208,7 @@ def check_fav(tagid):
     return jsonify(faving)
 
 
-@rest.route('/fav/tag/<int:tagid>')
+@rest.route('/tags/<int:tagid>/favers', methods=['PATCH'])
 @auth.login_required
 def fav_tag(tagid):
     tag = Tags.query.get_or_404(tagid)
@@ -264,10 +220,36 @@ def fav_tag(tagid):
     return jsonify('UnFollow')
 
 
-@rest.route('/unfav/tag/<int:tagid>')
+@rest.route('/tags/<int:tagid>/favers', methods=['DELETE'])
 @auth.login_required
 def unfav_tag(tagid):
     tag = Tags.query.get_or_404(tagid)
     user = g.user
     user.unfav(tag)
     return jsonify('Follow')
+
+
+@rest.route('/tags/<int:tagid>', methods=['DELETE'])
+@auth.login_required
+def del_tag(tagid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    tag = Tags.query.get_or_404(tagid)
+    db.session.delete(tag)
+    db.session.commit()
+    return jsonify('Deleted')
+
+
+@rest.route('/tags/<int:tagid>/disabled', methods=['PATCH'])
+@auth.login_required
+def disable_tag(tagid):
+    user = g.user
+    if user.role != 'Admin':
+        abort(403)
+    tag = Tags.query.get_or_404(tagid)
+    dis_or_enb = request.json.get('disbaled', True)
+    tag.disabled = dis_or_enb
+    db.session.add(tag)
+    db.session.commit()
+    return jsonify(tag.disabled)
