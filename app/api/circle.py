@@ -92,7 +92,7 @@ def del_circle(circleid):
 @auth.login_required
 def disable_circle(circleid):
     circle = Circles.query.get_or_404(circleid)
-    user = g.user
+    # user = g.user
     # if circle.facilitator != user and user.role != 'Admin':
     #     abort(403)
     # dis_or_enb = request.json.get('disbaled', True)

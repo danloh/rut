@@ -1312,6 +1312,11 @@ class Reviews(db.Model):
     item_id = db.Column(
         db.Integer, db.ForeignKey("items.id")
     )
+    # n to 1 with Columns
+    column_id = db.Column(
+        db.Integer,
+        db.ForeignKey("columns.id")
+    )
 
     # n2n with Users for vote
     voters = db.relationship(
@@ -1352,7 +1357,7 @@ class Reviews(db.Model):
         item_dict = {
             'id': item.id,
             'title': item.title
-        }
+        } if item else {}
         review_dict = {
             'id': self.id,
             'heading': self.heading,
@@ -1840,9 +1845,6 @@ class Users(db.Model):
     # 1 to n with Events
     events = db.relationship(
         'Events', backref='actor', lazy='dynamic')
-    # 1 to n with Articles
-    articles = db.relationship(
-        'Articles', backref='writer', lazy='dynamic')
     # 1 to n with Columns
     columns = db.relationship(
         'Columns', backref='host', lazy='dynamic')
@@ -2197,13 +2199,12 @@ class Users(db.Model):
     def accomplished(self):
         pass
 
-    def cal_credit(self, p=None, t=None, r=None, c=None, d=None, a=1, m=1):
+    def cal_credit(self, p=None, t=None, r=None, c=None, d=None, m=1):
         p = p or self.posts.count()*5
         t = t or self.tips.count()*5
         r = r or self.reviews.count()*5
         c = c or self.clips.count()*2
         d = d or self.demands.count()
-        a = a or self.articles.count()*5
         m = m or self.mission*10
         self.credit = m+p+t+r+a+c+d
         db.session.add(self)
@@ -2460,45 +2461,6 @@ class Heat(db.Model):
         return '<Heat %r>' % self.id
 
 
-class Articles(db.Model):
-    __table_name__ = "articles"
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(256), nullable=False)
-    figure = db.Column(db.String(512))
-    body = db.Column(db.Text, nullable=False)
-    body_html = db.Column(db.Text)
-    vote = db.Column(db.Integer, default=1)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    renewal = db.Column(db.DateTime, default=datetime.utcnow)
-    disabled = db.Column(db.Boolean)
-
-    # n to 1 with Users
-    writer_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id")
-    )
-    # n to 1 with Columns
-    column_id = db.Column(
-        db.Integer,
-        db.ForeignKey("columns.id")
-    )
-
-    def renew(self):
-        self.renewal = datetime.utcnow()
-        db.session.add(self)
-        # db.session.commit()
-
-    def __repr__(self):
-        return '<Articles %r>' % self.title
-
-    # @staticmethod
-    # def on_changed_body(target, value, oldvalue, initiator):
-    #     target.body_html = bleach.linkify(bleach.clean(
-    #         markdown(value, output_format='html'),
-    #         tags=allowed_tags, strip=True))
-# db.event.listen(Articles.body, 'set', Articles.on_changed_body)
-
-
 class Columns(db.Model):
     __table_name__ = "columns"
     id = db.Column(db.Integer, primary_key=True)
@@ -2515,15 +2477,9 @@ class Columns(db.Model):
         db.ForeignKey("users.id")
     )
 
-    # 1 to n with Articles
-    articles = db.relationship(
-        'Articles', backref='column', lazy='dynamic')
+    # 1 to n with Reviews
+    reviews = db.relationship(
+        'Reviews', backref='column', lazy='dynamic')
 
     def __repr__(self):
         return '<Columns %r>' % self.title
-
-# update db
-# cd backend
-# python manage.py db init
-# python manage.py db migrate -m "comment"
-# python manage.py db upgrade

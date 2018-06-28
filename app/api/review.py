@@ -74,14 +74,15 @@ def get_review_voters(reviewid):
     return jsonify(voters_dict)
 
 
-@rest.route('/items/<int:itemid>/reviews', methods=['POST'])
+@rest.route('/reviews', methods=['POST'])
 @auth.login_required
-def new_review(itemid):
+def new_review():
+    itemid = request.json.get('itemid', '').strip()
     body = request.json.get('review', '').strip()
     heading = request.json.get('title', '').strip()
     if not body or not heading:
         abort(403)
-    item = Items.query.get_or_404(itemid)
+    item = Items.query.get_or_404(itemid) if itemid else None
     spoiler_text = request.json.get('spoiler')
     spoiler = True if spoiler_text == 'Spoiler Ahead' else False
     user = g.user
@@ -97,7 +98,7 @@ def new_review(itemid):
     taglst = re.findall(r'#(\w+)', body)
     review.rvtag_to_db(taglst)
     db.session.commit()
-    review_dict = review.to_dict()
+    review_dict = {'id': review.id}  # review.to_dict()
     # item.cal_vote()
     # record activity as post a review
     from task.tasks import set_event_celery
