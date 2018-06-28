@@ -138,24 +138,24 @@ def search_tags():
     return jsonify(tags_list)
 
 
-@rest.route('/locktag/<int:tagid>')
+@rest.route('/tags/<int:tagid>/lock', methods=['GET'])
 @auth.login_required
-def lock_tag(tagid):  # #??
+def lock_tag(tagid):
     tag = Tags.query.get_or_404(tagid)
     user = g.user
     tag.lock(user)
     return jsonify('Locked')
 
 
-@rest.route('/unlocktag/<int:tagid>')
-def unlock_tag(tagid):  # #??
+@rest.route('/tags/<int:tagid>/unlock', methods=['GET'])
+def unlock_tag(tagid):
     tag = Tags.query.get_or_404(tagid)
     tag.unlock()
     return jsonify('UnLocked')
 
 
-@rest.route('/tags/<int:tagid>/iflockedto/<int:userid>')
-def check_tag_if_locked(tagid, userid):  # #?? -head?
+@rest.route('/tags/<int:tagid>/locked/<int:userid>', methods=['GET'])
+def check_tag_if_locked(tagid, userid):
     tag = Tags.query.get_or_404(tagid)
     is_locked = tag.check_locked(userid)
     return jsonify(is_locked)

@@ -27,31 +27,10 @@ def get_road(roadid):
     return jsonify(road_dict)
 
 
-@rest.route('/roads/<int:userid>', methods=['GET'])
+# for challenge page # challenging road
+@rest.route('/getonroad')
 @auth.login_required
-def get_roads(userid):  # #?? -0
-    """Get the roads which user have not done"""
-    # yield query
-    user = Users.query.get_or_404(userid)
-    roads = user.roads.filter_by(done=False)
-    # pagination
-    page = request.args.get('page', 0, type=int)
-    per_page = request.args.get('perPage', PER_PAGE, type=int)
-    # limit per PER_PAGE
-    rs_list = roads.offset(page*per_page).limit(per_page)
-    # yield result: a dict
-    roads_dict = {
-        'roads': [r.to_dict() for r in rs_list],
-        'total': roads.count(),
-        'currentpage': page
-    }
-    return jsonify(roads_dict)
-
-
-# for challenge page
-@rest.route('/getonroad')  # challenging road
-@auth.login_required
-def get_on_road():  # #?? -0
+def get_on_road():
     """Get the working Road: earliest and not done """
     user = g.user
     road = user.roads.filter_by(done=False).first()
@@ -72,16 +51,27 @@ def get_on_road():  # #?? -0
     return jsonify(road_dict)
 
 
-@rest.route('/<int:userid>/allroads')
+@rest.route('/roads', methods=['GET'])
 @auth.login_required
-def get_all_roads(userid):  # #?? -0
-    """Get  All, order per done or not and timestamp"""
+def get_roads():
+    # get query args
+    rf = request.args.get('rf', '') # my -all my, on -nodones
+    userid = request.args.get('userid', '')
     # yield query
-    user = Users.query.get_or_404(userid)
-    roads = user.roads.order_by(Roads.done, Roads.timestamp.desc())
+    user = Users.query.get_or_404(userid) if userid else g.user
+    roads_query = user.roads
+    # per rf
+    if rf == 'my':
+        roads = roads_query.order_by(Roads.done, Roads.timestamp.desc())
+    elif rf == 'on':
+        roads = roads_query.filter_by(done=False)
+    else:
+        # roads = Roads.query
+        abort(403)
     # pagination
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
+    # limit per PER_PAGE
     rs_list = roads.offset(page*per_page).limit(per_page)
     # yield result: a dict
     roads_dict = {
@@ -173,7 +163,7 @@ def add_item_to_road(roadid, itemid):
     user = g.user
     if user != road.owner:
         abort(403)
-    if road.items.count() >= 42:
+    if road.items.count() >= 42:  # special limit num
         abort(418)
     item = Items.query.get_or_404(itemid)
     mark = request.json.get('mark', '...').strip()
@@ -240,7 +230,7 @@ def del_mark(gid):
 
 @rest.route('/road/<int:roadid>/torut', methods=['PATCH'])
 @auth.login_required
-def convert_road_to_rut(roadid):  # #??, -test
+def convert_road_to_rut(roadid):  #  -test
     """convert road to rut when get road done"""
     road = Roads.query.get_or_404(roadid)
     if road.converted or (not road.done):

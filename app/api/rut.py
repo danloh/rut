@@ -224,32 +224,32 @@ def new_rut():
     return jsonify({'id': post.id, 'title': post.title})
 
 
-@rest.route('/lockrut/<int:rutid>', methods=['GET'])
+@rest.route('/ruts/<int:rutid>/lock', methods=['GET'])
 @auth.login_required
-def lock_rut(rutid):  # #??
+def lock_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     user = g.user
     rut.lock(user)
     return jsonify('Locked')
 
 
-@rest.route('/unlockrut/<int:rutid>', methods=['GET'])
-def unlock_rut(rutid):  # #??
+@rest.route('/ruts/<int:rutid>/unlock', methods=['GET'])
+def unlock_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     rut.unlock()
     return jsonify('UnLocked')
 
 
-@rest.route('/ruts/<int:rutid>/lockedto/<int:userid>', methods=['GET'])
-def check_rut_if_locked(rutid, userid):  # #?? -1, head?
+@rest.route('/ruts/<int:rutid>/locked/<int:userid>', methods=['GET'])
+def check_rut_if_locked(rutid, userid):
     rut = Posts.query.get_or_404(rutid)
     is_locked = rut.check_locked(userid)
     return jsonify(is_locked)
 
 
-@rest.route('/checkif/<userid>/caneditrut/<int:rutid>', methods=['GET'])
+@rest.route('/ruts/<int:rutid>/editable/<userid>', methods=['GET'])
 # @auth.login_required
-def check_rut_editable(userid, rutid):  # #?? -1
+def check_rut_editable(userid, rutid):
     if not userid:
         return jsonify(False)
     user = Users.query.get_or_404(userid)

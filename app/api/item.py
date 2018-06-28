@@ -165,23 +165,23 @@ def flag_item_done(itemid):
     return jsonify('Have Done')
 
 
-@rest.route('/lockitem/<int:itemid>')
+@rest.route('/items/<int:itemid>/lock', methods=['GET'])
 @auth.login_required
-def lock_item(itemid):  # #??
+def lock_item(itemid):
     item = Items.query.get_or_404(itemid)
     user = g.user
     item.lock(user)
     return jsonify('Locked')
 
 
-@rest.route('/unlockitem/<int:itemid>')
-def unlock_item(itemid):  # #??
+@rest.route('/items/<int:itemid>/unlock', methods=['GET'])
+def unlock_item(itemid):
     item = Items.query.get_or_404(itemid)
     item.unlock()
     return jsonify('UnLocked')
 
 
-@rest.route('/items/<int:itemid>/lockedto/<int:userid>', methods=['GET'])
+@rest.route('/items/<int:itemid>/locked/<int:userid>', methods=['GET'])
 def check_item_if_locked(itemid, userid):
     item = Items.query.get_or_404(itemid)
     is_locked = item.check_locked(userid)
