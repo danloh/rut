@@ -978,6 +978,9 @@ class Items(db.Model):
     # 1 to n with reviews
     reviews = db.relationship(
         'Reviews', backref='item', lazy='dynamic')
+    # 1 to n with headlines
+    headlines = db.relationship(
+        'Headlines', backref='item', lazy='dynamic')
     # 1 to n with Clips
     clips = db.relationship(
         'Clips', backref='item', lazy='dynamic')
@@ -1119,7 +1122,7 @@ class Items(db.Model):
             'uid': self.uid,
             'byline': self.author or '',
             'rutcount': self.posts.count(),
-            'reviewcount': self.reviews.count(),
+            'reviewcount': self.headlines.count(),
             'clipcount': self.clips.count(),
             'commentcount': self.comments.count(),
             'cover': self.item_cover,
@@ -1591,6 +1594,7 @@ class Headlines(db.Model):
     title = db.Column(db.String(256), nullable=False)
     url = db.Column(db.Text)
     content = db.Column(db.Text)
+    spoiler = db.Column(db.Boolean, default=False)
     vote = db.Column(db.Integer, default=1)
     score = db.Column(db.Integer, default=1)
     point = db.Column(db.Integer, default=0)
@@ -1601,6 +1605,10 @@ class Headlines(db.Model):
     submitor_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id")
+    )
+    # n to 1 with Items
+    item_id = db.Column(
+        db.Integer, db.ForeignKey("items.id")
     )
     # 1 to n with Comments
     comments = db.relationship(
@@ -1636,12 +1644,19 @@ class Headlines(db.Model):
             'name': s.showname,
             'avatar': s.user_avatar
         }
+        item = self.item
+        item_dict = {
+            'id': item.id,
+            'title': item.title
+        } if item else {}
         headline_dict = {
             'id': self.id,
             'submitor': submitor_dict,
             'title': self.title,
             'url': self.url or '',
             'content': self.content or '',
+            'spoiler': self.spoiler,
+            'item': item_dict,
             'vote': self.vote,
             'point': self.point,
             'commentcount': self.comments.count(),
