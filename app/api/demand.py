@@ -14,7 +14,7 @@ def get_demands():
     query = Demands.query
     userid = request.args.get('userid', type=int)
     tag_str = request.args.get('tag', '')
-    ref = request.args.get('type', '')
+    ref = request.args.get('ref', '')
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
     # yield query per filter criteria
@@ -25,7 +25,7 @@ def get_demands():
     else:
         demands_query = query
     # order per ref: new or popular
-    if ref == "popular":
+    if ref == "hot":
         demands = demands_query.order_by(Demands.vote.desc())
     else:
         demands = demands_query.order_by(Demands.timestamp.desc())
