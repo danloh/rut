@@ -260,16 +260,16 @@ class Rvote(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 
-# helper for n2n Users vote Headlines
+# helper for n2n Users vote Articles
 class Hvote(db.Model):
     __table_name__ = 'hvote'
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id"),
         primary_key=True)
-    headline_id = db.Column(
+    article_id = db.Column(
         db.Integer,
-        db.ForeignKey("headlines.id"),
+        db.ForeignKey("articles.id"),
         primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -978,9 +978,9 @@ class Items(db.Model):
     # 1 to n with reviews
     reviews = db.relationship(
         'Reviews', backref='item', lazy='dynamic')
-    # 1 to n with headlines
-    headlines = db.relationship(
-        'Headlines', backref='item', lazy='dynamic')
+    # 1 to n with articles
+    articles = db.relationship(
+        'Articles', backref='item', lazy='dynamic')
     # 1 to n with Clips
     clips = db.relationship(
         'Clips', backref='item', lazy='dynamic')
@@ -1122,7 +1122,7 @@ class Items(db.Model):
             'uid': self.uid,
             'byline': self.author or '',
             'rutcount': self.posts.count(),
-            'reviewcount': self.headlines.count(),
+            'reviewcount': self.articles.count(),
             'clipcount': self.clips.count(),
             'commentcount': self.comments.count(),
             'cover': self.item_cover,
@@ -1199,9 +1199,9 @@ class Comments(db.Model):
     demand_id = db.Column(
         db.Integer, db.ForeignKey("demands.id")
     )
-    # n to 1 with Headlines
-    headline_id = db.Column(
-        db.Integer, db.ForeignKey("headlines.id")
+    # n to 1 with Articles
+    article_id = db.Column(
+        db.Integer, db.ForeignKey("articles.id")
     )
 
     # 1 to n with Events
@@ -1588,8 +1588,8 @@ class Circles(db.Model):
         return '<Circles %r>' % self.name
 
 
-class Headlines(db.Model):
-    __table_name__ = 'headlines'
+class Articles(db.Model):
+    __table_name__ = 'articles'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(256), nullable=False)
     url = db.Column(db.Text)
@@ -1612,17 +1612,17 @@ class Headlines(db.Model):
     )
     # 1 to n with Comments
     comments = db.relationship(
-        'Comments', backref='headline', lazy='dynamic')
+        'Comments', backref='article', lazy='dynamic')
     # n2n with Users for vote
     voters = db.relationship(
         'Hvote',
-        foreign_keys=[Hvote.headline_id],
-        backref=db.backref('vote_headline', lazy='joined'),
+        foreign_keys=[Hvote.article_id],
+        backref=db.backref('vote_article', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
     # 1 to n with Events
     events = db.relationship(
-        'Events', backref='headline', lazy='dynamic')
+        'Events', backref='article', lazy='dynamic')
 
     def cal_point(self):
         # get the time lapse, other way
@@ -1649,7 +1649,7 @@ class Headlines(db.Model):
             'id': item.id,
             'title': item.title
         } if item else {}
-        headline_dict = {
+        article_dict = {
             'id': self.id,
             'submitor': submitor_dict,
             'title': self.title,
@@ -1662,10 +1662,10 @@ class Headlines(db.Model):
             'commentcount': self.comments.count(),
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         }
-        return headline_dict
+        return article_dict
 
     def __repr__(self):
-        return '<Headlines %r>' % self.title
+        return '<Articles %r>' % self.title
 
 
 # helper Model for Messages n2n with self for dialog
@@ -1851,9 +1851,9 @@ class Users(db.Model):
     # 1 to n with Circles
     circles = db.relationship(
         'Circles', backref='facilitator', lazy='dynamic')
-    # 1 to n with Headlines
-    headlines = db.relationship(
-        'Headlines', backref='submitor', lazy='dynamic')
+    # 1 to n with Articles
+    articles = db.relationship(
+        'Articles', backref='submitor', lazy='dynamic')
     # 1 to n with Items
     sub_items = db.relationship(
         'Items', backref='submitor', lazy='dynamic')
@@ -1950,8 +1950,8 @@ class Users(db.Model):
         backref=db.backref('voter', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-    # n2n with Headlines for vote
-    vote_headlines = db.relationship(
+    # n2n with Articles for vote
+    vote_articles = db.relationship(
         'Hvote',
         foreign_keys=[Hvote.user_id],
         backref=db.backref('voter', lazy='joined'),
@@ -2175,7 +2175,7 @@ class Users(db.Model):
 
     # save activities to db Events
     def set_event(self, action=None, postid=None, itemid=None, reviewid=None,
-                  demandid=None, clipid=None, tagid=None, headlineid=None):
+                  demandid=None, clipid=None, tagid=None, articleid=None):
         query = self.events
         # avoid duplicated entry
         if action in ['Created', 'Starred']:
@@ -2189,7 +2189,7 @@ class Users(db.Model):
         elif action in ['Sent', 'Voted']:
             e = query.filter_by(action=action, demand_id=demandid).first()
         elif action in ['Submitted', 'Push']:
-            e = query.filter_by(action=action, headline_id=headlineid).first()
+            e = query.filter_by(action=action, article_id=articleid).first()
         elif action in ['Excerpted']:
             e = query.filter_by(action=action, clip_id=clipid).first()
         else:
@@ -2205,7 +2205,7 @@ class Users(db.Model):
             demand_id=demandid,
             clip_id=clipid,
             tag_id=tagid,
-            headline_id=headlineid,
+            article_id=articleid,
             day=datetime.utcnow().date()
         )
         db.session.add(ev)
@@ -2344,8 +2344,8 @@ class Events(db.Model):
     tag_id = db.Column(
         db.Integer, db.ForeignKey('tags.id')
     )
-    headline_id = db.Column(
-        db.Integer, db.ForeignKey('headlines.id')
+    article_id = db.Column(
+        db.Integer, db.ForeignKey('articles.id')
     )
 
     # get events, ##need to tacle some issue #if del, the obj is None,error occur
@@ -2400,10 +2400,10 @@ class Events(db.Model):
                     'content': q.body
                 }
         if act in ['Submitted', 'Push']:
-            q = self.headline
+            q = self.article
             if q:
                 content_dict = {
-                    'type': 'Headline',
+                    'type': 'Article',
                     'id': q.id,
                     'cover': '',
                     'content': q.title

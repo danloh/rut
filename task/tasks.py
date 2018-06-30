@@ -3,7 +3,7 @@ import os
 from datetime import datetime, timedelta
 from app import mail, db
 from app.models import (
-    Users, Posts, Tags, Items, Demands, Reviews, Headlines, Events, Heat)
+    Users, Posts, Tags, Items, Demands, Reviews, Articles, Events, Heat)
 from flask import render_template
 from flask_mail import Message
 from task.celery import celery_app
@@ -30,11 +30,11 @@ def send_email(self, to, subject, template, **kwargs):
 
 @celery_app.task(ignore_result=True)
 def set_event_celery(userid, action=None, postid=None, itemid=None, reviewid=None, 
-                     demandid=None, clipid=None, tagid=None, headlineid=None):
+                     demandid=None, clipid=None, tagid=None, articleid=None):
     with app.app_context():
         user = Users.query.get(userid)
         user.set_event(action=action, postid=postid, itemid=itemid, reviewid=reviewid,
-                demandid=demandid, clipid=clipid, tagid=tagid, headlineid=headlineid)
+                demandid=demandid, clipid=clipid, tagid=tagid, articleid=articleid)
 
 
 @celery_app.task(ignore_result=True)
@@ -56,8 +56,8 @@ def cal_vote_celery():
         reviews = Reviews.query
         for rv in reviews:
             rv.cal_point()
-        headlines = Headlines.query
-        for h in headlines:
+        articles = Articles.query
+        for h in articles:
             h.cal_point()
         db.session.commit()
 
