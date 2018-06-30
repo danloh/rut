@@ -119,15 +119,19 @@ def new_headline():
 @rest.route('/headlines/<int:headlineid>', methods=['PUT'])
 @auth.login_required
 def edit_headline(headlineid):
-    content = request.json.get('headline', '').strip()
     title = request.json.get('title', '').strip()
-    if not content or not title:
+    if not title:
+        abort(403)
+    content = request.json.get('content', '').strip()
+    url = request.json.get('url', '').strip()
+    if not (content or url):
         abort(403)
     headline = Headlines.query.get_or_404(headlineid)
     user = g.user
     if user != headline.submitor and user.role != 'Admin':
         abort(403)  # No Permission
     headline.title = title
+    headline.url = url
     headline.content = content
     spoiler_text = request.json.get('spoiler')
     spoiler = True if spoiler_text == 'Spoiler Ahead' else False
