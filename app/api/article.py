@@ -40,7 +40,7 @@ def get_articles():
 
 
 @rest.route('/articles/<int:articleid>', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def get_article(articleid):
     article = Articles.query.get_or_404(articleid)
     article_dict = article.to_dict()
@@ -48,7 +48,7 @@ def get_article(articleid):
 
 
 @rest.route('/articles/<int:articleid>/comments', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def get_article_comments(articleid):
     article = Articles.query.get_or_404(articleid)
     # article_dict = article.to_dict()

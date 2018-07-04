@@ -8,7 +8,7 @@ from . import db, rest, auth, PER_PAGE
 
 
 @rest.route('/demands', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def get_demands():
     """Get demands for request page"""
     query = Demands.query
@@ -47,7 +47,7 @@ def get_demand_only(demandid):
 
 
 @rest.route('/demands/<int:demandid>', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def get_demand(demandid):
     """get demand info"""
     demand = Demands.query.get_or_404(demandid)

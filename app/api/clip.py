@@ -7,7 +7,7 @@ from ..models import Clips, Cvote, Items
 from . import db, rest, auth, PER_PAGE
 
 @rest.route('/clips', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def get_clips():
     ref = request.args.get('ref', '')
     userid = request.args.get('userid', type=int)

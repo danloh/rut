@@ -22,7 +22,7 @@ def get_tags():
 
 
 @rest.route('/tags/<string:tagname>', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def get_tag(tagname):
     tag = Tags.query.filter_by(tag=tagname).first_or_404()
     tag_dict = tag.to_dict()
@@ -42,7 +42,7 @@ def get_tag(tagname):
 
 
 @rest.route('/tags/<string:tagname>/ruts', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def get_tag_ruts(tagname):
     tag = Tags.query.filter_by(tag=tagname).first_or_404()
     # request param {page: int}
@@ -57,7 +57,7 @@ def get_tag_ruts(tagname):
 
 
 @rest.route('/tags/<string:tagname>/demands', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def get_tag_demands(tagname):
     tag = Tags.query.filter_by(tag=tagname).first_or_404()
     page = request.args.get('page', 0, type=int)
@@ -71,7 +71,7 @@ def get_tag_demands(tagname):
 
 
 @rest.route('/tags/<string:tagname>/items', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def get_tag_items(tagname):
     tag = Tags.query.filter_by(tag=tagname).first_or_404()
     page = request.args.get('page', 0, type=int)
@@ -85,7 +85,7 @@ def get_tag_items(tagname):
 
 
 @rest.route('/tags/<string:tagname>/comments', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def get_tag_comments(tagname):
     tag = Tags.query.filter_by(tag=tagname).first_or_404()
     page = request.args.get('page', 0, type=int)
