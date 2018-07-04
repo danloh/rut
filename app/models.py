@@ -261,8 +261,8 @@ class Rvote(db.Model):
 
 
 # helper for n2n Users vote Articles
-class Hvote(db.Model):
-    __table_name__ = 'hvote'
+class Avote(db.Model):
+    __table_name__ = 'avote'
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id"),
@@ -1615,8 +1615,8 @@ class Articles(db.Model):
         'Comments', backref='article', lazy='dynamic')
     # n2n with Users for vote
     voters = db.relationship(
-        'Hvote',
-        foreign_keys=[Hvote.article_id],
+        'Avote',
+        foreign_keys=[Avote.article_id],
         backref=db.backref('vote_article', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
@@ -1952,8 +1952,8 @@ class Users(db.Model):
         cascade='all, delete-orphan')
     # n2n with Articles for vote
     vote_articles = db.relationship(
-        'Hvote',
-        foreign_keys=[Hvote.user_id],
+        'Avote',
+        foreign_keys=[Avote.user_id],
         backref=db.backref('voter', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')

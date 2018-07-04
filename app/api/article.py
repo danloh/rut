@@ -2,7 +2,7 @@
 # article: news for reader
 
 from flask import request, g, jsonify, abort
-from ..models import Articles, Hvote, Comments, Items
+from ..models import Articles, Avote, Comments, Items
 from . import db, rest, auth, PER_PAGE
 
 
@@ -71,7 +71,7 @@ def get_article_comments(articleid):
 def get_article_voters(articleid):
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    query = Hvote.query.filter_by(article_id=articleid)
+    query = Avote.query.filter_by(article_id=articleid)
     voters = query.offset(page * per_page).limit(per_page)
     voters_dict = {
         'voters': [v.voter.to_simple_dict() for v in voters],
@@ -147,15 +147,15 @@ def edit_article(articleid):
 def upvote_article(articleid):
     article = Articles.query.get_or_404(articleid)  # article's id
     user = g.user
-    voted = Hvote.query.filter_by(user_id=user.id, article_id=articleid).first()
+    voted = Avote.query.filter_by(user_id=user.id, article_id=articleid).first()
     if voted is None:
         article.vote = article.vote + 1
         db.session.add(article)
-        hvote = Hvote(
+        avote = Avote(
             voter=user,
             vote_article=article
         )
-        db.session.add(hvote)
+        db.session.add(avote)
         db.session.commit()
         # record activity as upvote a article
         # user.set_event(action='Push', articleid=article.id)

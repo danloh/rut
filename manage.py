@@ -6,7 +6,7 @@ from app import create_app, db, cache
 from app.models import Posts, Items, Collect, Star, Flag, Tags, Users,\
                        tag_post, tag_item, Comments, Mvote, Contribute,\
                        Fav, Follow, Roles, Respon, Permission, tag_demand,\
-                       Demands, Dvote, Cvote, Rvote, Hvote, Authors, Byline,\
+                       Demands, Dvote, Cvote, Rvote, Avote, Authors, Byline,\
                        Reviews, Columns, Articles, Clips, Messages,\
                        Circles, Dialog, Events, Reply, Clan, Gather, Roads, Heat
 
@@ -22,7 +22,7 @@ def make_shell_context():
                 Fav=Fav, Follow=Follow, Roles=Roles, Respon=Respon,
                 Permission=Permission, Gather=Gather, Roads=Roads,
                 tag_demand=tag_demand, Demands=Demands, Dvote=Dvote,
-                Authors=Authors, Byline=Byline, Hvote=Hvote, Mvote=Mvote,
+                Authors=Authors, Byline=Byline, Avote=Avote, Mvote=Mvote,
                 Clan=Clan, Reply=Reply, Reviews=Reviews, Rvote=Rvote,
                 Columns=Columns, Articles=Articles,
                 Clips=Clips, Messages=Messages, Circles=Circles,
