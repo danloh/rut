@@ -3,7 +3,7 @@
 
 import re
 from flask import request, g, jsonify, abort, current_app
-from ..models import Items, Flag, Reviews, Collect, Byline, Authors
+from ..models import Items, Flag, Articles, Collect, Byline, Authors
 from ..utils import str_to_dict
 from ..bot import spider
 from . import db, rest, auth, PER_PAGE
@@ -48,34 +48,34 @@ def get_item(itemid):
     return jsonify(item_dict)
 
 
-@rest.route('/items/<int:itemid>/reviews', methods=['GET'])
+@rest.route('/items/<int:itemid>/articles', methods=['GET'])
 @auth.login_required
-def get_item_reviews(itemid):
+def get_item_articles(itemid):
     # item = Items.query.get_or_404(itemid)
     # get request params
     userid = request.args.get('userid', type=int)
     ref = request.args.get('ref', '')  # hot or new
     # yield query
-    query = Reviews.query.filter_by(item_id=itemid)  # item.reviews
+    query = Articles.query.filter_by(item_id=itemid)  # item.articles
     if userid:
-        reviews = query.filter_by(creator_id=userid)
+        articles = query.filter_by(submitor_id=userid)
     elif ref == 'hot':
-        reviews = query.order_by(Reviews.point_incre.desc(), Reviews.vote.desc())
+        articles = query.order_by(Articles.point.desc(), Articles.score.desc())
     elif ref == 'new':
-        reviews = query.order_by(Reviews.timestamp.desc())
+        articles = query.order_by(Articles.timestamp.desc())
     else:
-        reviews = query
+        articles = query
     # pagination
     page = request.args.get('page', 0, type=int)
     per_page = request.args.get('perPage', PER_PAGE, type=int)
-    reviews_page = reviews.offset(per_page * page).limit(per_page)
+    articles_page = articles.offset(per_page * page).limit(per_page)
     # yield result, a Dict
-    review_list = [r.to_dict() for r in reviews_page]
-    reviews_dict = {
-        'reviewcount': reviews.count(),
-        'reviews': review_list
+    article_list = [r.to_dict() for r in articles_page]
+    articles_dict = {
+        'articlecount': articles.count(),
+        'articles': article_list
     }
-    return jsonify(reviews_dict)
+    return jsonify(articles_dict)
 
 
 @rest.route('/items/<int:itemid>/inruts', methods=['GET'])
