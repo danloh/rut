@@ -2419,7 +2419,7 @@ class Events(db.Model):
 
     @staticmethod
     def to_heat(day=None):
-        filter_action = ['Created', 'Sent', 'Posted', 'Get done', 'Excerpted']
+        filter_action = ['Created', 'Sent', 'Submitted', 'Get done', 'Excerpted']
         query = Events.query.filter(Events.action.in_(filter_action))
         if day:
             query = query.filter_by(day=day)
