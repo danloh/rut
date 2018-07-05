@@ -161,7 +161,7 @@ def rut_as_answer(demandid, rutid):
     """link  Rut to  a demand as Answer"""
     rut = Posts.query.get_or_404(rutid)
     user = g.user
-    if rut.creator != user and user.role != 'Admin':
+    if rut.creator != user and user.role.duty != 'Admin':
         abort(403)  # no permission
     if rut.demands.count() >= 6:  # limit the num as answer
         return jsonify(False)
@@ -181,7 +181,7 @@ def rut_as_answer(demandid, rutid):
 def del_demand(demandid):
     demand = Demands.query.get_or_404(demandid)
     user = g.user
-    if demand.requestor != user and user.role != 'Admin':
+    if demand.requestor != user and user.role.duty != 'Admin':
         abort(403)
     db.session.delete(demand)
     db.session.commit()
@@ -193,7 +193,7 @@ def del_demand(demandid):
 def disable_demand(demandid):
     demand = Demands.query.get_or_404(demandid)
     user = g.user
-    if demand.requestor != user and user.role != 'Admin':
+    if demand.requestor != user and user.role.duty != 'Admin':
         abort(403)
     dis_or_enb = request.json.get('disbaled', True)
     demand.disabled = dis_or_enb

@@ -400,7 +400,7 @@ def del_tips_in_rut(cid):
     # collect 's id,but not get_or_404, for 3 primary key
     tip_c = Collect.query.filter_by(id=cid).first_or_404()
     user = g.user
-    if user != tip_c.tip_creator and user.role != 'Admin':
+    if user != tip_c.tip_creator and user.role.duty != 'Admin':
         abort(403)
     # once delete an item. need to re-ordering,
     # order the to-be-del item to the last, then del
@@ -419,7 +419,7 @@ def del_tips_in_rut(cid):
 def disable_or_enable_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     user = g.user
-    if ((rut.creator != user and user.role != 'Admin')
+    if ((rut.creator != user and user.role.duty != 'Admin')
             or rut.starers.count() != 0):
         abort(403)
     dis_or_enb = request.json.get('disbaled', True)
@@ -434,7 +434,7 @@ def disable_or_enable_rut(rutid):
 def delete_rut(rutid):
     rut = Posts.query.get_or_404(rutid)
     user = g.user
-    if ((rut.creator != user and user.role != 'Admin')
+    if ((rut.creator != user and user.role.duty != 'Admin')
             or rut.starers.count() != 0):
         abort(403)
     db.session.delete(rut)

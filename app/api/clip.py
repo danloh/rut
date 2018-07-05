@@ -119,7 +119,7 @@ def upvote_clip(clipid):
 def del_clip(clipid):
     clip = Clips.query.get_or_404(clipid)
     user = g.user
-    if clip.creator != user and user.role != 'Admin':
+    if clip.creator != user and user.role.duty != 'Admin':
         abort(403)
     db.session.delete(clip)
     db.session.commit()
@@ -131,7 +131,7 @@ def del_clip(clipid):
 def disable_or_enable_clip(clipid):
     clip = Clips.query.get_or_404(clipid)
     user = g.user
-    if clip.creator != user and user.role != 'Admin':
+    if clip.creator != user and user.role.duty != 'Admin':
         abort(403)
     dis_or_enb = request.json.get('disbaled', True)
     clip.disabled = dis_or_enb

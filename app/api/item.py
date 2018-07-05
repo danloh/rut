@@ -420,7 +420,7 @@ def search_items(label):
 @auth.login_required
 def del_item(itemid):
     user = g.user
-    if user.role != 'Admin':
+    if user.role.duty != 'Admin':
         abort(403)
     item = Items.query.get_or_404(itemid)
     db.session.delete(item)
@@ -432,7 +432,7 @@ def del_item(itemid):
 @auth.login_required
 def disable_or_enable_item(itemid):
     user = g.user
-    if user.role != 'Admin':
+    if user.role.duty != 'Admin':
         abort(403)
     item = Items.query.get_or_404(itemid)
     dis_or_enb = request.json.get('disbaled', True)

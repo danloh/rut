@@ -233,7 +233,7 @@ def unfav_tag(tagid):
 @auth.login_required
 def del_tag(tagid):
     user = g.user
-    if user.role != 'Admin':
+    if user.role.duty != 'Admin':
         abort(403)
     tag = Tags.query.get_or_404(tagid)
     db.session.delete(tag)
@@ -245,7 +245,7 @@ def del_tag(tagid):
 @auth.login_required
 def disable_tag(tagid):
     user = g.user
-    if user.role != 'Admin':
+    if user.role.duty != 'Admin':
         abort(403)
     tag = Tags.query.get_or_404(tagid)
     dis_or_enb = request.json.get('disbaled', True)

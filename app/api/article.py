@@ -128,7 +128,7 @@ def edit_article(articleid):
         abort(403)
     article = Articles.query.get_or_404(articleid)
     user = g.user
-    if user != article.submitor and user.role != 'Admin':
+    if user != article.submitor and user.role.duty != 'Admin':
         abort(403)  # No Permission
     article.title = title
     article.url = url
@@ -169,7 +169,7 @@ def upvote_article(articleid):
 def del_article(articleid):
     article = Articles.query.get_or_404(articleid)
     user = g.user
-    if article.submitor != user and user.role != 'Admin':
+    if article.submitor != user and user.role.duty != 'Admin':
         abort(403)
     db.session.delete(article)
     db.session.commit()
@@ -181,7 +181,7 @@ def del_article(articleid):
 def disable_or_enable_article(articleid):
     article = Articles.query.get_or_404(articleid)
     user = g.user
-    if article.submitor != user and user.role != 'Admin':
+    if article.submitor != user and user.role.duty != 'Admin':
         abort(403)
     dis_or_enb = request.json.get('disbaled', True)
     article.disabled = dis_or_enb

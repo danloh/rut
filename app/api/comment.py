@@ -100,7 +100,7 @@ def new_comment(demandid=None, rutid=None, commentid=None, itemid=None,
 def del_comment(commentid):
     comment = Comments.query.get_or_404(commentid)
     user = g.user
-    if comment.creator != user and user.role != 'Admin':
+    if comment.creator != user and user.role.duty != 'Admin':
         abort(403)
     db.session.delete(comment)
     db.session.commit()
@@ -112,7 +112,7 @@ def del_comment(commentid):
 def disable_or_enable_comment(commentid):
     comment = Comments.query.get_or_404(commentid)
     user = g.user
-    if comment.creator != user and user.role != 'Admin':
+    if comment.creator != user and user.role.duty != 'Admin':
         abort(403)
     dis_or_enb = request.json.get('disbaled', True)
     comment.disabled = dis_or_enb

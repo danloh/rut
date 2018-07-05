@@ -58,7 +58,7 @@ def new_circle():
 def edit_circle(circleid):
     circle = Circles.query.get_or_404(circleid)
     user = g.user
-    if circle.facilitator != user and user.role != 'Admin':
+    if circle.facilitator != user and user.role.duty != 'Admin':
         abort(403)
     # get data
     name = request.json.get('name', '').strip()
@@ -81,7 +81,7 @@ def edit_circle(circleid):
 def del_circle(circleid):
     circle = Circles.query.get_or_404(circleid)
     user = g.user
-    if circle.facilitator != user and user.role != 'Admin':
+    if circle.facilitator != user and user.role.duty != 'Admin':
         abort(403)
     db.session.delete(circle)
     db.session.commit()
@@ -93,7 +93,7 @@ def del_circle(circleid):
 def disable_circle(circleid):
     circle = Circles.query.get_or_404(circleid)
     # user = g.user
-    # if circle.facilitator != user and user.role != 'Admin':
+    # if circle.facilitator != user and user.role.duty != 'Admin':
     #     abort(403)
     # dis_or_enb = request.json.get('disbaled', True)
     circle.disabled = True  # dis_or_enb

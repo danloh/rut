@@ -215,7 +215,7 @@ def del_mark(gid):
     mark_g = Gather.query.filter_by(id=gid).first_or_404()
     road = Roads.query.get_or_404(mark_g.road_id)
     user = g.user
-    if user != road.owner and user.role != 'Admin':
+    if user != road.owner and user.role.duty != 'Admin':
         abort(403)
     # once delete an item. need to re-ordering,
     # order the to-be-del item to the last, then del
@@ -274,7 +274,7 @@ def convert_road_to_rut(roadid):  #  -test
 def disable_or_enable_road(roadid):
     road = Roads.query.get_or_404(roadid)
     user = g.user
-    if road.owner != user and user.role != 'Admin':
+    if road.owner != user and user.role.duty != 'Admin':
         abort(403)
     dis_or_enb = request.json.get('disbaled', True)
     road.disabled = dis_or_enb
@@ -288,7 +288,7 @@ def disable_or_enable_road(roadid):
 def delete_road(roadid):
     road = Roads.query.get_or_404(roadid)
     user = g.user
-    if road.owner != user and user.role != 'Admin':
+    if road.owner != user and user.role.duty != 'Admin':
         abort(403)
     db.session.delete(road)
     db.session.commit()

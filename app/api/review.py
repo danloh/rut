@@ -115,7 +115,7 @@ def edit_review(reviewid):
         abort(403)
     review = Reviews.query.get_or_404(reviewid)
     user = g.user
-    if user != review.creator and user.role != 'Admin':
+    if user != review.creator and user.role.duty != 'Admin':
         abort(403)  # No Permission
     review.heading = heading
     review.body = body
@@ -157,7 +157,7 @@ def upvote_review(reviewid):
 def del_review(reviewid):
     review = Reviews.query.get_or_404(reviewid)
     user = g.user
-    if review.creator != user and user.role != 'Admin':
+    if review.creator != user and user.role.duty != 'Admin':
         abort(403)
     db.session.delete(review)
     db.session.commit()
@@ -169,7 +169,7 @@ def del_review(reviewid):
 def disable_or_enable_review(reviewid):
     review = Reviews.query.get_or_404(reviewid)
     user = g.user
-    if review.creator != user and user.role != 'Admin':
+    if review.creator != user and user.role.duty != 'Admin':
         abort(403)
     dis_or_enb = request.json.get('disbaled', True)
     review.disabled = dis_or_enb
