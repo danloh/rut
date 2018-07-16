@@ -106,6 +106,7 @@ def new_article():
         url=url,
         content=content,
         spoiler=spoiler,
+        author=request.json.get('author', '').strip(),
         item=item,
     )
     db.session.add(article)
@@ -133,6 +134,7 @@ def edit_article(articleid):
     article.title = title
     article.url = url
     article.content = content
+    article.author = request.json.get('author', '').strip()
     spoiler_text = request.json.get('spoiler')
     spoiler = True if spoiler_text == 'Spoiler Ahead' else False
     article.spoiler = spoiler

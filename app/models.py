@@ -1594,6 +1594,7 @@ class Articles(db.Model):
     title = db.Column(db.String(256), nullable=False)
     url = db.Column(db.Text)
     content = db.Column(db.Text)
+    author = db.Column(db.String(256))
     spoiler = db.Column(db.Boolean, default=False)
     vote = db.Column(db.Integer, default=1)
     score = db.Column(db.Integer, default=1)
@@ -1655,6 +1656,7 @@ class Articles(db.Model):
             'title': self.title,
             'url': self.url or '',
             'content': self.content or '',
+            'author': self.author or '',
             'spoiler': self.spoiler,
             'item': item_dict,
             'vote': self.vote,
