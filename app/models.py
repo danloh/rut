@@ -2127,16 +2127,16 @@ class Users(db.Model):
                 'note': fl.flag_note,
                 'time': fl.timestamp.strftime('%Y-%m-%d %H:%M:%S')
             }
-            d_label = {'label': 'Flag It'}
+            d_label = {'label': 'Flag'}
             if fl.flag_label == 1:
                 d_label = {'label': 'Scheduled'}
             if fl.flag_label == 2:
                 d_label = {'label': 'Working'}
             if fl.flag_label == 3:
-                d_label = {'label': 'Have Done'}
+                d_label = {'label': 'Done'}
             d = {**d_note, **d_label}
         else:
-            d = {'label': 'Flag It', 'note': '', 'time': ''}
+            d = {'label': 'Flag', 'note': '', 'time': ''}
         return d
 
     # fav and unfav a tag
