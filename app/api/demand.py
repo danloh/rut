@@ -37,37 +37,17 @@ def get_demands():
     return jsonify(demands_dict)
 
 
-@rest.route('/demand/<int:demandid>', methods=['GET'])
-@auth.login_required
-def get_demand_only(demandid):
-    """Get limited demand info when create as answer"""
-    demand = Demands.query.get_or_404(demandid)
-    demand_dict = demand.to_dict()
-    return jsonify(demand_dict)
-
-
 @rest.route('/demands/<int:demandid>', methods=['GET'])
 # @auth.login_required
 def get_demand(demandid):
     """get demand info"""
     demand = Demands.query.get_or_404(demandid)
     demand_dict = demand.to_dict()
-    # attach answers to demand
-    resps = demand.posts.order_by(Respon.timestamp.desc()).limit(PER_PAGE)
-    respons = [r.post for r in resps]
-    answers = [{'id': p.id, 'title': p.title, 'intro': p.intro} for p in respons]
-    demand_dict['answers'] = answers
-    # attach comments
-    d_comments = demand.comments\
-            .order_by(Comments.vote.desc(), Comments.timestamp.desc()).limit(PER_PAGE)
-    comments = [c.to_dict() for c in d_comments]
-    # #comments.reverse()
-    demand_dict['comments'] = comments
     return jsonify(demand_dict)
 
 
 @rest.route('/demands/<int:demandid>/comments', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def get_demand_comments(demandid):
     """get comments on a demand"""
     demand = Demands.query.get_or_404(demandid)
@@ -81,7 +61,7 @@ def get_demand_comments(demandid):
 
 
 @rest.route('/demands/<int:demandid>/answers', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def get_demand_answers(demandid):
     """get the ruts which have linked to a demand as answers"""
     demand = Demands.query.get_or_404(demandid)
