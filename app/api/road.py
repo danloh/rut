@@ -32,12 +32,15 @@ def get_road(roadid):
 @auth.login_required
 def get_on_road():
     """Get the working Road: earliest and not done """
-    user = g.user
+    userid = request.args.get('userid', '')
+    user = Users.query.get_or_404(userid) if userid else g.user
     road = user.roads.filter_by(done=False).first()
     road_dict = {'items': []}
     if road:
         road_dict = road.to_dict()
         # attach items included in road: not done, per order
+        # not need items in some case
+        noitem = request.args.get('noitem', False)
         items = [
             t.item.to_simple_dict()
             for t in road.items.order_by(Gather.order)
@@ -46,7 +49,7 @@ def get_on_road():
                 flag_label=3,
                 item_id=t.item_id
             ).first() is None
-        ]
+        ] if not noitem else []
         road_dict['items'] = items
     return jsonify(road_dict)
 
