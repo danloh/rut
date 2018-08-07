@@ -2127,16 +2127,16 @@ class Users(db.Model):
                 'note': fl.flag_note,
                 'time': fl.timestamp.strftime('%Y-%m-%d %H:%M:%S')
             }
-            d_label = {'label': 'Flag'}
+            d_label = {'label': 'Options'}
             if fl.flag_label == 1:
-                d_label = {'label': 'Scheduled'}
+                d_label = {'label': 'Todo'}
             if fl.flag_label == 2:
-                d_label = {'label': 'Working'}
+                d_label = {'label': 'Doing'}
             if fl.flag_label == 3:
                 d_label = {'label': 'Done'}
             d = {**d_note, **d_label}
         else:
-            d = {'label': 'Flag', 'note': '', 'time': ''}
+            d = {'label': 'Options', 'note': '', 'time': ''}
         return d
 
     # fav and unfav a tag
@@ -2182,7 +2182,7 @@ class Users(db.Model):
         # avoid duplicated entry
         if action in ['Created', 'Starred']:
             e = query.filter_by(action=action, post_id=postid).first()
-        elif action in ['Scheduled', 'Working', 'Get done']:
+        elif action in ['Todo', 'Doing', 'Get done']:
             e = query.filter_by(action=action, item_id=itemid).first()
         elif action in ['Followed', 'Updated Description']:
             e = query.filter_by(action=action, tag_id=tagid).first()
@@ -2365,7 +2365,7 @@ class Events(db.Model):
                     'cover': q.post_cover,
                     'content': q.title
                 }
-        if act in ['Scheduled', 'Working', 'Get done']:
+        if act in ['Todo', 'Doing', 'Get done']:
             q = self.item
             if q:
                 content_dict = {

@@ -135,8 +135,8 @@ def flag_item_todo(itemid):
     user.flag(item, 1, note)
     # record activity as want to read an item
     from task.tasks import set_event_celery
-    set_event_celery.delay(user.id, action='Scheduled', itemid=item.id)
-    return jsonify('Scheduled')
+    set_event_celery.delay(user.id, action='Todo', itemid=item.id)
+    return jsonify('Todo')
 
 
 @rest.route('/items/<int:itemid>/flagdoing', methods=['PATCH'])
@@ -146,10 +146,10 @@ def flag_item_doing(itemid):
     note = request.json.get('note', '').strip()
     user = g.user
     user.flag(item, 2, note)
-    # record activity asworking an item
+    # record activity as doing an item
     from task.tasks import set_event_celery
-    set_event_celery.delay(user.id, action='Working', itemid=item.id)
-    return jsonify('Working')
+    set_event_celery.delay(user.id, action='Doing', itemid=item.id)
+    return jsonify('Doing')
 
 
 @rest.route('/items/<int:itemid>/flagdone', methods=['PATCH'])
@@ -320,7 +320,7 @@ def submit_new_item():
     res_url = request.json.get('resUrl', '').strip()
     # extratc flag info
     user = g.user
-    flag_dict = {'Done': 3, 'Schedule': 1, 'Working': 2}
+    flag_dict = {'Done': 3, 'Todo': 1, 'Doing': 2}
     label = request.json.get('flag', '').strip()
     flag = flag_dict.get(label)
     # check if the url has been spider-ed,

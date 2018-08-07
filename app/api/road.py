@@ -31,7 +31,7 @@ def get_road(roadid):
 @rest.route('/getonroad')
 @auth.login_required
 def get_on_road():
-    """Get the working Road: earliest and not done """
+    """Get the in-progress Road: earliest and not done """
     userid = request.args.get('userid', '')
     user = Users.query.get_or_404(userid) if userid else g.user
     road = user.roads.filter_by(done=False).first()
