@@ -194,16 +194,24 @@ def new_rut():
     # extract tags and intro
     taglst = re.findall(r'#(\w+)', intro)
     intro = intro.split("#" + (taglst + ['42'])[0])[0]
+    # extract original author and source url , ^^
+    who = request.json.get('editable', 'Creator')
+    who_lst = who.split('^^') + ['']
+    who_edit = who_lst[0]
+    user = g.user
+    credit_to = user.showname if who_edit in ['Creator', 'Everyone'] else who_edit
+    credit_url = who_lst[1] or ('/profile/' + str(user.id))
     if not (title and intro):
         abort(403)  # cannot be ''
-    user = g.user
     post = Posts(
         creator=user,
         title=title,
         intro=intro,
         rating=request.json.get('rating', 'All'),
         credential=request.json.get('credential', '...').strip(),
-        editable=request.json.get('editable')
+        editable=who_edit,
+        credit_to=credit_to,
+        credit_url=credit_url
     )
     db.session.add(post)
     post.tag_to_db(taglst)
@@ -275,10 +283,20 @@ def edit_rut(rutid):
     intro = request.json.get('intro', '').strip()
     if (not title) or (not intro):
         abort(403)  # cannot be ''
+    # extract original author and source url , ^^
+    who = request.json.get('editable', 'Creator')
+    who_lst = who.split('^^') + ['']
+    who_edit = who_lst[0]
+    user = g.user
+    credit_to = user.showname if who_edit in ['Creator', 'Everyone'] else who_edit
+    credit_url = who_lst[1] or ('/profile/' + str(user.id))
+
     rut.title = title
     rut.intro = intro
     rut.rating = request.json.get('rating')
-    rut.editable = request.json.get('editable')
+    rut.editable = who_edit
+    rut.credit_to = credit_to
+    rut.credit_url = credit_url
     # renew the update time and add to db
     rut.renew()
     # db.session.add(rut)
@@ -294,14 +312,14 @@ def edit_rut_epi_or_cred(rutid):
     # check if rut editable
     if not rut.check_editable(user):
         abort(403)
-    credential = request.json.get('credential', '').strip()
-    epilog = request.json.get('epilog', '').strip()
-    if (not credential) and (not epilog):
-        abort(403)  # cannot both be ''
-    if credential:
-        rut.credential = credential
-    if epilog:
-        rut.epilog = epilog
+    credential = request.json.get('credential')
+    epilog = request.json.get('epilog')
+    # if (not credential) and (not epilog):
+    #     abort(403)  # cannot both be ''
+    if credential is not None:
+        rut.credential = credential.strip()
+    if epilog is not None:
+        rut.epilog = epilog.strip()
     # renew the update time and add to db
     rut.renew()
     # db.session.add(rut)

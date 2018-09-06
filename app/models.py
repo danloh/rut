@@ -506,7 +506,9 @@ class Posts(db.Model):
     epilog_html = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     renewal = db.Column(db.DateTime, default=datetime.utcnow)
-    editable = db.Column(db.String(32), default='Creator')
+    editable = db.Column(db.String(32), default='Creator') # or Everyone
+    credit_to = db.Column(db.String(64)) # original author
+    credit_url = db.Column(db.Text) # for rt, thus the editable is author
     edit_start = db.Column(db.DateTime, default=None)
     editing_id = db.Column(db.Integer)
     disabled = db.Column(db.Boolean)
@@ -720,6 +722,7 @@ class Posts(db.Model):
             'id': creator.id,
             'name': creator.showname,
             'avatar': creator.user_avatar,
+            'about': creator.about_me or '',
             'location': creator.location or ''
         }
         # contributes = self.contributors
@@ -745,6 +748,8 @@ class Posts(db.Model):
             'cover': self.post_cover,
             'editable': self.editable,
             'creator': creator_dict,
+            'credit_to': self.credit_to,
+            'credit_url': self.credit_url,
             'convertfrom': road_dict,
             # 'contributors': contributors,
             # 'contributoridlist': contributor_id_list,
