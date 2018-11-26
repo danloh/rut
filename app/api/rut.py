@@ -162,7 +162,9 @@ def check_star(rutid):
     rut = Posts.query.get_or_404(rutid)
     user = g.user
     staring = 'Unstar' if user.staring(rut) else 'Star'
-    return jsonify(staring)
+    can_edit = bool(rut.creator.id == user.id or rut.editable == 'Everyone')
+    if_star = {'staring': staring, 'canEdit': can_edit}
+    return jsonify(if_star)
 
 
 @rest.route('/ruts/<int:rutid>/stars', methods=['PATCH'])
